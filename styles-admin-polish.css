@@ -1771,6 +1771,45 @@
   gap:8px !important;
   margin:12px 0 !important;
 }
+.adminNextSteps{
+  display:grid !important;
+  gap:8px !important;
+  margin:12px 0 !important;
+  padding:10px !important;
+  border:1px solid rgba(180,255,190,.24) !important;
+  border-radius:8px !important;
+  background:linear-gradient(135deg, rgba(95,255,130,.08), rgba(175,210,255,.04)) !important;
+}
+.adminNextStepItem{
+  display:grid !important;
+  grid-template-columns:minmax(0,1fr) auto !important;
+  gap:9px !important;
+  align-items:center !important;
+  padding:10px !important;
+  border:1px solid rgba(180,255,190,.22) !important;
+  border-radius:8px !important;
+  background:rgba(255,255,255,.045) !important;
+}
+.adminNextStepItem.isWarn{
+  border-color:rgba(255,210,120,.44) !important;
+  background:rgba(255,185,80,.075) !important;
+}
+.adminNextStepItem.isInfo,
+.adminNextStepItem.isTodo{
+  border-color:rgba(175,210,255,.28) !important;
+}
+.adminNextStepText{
+  min-width:0 !important;
+}
+.adminNextStepTitle{
+  font-weight:900 !important;
+  line-height:1.15 !important;
+}
+#appMenuBody .adminNextStepAction{
+  min-width:80px !important;
+  min-height:34px !important;
+  padding:7px 9px !important;
+}
 .adminMonthlyWorkflowItem{
   display:grid !important;
   grid-template-columns:32px minmax(0,1fr) auto !important;
@@ -2057,6 +2096,14 @@
   #appMenuBody .adminMonthlyWorkflowAction{
     grid-column:2 !important;
     justify-self:start !important;
+  }
+  .adminNextStepItem{
+    grid-template-columns:1fr !important;
+    align-items:start !important;
+  }
+  #appMenuBody .adminNextStepAction{
+    min-width:0 !important;
+    width:100% !important;
   }
   .adminManualActionRow{
     grid-template-columns:1fr !important;

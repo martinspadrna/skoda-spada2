@@ -1,3 +1,10 @@
+## RaK 1.2 (1.234)
+
+- Administrace: na uvod pridan kratky admin-only blok `Co ted zkontrolovat`, ktery z mesicniho postupu vybere nejblizsi kroky podle aktualniho stavu.
+- Rozcestnik: doporucene kroky pouze oteviraji existujici chranene admin sekce a nic samy neukladaji, aby byl uvod prehlednejsi pro budouciho spravce.
+- Smoke guard: `app-usage-smoke-v963.js` hlida novy blok, jeho vlozeni na admin uvod a vlastni responsive styl.
+- Release metadata sjednocená na `RaK 1.2 (1.234)`, technická verze `1.2.234`, cache `v1.2-1.234`.
+
 ## RaK 1.2 (1.233)
 
 - O aplikaci: doplnene nove horni bloky historie pro verze `1.179-1.199` a `1.200-1.233`, aby bylo pri predani jasne, co se v poslednich admin upravach zmenilo.

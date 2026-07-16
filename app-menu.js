@@ -855,6 +855,42 @@ function getAdminMonthlyWorkflowItems(monthKey) {
   };
 }
 
+function adminNextStepItemHtml(item) {
+  const state = String(item && item.state || 'todo').trim() || 'todo';
+  const action = String(item && item.action || '').trim();
+  const button = action
+    ? '<button type="button" class="appMenuAction adminNextStepAction" data-admin-action="' + escapeHtml(action) + '">' + escapeHtml(item.actionLabel || 'Otevřít') + '</button>'
+    : '';
+  return [
+    '<div class="adminNextStepItem is' + escapeHtml(state.charAt(0).toUpperCase() + state.slice(1)) + '">',
+    '  <div class="adminNextStepText">',
+    '    <div class="adminNextStepTitle">' + escapeHtml(item && item.title || '') + '</div>',
+    '    <div class="smallText">' + escapeHtml(item && item.detail || '') + '</div>',
+    '  </div>',
+    button,
+    '</div>'
+  ].join('');
+}
+
+function buildAdminNextStepsHtml(monthKey) {
+  const workflow = getAdminMonthlyWorkflowItems(monthKey);
+  const items = Array.isArray(workflow.items) ? workflow.items : [];
+  const needsAttention = items.filter((item) => item && /^(warn|todo)$/i.test(String(item.state || '')));
+  const usefulInfo = items.filter((item) => item && /^info$/i.test(String(item.state || '')));
+  const selected = (needsAttention.length ? needsAttention : usefulInfo.length ? usefulInfo : items).slice(0, 3);
+  if (!selected.length) return '';
+  const readyText = needsAttention.length
+    ? 'Nejbližší kroky podle aktuálního stavu. Blok nic neukládá, jen vede do správné admin sekce.'
+    : 'Aktuální stav nevypadá kriticky. Přesto tady zůstávají nejbližší kontrolní kroky pro správce.';
+  return [
+    '<div class="adminNextSteps">',
+    '  <div class="appMenuSubTitle">Co teď zkontrolovat</div>',
+    '  <div class="smallText uMb10">' + escapeHtml(readyText) + '</div>',
+    selected.map(adminNextStepItemHtml).join(''),
+    '</div>'
+  ].join('');
+}
+
 function buildAdminMonthlyWorkflowHtml(monthKey) {
   const workflow = getAdminMonthlyWorkflowItems(monthKey);
   return [
@@ -1285,6 +1321,7 @@ function renderAdminMenuBody(body, section) {
     '    <div class="smallText" id="adminOnlineSaveStatus">Vyber sekci, kterou chceš upravit.</div>',
     '  </div>',
     buildAdminPermissionStatusHtml(),
+    buildAdminNextStepsHtml(monthKey),
     buildAdminHandoverChecklistHtml(monthKey),
     '  <div class="adminMenuSections">',
     buildAdminMenuSectionHtml('1. Provoz před rozpisem', 'Co musí sedět před generováním dalšího měsíce.', [
