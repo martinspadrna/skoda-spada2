@@ -1,3 +1,10 @@
+## RaK 1.2 (1.219)
+
+- Administrace / Dovolená / odstávky: přidaný admin-only souhrn `Stav dovolené / odstávek`, který ukazuje počet období, aktivní nebo nejbližší období, délku a odpočet směn D.
+- Dovolená / odstávky: souhrn se přepočítává podle rozepsaných řádků ještě před uložením a upozorní na chybné pořadí od-do.
+- Smoke guard: `app-usage-smoke-v963.js` hlídá nový stav dovolené/odstávek, jeho živé přepočítání a responsive admin-only styl.
+- Release metadata sjednocená na `RaK 1.2 (1.219)`, technická verze `1.2.219`, cache `v1.2-1.219`.
+
 ## RaK 1.2 (1.218)
 
 - Administrace / Přesčasy: přidaný admin-only souhrn `Stav přesčasů`, který ukazuje celkový počet termínů, budoucí termíny, nejbližší přesčas a připomínku ručního uložení.

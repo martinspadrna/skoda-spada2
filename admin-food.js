@@ -132,6 +132,125 @@ function mergeAdminFoodScheduleSettingsRows(foodSettings) {
   return rows;
 }
 
+function adminVacationStatusNow() {
+  return new Date();
+}
+
+function adminVacationNormalizePeriodForStatus(period) {
+  const src = period && typeof period === 'object' ? period : {};
+  const label = String(src.label || src.name || '').trim();
+  const start = src.start instanceof Date ? src.start : (typeof parseVacationCountdownDateTime === 'function' ? parseVacationCountdownDateTime(src.start || src.startText || '') : new Date(String(src.start || '').replace('T', ' ')));
+  const end = src.end instanceof Date ? src.end : (typeof parseVacationCountdownDateTime === 'function' ? parseVacationCountdownDateTime(src.end || src.endText || '') : new Date(String(src.end || '').replace('T', ' ')));
+  if (!label || !(start instanceof Date) || !(end instanceof Date) || Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) return null;
+  return {
+    label,
+    countdownLabel: String(src.countdownLabel || src.countdown_label || label).trim(),
+    workLabel: String(src.workLabel || src.work_label || label).trim(),
+    start,
+    end
+  };
+}
+
+function adminVacationReadPeriodsFromRoot(root) {
+  const scope = root || document.getElementById('appMenuBody') || document;
+  const rows = scope.querySelectorAll ? scope.querySelectorAll('tr[data-vacation-period-row]') : [];
+  const periods = [];
+  rows.forEach((tr) => {
+    const label = String(tr.querySelector('[data-vacation-field="label"]')?.value || '').trim();
+    const start = String(tr.querySelector('[data-vacation-field="start"]')?.value || '').trim();
+    const end = String(tr.querySelector('[data-vacation-field="end"]')?.value || '').trim();
+    const normalized = adminVacationNormalizePeriodForStatus({ label, start, end });
+    if (normalized) periods.push(normalized);
+  });
+  return periods.sort((a, b) => a.start.getTime() - b.start.getTime());
+}
+
+function adminVacationFormatStatusDateTime(value) {
+  const date = value instanceof Date ? value : adminVacationNormalizePeriodForStatus({ label: 'x', start: value, end: value })?.start;
+  if (!(date instanceof Date) || Number.isNaN(date.getTime())) return '';
+  return String(date.getDate()) + '.' + String(date.getMonth() + 1) + '.' + date.getFullYear() + ' ' + String(date.getHours()).padStart(2, '0') + ':' + String(date.getMinutes()).padStart(2, '0');
+}
+
+function adminVacationFormatDurationDays(start, end) {
+  if (!(start instanceof Date) || !(end instanceof Date) || end <= start) return '';
+  const days = Math.max(1, Math.ceil((end.getTime() - start.getTime()) / 86400000));
+  return String(days) + ' ' + (days === 1 ? 'den' : (days >= 2 && days <= 4 ? 'dny' : 'dní'));
+}
+
+function adminVacationStatusItemHtml(label, value, detail, state) {
+  const safeState = state || 'ok';
+  return [
+    '<div class="adminVacationStatusItem is' + escapeHtml(safeState.charAt(0).toUpperCase() + safeState.slice(1)) + '">',
+    '  <span>' + escapeHtml(label || '') + '</span>',
+    '  <b>' + escapeHtml(value || '') + '</b>',
+    detail ? '  <small>' + escapeHtml(detail) + '</small>' : '',
+    '</div>'
+  ].join('');
+}
+
+function buildAdminVacationCountdownStatusHtml(periods) {
+  const now = adminVacationStatusNow();
+  const list = (Array.isArray(periods) ? periods : []).map(adminVacationNormalizePeriodForStatus).filter(Boolean);
+  const validPeriods = list.filter((period) => period.end > period.start);
+  const active = validPeriods.find((period) => now >= period.start && now < period.end) || null;
+  const future = validPeriods.filter((period) => period.start > now);
+  const nearest = future[0] || null;
+  const invalidOrder = list.filter((period) => period.end <= period.start).length;
+  const target = active || nearest;
+  let shiftText = '';
+  if (target && !active && typeof getVacationCountdownTeamShiftCount === 'function') {
+    const count = getVacationCountdownTeamShiftCount(now, target.start, 'D');
+    shiftText = typeof formatVacationCountdownShiftCountValue === 'function'
+      ? formatVacationCountdownShiftCountValue(count)
+      : String(Math.max(0, Math.round(count))) + ' směn';
+  }
+  const items = [
+    {
+      label: 'Období',
+      value: String(list.length) + '×',
+      detail: invalidOrder ? ('Zkontroluj pořadí od-do: ' + String(invalidOrder) + '×.') : 'Prázdné řádky se neukládají.',
+      state: list.length && !invalidOrder ? 'ok' : 'warn'
+    },
+    {
+      label: active ? 'Aktivní teď' : 'Nejbližší',
+      value: target ? target.label : 'není',
+      detail: target ? (adminVacationFormatStatusDateTime(target.start) + ' - ' + adminVacationFormatStatusDateTime(target.end)) : 'Doplň nejbližší dovolenou nebo odstávku.',
+      state: target ? 'ok' : 'warn'
+    },
+    {
+      label: 'Délka',
+      value: target ? adminVacationFormatDurationDays(target.start, target.end) : '—',
+      detail: active ? 'Během aktivního období se směna bere jako volno.' : 'Home karta bere nejbližší nadcházející období.',
+      state: target ? 'ok' : 'warn'
+    },
+    {
+      label: 'Směna D',
+      value: active ? '0 směn' : (shiftText || '—'),
+      detail: active ? 'Období právě běží.' : 'Počítá se z rozpisu, pokud je měsíc vytvořený, jinak z rotačního cyklu.',
+      state: target ? 'ok' : 'info'
+    }
+  ];
+  return [
+    '<div class="adminVacationStatus" id="adminVacationStatus">',
+    '  <div class="appMenuSubTitle">Stav dovolené / odstávek</div>',
+    '  <div class="smallText uMb10">Souhrn vychází z řádků níže a ukazuje, co uvidí home panel Dovolená.</div>',
+    '  <div class="adminVacationStatusGrid">',
+    items.map((item) => adminVacationStatusItemHtml(item.label, item.value, item.detail, item.state)).join(''),
+    '  </div>',
+    '</div>'
+  ].join('');
+}
+
+function adminVacationRefreshStatus(root) {
+  const scope = root || document.getElementById('appMenuBody') || document;
+  const box = scope.querySelector ? scope.querySelector('#adminVacationStatus') : null;
+  if (!box) return;
+  const wrap = document.createElement('div');
+  wrap.innerHTML = buildAdminVacationCountdownStatusHtml(adminVacationReadPeriodsFromRoot(scope));
+  const next = wrap.firstElementChild;
+  if (next) box.replaceWith(next);
+}
+
 function buildAdminVacationCountdownSettingsHtml() {
   const snapshot = (typeof getVacationCountdownAdminSettingsSnapshot === 'function') ? getVacationCountdownAdminSettingsSnapshot() : { periods: [] };
   const periods = snapshot && Array.isArray(snapshot.periods) ? snapshot.periods : [];
@@ -153,6 +272,7 @@ function buildAdminVacationCountdownSettingsHtml() {
     ].join('');
   }).join('');
   return [
+    buildAdminVacationCountdownStatusHtml(periods),
     '<div class="tableWrap appMenuTableWrap uMt8">',
     '  <table class="appMenuTable appMenuAdminTable appMenuAdminTableDense adminVacationCountdownTable">',
     '    <thead><tr><th>Název</th><th>Od</th><th>Do</th></tr></thead>',

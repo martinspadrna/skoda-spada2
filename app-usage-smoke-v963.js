@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// RaK 1.2 (1.218) – smoke test přehledu připojení + Dashboard/appearance contract guard.
+// RaK 1.2 (1.219) – smoke test přehledu připojení + Dashboard/appearance contract guard.
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
@@ -224,12 +224,12 @@ const dashboardReleaseIsolationGuardV198 = Object.freeze({
 });
 
 const releaseMetadataContractV199 = Object.freeze({
-  displayVersion: '1.2 (1.218)',
-  appLabel: 'RaK 1.2 (1.218)',
-  packageVersion: '1.2.218',
-  cacheVersion: 'v1.2-1.218',
+  displayVersion: '1.2 (1.219)',
+  appLabel: 'RaK 1.2 (1.219)',
+  packageVersion: '1.2.219',
+  cacheVersion: 'v1.2-1.219',
   realtimeChannel: 'rak-public-live-v1-2-1-126',
-  changelogHeader: '## RaK 1.2 (1.218)',
+  changelogHeader: '## RaK 1.2 (1.219)',
   previousBuildFragments: Object.freeze(['1.2 (1.138)', '1.2.138', 'v1.2-1.138', '1.2 (1.137)', '1.2.137', 'v1.2-1.137', '1.2 (1.118)', '1.2.118', 'v1.2-1.118', 'rak-public-live-v1-2-1-118'])
 });
 
@@ -338,8 +338,8 @@ function assertDashboardReleaseIsolationGuardV198() {
 function assertReleaseMetadataContractV199() {
   const contract = releaseMetadataContractV199;
   assertIncludes(exportJs, 'RAK_RELEASE_METADATA_CONTRACT_V199', 'export.js musí obsahovat release metadata contract v1.99');
-  assertIncludes(exportJs, "displayVersion: '1.2 (1.218)'", 'Release contract v export.js musí držet display verzi 1.105');
-  assertIncludes(exportJs, "packageVersion: '1.2.218'", 'Release contract v export.js musí držet package verzi 1.2.114');
+  assertIncludes(exportJs, "displayVersion: '1.2 (1.219)'", 'Release contract v export.js musí držet display verzi 1.105');
+  assertIncludes(exportJs, "packageVersion: '1.2.219'", 'Release contract v export.js musí držet package verzi 1.2.114');
   assert(packageJson.version === contract.packageVersion, `package.json version drift: čekám ${contract.packageVersion}, mám ${packageJson.version}`);
   assertIncludes(coreJs, `const APP_VERSION = "${contract.displayVersion}";`, 'core.js APP_VERSION není sjednocený s 1.105');
   assertIncludes(serviceWorkerJs, `const CACHE_VERSION = '${contract.cacheVersion}';`, 'sw.js CACHE_VERSION není sjednocený s 1.105');
@@ -1309,7 +1309,12 @@ assertIncludes(appearanceThemeJs, '"id": "light-zigzag"', 'Musí existovat zákl
   assertNotIncludes(dashboardPolishCss, 'font-size:clamp(9px,2.4vw,11px) !important;', 'Popisek směna D nesmí mít vlastní menší velikost než k CZD');
   assertIncludes(dashboardPolishCss, 'border-left:1px solid rgba(174,255,174,.34)', 'Karta Dovolená musí mít svislý předěl před směnou D');
   assertIncludes(adminFoodJs, 'function buildAdminVacationCountdownSettingsHtml', 'Administrace musi mit samostatny formular dovolene/odstavek');
+  assertIncludes(adminFoodJs, 'function buildAdminVacationCountdownStatusHtml', 'Administrace musi mit souhrn stavu dovolene/odstavek');
+  assertIncludes(adminFoodJs, 'function adminVacationRefreshStatus', 'Souhrn dovolene/odstavek se musi umet prepocitat podle rozepsanych radku');
+  assertIncludes(adminFoodJs, 'adminVacationReadPeriodsFromRoot', 'Souhrn dovolene/odstavek musi vychazet z aktualnich DOM radku pred ulozenim');
   assertIncludes(adminFoodJs, 'data-vacation-period-row', 'Formular dovolene/odstavek musi ukladat vice pojmenovanych obdobi od-do');
+  assertIncludes(menuJs, 'adminVacationRefreshStatus(body)', 'Admin menu musi prepocitat souhrn dovolene/odstavek pri zmene pole');
+  assertIncludes(css, '.adminVacationStatusGrid', 'Souhrn dovolene/odstavek musi mit vlastni responsive admin styl');
   assertIncludes(menuJs, "adminAction === 'open-vacation'", 'Admin menu musi otevirat samostatny panel dovolene/odstavek');
   assertIncludes(menuJs, "adminAction === 'save-vacation-countdown'", 'Admin menu musi umet ulozit nastaveni dovolene/odstavek');
   assertIncludes(supabaseBridgeJs, 'VACATION_COUNTDOWN_SETTINGS', 'Supabase ukladani musi podporovat samostatny radek dovolene/odstavek mimo starsi RPC kategorie');

@@ -1883,6 +1883,9 @@ function bindAppMenuHandlers(body) {
     if (target && target.matches && target.matches('[data-rotation-overtime-note]') && typeof adminRotationRefreshOvertimeStatus === 'function') {
       adminRotationRefreshOvertimeStatus(body);
     }
+    if (target && target.matches && target.matches('[data-vacation-field]') && typeof adminVacationRefreshStatus === 'function') {
+      adminVacationRefreshStatus(body);
+    }
   }, true);
 
   body.addEventListener('change', (event) => {
@@ -1893,6 +1896,9 @@ function bindAppMenuHandlers(body) {
     }
     if (target.matches('[data-rotation-overtime-to]') && typeof adminRotationRefreshOvertimeStatus === 'function') {
       adminRotationRefreshOvertimeStatus(body);
+    }
+    if (target.matches('[data-vacation-field]') && typeof adminVacationRefreshStatus === 'function') {
+      adminVacationRefreshStatus(body);
     }
   }, true);
 
