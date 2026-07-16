@@ -1,3 +1,10 @@
+## RaK 1.2 (1.246)
+
+- Administrace / Predani spravy: seznam `Co jeste vyresit pred predanim` jde nově stahnout samostatne jako textovy soubor `RaK_ukoly_pred_predanim_...`.
+- Predavaci podklady: rychle exporty na admin uvodu obsahují i samostatne `Ukoly`, aby novy spravce nemusel stahovat cely balicek jen kvuli nejblizsim krokum.
+- Smoke guard: `app-usage-smoke-v963.js` hlida tlacitko, handler a nazev souboru samostatneho exportu ukolu pred predanim.
+- Release metadata sjednocená na `RaK 1.2 (1.246)`, technická verze `1.2.246`, cache `v1.2-1.246`.
+
 ## RaK 1.2 (1.245)
 
 - Administrace / Predani spravy: pridany seznam `Co jeste vyresit pred predanim`, ktery bere varovani z pripravenosti predani a vede spravce do spravne admin sekce.

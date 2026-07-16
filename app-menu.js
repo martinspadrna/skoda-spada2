@@ -540,6 +540,25 @@ function buildAdminHandoverTodoText(monthKey) {
   return lines.join('\n');
 }
 
+function downloadAdminHandoverTodoText() {
+  const monthKey = getAdminSelectedMonthKey();
+  const text = buildAdminHandoverTodoText(monthKey);
+  const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  const dateKey = new Date().toISOString().slice(0, 10);
+  a.href = url;
+  a.download = 'RaK_ukoly_pred_predanim_' + dateKey + '.txt';
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(() => {
+    try { URL.revokeObjectURL(url); } catch (err) {}
+    try { a.remove(); } catch (err) {}
+  }, 0);
+  const status = document.getElementById('adminOnlineSaveStatus');
+  if (status) status.textContent = 'Úkoly před předáním staženy jako textový soubor.';
+}
+
 function buildAdminHandoverReadinessSnapshot(monthKey) {
   const selectedMonth = String(monthKey || getAdminSelectedMonthKey() || '').trim();
   const rows = Array.isArray(app && app.machineSettingsRows) ? app.machineSettingsRows : [];
@@ -908,11 +927,7 @@ function buildAdminHandoverStatusText(monthKey) {
   const specialDaysCount = adminGuideUpcomingSpecialDaysCount();
   const backupsSnapshot = app && app.adminRotationBackupsSnapshot && typeof app.adminRotationBackupsSnapshot === 'object' ? app.adminRotationBackupsSnapshot : null;
   const backups = backupsSnapshot && Array.isArray(backupsSnapshot.backups) ? backupsSnapshot.backups : [];
-  let activeAdmins = 1;
-  try {
-    const adminSettings = typeof rakAdminGetAccountsSettings === 'function' ? rakAdminGetAccountsSettings() : null;
-    activeAdmins += (Array.isArray(adminSettings && adminSettings.admins) ? adminSettings.admins : []).filter((entry) => entry && entry.enabled !== false).length;
-  } catch (err) {}
+  const activeAdmins = adminHandoverActiveAdminCount();
   const permissionStatus = adminPermissionStatusSnapshot();
   const version = formatRakDisplayVersion((typeof app !== 'undefined' && app.version) || (typeof APP_VERSION !== 'undefined' ? APP_VERSION : ''));
   return [
@@ -1273,6 +1288,7 @@ function buildAdminHandoverExportsHtml(monthKey) {
   const monthLabel = String(monthKey || getAdminSelectedMonthKey() || '').trim() || 'nevybrán';
   const actions = [
     { action: 'download-handover-package', label: 'Balíček' },
+    { action: 'download-handover-todo', label: 'Úkoly' },
     { action: 'download-admin-manual', label: 'Příručka' },
     { action: 'download-monthly-workflow', label: 'Postup' },
     { action: 'download-settings-map', label: 'Mapa' }
@@ -2104,6 +2120,7 @@ function renderAdminMenuBody(body, section) {
     buildAdminHandoverRunbookHtml(monthKey),
     '  <div class="appMenuActionRow">',
     '    <button type="button" class="appMenuAction isActive" data-admin-action="download-handover-package">Stáhnout balíček</button>',
+    '    <button type="button" class="appMenuAction isActive" data-admin-action="download-handover-todo">Stáhnout úkoly</button>',
     '    <button type="button" class="appMenuAction isActive" data-admin-action="download-handover-status">Stáhnout stav</button>',
     '    <button type="button" class="appMenuAction" data-admin-action="download-monthly-workflow">Stáhnout postup</button>',
     '    <button type="button" class="appMenuAction" data-admin-action="load-machines">Načíst online</button>',
@@ -2647,6 +2664,10 @@ function bindAppMenuHandlers(body) {
       }
       if (adminAction === 'download-handover-status') {
         downloadAdminHandoverStatusText();
+        return;
+      }
+      if (adminAction === 'download-handover-todo') {
+        downloadAdminHandoverTodoText();
         return;
       }
       if (adminAction === 'download-handover-package') {
