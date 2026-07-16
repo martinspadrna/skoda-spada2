@@ -1,3 +1,11 @@
+## RaK 1.2 (1.287)
+
+- Předání správy: stažené admin podklady mají jednotnou hlavičku s verzí, časem vytvoření, admin účtem, rolí a stavem odemčení.
+- Předání správy: úkoly, připravenost, stav, balíček, měsíční postup, mapa nastavení i příručka používají stejný zdroj metadat.
+- Předání správy: podklady dál nestahují hesla, jen zapisují, pod jakým admin účtem export vznikl.
+- Smoke guard: `app-usage-smoke-v963.js` hlídá společnou exportní hlavičku a její použití ve všech předávacích textech.
+- Release metadata sjednocena na `RaK 1.2 (1.287)`, technicka verze `1.2.287`, cache `v1.2-1.287`; loader modulu ma cache znacku `1.2.287`.
+
 ## RaK 1.2 (1.286)
 
 - Kontakt: verejne menu Kontakt pouziva z admin nastaveni klikaci `tel:` odkaz pro telefon a `mailto:` odkaz pro e-mail.

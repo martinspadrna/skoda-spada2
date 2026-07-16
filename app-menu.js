@@ -8,6 +8,33 @@ function formatRakDisplayVersion(version) {
   return /^RaK\s+/i.test(text) ? text : ('RaK ' + text);
 }
 
+function getRakAdminExportMetadataSnapshot(monthKey) {
+  const permissionStatus = typeof adminPermissionStatusSnapshot === 'function'
+    ? adminPermissionStatusSnapshot()
+    : {};
+  return {
+    version: formatRakDisplayVersion((typeof app !== 'undefined' && app.version) || (typeof APP_VERSION !== 'undefined' ? APP_VERSION : '')),
+    generatedAt: new Date().toLocaleString('cs-CZ'),
+    activeAccountId: String(permissionStatus && permissionStatus.activeAccountId || '').trim(),
+    roleLabel: String(permissionStatus && permissionStatus.roleLabel || 'nezjištěno').trim() || 'nezjištěno',
+    unlocked: !!(permissionStatus && permissionStatus.unlocked),
+    monthKey: String(monthKey || '').trim()
+  };
+}
+
+function buildRakAdminExportMetadataLines(title, options = {}) {
+  const meta = getRakAdminExportMetadataSnapshot(options.monthKey);
+  const extraLines = Array.isArray(options.extraLines) ? options.extraLines : [];
+  return [
+    String(title || 'RaK - Admin export'),
+    'Verze: ' + meta.version,
+    'Vytvořeno: ' + meta.generatedAt,
+    'Vytvořil admin účet: ' + (meta.activeAccountId || 'nezjištěn'),
+    'Role exportu: ' + meta.roleLabel,
+    'Admin odemčen: ' + (meta.unlocked ? 'ano' : 'ne')
+  ].concat(extraLines.filter(Boolean));
+}
+
 const RAK_ADMIN_EXPORT_IMPORT_EXCEL_COPY_CONTRACT_V1139 = Object.freeze({
   version: '1.2 (1.155)',
   scope: 'administrace-export-import-rotation-excel-copy-layout',
@@ -1269,9 +1296,11 @@ function buildAdminHandoverTodoText(monthKey) {
   const warnings = snapshot.checks.filter((item) => item && item.state === 'warn');
   const infos = snapshot.checks.filter((item) => item && item.state === 'info');
   const selected = warnings.length ? warnings : infos;
-  const lines = [
-    'Co jeste vyresit pred predanim'
-  ];
+  const lines = buildRakAdminExportMetadataLines('RaK - Ukoly pred predanim', {
+    monthKey: snapshot.selectedMonth,
+    extraLines: ['Mesic: ' + (snapshot.selectedMonth || 'nevybran')]
+  });
+  lines.push('', 'Co jeste vyresit pred predanim');
   if (!selected.length) {
     lines.push('- Bez blokujicich varovani.');
   } else {
@@ -1441,12 +1470,16 @@ function buildAdminHandoverReadinessHtml(monthKey) {
 
 function buildAdminHandoverReadinessText(monthKey) {
   const snapshot = buildAdminHandoverReadinessSnapshot(monthKey);
-  const lines = [
+  const lines = buildRakAdminExportMetadataLines('RaK - Pripravenost predani', {
+    monthKey: snapshot.selectedMonth,
+    extraLines: ['Mesic: ' + (snapshot.selectedMonth || 'nevybran')]
+  });
+  lines.push(
+    '',
     'Pripravenost predani',
-    '- Mesic: ' + (snapshot.selectedMonth || 'nevybran'),
     '- Stav: ' + (snapshot.ready ? 'bez blokujicich varovani' : 'zkontrolovat varovani'),
     '- Souhrn: ' + String(snapshot.okCount) + '/' + String(snapshot.totalCount) + ' OK, varovani ' + String(snapshot.warnCount) + ', info ' + String(snapshot.infoCount)
-  ];
+  );
   snapshot.checks.forEach((item) => {
     lines.push('- ' + String(item.title || 'Kontrola') + ': ' + String(item.value || '') + ' - ' + String(item.detail || ''));
   });
@@ -1800,11 +1833,10 @@ function buildAdminHandoverStatusText(monthKey) {
   const payrollSnapshot = adminHandoverPayrollSnapshot();
   const fullSettingsBackupSnapshot = adminHandoverFullSettingsBackupSnapshot();
   const permissionStatus = adminPermissionStatusSnapshot();
-  const version = formatRakDisplayVersion((typeof app !== 'undefined' && app.version) || (typeof APP_VERSION !== 'undefined' ? APP_VERSION : ''));
-  return [
-    'RaK - Stav předání správy',
-    'Verze: ' + version,
-    'Vytvořeno: ' + new Date().toLocaleString('cs-CZ'),
+  return buildRakAdminExportMetadataLines('RaK - Stav předání správy', {
+    monthKey: selectedMonth,
+    extraLines: ['Měsíc: ' + (selectedMonth || 'nevybrán')]
+  }).concat([
     '',
     'Souhrn',
     buildAdminHandoverTodoText(selectedMonth).trim(),
@@ -1846,7 +1878,7 @@ function buildAdminHandoverStatusText(monthKey) {
     '- Po uložení zkontrolovat zelený stav synchronizace na hlavní stránce.',
     '- Běžný uživatel nemá mít možnost měnit rozpis ani nastavení mimo administraci.',
     ''
-  ].join('\n');
+  ]).join('\n');
 }
 
 function downloadAdminHandoverStatusText() {
@@ -1870,12 +1902,10 @@ function downloadAdminHandoverStatusText() {
 
 function buildAdminHandoverPackageText(monthKey) {
   const selectedMonth = String(monthKey || getAdminSelectedMonthKey() || '').trim();
-  const version = formatRakDisplayVersion((typeof app !== 'undefined' && app.version) || (typeof APP_VERSION !== 'undefined' ? APP_VERSION : ''));
-  return [
-    'RaK - Balicek predani spravy',
-    'Verze: ' + version,
-    'Mesic: ' + (selectedMonth || 'nevybran'),
-    'Vytvoreno: ' + new Date().toLocaleString('cs-CZ'),
+  return buildRakAdminExportMetadataLines('RaK - Balicek predani spravy', {
+    monthKey: selectedMonth,
+    extraLines: ['Mesic: ' + (selectedMonth || 'nevybran')]
+  }).concat([
     '',
     'Pravidlo',
     '- Tenhle soubor je jen predavaci podklad. Nic sam nemeni ani neuklada.',
@@ -1897,7 +1927,7 @@ function buildAdminHandoverPackageText(monthKey) {
     buildAdminManualText(selectedMonth),
     '============================================================',
     buildAdminSettingsMapText()
-  ].join('\n');
+  ]).join('\n');
 }
 
 function downloadAdminHandoverPackageText() {
@@ -2464,20 +2494,19 @@ function buildAdminMonthlyWorkflowHtml(monthKey) {
 
 function buildAdminMonthlyWorkflowText(monthKey) {
   const workflow = getAdminMonthlyWorkflowItems(monthKey);
-  const version = formatRakDisplayVersion((typeof app !== 'undefined' && app.version) || (typeof APP_VERSION !== 'undefined' ? APP_VERSION : ''));
   const stateLabels = { ok: 'OK', warn: 'zkontrolovat', info: 'podle potřeby', todo: 'čeká' };
-  const lines = [
-    'RaK - Měsíční postup správy',
-    'Verze: ' + version,
-    'Měsíc: ' + workflow.monthLabel,
-    'Vytvořeno: ' + new Date().toLocaleString('cs-CZ'),
+  const lines = buildRakAdminExportMetadataLines('RaK - Měsíční postup správy', {
+    monthKey,
+    extraLines: ['Měsíc: ' + workflow.monthLabel]
+  });
+  lines.push(
     '',
     'Pravidlo',
     '- Tenhle soubor nic sám nemění. Každou změnu udělej v administraci a ulož v konkrétní sekci.',
     '- Běžní uživatelé nemají mít možnost měnit rozpis, provoz ani nastavení.',
     '',
     'Kroky'
-  ];
+  );
   workflow.items.forEach((item, index) => {
     const state = String(item && item.state || 'todo').trim() || 'todo';
     lines.push(String(index + 1) + '. ' + String(item && item.title || 'Krok'));
@@ -2876,12 +2905,9 @@ function buildAdminSettingsMapHtml() {
 
 function buildAdminSettingsMapText() {
   const items = getAdminSettingsMapItems();
-  const version = formatRakDisplayVersion((typeof app !== 'undefined' && app.version) || (typeof APP_VERSION !== 'undefined' ? APP_VERSION : ''));
   const ownerAccess = typeof rakAdminCanManageAdmins === 'function' && rakAdminCanManageAdmins();
-  const lines = [
-    'RaK - Kde co upravit',
-    'Verze: ' + version,
-    'Vytvořeno: ' + new Date().toLocaleString('cs-CZ'),
+  const lines = buildRakAdminExportMetadataLines('RaK - Kde co upravit');
+  lines.push(
     '',
     'Pravidlo',
     '- Tenhle soubor je jen mapa administrace. Nic sám nemění ani neukládá.',
@@ -2890,7 +2916,7 @@ function buildAdminSettingsMapText() {
     '- Správci: ' + (ownerAccess ? 'hlavní admin může měnit další správce.' : 'nižší admin nemůže měnit seznam správců ani hesla.'),
     '',
     'Oblasti'
-  ];
+  );
   items.forEach((item, index) => {
     const actions = Array.isArray(item && item.actions) ? item.actions : [];
     lines.push(String(index + 1) + '. ' + String(item && item.title || 'Oblast'));
@@ -2929,15 +2955,13 @@ function downloadAdminSettingsMapText() {
 
 function buildAdminManualText(monthKey) {
   const monthLabel = String(monthKey || '').trim() || 'vybraný měsíc';
-  const version = formatRakDisplayVersion((typeof app !== 'undefined' && app.version) || (typeof APP_VERSION !== 'undefined' ? APP_VERSION : ''));
-  const generatedAt = new Date().toLocaleString('cs-CZ');
   const ownerLine = (typeof rakAdminCanManageAdmins === 'function' && rakAdminCanManageAdmins())
     ? 'Jsi hlavní admin: můžeš přidat další správce a nastavit jim heslo.'
     : 'Dalšího admina může přidat jen hlavní admin účet. Nižší admin může spravovat pracovní části aplikace.';
-  return [
-    'RaK - Příručka správce',
-    'Verze: ' + version,
-    'Vytvořeno: ' + generatedAt,
+  return buildRakAdminExportMetadataLines('RaK - Příručka správce', {
+    monthKey,
+    extraLines: ['Měsíc: ' + monthLabel]
+  }).concat([
     '',
     'Důležité pravidlo',
     '- Tahle příručka nic sama nemění. Každou změnu je potřeba udělat v administraci a uložit v konkrétní sekci.',
@@ -2975,7 +2999,7 @@ function buildAdminManualText(monthKey) {
     '- Po uložení zkontroluj stav synchronizace na hlavní stránce.',
     '- V administraci můžeš otevřít Přehled připojení, Reporty chyb a Servis / synchronizace.',
     ''
-  ].join('\n');
+  ]).join('\n');
 }
 
 function downloadAdminManualText() {
