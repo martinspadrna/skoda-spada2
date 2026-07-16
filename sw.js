@@ -1,6 +1,6 @@
-// RaK 1.2 (1.289) – sw.
-const CACHE_VERSION = 'v1.2-1.289';
-const SW_APP_VERSION = '1.2 (1.289)';
+// RaK 1.2 (1.290) – sw.
+const CACHE_VERSION = 'v1.2-1.290';
+const SW_APP_VERSION = '1.2 (1.290)';
 const STATIC_CACHE = `rotace-static-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `rotace-runtime-${CACHE_VERSION}`;
 const APP_SHELL = [

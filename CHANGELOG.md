@@ -1,3 +1,12 @@
+## RaK 1.2 (1.290)
+
+- Pracovníci: nová admin sekce `Pracovníci` umožňuje přidávat a odebírat lidi, kteří se počítají v rozpisu, generátoru a statistikách (dřív jen natvrdo `KNOWN_STAT_NAMES` v core.js).
+- Pracovníci: seznam se ukládá online přes `machine_settings` (kategorie `worker_roster_settings`), vestavěná jména zůstávají výchozí, dokud je hlavní nebo nižší admin poprvé neuloží.
+- Správci: hesla nižších adminů se už neukládají jako čistý text – ukládá se jen salted SHA-256 hash, formulář heslo při načtení nezobrazuje (prázdné pole = beze změny).
+- Správci: řádek správce jde nově vyprázdnit tlačítkem × přímo v tabulce, ne jen mazáním pole ručně.
+- Bezpečnost: úplná záloha nastavení a online tabulka správců už neobsahují plaintext hesla nižších adminů. Heslo hlavního admina zůstává jako sdílený PIN pro zápisy do Supabase (nejde zahashovat bez přepsání celého ověřování na serveru), proto ho dál nikam nepiš mimo appku.
+- Release metadata sjednocena na `RaK 1.2 (1.290)`, technicka verze `1.2.290`, cache `v1.2-1.290`; loader modulu ma cache znacku `1.2.290`.
+
 ## RaK 1.2 (1.289)
 
 - Předání správy: stroje a kalkulačky mají samostatný stav v připravenosti, kontrole předání a textovém stavu.

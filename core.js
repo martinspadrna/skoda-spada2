@@ -1,7 +1,7 @@
-// RaK 1.2 (1.289) – core stav, verze a sdílené helpery aplikace.
+// RaK 1.2 (1.290) – core stav, verze a sdílené helpery aplikace.
 
 const APP_KEY = "rotace_kalkulacky_state_v123";
-const APP_VERSION = "1.2 (1.289)";
+const APP_VERSION = "1.2 (1.290)";
 window.APP_VERSION = APP_VERSION;
 const ROTATION_BUILD = "2026-06-03-" + APP_VERSION;
 window.ROTATION_BUILD = ROTATION_BUILD;
@@ -515,6 +515,134 @@ function readAdminSpecialDaysSettingsFromDom() {
   });
   return normalizeRakSpecialDaysSettings({ days });
 }
+
+const RAK_WORKER_ROSTER_SETTINGS_KEY = 'WORKER_ROSTER_SETTINGS';
+const RAK_WORKER_ROSTER_SETTINGS_CATEGORY = 'worker_roster_settings';
+window.RAK_WORKER_ROSTER_SETTINGS_KEY = RAK_WORKER_ROSTER_SETTINGS_KEY;
+window.RAK_WORKER_ROSTER_SETTINGS_CATEGORY = RAK_WORKER_ROSTER_SETTINGS_CATEGORY;
+
+function rakWorkerRosterSettingsJson(row) {
+  if (row && row.settings_json && typeof row.settings_json === 'object') return row.settings_json;
+  try { return row && row.settings_json ? JSON.parse(String(row.settings_json)) : {}; }
+  catch (err) { return {}; }
+}
+
+function isRakWorkerRosterSettingsRow(row) {
+  const settings = rakWorkerRosterSettingsJson(row);
+  return String(row && row.category || '').trim() === RAK_WORKER_ROSTER_SETTINGS_CATEGORY
+    || String(row && row.machine_key || '').trim() === RAK_WORKER_ROSTER_SETTINGS_KEY
+    || String(settings && settings.stored_category || '').trim() === RAK_WORKER_ROSTER_SETTINGS_CATEGORY
+    || String(settings && settings.admin_settings_key || '').trim() === RAK_WORKER_ROSTER_SETTINGS_KEY;
+}
+
+function normalizeRakWorkerRosterSettings(settings) {
+  const raw = settings && typeof settings === 'object' ? settings : {};
+  const source = Array.isArray(raw.workers) ? raw.workers : (Array.isArray(raw.names) ? raw.names : []);
+  const workers = typeof adminRotationSplitGeneratorList === 'function'
+    ? adminRotationSplitGeneratorList(source)
+    : source.map((name) => String(name || '').trim()).filter(Boolean);
+  return {
+    type: RAK_WORKER_ROSTER_SETTINGS_CATEGORY,
+    custom: true,
+    workers
+  };
+}
+
+function getRakWorkerRosterSettingsRow() {
+  const rows = (typeof app !== 'undefined' && app && Array.isArray(app.machineSettingsRows)) ? app.machineSettingsRows : [];
+  return rows.find(isRakWorkerRosterSettingsRow) || null;
+}
+
+function getRakWorkerRosterSettings() {
+  const row = getRakWorkerRosterSettingsRow();
+  if (!row) return { type: RAK_WORKER_ROSTER_SETTINGS_CATEGORY, custom: false, workers: Array.from(KNOWN_STAT_NAMES) };
+  return normalizeRakWorkerRosterSettings(rakWorkerRosterSettingsJson(row));
+}
+
+function getActiveWorkerNames() {
+  const settings = getRakWorkerRosterSettings();
+  const names = Array.isArray(settings.workers) ? settings.workers : [];
+  return new Set(names.length ? names : Array.from(KNOWN_STAT_NAMES));
+}
+window.getActiveWorkerNames = getActiveWorkerNames;
+
+function makeRakWorkerRosterSettingsRow(settings) {
+  const safe = normalizeRakWorkerRosterSettings(settings);
+  return {
+    machine_key: RAK_WORKER_ROSTER_SETTINGS_KEY,
+    machine_code: 'APP',
+    machine_index: 'workers',
+    label: 'Pracovníci',
+    category: RAK_WORKER_ROSTER_SETTINGS_CATEGORY,
+    cycle_time: '',
+    speed: '',
+    dress_time: '',
+    dress_count: '',
+    settings_json: Object.assign({ machine: 'APP', index: 'workers' }, safe)
+  };
+}
+
+function mergeRakWorkerRosterSettingsRows(settings) {
+  const base = Array.isArray(app && app.machineSettingsRows) ? app.machineSettingsRows : [];
+  const rows = base.filter((row) => !isRakWorkerRosterSettingsRow(row));
+  rows.push(makeRakWorkerRosterSettingsRow(settings));
+  return rows;
+}
+window.mergeRakWorkerRosterSettingsRows = mergeRakWorkerRosterSettingsRows;
+
+function adminWorkerRosterStatusItemHtml(label, value, detail, state) {
+  const safeState = state || 'ok';
+  return [
+    '<div class="adminSpecialDaysStatusItem is' + escapeHtml(safeState.charAt(0).toUpperCase() + safeState.slice(1)) + '">',
+    '  <span>' + escapeHtml(label || '') + '</span>',
+    '  <b>' + escapeHtml(value || '') + '</b>',
+    detail ? '  <small>' + escapeHtml(detail) + '</small>' : '',
+    '</div>'
+  ].join('');
+}
+
+function buildAdminWorkerRosterStatusHtml(workers) {
+  const list = Array.isArray(workers) ? workers : [];
+  const defaults = Array.from(KNOWN_STAT_NAMES);
+  const removedDefaults = defaults.filter((name) => !list.includes(name));
+  const addedNames = list.filter((name) => !defaults.includes(name));
+  return [
+    '<div class="adminSpecialDaysStatus" id="adminWorkerRosterStatus">',
+    '  <div class="appMenuSubTitle">Stav pracovníků</div>',
+    '  <div class="smallText uMb10">Seznam určuje, kdo se počítá ve statistikách a rozpisu. Prázdné řádky se neukládají.</div>',
+    '  <div class="adminSpecialDaysStatusGrid">',
+    adminWorkerRosterStatusItemHtml('Aktivní', String(list.length) + '×', list.length ? 'Tolik lidí appka aktuálně zná.' : 'Seznam je prázdný, doplň aspoň jednoho pracovníka.', list.length ? 'ok' : 'warn'),
+    adminWorkerRosterStatusItemHtml('Noví oproti výchozím', addedNames.length ? addedNames.join(', ') : 'žádní', addedNames.length ? 'Přibyli oproti vestavěnému seznamu.' : 'Zatím jen vestavěná jména.', addedNames.length ? 'info' : 'ok'),
+    adminWorkerRosterStatusItemHtml('Chybí oproti výchozím', removedDefaults.length ? removedDefaults.join(', ') : 'žádní', removedDefaults.length ? 'Byli ve vestavěném seznamu, teď v aktivním seznamu nejsou.' : 'Nikdo z vestavěného seznamu nechybí.', removedDefaults.length ? 'warn' : 'ok'),
+    '  </div>',
+    '</div>'
+  ].join('');
+}
+
+function buildAdminWorkerRosterSettingsHtml() {
+  const settings = getRakWorkerRosterSettings();
+  const workers = Array.isArray(settings.workers) ? settings.workers : [];
+  return [
+    buildAdminWorkerRosterStatusHtml(workers),
+    '<div class="appMenuSettingsList">',
+    '  <label class="appMenuFieldLabel" for="adminWorkerRosterNames">Aktivní pracovníci (jedno jméno na řádek)</label>',
+    '  <textarea id="adminWorkerRosterNames" class="appMenuTextarea" rows="12">' + escapeHtml(workers.join('\n')) + '</textarea>',
+    '  <div class="smallText">Pro přidání napiš nové jméno na nový řádek. Pro odebrání jméno smaž a ulož. Jméno musí přesně odpovídat tomu, jak je napsané v rozpisu.</div>',
+    '</div>'
+  ].join('');
+}
+
+function readAdminWorkerRosterSettingsFromDom() {
+  const raw = String(document.getElementById('adminWorkerRosterNames')?.value || '');
+  const workers = typeof adminRotationSplitGeneratorList === 'function'
+    ? adminRotationSplitGeneratorList(raw)
+    : raw.split(/\n/).map((name) => name.trim()).filter(Boolean);
+  return normalizeRakWorkerRosterSettings({ workers });
+}
+
+window.getRakWorkerRosterSettings = getRakWorkerRosterSettings;
+window.buildAdminWorkerRosterSettingsHtml = buildAdminWorkerRosterSettingsHtml;
+window.readAdminWorkerRosterSettingsFromDom = readAdminWorkerRosterSettingsFromDom;
 
 function getSpecialWorkInfo(now) {
   const customSpecial = typeof getRakSpecialDayInfo === 'function' ? getRakSpecialDayInfo(now) : null;

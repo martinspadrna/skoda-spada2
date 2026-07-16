@@ -13,6 +13,61 @@ const RAK_ADMIN_PERSISTENT_SESSION_KEY = 'adminPersistentSessionV1';
 const RAK_ADMIN_DEVICE_ID_KEY = 'adminDeviceIdV1';
 const RAK_ADMIN_SESSION_MAX_AGE_MS = 180 * 24 * 60 * 60 * 1000;
 const RAK_ADMIN_SESSION_TOUCH_MS = 30 * 60 * 1000;
+const RAK_ADMIN_TRUSTED_SESSION_MARKER = '::rak-trusted-session::';
+
+// Synchronni SHA-256 (bez Web Crypto), aby hesla nizsich adminu nemusela byt
+// ulozena/porovnavana jako plaintext v Supabase radku ani v uplne zaloze nastaveni.
+function rakSha256Hex(input) {
+  const K = [
+    0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5, 0x3956c25b, 0x59f111f1, 0x923f82a4, 0xab1c5ed5,
+    0xd807aa98, 0x12835b01, 0x243185be, 0x550c7dc3, 0x72be5d74, 0x80deb1fe, 0x9bdc06a7, 0xc19bf174,
+    0xe49b69c1, 0xefbe4786, 0x0fc19dc6, 0x240ca1cc, 0x2de92c6f, 0x4a7484aa, 0x5cb0a9dc, 0x76f988da,
+    0x983e5152, 0xa831c66d, 0xb00327c8, 0xbf597fc7, 0xc6e00bf3, 0xd5a79147, 0x06ca6351, 0x14292967,
+    0x27b70a85, 0x2e1b2138, 0x4d2c6dfc, 0x53380d13, 0x650a7354, 0x766a0abb, 0x81c2c92e, 0x92722c85,
+    0xa2bfe8a1, 0xa81a664b, 0xc24b8b70, 0xc76c51a3, 0xd192e819, 0xd6990624, 0xf40e3585, 0x106aa070,
+    0x19a4c116, 0x1e376c08, 0x2748774c, 0x34b0bcb5, 0x391c0cb3, 0x4ed8aa4a, 0x5b9cca4f, 0x682e6ff3,
+    0x748f82ee, 0x78a5636f, 0x84c87814, 0x8cc70208, 0x90befffa, 0xa4506ceb, 0xbef9a3f7, 0xc67178f2
+  ];
+  let h0 = 0x6a09e667, h1 = 0xbb67ae85, h2 = 0x3c6ef372, h3 = 0xa54ff53a;
+  let h4 = 0x510e527f, h5 = 0x9b05688c, h6 = 0x1f83d9ab, h7 = 0x5be0cd19;
+  const rotr = (n, x) => (x >>> n) | (x << (32 - n));
+  const utf8 = unescape(encodeURIComponent(String(input == null ? '' : input)));
+  const bytes = [];
+  for (let i = 0; i < utf8.length; i += 1) bytes.push(utf8.charCodeAt(i) & 0xff);
+  const bitLen = bytes.length * 8;
+  bytes.push(0x80);
+  while (bytes.length % 64 !== 56) bytes.push(0);
+  for (let i = 7; i >= 0; i -= 1) bytes.push(Math.floor(bitLen / Math.pow(2, i * 8)) & 0xff);
+  for (let chunk = 0; chunk < bytes.length; chunk += 64) {
+    const w = new Array(64).fill(0);
+    for (let i = 0; i < 16; i += 1) {
+      w[i] = ((bytes[chunk + i * 4] << 24) | (bytes[chunk + i * 4 + 1] << 16) | (bytes[chunk + i * 4 + 2] << 8) | bytes[chunk + i * 4 + 3]) >>> 0;
+    }
+    for (let i = 16; i < 64; i += 1) {
+      const s0 = rotr(7, w[i - 15]) ^ rotr(18, w[i - 15]) ^ (w[i - 15] >>> 3);
+      const s1 = rotr(17, w[i - 2]) ^ rotr(19, w[i - 2]) ^ (w[i - 2] >>> 10);
+      w[i] = (w[i - 16] + s0 + w[i - 7] + s1) >>> 0;
+    }
+    let a = h0, b = h1, c = h2, d = h3, e = h4, f = h5, g = h6, h = h7;
+    for (let i = 0; i < 64; i += 1) {
+      const S1 = rotr(6, e) ^ rotr(11, e) ^ rotr(25, e);
+      const ch = (e & f) ^ (~e & g);
+      const temp1 = (h + S1 + ch + K[i] + w[i]) >>> 0;
+      const S0 = rotr(2, a) ^ rotr(13, a) ^ rotr(22, a);
+      const maj = (a & b) ^ (a & c) ^ (b & c);
+      const temp2 = (S0 + maj) >>> 0;
+      h = g; g = f; f = e; e = (d + temp1) >>> 0;
+      d = c; c = b; b = a; a = (temp1 + temp2) >>> 0;
+    }
+    h0 = (h0 + a) >>> 0; h1 = (h1 + b) >>> 0; h2 = (h2 + c) >>> 0; h3 = (h3 + d) >>> 0;
+    h4 = (h4 + e) >>> 0; h5 = (h5 + f) >>> 0; h6 = (h6 + g) >>> 0; h7 = (h7 + h) >>> 0;
+  }
+  return [h0, h1, h2, h3, h4, h5, h6, h7].map((v) => v.toString(16).padStart(8, '0')).join('');
+}
+
+function rakAdminHashPassword(password, salt) {
+  return rakSha256Hex(String(salt || '') + ':' + String(password || ''));
+}
 
 function rakAdminGetActiveAccountId() {
   try {
@@ -50,12 +105,19 @@ function rakAdminNormalizeManagedEntry(entry) {
   const safe = entry && typeof entry === 'object' ? entry : {};
   const accountId = String(safe.accountId || safe.account_id || safe.id || '').trim();
   if (!accountId || accountId === RAK_OWNER_ADMIN_ACCOUNT_ID) return null;
-  const password = String(safe.password || safe.pin || '').trim();
-  if (!password) return null;
+  const rawPassword = String(safe.password || safe.pin || '').trim();
+  let passwordHash = String(safe.passwordHash || safe.password_hash || '').trim();
+  let passwordSalt = String(safe.passwordSalt || safe.password_salt || '').trim();
+  if (rawPassword) {
+    passwordSalt = passwordSalt || rakAdminMakeId('salt');
+    passwordHash = rakAdminHashPassword(rawPassword, passwordSalt);
+  }
+  if (!passwordHash || !passwordSalt) return null;
   return {
     accountId,
     label: String(safe.label || safe.name || '').trim(),
-    password,
+    passwordHash,
+    passwordSalt,
     enabled: safe.enabled !== false
   };
 }
@@ -109,11 +171,14 @@ function rakAdminAccountRequiresPassword(accountId) {
   return rakAdminIsOwnerAccount(accountId) || !!rakAdminFindManagedEntry(accountId);
 }
 
-function rakAdminExpectedPasswordForAccount(accountId) {
+function rakAdminVerifyPasswordForAccount(accountId, pass) {
   const id = String(accountId || '').trim();
-  if (rakAdminIsOwnerAccount(id)) return RAK_OWNER_ADMIN_PASSWORD;
+  const safePass = String(pass || '');
+  if (!safePass) return false;
+  if (rakAdminIsOwnerAccount(id)) return safePass === RAK_OWNER_ADMIN_PASSWORD;
   const managed = rakAdminFindManagedEntry(id);
-  return managed ? String(managed.password || '') : '';
+  if (!managed || !managed.passwordHash || !managed.passwordSalt) return false;
+  return rakAdminHashPassword(safePass, managed.passwordSalt) === managed.passwordHash;
 }
 
 function rakAdminMakeId(prefix) {
@@ -229,7 +294,7 @@ function rakAdminSessionMatchesSettings(session, settings) {
 
 function rakAdminApplyUnlockedAccount(accountId, authPin, options) {
   const id = String(accountId || '').trim();
-  const pass = String(authPin || rakAdminExpectedPasswordForAccount(id) || RAK_OWNER_ADMIN_PASSWORD).trim();
+  const pass = String(authPin || '').trim();
   const opts = options && typeof options === 'object' ? options : {};
   if (!id || !rakAdminAccountRequiresPassword(id)) {
     rakAdminLock({ clearPersistent: false });
@@ -343,8 +408,7 @@ function rakAdminRestorePersistentSessionForActiveAccount(reason) {
     rakAdminLock({ clearPersistent: true });
     return false;
   }
-  const pass = rakAdminExpectedPasswordForAccount(activeId) || RAK_OWNER_ADMIN_PASSWORD;
-  const restored = rakAdminApplyUnlockedAccount(activeId, pass, { touchPersistent: false, source: reason || 'persistent' });
+  const restored = rakAdminApplyUnlockedAccount(activeId, RAK_ADMIN_TRUSTED_SESSION_MARKER, { touchPersistent: false, source: reason || 'persistent' });
   if (restored) rakAdminPersistUnlockedSession(activeId);
   return restored;
 }
@@ -366,7 +430,7 @@ function rakAdminUnlockForAccount(accountId, pin, options) {
     rakAdminLock({ clearPersistent: false });
     return false;
   }
-  if (pass !== rakAdminExpectedPasswordForAccount(id)) return false;
+  if (!rakAdminVerifyPasswordForAccount(id, pass)) return false;
   return rakAdminApplyUnlockedAccount(id, pass, options || {});
 }
 
@@ -380,6 +444,9 @@ function rakAdminRestoreSessionForActiveAccount() {
     const unlocked = sessionStorage.getItem(RAK_ADMIN_SESSION_UNLOCKED_KEY) === '1';
     const sessionAccount = String(sessionStorage.getItem(RAK_ADMIN_SESSION_ACCOUNT_KEY) || '').trim();
     const pin = String(sessionStorage.getItem(RAK_ADMIN_SESSION_AUTH_PIN_KEY) || sessionStorage.getItem(RAK_ADMIN_SESSION_PIN_KEY) || '').trim();
+    if (unlocked && sessionAccount === activeId && pin === RAK_ADMIN_TRUSTED_SESSION_MARKER) {
+      return rakAdminApplyUnlockedAccount(activeId, pin, { touchPersistent: false });
+    }
     if (unlocked && sessionAccount === activeId && pin) return rakAdminUnlockForAccount(activeId, pin);
   } catch (err) {}
   rakAdminLock();
@@ -604,11 +671,11 @@ function normalizeAdminAccountDraftRows(rows) {
   const safeRows = Array.isArray(rows) ? rows : [];
   const filledRows = safeRows.filter((entry) => {
     const safe = entry && typeof entry === 'object' ? entry : {};
-    return !!(String(safe.accountId || '').trim() || String(safe.label || '').trim() || String(safe.password || '').trim());
+    return !!(String(safe.accountId || '').trim() || String(safe.label || '').trim() || String(safe.password || '').trim() || safe.passwordHash);
   }).map((entry) => ({
     accountId: String(entry && entry.accountId || '').trim(),
     label: String(entry && entry.label || '').trim(),
-    password: String(entry && entry.password || '').trim(),
+    hasPassword: !!(String(entry && entry.password || '').trim() || (entry && entry.passwordHash)),
     enabled: !(entry && entry.enabled === false)
   }));
   const counts = new Map();
@@ -620,17 +687,17 @@ function normalizeAdminAccountDraftRows(rows) {
   const completeAdmins = filledRows.filter((entry) => (
     entry.accountId
     && entry.accountId !== RAK_OWNER_ADMIN_ACCOUNT_ID
-    && entry.password
+    && entry.hasPassword
     && entry.enabled !== false
   ));
   const missingPassword = filledRows.filter((entry) => (
     entry.accountId
     && entry.accountId !== RAK_OWNER_ADMIN_ACCOUNT_ID
-    && !entry.password
+    && !entry.hasPassword
   )).length;
   const incompleteRows = filledRows.filter((entry) => (
-    (!entry.accountId && (entry.label || entry.password))
-    || (entry.accountId && entry.accountId !== RAK_OWNER_ADMIN_ACCOUNT_ID && !entry.password)
+    (!entry.accountId && (entry.label || entry.hasPassword))
+    || (entry.accountId && entry.accountId !== RAK_OWNER_ADMIN_ACCOUNT_ID && !entry.hasPassword)
   )).length;
   const ownerRows = filledRows.filter((entry) => entry.accountId === RAK_OWNER_ADMIN_ACCOUNT_ID).length;
   const duplicateIds = Array.from(counts.entries()).filter(([, count]) => count > 1).map(([id]) => id);
@@ -691,13 +758,14 @@ function buildAdminAccountsSettingsHtml() {
     ].join('');
   }
   const settings = rakAdminGetAccountsSettings();
-  const rows = settings.admins.concat(Array.from({ length: 4 }, () => ({ accountId: '', label: '', password: '', enabled: true })));
+  const rows = settings.admins.concat(Array.from({ length: 4 }, () => ({ accountId: '', label: '', passwordHash: '', enabled: true })));
   const body = rows.map((entry) => [
     '<tr data-admin-account-row>',
     '  <td><input class="appMenuInlineInput" data-admin-account-field="accountId" data-admin-account-id value="' + escapeHtml(entry.accountId || '') + '" placeholder="os. c."></td>',
     '  <td><input class="appMenuInlineInput" data-admin-account-field="label" data-admin-account-label value="' + escapeHtml(entry.label || '') + '" placeholder="jmeno / poznamka"></td>',
-    '  <td><input class="appMenuInlineInput" data-admin-account-field="password" data-admin-account-password type="password" value="' + escapeHtml(entry.password || '') + '" placeholder="heslo"></td>',
+    '  <td><input class="appMenuInlineInput" data-admin-account-field="password" data-admin-account-password type="password" value="" placeholder="' + (entry.passwordHash ? 'necháš prázdné = beze změny' : 'heslo') + '"></td>',
     '  <td><label class="adminRotationOvertimeSwitch"><input type="checkbox" data-admin-account-field="enabled" data-admin-account-enabled ' + (entry.enabled === false ? '' : 'checked') + '><span>ANO</span></label></td>',
+    '  <td><button type="button" class="adminRotationGeneratorIconBtn" data-admin-action="admin-account-row-clear" title="Vyprázdnit řádek">×</button></td>',
     '</tr>'
   ].join('')).join('');
   return [
@@ -706,9 +774,9 @@ function buildAdminAccountsSettingsHtml() {
     buildAdminAccountsSafetyHtml(settings),
     buildAdminSessionDevicesHtml(settings),
     '<div class="tableWrap appMenuTableWrap uMt8">',
-    '  <div class="smallText uMb10">Tady pridavas dalsi admin ucty, ktere po prihlaseni uvidi administraci. Pro odebrani spravce smaz ucet nebo heslo a uloz.</div>',
+    '  <div class="smallText uMb10">Tady pridavas dalsi admin ucty, ktere po prihlaseni uvidi administraci. Heslo nech prazdne, pokud ho nechces menit. Pro odebrani spravce klikni na × u radku (nebo smaz ucet) a uloz. Hesla se ukladaji jen jako hash, appka je uz zpatky neumi zobrazit.</div>',
     '  <table class="appMenuTable appMenuAdminTable appMenuAdminTableDense adminAccountsTable">',
-    '    <thead><tr><th>Ucet</th><th>Popis</th><th>Heslo</th><th>Aktivni</th></tr></thead>',
+    '    <thead><tr><th>Ucet</th><th>Popis</th><th>Heslo</th><th>Aktivni</th><th></th></tr></thead>',
     '    <tbody>' + body + '</tbody>',
     '  </table>',
     '</div>'
@@ -717,12 +785,17 @@ function buildAdminAccountsSettingsHtml() {
 
 function readAdminAccountsDraftRowsFromDom(root) {
   const scope = root && root.querySelectorAll ? root : document;
+  const existingByIdMap = new Map((rakAdminGetAccountsSettings().admins || []).map((entry) => [entry.accountId, entry]));
   const rows = [];
   scope.querySelectorAll('tr[data-admin-account-row]').forEach((row) => {
+    const accountId = String(row.querySelector('[data-admin-account-id]')?.value || '').trim();
+    const existing = existingByIdMap.get(accountId) || null;
     rows.push({
-      accountId: String(row.querySelector('[data-admin-account-id]')?.value || '').trim(),
+      accountId,
       label: String(row.querySelector('[data-admin-account-label]')?.value || '').trim(),
       password: String(row.querySelector('[data-admin-account-password]')?.value || '').trim(),
+      passwordHash: existing ? existing.passwordHash : '',
+      passwordSalt: existing ? existing.passwordSalt : '',
       enabled: !!(row.querySelector('[data-admin-account-enabled]') && row.querySelector('[data-admin-account-enabled]').checked)
     });
   });
@@ -742,20 +815,38 @@ function adminAccountsRefreshStatus(root) {
   return true;
 }
 
+function rakAdminClearAccountRow(target) {
+  const row = target && typeof target.closest === 'function' ? target.closest('tr[data-admin-account-row]') : null;
+  if (!row) return;
+  const idInput = row.querySelector('[data-admin-account-id]');
+  const labelInput = row.querySelector('[data-admin-account-label]');
+  const passwordInput = row.querySelector('[data-admin-account-password]');
+  const enabledInput = row.querySelector('[data-admin-account-enabled]');
+  if (idInput) idInput.value = '';
+  if (labelInput) labelInput.value = '';
+  if (passwordInput) { passwordInput.value = ''; passwordInput.placeholder = 'heslo'; }
+  if (enabledInput) enabledInput.checked = true;
+  try { adminAccountsRefreshStatus(document.getElementById('appMenuBody') || document); } catch (err) {}
+  const status = document.getElementById('adminOnlineSaveStatus');
+  if (status) status.textContent = 'Řádek je vyprázdněný. Odebrání se uloží až tlačítkem Uložit správce.';
+}
+
 function readAdminAccountsSettingsFromDom() {
   const map = new Map();
   const current = rakAdminGetAccountsSettings();
   readAdminAccountsDraftRowsFromDom(document.getElementById('appMenuBody') || document).forEach((entry) => {
     const accountId = String(entry.accountId || '').trim();
-    const label = String(entry.label || '').trim();
-    const password = String(entry.password || '').trim();
-    if (!accountId || accountId === RAK_OWNER_ADMIN_ACCOUNT_ID || !password) return;
-    map.set(accountId, {
+    if (!accountId || accountId === RAK_OWNER_ADMIN_ACCOUNT_ID) return;
+    if (!entry.password && !entry.passwordHash) return;
+    const normalized = rakAdminNormalizeManagedEntry({
       accountId,
-      label,
-      password,
+      label: entry.label,
+      password: entry.password,
+      passwordHash: entry.passwordHash,
+      passwordSalt: entry.passwordSalt,
       enabled: entry.enabled !== false
     });
+    if (normalized) map.set(accountId, normalized);
   });
   return {
     type: RAK_ADMIN_ACCOUNTS_SETTINGS_CATEGORY,
@@ -797,6 +888,7 @@ try {
   window.buildAdminAccountsStatusHtml = buildAdminAccountsStatusHtml;
   window.adminAccountsRefreshStatus = adminAccountsRefreshStatus;
   window.readAdminAccountsDraftRowsFromDom = readAdminAccountsDraftRowsFromDom;
+  window.rakAdminClearAccountRow = rakAdminClearAccountRow;
   window.buildAdminAccountsSettingsHtml = buildAdminAccountsSettingsHtml;
   window.readAdminAccountsSettingsFromDom = readAdminAccountsSettingsFromDom;
   window.mergeAdminAccountsSettingsRows = mergeAdminAccountsSettingsRows;

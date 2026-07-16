@@ -1813,6 +1813,7 @@ function buildAdminHandoverAuditHtml(monthKey) {
   const contactSnapshot = adminHandoverAppContactSnapshot();
   const linksSnapshot = adminHandoverExternalLinksSnapshot();
   const payrollSnapshot = adminHandoverPayrollSnapshot();
+  const fullSettingsBackupSnapshot = adminHandoverFullSettingsBackupSnapshot();
   const items = [
     {
       state: rows.length ? 'ok' : 'warn',
@@ -2150,6 +2151,13 @@ function buildAdminHandoverChecklistHtml(monthKey) {
       detail: month ? (adminGuideHasMonthRows(month) ? 'Vybraný měsíc má vyplněné směny.' : 'Měsíc existuje, ale vypadá prázdně.') : 'Vybraný měsíc zatím není vytvořený.',
       action: 'open-rotation',
       actionLabel: 'Rozpis'
+    },
+    {
+      ok: (typeof getRakWorkerRosterSettings === 'function' ? getRakWorkerRosterSettings().workers.length : 0) > 0,
+      title: 'Pracovníci',
+      detail: 'Seznam lidí, kteří se počítají v rozpisu a statistikách.',
+      action: 'open-workers',
+      actionLabel: 'Pracovníci'
     },
     {
       ok: true,
@@ -2955,6 +2963,16 @@ function getAdminSettingsMapItems() {
       ]
     },
     {
+      title: 'Pracovníci',
+      scope: 'Pracovníci',
+      detail: 'Seznam aktivních lidí, kteří se počítají v rozpisu, generátoru a statistikách.',
+      visible: 'Ovlivňuje rozpis, generátor návrhu i statistiky.',
+      check: 'Seznam pracovniku odpovida jmenum pouzitym v rozpisu.',
+      actions: [
+        { action: 'open-workers', label: 'Pracovníci' }
+      ]
+    },
+    {
       title: 'Generátor rozpisu',
       scope: 'Pravidla generátoru',
       detail: 'Pořadí lidí, základní cykly a pravidla, podle kterých vzniká nový návrh.',
@@ -3210,6 +3228,7 @@ function renderAdminMenuBody(body, section) {
     ]),
     buildAdminMenuSectionHtml('2. Rozpisy a předání', 'Tvorba, kontrola, zálohy a export rozpisu.', [
       { action: 'open-rotation', label: 'Rozpisy' },
+      { action: 'open-workers', label: 'Pracovníci' },
       { action: 'open-generator-settings', label: 'Pravidla generátoru' },
       { action: 'open-monthly-workflow', label: 'Měsíční postup' },
       { action: 'open-handover', label: 'Předání správy' },
@@ -3354,12 +3373,28 @@ function renderAdminMenuBody(body, section) {
     '</div>'
   ].join('');
 
+  const workersHtml = [
+    '<div class="appMenuCard appMenuAdminCard adminWorkerRosterCard">',
+    '  <div class="appMenuCardTitle">Pracovníci</div>',
+    '  <div class="appMenuText">',
+    '    <div>Tady nastavíš, kdo se počítá v rozpisu a statistikách. Napiš přesně jméno tak, jak je zapsané v rozpisu.</div>',
+    '    <div class="smallText" id="adminOnlineSaveStatus">Prázdné řádky se neukládají. Pro odebrání jméno smaž a ulož.</div>',
+    '  </div>',
+    typeof buildAdminWorkerRosterSettingsHtml === 'function' ? buildAdminWorkerRosterSettingsHtml() : '',
+    '  <div class="appMenuActionRow">',
+    '    <button type="button" class="appMenuAction" data-admin-action="load-workers">Načíst online</button>',
+    '    <button type="button" class="appMenuAction isActive" data-admin-action="save-workers">Uložit pracovníky</button>',
+    '    <button type="button" class="appMenuAction" data-admin-action="back-admin">Zpět</button>',
+    '  </div>',
+    '</div>'
+  ].join('');
+
   const adminAccountsHtml = [
     '<div class="appMenuCard appMenuAdminCard adminAccountsCard">',
     '  <div class="appMenuCardTitle">Správci</div>',
     '  <div class="appMenuText">',
     '    <div>Tady hlavní admin nastaví další admin účty. Běžní uživatelé tuhle sekci neuvidí.</div>',
-    '    <div class="smallText" id="adminOnlineSaveStatus">Prázdné řádky se neukládají. Pro odebrání správce smaž účet nebo heslo a ulož.</div>',
+    '    <div class="smallText" id="adminOnlineSaveStatus">Heslo nech prázdné, pokud ho nechceš měnit. Pro odebrání správce klikni na × u řádku a ulož.</div>',
     '  </div>',
     buildAdminAccountsSettingsHtml(),
     '  <div class="appMenuActionRow">',
@@ -3607,6 +3642,8 @@ function renderAdminMenuBody(body, section) {
     body.innerHTML = overtimeHtml;
   } else if (mode === 'generator-settings') {
     body.innerHTML = generatorSettingsHtml;
+  } else if (mode === 'workers') {
+    body.innerHTML = workersHtml;
   } else if (mode === 'admin-accounts') {
     body.innerHTML = adminAccountsHtml;
   } else if (mode === 'external-links') {
@@ -4560,6 +4597,10 @@ function bindAppMenuHandlers(body) {
         openAppMenu('admin-generator-settings');
         return;
       }
+      if (adminAction === 'open-workers') {
+        openAppMenu('admin-workers');
+        return;
+      }
       if (adminAction === 'open-monthly-workflow') {
         openAppMenu('admin-monthly-workflow');
         return;
@@ -4873,6 +4914,31 @@ function bindAppMenuHandlers(body) {
             ? 'Pravidla uložená lokálně - po připojení se synchronizují'
             : 'Pravidla generátoru uložená online';
         }
+        return;
+      }
+      if (adminAction === 'load-workers') {
+        await loadAdminMachineSettingsFromSupabase();
+        renderAdminMenuBody(body, 'workers');
+        return;
+      }
+      if (adminAction === 'save-workers') {
+        const workerSettings = readAdminWorkerRosterSettingsFromDom();
+        const rows = mergeRakWorkerRosterSettingsRows(workerSettings);
+        if (window.RotationSupabaseBridge && typeof window.RotationSupabaseBridge.saveMachineSettings === 'function') {
+          const result = await window.RotationSupabaseBridge.saveMachineSettings(rows);
+          if (result && result.ok === false) throw (result.error || new Error('Uložení pracovníků selhalo.'));
+          app.machineSettingsRows = rows;
+          try { if (typeof renderStatsPanel === 'function') renderStatsPanel(); } catch (err) {}
+          renderAdminMenuBody(body, 'workers');
+          const statusEl = document.getElementById('adminOnlineSaveStatus');
+          if (statusEl) statusEl.textContent = (result && result.queued)
+            ? 'Pracovníci uložení lokálně ✓ · po připojení se synchronizují'
+            : 'Pracovníci uložení online ✓';
+        }
+        return;
+      }
+      if (adminAction === 'admin-account-row-clear') {
+        if (typeof rakAdminClearAccountRow === 'function') rakAdminClearAccountRow(target);
         return;
       }
       if (adminAction === 'load-admin-accounts') {
@@ -5220,7 +5286,7 @@ function openAppMenu(view) {
   page.classList.add('active');
   const body = page.querySelector('#appMenuBody');
   const v = view || 'menu';
-  const adminViews = new Set(['admin', 'admin-machines', 'admin-food', 'admin-vacation', 'admin-special-days', 'admin-rotation', 'admin-overtime', 'admin-generator-settings', 'admin-monthly-workflow', 'admin-handover', 'admin-manual', 'admin-settings-map', 'admin-accounts', 'admin-external-links', 'admin-app-contact', 'admin-payroll-settings', 'admin-backups', 'admin-settings-backups', 'admin-announcement', 'admin-usage', 'admin-export', 'admin-reports', 'admin-service']);
+  const adminViews = new Set(['admin', 'admin-machines', 'admin-food', 'admin-vacation', 'admin-special-days', 'admin-rotation', 'admin-overtime', 'admin-generator-settings', 'admin-workers', 'admin-monthly-workflow', 'admin-handover', 'admin-manual', 'admin-settings-map', 'admin-accounts', 'admin-external-links', 'admin-app-contact', 'admin-payroll-settings', 'admin-backups', 'admin-settings-backups', 'admin-announcement', 'admin-usage', 'admin-export', 'admin-reports', 'admin-service']);
 
   const versionText = (typeof app !== 'undefined' && app.version) || (typeof APP_VERSION !== 'undefined' ? APP_VERSION : '');
   const contact = typeof getRakAppContactSettings === 'function'
@@ -5400,6 +5466,16 @@ function openAppMenu(view) {
         } catch (err) {
           console.warn('Admin generator settings preload failed', err);
           renderAdminMenuBody(body, 'generator-settings');
+        }
+      })();
+    } else if (v === 'admin-workers') {
+      void (async () => {
+        try {
+          await loadAdminMachineSettingsFromSupabase();
+          renderAdminMenuBody(body, 'workers');
+        } catch (err) {
+          console.warn('Admin workers preload failed', err);
+          renderAdminMenuBody(body, 'workers');
         }
       })();
     } else if (v === 'admin-handover') {

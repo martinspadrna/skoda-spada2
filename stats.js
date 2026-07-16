@@ -730,7 +730,7 @@ function buildStatsForYear(year, options = {}) {
     if (typeof stats.cleanTotals[column] === "number") stats.cleanTotals[column] = Math.round(stats.cleanTotals[column] * 10) / 10;
   });
 
-  stats.names = Object.keys(stats.people).filter(name => KNOWN_STAT_NAMES.has(name)).sort((a, b) => a.localeCompare(b, "cs"));
+  stats.names = Object.keys(stats.people).filter(name => knownStatNames.has(name)).sort((a, b) => a.localeCompare(b, "cs"));
   stats.machineOrder = getStatsMachineOrder(Object.keys(stats.machineTotals));
 
   stats.machineOrder.forEach(machine => {

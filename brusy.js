@@ -233,6 +233,7 @@ function normalizeNoteEntry(note) {
 
 function buildNameIndex(rotation) {
   const map = new Map();
+  const knownNames = getKnownStatNames();
   Object.entries(rotation.months || {}).forEach(([monthKey, month]) => {
     ["hard", "soft"].forEach(section => {
       const sec = month[section];
@@ -242,7 +243,7 @@ function buildNameIndex(rotation) {
         if (!parsed) return;
         (row.cells || []).forEach((cell, idx) => {
           const name = (cell || "").trim();
-          if (!name || !KNOWN_STAT_NAMES.has(name)) return;
+          if (!name || !knownNames.has(name)) return;
           if (!map.has(name)) map.set(name, []);
           const machine = (sec.machines && sec.machines[idx]) ? sec.machines[idx] : "";
           map.get(name).push({
@@ -265,7 +266,7 @@ function buildNameIndex(rotation) {
       const shift = n.shift || (parsed ? parsed.shift : "");
       n.people.forEach(personName => {
         const name = String(personName || "").trim();
-        if (!name || !KNOWN_STAT_NAMES.has(name)) return;
+        if (!name || !knownNames.has(name)) return;
         if (!map.has(name)) map.set(name, []);
         map.get(name).push({
           monthKey,
@@ -288,6 +289,9 @@ function buildNameIndex(rotation) {
 }
 
 function getKnownStatNames() {
+  try {
+    if (typeof getActiveWorkerNames === 'function') return getActiveWorkerNames();
+  } catch (err) {}
   return KNOWN_STAT_NAMES;
 }
 
