@@ -1,3 +1,11 @@
+## RaK 1.2 (1.251)
+
+- Administrace / Kde co upravit: kazda oblast mapy ma novy radek `Po ulozeni over`, aby novy spravce vedel, kde zkontrolovat vysledek zmeny.
+- Mapa nastaveni: horni souhrn pocita, jestli maji vsechny oblasti vyplnenou kontrolu po ulozeni.
+- Predavaci export mapy: textovy soubor `RaK_kde_co_upravit_...` obsahuje kontrolu po ulozeni u kazde oblasti.
+- Smoke guard: `app-usage-smoke-v963.js` hlida pokryti kontrol, textovy export i vlastni styl mapy.
+- Release metadata sjednocená na `RaK 1.2 (1.251)`, technická verze `1.2.251`, cache `v1.2-1.251`.
+
 ## RaK 1.2 (1.250)
 
 - Administrace / Predavaci podklady: textovy stav i souhrnny balicek obsahuji samostatny blok `Pristup a hesla`.

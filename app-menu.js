@@ -1607,6 +1607,7 @@ function buildAdminSettingsMapImpactHtml(items) {
 
 function adminSettingsMapItemHtml(item) {
   const actions = Array.isArray(item && item.actions) ? item.actions : [];
+  const check = String(item && item.check || '').trim();
   return [
     '<div class="adminSettingsMapItem">',
     '  <div class="adminSettingsMapHead">',
@@ -1615,6 +1616,7 @@ function adminSettingsMapItemHtml(item) {
     '  </div>',
     '  <div class="smallText">' + escapeHtml(item.detail || '') + '</div>',
     '  <div class="adminSettingsMapMeta">' + escapeHtml(item.visible || '') + '</div>',
+    check ? '  <div class="adminSettingsMapCheck"><span>Po ulozeni over</span><b>' + escapeHtml(check) + '</b></div>' : '',
     actions.length ? ('  <div class="adminSettingsMapActions">' + actions.map((action) => '<button type="button" class="appMenuAction" data-admin-action="' + escapeHtml(action.action || '') + '">' + escapeHtml(action.label || 'Otevřít') + '</button>').join('') + '</div>') : '',
     '</div>'
   ].join('');
@@ -1634,6 +1636,7 @@ function adminSettingsMapStatusItemHtml(label, value, detail, state) {
 function buildAdminSettingsMapStatusHtml(items) {
   const list = Array.isArray(items) ? items : [];
   const actionCount = list.reduce((sum, item) => sum + (Array.isArray(item && item.actions) ? item.actions.length : 0), 0);
+  const checkCount = list.filter((item) => item && String(item.check || '').trim()).length;
   const publicCount = list.filter(adminSettingsMapItemHasPublicImpact).length;
   const adminOnlyCount = list.length - publicCount;
   const ownerAccess = typeof rakAdminCanManageAdmins === 'function' && rakAdminCanManageAdmins();
@@ -1642,6 +1645,7 @@ function buildAdminSettingsMapStatusHtml(items) {
     '  <div class="appMenuSubTitle">Stav mapy nastaveni</div>',
     '  <div class="adminSettingsMapStatusGrid">',
     adminSettingsMapStatusItemHtml('Oblasti', String(list.length), 'Mapa pokryva hlavni provozni a spravcovske casti.', list.length >= 7 ? 'ok' : 'warn'),
+    adminSettingsMapStatusItemHtml('Kontroly', String(checkCount) + '/' + String(list.length), 'Kazda oblast ma rikat, co overit po ulozeni.', checkCount === list.length && list.length ? 'ok' : 'warn'),
     adminSettingsMapStatusItemHtml('Rychle akce', String(actionCount), 'Tlacitka jen oteviraji admin sekce, sama nic neukladaji.', actionCount ? 'ok' : 'warn'),
     adminSettingsMapStatusItemHtml('Dopad pro lidi', String(publicCount), adminOnlyCount ? String(adminOnlyCount) + ' oblasti jsou jen pro spravce.' : 'Vsechny oblasti mohou mit verejny dopad.', publicCount ? 'info' : 'warn'),
     adminSettingsMapStatusItemHtml('Spravci', ownerAccess ? 'owner' : 'bezny admin', ownerAccess ? 'Tento ucet muze menit dalsi spravce.' : 'Spravce smi menit provoz, ale ne seznam spravcu.', ownerAccess ? 'ok' : 'info'),
@@ -1657,6 +1661,7 @@ function getAdminSettingsMapItems() {
       scope: 'Administrace / Rozpisy',
       detail: 'Pracovní dny, absence, ruční úpravy směn a uložení hotového měsíce.',
       visible: 'Viditelné v Rotace / Rozpisy a v exportech.',
+      check: 'Rotace / Rozpisy, export Excelu a zelena synchronizace na home.',
       actions: [
         { action: 'open-rotation', label: 'Rozpisy' },
         { action: 'open-backups', label: 'Zálohy' }
@@ -1667,6 +1672,7 @@ function getAdminSettingsMapItems() {
       scope: 'Pravidla generátoru',
       detail: 'Pořadí lidí, základní cykly a pravidla, podle kterých vzniká nový návrh.',
       visible: 'Projeví se až při dalším vygenerování návrhu.',
+      check: 'Vygenerovany navrh, pravidla generatoru a manualni kontrola pred ulozenim.',
       actions: [
         { action: 'open-generator-settings', label: 'Pravidla' },
         { action: 'open-rotation', label: 'Vygenerovat' }
@@ -1677,6 +1683,7 @@ function getAdminSettingsMapItems() {
       scope: 'Dovolená / Mimořádné volné dny',
       detail: 'Delší období od-do, jednorázové dny bez práce a nejbližší odpočet na home.',
       visible: 'Viditelné na home kartě Dovolená a v počítání směn.',
+      check: 'Home karta Dovolena, odpocet smen a nejblizsi volne obdobi.',
       actions: [
         { action: 'open-vacation', label: 'Dovolená' },
         { action: 'open-special-days', label: 'Volné dny' }
@@ -1687,6 +1694,7 @@ function getAdminSettingsMapItems() {
       scope: 'Přesčasy',
       detail: 'Přesčasové neděle podle roků, směn a tvrdoty.',
       visible: 'Používá rozpis, statistiky a provozní přehledy.',
+      check: 'Kantyna, jidelna a seznam prescasu v prislusnem roce.',
       actions: [
         { action: 'open-overtime', label: 'Přesčasy' }
       ]
@@ -1696,6 +1704,7 @@ function getAdminSettingsMapItems() {
       scope: 'Kantýna / jídelna',
       detail: 'Běžná otevírací doba, přesčasové časy a budoucí přesčasové neděle.',
       visible: 'Viditelné na home kartách Kantýna a Jídelna.',
+      check: 'Home karty Kantyna/Jidelna a budoucí prescasove casy.',
       actions: [
         { action: 'open-food', label: 'Časy' }
       ]
@@ -1705,6 +1714,7 @@ function getAdminSettingsMapItems() {
       scope: 'Aplikace pro lidi',
       detail: 'Jídelní lístek, Eportal, kalendář, kontakt aplikace a pravidlo výplaty.',
       visible: 'Viditelné v běžném menu a na home kartách.',
+      check: 'Běžné menu, home karty Vyplata/Jidelni listek/Eportal a Kontakt.',
       actions: [
         { action: 'open-external-links', label: 'Odkazy' },
         { action: 'open-app-contact', label: 'Kontakt' },
@@ -1716,6 +1726,7 @@ function getAdminSettingsMapItems() {
       scope: 'Kontrola a servis',
       detail: 'Admin účty, připojená zařízení, reporty chyb, synchronizace a exporty.',
       visible: 'Dostupné jen administrátorům.',
+      check: 'Spravci, servis synchronizace a predavaci podklady bez hesel.',
       actions: [
         { action: 'open-admin-accounts', label: 'Správci' },
         { action: 'open-usage', label: 'Připojení' },
@@ -1759,6 +1770,7 @@ function buildAdminSettingsMapText() {
     lines.push('- Sekce: ' + String(item && item.scope || 'administrace'));
     lines.push('- K čemu slouží: ' + String(item && item.detail || ''));
     lines.push('- Kde se projeví: ' + String(item && item.visible || ''));
+    lines.push('- Po ulozeni over: ' + String(item && item.check || 'stav synchronizace a prislusnou admin sekci'));
     lines.push('- Dopad: ' + (adminSettingsMapItemHasPublicImpact(item) ? 'viditelné pro běžné lidi' : 'jen administrace'));
     lines.push('- Otevřít v aplikaci: ' + (actions.length ? actions.map((action) => String(action && action.label || 'Otevřít')).join(', ') : 'bez rychlé akce'));
     lines.push('');

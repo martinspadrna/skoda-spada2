@@ -2263,7 +2263,7 @@
 }
 .adminSettingsMapStatusGrid{
   display:grid !important;
-  grid-template-columns:repeat(4,minmax(0,1fr)) !important;
+  grid-template-columns:repeat(5,minmax(0,1fr)) !important;
   gap:8px !important;
 }
 .adminSettingsMapStatusItem{
@@ -2410,6 +2410,27 @@
   color:rgba(235,255,240,.72) !important;
   font-size:12px !important;
   font-weight:800 !important;
+  line-height:1.25 !important;
+}
+.adminSettingsMapCheck{
+  display:grid !important;
+  gap:4px !important;
+  padding:7px 8px !important;
+  border:1px solid rgba(175,210,255,.18) !important;
+  border-radius:8px !important;
+  background:rgba(180,210,255,.08) !important;
+}
+.adminSettingsMapCheck span{
+  color:rgba(222,255,228,.78) !important;
+  font-size:10px !important;
+  font-weight:900 !important;
+  line-height:1.1 !important;
+  text-transform:uppercase !important;
+}
+.adminSettingsMapCheck b{
+  color:#b8d7ff !important;
+  font-size:11px !important;
+  font-weight:850 !important;
   line-height:1.25 !important;
 }
 .adminSettingsMapActions{
