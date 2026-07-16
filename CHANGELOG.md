@@ -1,3 +1,10 @@
+## RaK 1.2 (1.240)
+
+- Administrace / Kde co upravit: pridany admin-only prehled `Verejny dopad zmen`, ktery deli oblasti na viditelne pro bezne lidi a ciste spravcovske.
+- Predani spravy: spravce hned vidi, co ma po ulozeni zkontrolovat v bezne aplikaci nebo exportu, a co zustava jen uvnitr administrace.
+- Smoke guard: `app-usage-smoke-v963.js` hlida sdilenou detekci verejneho dopadu, vlozeni prehledu do mapy nastaveni i jeho responsive styl.
+- Release metadata sjednocená na `RaK 1.2 (1.240)`, technická verze `1.2.240`, cache `v1.2-1.240`.
+
 ## RaK 1.2 (1.239)
 
 - Administrace: na uvod pridana admin-only `Legenda tlacitek`, ktera vysvetluje rozdil mezi `Ulozit`, `Nacist`, `Stahnout` a `Zpet`.

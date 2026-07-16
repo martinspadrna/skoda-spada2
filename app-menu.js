@@ -1191,6 +1191,52 @@ function buildAdminManualHtml(monthKey) {
   ].join('');
 }
 
+function adminSettingsMapItemHasPublicImpact(item) {
+  const visibleText = String(item && item.visible || '');
+  return /Viditeln|home|Rotace|export|menu|rozpis|statistik|provozn/i.test(visibleText);
+}
+
+function adminSettingsMapImpactItemHtml(item, state) {
+  return [
+    '<div class="adminSettingsMapImpactItem is' + escapeHtml(state === 'public' ? 'Public' : 'AdminOnly') + '">',
+    '  <span>' + escapeHtml(item.title || '') + '</span>',
+    '  <b>' + escapeHtml(state === 'public' ? 'Uvidí běžní lidé' : 'Jen správa') + '</b>',
+    '  <small>' + escapeHtml(item.visible || '') + '</small>',
+    '</div>'
+  ].join('');
+}
+
+function buildAdminSettingsMapImpactGroupHtml(title, detail, items, state) {
+  const list = Array.isArray(items) ? items : [];
+  return [
+    '<div class="adminSettingsMapImpactGroup is' + escapeHtml(state === 'public' ? 'Public' : 'AdminOnly') + '">',
+    '  <div class="adminSettingsMapImpactHead">',
+    '    <span>' + escapeHtml(title || '') + '</span>',
+    '    <small>' + escapeHtml(detail || '') + '</small>',
+    '  </div>',
+    list.length
+      ? list.map((item) => adminSettingsMapImpactItemHtml(item, state)).join('')
+      : '  <div class="smallText">Žádná oblast v téhle skupině.</div>',
+    '</div>'
+  ].join('');
+}
+
+function buildAdminSettingsMapImpactHtml(items) {
+  const list = Array.isArray(items) ? items : [];
+  const publicItems = list.filter(adminSettingsMapItemHasPublicImpact);
+  const adminOnlyItems = list.filter((item) => !adminSettingsMapItemHasPublicImpact(item));
+  return [
+    '<div class="adminSettingsMapImpact">',
+    '  <div class="appMenuSubTitle">Veřejný dopad změn</div>',
+    '  <div class="smallText uMb10">Rychlá kontrola pro správce: vlevo jsou změny, které se projeví běžným lidem, vpravo čistě správcovské části. Tenhle přehled nic neukládá.</div>',
+    '  <div class="adminSettingsMapImpactGrid">',
+    buildAdminSettingsMapImpactGroupHtml('Viditelné pro lidi', 'Po uložení zkontroluj běžnou aplikaci nebo export.', publicItems, 'public'),
+    buildAdminSettingsMapImpactGroupHtml('Jen administrace', 'Slouží hlavně pro správu, kontrolu a předání.', adminOnlyItems, 'adminOnly'),
+    '  </div>',
+    '</div>'
+  ].join('');
+}
+
 function adminSettingsMapItemHtml(item) {
   const actions = Array.isArray(item && item.actions) ? item.actions : [];
   return [
@@ -1220,7 +1266,7 @@ function adminSettingsMapStatusItemHtml(label, value, detail, state) {
 function buildAdminSettingsMapStatusHtml(items) {
   const list = Array.isArray(items) ? items : [];
   const actionCount = list.reduce((sum, item) => sum + (Array.isArray(item && item.actions) ? item.actions.length : 0), 0);
-  const publicCount = list.filter((item) => /Viditeln|home|Rotace|export|menu/i.test(String(item && item.visible || ''))).length;
+  const publicCount = list.filter(adminSettingsMapItemHasPublicImpact).length;
   const adminOnlyCount = list.length - publicCount;
   const ownerAccess = typeof rakAdminCanManageAdmins === 'function' && rakAdminCanManageAdmins();
   return [
@@ -1315,6 +1361,7 @@ function buildAdminSettingsMapHtml() {
   const items = getAdminSettingsMapItems();
   return [
     buildAdminSettingsMapStatusHtml(items),
+    buildAdminSettingsMapImpactHtml(items),
     '<div class="adminSettingsMapGrid">',
     items.map(adminSettingsMapItemHtml).join(''),
     '</div>'
@@ -1344,6 +1391,7 @@ function buildAdminSettingsMapText() {
     lines.push('- Sekce: ' + String(item && item.scope || 'administrace'));
     lines.push('- K čemu slouží: ' + String(item && item.detail || ''));
     lines.push('- Kde se projeví: ' + String(item && item.visible || ''));
+    lines.push('- Dopad: ' + (adminSettingsMapItemHasPublicImpact(item) ? 'viditelné pro běžné lidi' : 'jen administrace'));
     lines.push('- Otevřít v aplikaci: ' + (actions.length ? actions.map((action) => String(action && action.label || 'Otevřít')).join(', ') : 'bez rychlé akce'));
     lines.push('');
   });

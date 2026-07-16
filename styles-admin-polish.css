@@ -2042,6 +2042,78 @@
   font-weight:700 !important;
   line-height:1.25 !important;
 }
+.adminSettingsMapImpact{
+  display:grid !important;
+  gap:8px !important;
+  margin:12px 0 !important;
+  padding:10px !important;
+  border:1px solid rgba(175,210,255,.22) !important;
+  border-radius:8px !important;
+  background:rgba(255,255,255,.035) !important;
+}
+.adminSettingsMapImpactGrid{
+  display:grid !important;
+  grid-template-columns:repeat(2,minmax(0,1fr)) !important;
+  gap:9px !important;
+}
+.adminSettingsMapImpactGroup{
+  display:grid !important;
+  align-content:start !important;
+  gap:7px !important;
+  padding:10px !important;
+  border:1px solid rgba(180,255,190,.2) !important;
+  border-radius:8px !important;
+  background:rgba(255,255,255,.035) !important;
+}
+.adminSettingsMapImpactGroup.isPublic{
+  border-color:rgba(175,210,255,.32) !important;
+}
+.adminSettingsMapImpactGroup.isAdminOnly{
+  border-color:rgba(180,255,190,.28) !important;
+}
+.adminSettingsMapImpactHead{
+  display:grid !important;
+  gap:3px !important;
+}
+.adminSettingsMapImpactHead span{
+  font-weight:900 !important;
+  line-height:1.15 !important;
+}
+.adminSettingsMapImpactHead small{
+  color:rgba(235,255,240,.72) !important;
+  font-size:12px !important;
+  font-weight:700 !important;
+  line-height:1.25 !important;
+}
+.adminSettingsMapImpactItem{
+  display:grid !important;
+  gap:3px !important;
+  padding:8px !important;
+  border:1px solid rgba(255,255,255,.12) !important;
+  border-radius:8px !important;
+  background:rgba(0,0,0,.1) !important;
+}
+.adminSettingsMapImpactItem.isPublic{
+  border-color:rgba(175,210,255,.26) !important;
+}
+.adminSettingsMapImpactItem.isAdminOnly{
+  border-color:rgba(180,255,190,.22) !important;
+}
+.adminSettingsMapImpactItem span{
+  font-weight:900 !important;
+  line-height:1.15 !important;
+}
+.adminSettingsMapImpactItem b{
+  color:#b8d7ff !important;
+  font-size:12px !important;
+  line-height:1.15 !important;
+}
+.adminSettingsMapImpactItem small{
+  color:rgba(235,255,240,.72) !important;
+  font-size:11px !important;
+  font-weight:700 !important;
+  line-height:1.25 !important;
+}
 .adminSettingsMapGrid{
   display:grid !important;
   grid-template-columns:repeat(2,minmax(0,1fr)) !important;
@@ -2199,6 +2271,9 @@
     grid-template-columns:1fr !important;
   }
   .adminSettingsMapStatusGrid{
+    grid-template-columns:1fr !important;
+  }
+  .adminSettingsMapImpactGrid{
     grid-template-columns:1fr !important;
   }
   .adminSettingsMapActions{
