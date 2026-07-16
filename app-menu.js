@@ -262,6 +262,31 @@ function buildAdminRotationBackupStatusHtml() {
   ].join('');
 }
 
+function adminRotationBackupSafetyItemHtml(label, value, detail, state) {
+  const safeState = state || 'info';
+  return [
+    '<div class="adminRotationBackupSafetyItem is' + escapeHtml(safeState.charAt(0).toUpperCase() + safeState.slice(1)) + '">',
+    '  <span>' + escapeHtml(label || '') + '</span>',
+    '  <b>' + escapeHtml(value || '') + '</b>',
+    detail ? '  <small>' + escapeHtml(detail) + '</small>' : '',
+    '</div>'
+  ].join('');
+}
+
+function buildAdminRotationBackupSafetyHtml() {
+  return [
+    '<div class="adminRotationBackupSafety">',
+    '  <div class="appMenuSubTitle">Bezpečnost obnovy</div>',
+    '  <div class="smallText uMb10">Obnova zálohy přepíše aktuální rozpis. Před kliknutím na Obnovit ověř měsíc zálohy, stáří a že současný stav může být nahrazen.</div>',
+    '  <div class="adminRotationBackupSafetyGrid">',
+    adminRotationBackupSafetyItemHtml('Vybraná záloha', 'datum + měsíc', 'Zkontroluj řádek zálohy, hlavně datum vytvoření a měsíc, kterého se obnova týká.', 'warn'),
+    adminRotationBackupSafetyItemHtml('Současný stav', 'uloží se bokem', 'Před obnovou se aktuální rozpis uloží jako nová záloha, ale veřejný rozpis se po obnově změní.', 'info'),
+    adminRotationBackupSafetyItemHtml('Po obnově', 'ověřit', 'Otevři Rozpisy, zkontroluj výjimky/absence a podle potřeby stáhni kontrolní Excel.', 'info'),
+    '  </div>',
+    '</div>'
+  ].join('');
+}
+
 function buildAdminRotationBackupsHtml() {
   const snapshot = app && app.adminRotationBackupsSnapshot ? app.adminRotationBackupsSnapshot : null;
   const backups = snapshot && Array.isArray(snapshot.backups) ? snapshot.backups : [];
@@ -2381,6 +2406,7 @@ function renderAdminMenuBody(body, section) {
     '    <div class="smallText" id="adminOnlineSaveStatus">Načti zálohy a vyber, kterou chceš obnovit.</div>',
     '  </div>',
     buildAdminRotationBackupStatusHtml(),
+    buildAdminRotationBackupSafetyHtml(),
     buildAdminRotationBackupsHtml(),
     '  <div class="appMenuActionRow">',
     '    <button type="button" class="appMenuAction" data-admin-action="load-rotation-backups">Načíst zálohy</button>',

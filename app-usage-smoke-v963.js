@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// RaK 1.2 (1.262) – smoke test přehledu připojení + Dashboard/appearance contract guard.
+// RaK 1.2 (1.263) – smoke test přehledu připojení + Dashboard/appearance contract guard.
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
@@ -225,12 +225,12 @@ const dashboardReleaseIsolationGuardV198 = Object.freeze({
 });
 
 const releaseMetadataContractV199 = Object.freeze({
-  displayVersion: '1.2 (1.262)',
-  appLabel: 'RaK 1.2 (1.262)',
-  packageVersion: '1.2.262',
-  cacheVersion: 'v1.2-1.262',
+  displayVersion: '1.2 (1.263)',
+  appLabel: 'RaK 1.2 (1.263)',
+  packageVersion: '1.2.263',
+  cacheVersion: 'v1.2-1.263',
   realtimeChannel: 'rak-public-live-v1-2-1-126',
-  changelogHeader: '## RaK 1.2 (1.262)',
+  changelogHeader: '## RaK 1.2 (1.263)',
   previousBuildFragments: Object.freeze(['1.2 (1.138)', '1.2.138', 'v1.2-1.138', '1.2 (1.137)', '1.2.137', 'v1.2-1.137', '1.2 (1.118)', '1.2.118', 'v1.2-1.118', 'rak-public-live-v1-2-1-118'])
 });
 
@@ -339,8 +339,8 @@ function assertDashboardReleaseIsolationGuardV198() {
 function assertReleaseMetadataContractV199() {
   const contract = releaseMetadataContractV199;
   assertIncludes(exportJs, 'RAK_RELEASE_METADATA_CONTRACT_V199', 'export.js musí obsahovat release metadata contract v1.99');
-  assertIncludes(exportJs, "displayVersion: '1.2 (1.262)'", 'Release contract v export.js musí držet display verzi 1.105');
-  assertIncludes(exportJs, "packageVersion: '1.2.262'", 'Release contract v export.js musí držet package verzi 1.2.114');
+  assertIncludes(exportJs, "displayVersion: '1.2 (1.263)'", 'Release contract v export.js musí držet display verzi 1.105');
+  assertIncludes(exportJs, "packageVersion: '1.2.263'", 'Release contract v export.js musí držet package verzi 1.2.114');
   assert(packageJson.version === contract.packageVersion, `package.json version drift: čekám ${contract.packageVersion}, mám ${packageJson.version}`);
   assertIncludes(coreJs, `const APP_VERSION = "${contract.displayVersion}";`, 'core.js APP_VERSION není sjednocený s 1.105');
   assertIncludes(serviceWorkerJs, `const CACHE_VERSION = '${contract.cacheVersion}';`, 'sw.js CACHE_VERSION není sjednocený s 1.105');
@@ -1534,6 +1534,9 @@ function assertAdminHandoverGuideContractV1142() {
   assertIncludes(ui, 'buildAdminPostSaveCheckHtml()', 'Kontrola po ulozeni musi byt vlozena primo do admin-only obrazovek');
   assertIncludes(ui, 'function buildAdminRotationBackupStatusHtml', 'Zalohy rozpisu musi mit admin-only souhrn stavu');
   assertIncludes(ui, 'function adminRotationBackupStatusItemHtml', 'Souhrn zaloh musi mit samostatne stavove polozky');
+  assertIncludes(ui, 'function buildAdminRotationBackupSafetyHtml', 'Zalohy rozpisu musi mit admin-only bezpecnostni kontrolu obnovy');
+  assertIncludes(ui, 'Bezpečnost obnovy', 'Zalohy musi spravci vysvetlit riziko obnovy');
+  assertIncludes(ui, 'Obnova zálohy přepíše aktuální rozpis', 'Zalohy musi jasne rikat, ze obnova prepise aktualni rozpis');
   assertIncludes(ui, 'function buildAdminManualHtml', 'Admin musi mit samostatnou prirucku spravce');
   assertIncludes(ui, 'function adminManualSectionHtml', 'Prirucka spravce musi mit rozbalovaci postupy');
   assertIncludes(ui, 'function buildAdminSettingsMapHtml', 'Admin musi mit mapu kde co upravit');
@@ -1656,6 +1659,7 @@ function assertAdminHandoverGuideContractV1142() {
   assertIncludes(stylesAdminPolishCss, '.adminPostSaveCheckAction', 'Kontrola po ulozeni musi mit kompaktni admin akce');
   assertIncludes(stylesAdminPolishCss, '.adminRotationBackupStatus', 'Souhrn zaloh musi mit vlastni admin-only styl');
   assertIncludes(stylesAdminPolishCss, '.adminRotationBackupStatusGrid', 'Souhrn zaloh musi mit prehlednou mrizku');
+  assertIncludes(stylesAdminPolishCss, '.adminRotationBackupSafetyGrid', 'Bezpecnost obnovy zalohy musi mit vlastni responsive admin styl');
   assertIncludes(stylesAdminPolishCss, '.adminHandoverRunbook', 'Predani spravy musi mit vlastni admin-only runbook styl');
   assertIncludes(stylesAdminPolishCss, '.adminHandoverActionRow', 'Predani spravy musi mit kompaktni radek akci');
   assertIncludes(stylesAdminPolishCss, '.adminMonthlyWorkflow', 'Mesicni postup musi mit vlastni admin-only styl');

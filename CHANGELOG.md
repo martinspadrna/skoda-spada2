@@ -1,3 +1,10 @@
+## RaK 1.2 (1.263)
+
+- Administrace / Zálohy rozpisů: doplněna admin-only `Bezpečnost obnovy`, aby správce před obnovou viděl, že záloha přepíše aktuální rozpis.
+- Zálohy: kontrola připomíná ověření data a měsíce zálohy, uložení současného stavu bokem a kontrolu rozpisů/exportu po obnově.
+- Smoke guard: `app-usage-smoke-v963.js` hlídá bezpečnostní panel obnovy, text o přepsání aktuálního rozpisu a responzivní admin styl.
+- Release metadata sjednocená na `RaK 1.2 (1.263)`, technická verze `1.2.263`, cache `v1.2-1.263`.
+
 ## RaK 1.2 (1.262)
 
 - Administrace / Export / import: doplněna admin-only `Bezpečnost importu`, aby správce jasně viděl rozdíl mezi exportem, který jen stahuje data, a importem, který přepisuje rozpisy.
