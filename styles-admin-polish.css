@@ -1810,6 +1810,25 @@
   min-height:34px !important;
   padding:7px 9px !important;
 }
+.adminHandoverExports{
+  display:grid !important;
+  gap:8px !important;
+  margin:12px 0 !important;
+  padding:10px !important;
+  border:1px solid rgba(180,255,190,.24) !important;
+  border-radius:8px !important;
+  background:rgba(255,255,255,.04) !important;
+}
+.adminHandoverExportGrid{
+  display:grid !important;
+  grid-template-columns:repeat(4,minmax(0,1fr)) !important;
+  gap:8px !important;
+}
+.adminHandoverExportGrid .appMenuAction{
+  width:100% !important;
+  min-height:36px !important;
+  padding:7px 8px !important;
+}
 .adminMonthlyWorkflowItem{
   display:grid !important;
   grid-template-columns:32px minmax(0,1fr) auto !important;
@@ -2104,6 +2123,9 @@
   #appMenuBody .adminNextStepAction{
     min-width:0 !important;
     width:100% !important;
+  }
+  .adminHandoverExportGrid{
+    grid-template-columns:repeat(2,minmax(0,1fr)) !important;
   }
   .adminManualActionRow{
     grid-template-columns:1fr !important;

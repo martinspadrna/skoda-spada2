@@ -1,3 +1,10 @@
+## RaK 1.2 (1.237)
+
+- Administrace: na uvod pridany admin-only blok `Predavaci podklady` s rychlym stazenim balicku predani, prirucky, mesicniho postupu a mapy nastaveni.
+- Predani spravy: exporty jsou dostupne hned z hlavniho admin rozcestniku a porad jen vytvari textove soubory, nic samy neukladaji.
+- Smoke guard: `app-usage-smoke-v963.js` hlida vlozeni bloku na admin uvod a jeho responsive styl.
+- Release metadata sjednocená na `RaK 1.2 (1.237)`, technická verze `1.2.237`, cache `v1.2-1.237`.
+
 ## RaK 1.2 (1.236)
 
 - Administrace / Predani spravy: pridane tlacitko `Stahnout balicek`, ktere vytvori jeden textovy soubor se stavem predani, mesicnim postupem, priruckou spravce a mapou nastaveni.
