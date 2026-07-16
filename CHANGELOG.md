@@ -1,3 +1,11 @@
+## RaK 1.2 (1.229)
+
+- Administrace / Spravci: pridany admin-only souhrn `Stav spravcu`, ktery ukazuje opravneni aktualniho uctu, pocet aktivnich spravcu, stav hesel a kontrolu rozepsanych radku.
+- Spravci: souhrn se prepocitava hned pri uprave uctu, popisu, hesla nebo prepinace aktivni, takze pred ulozenim upozorni na nedokoncene, duplicitni nebo owner radky.
+- Smoke guard: `app-usage-smoke-v963.js` hlida novy stav spravcu, zive prepocitani a responsive admin-only styl.
+- Release metadata sjednocená na `RaK 1.2 (1.229)`, technická verze `1.2.229`, cache `v1.2-1.229`.
+
+
 ## RaK 1.2 (1.228)
 
 - Administrace / Přehled připojení: přidaný admin-only souhrn `Stav připojení`, který ukazuje načtení dat, aktivitu za 24 hodin, profily/zařízení a poslední připojení.

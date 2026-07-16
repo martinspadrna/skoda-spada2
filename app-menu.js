@@ -1904,6 +1904,9 @@ function bindAppMenuHandlers(body) {
     if (target && target.matches && target.matches('#adminAnnouncementTitle, #adminAnnouncementMessage, #adminAnnouncementStart, #adminAnnouncementEnd') && typeof adminAnnouncementRefreshStatus === 'function') {
       adminAnnouncementRefreshStatus(body);
     }
+    if (target && target.matches && target.matches('[data-admin-account-field]') && typeof adminAccountsRefreshStatus === 'function') {
+      adminAccountsRefreshStatus(body);
+    }
   }, true);
 
   body.addEventListener('change', (event) => {
@@ -1929,6 +1932,9 @@ function bindAppMenuHandlers(body) {
     }
     if (target.matches('[data-app-contact-field]') && typeof adminAppContactRefreshStatus === 'function') {
       adminAppContactRefreshStatus(body);
+    }
+    if (target.matches('[data-admin-account-field]') && typeof adminAccountsRefreshStatus === 'function') {
+      adminAccountsRefreshStatus(body);
     }
     if (target.matches('#adminPayrollWorkdayOrdinal, [data-payroll-override-field]') && typeof adminPayrollRefreshStatus === 'function') {
       adminPayrollRefreshStatus(body);

@@ -1,4 +1,4 @@
-// RaK 1.2 (1.228) - admin opravneni navazane na prihlaseny ucet.
+// RaK 1.2 (1.229) - admin opravneni navazane na prihlaseny ucet.
 const RAK_OWNER_ADMIN_ACCOUNT_ID = '9811';
 const RAK_OWNER_ADMIN_PASSWORD = '772326';
 const RAK_ADMIN_ACCOUNTS_SETTINGS_KEY = 'ADMIN_ACCOUNTS_SETTINGS';
@@ -231,9 +231,101 @@ function buildAdminAccountsRoleOverviewHtml(settings) {
   ].join('');
 }
 
+function adminAccountsStatusItemHtml(label, value, detail, modifier) {
+  const className = 'adminAccountsStatusItem' + (modifier ? ' ' + modifier : '');
+  return [
+    '<div class="' + className + '">',
+    '  <span>' + escapeHtml(label) + '</span>',
+    '  <b>' + escapeHtml(value) + '</b>',
+    '  <small>' + escapeHtml(detail) + '</small>',
+    '</div>'
+  ].join('');
+}
+
+function normalizeAdminAccountDraftRows(rows) {
+  const safeRows = Array.isArray(rows) ? rows : [];
+  const filledRows = safeRows.filter((entry) => {
+    const safe = entry && typeof entry === 'object' ? entry : {};
+    return !!(String(safe.accountId || '').trim() || String(safe.label || '').trim() || String(safe.password || '').trim());
+  }).map((entry) => ({
+    accountId: String(entry && entry.accountId || '').trim(),
+    label: String(entry && entry.label || '').trim(),
+    password: String(entry && entry.password || '').trim(),
+    enabled: !(entry && entry.enabled === false)
+  }));
+  const counts = new Map();
+  filledRows.forEach((entry) => {
+    const id = String(entry.accountId || '').trim();
+    if (!id) return;
+    counts.set(id, (counts.get(id) || 0) + 1);
+  });
+  const completeAdmins = filledRows.filter((entry) => (
+    entry.accountId
+    && entry.accountId !== RAK_OWNER_ADMIN_ACCOUNT_ID
+    && entry.password
+    && entry.enabled !== false
+  ));
+  const missingPassword = filledRows.filter((entry) => (
+    entry.accountId
+    && entry.accountId !== RAK_OWNER_ADMIN_ACCOUNT_ID
+    && !entry.password
+  )).length;
+  const incompleteRows = filledRows.filter((entry) => (
+    (!entry.accountId && (entry.label || entry.password))
+    || (entry.accountId && entry.accountId !== RAK_OWNER_ADMIN_ACCOUNT_ID && !entry.password)
+  )).length;
+  const ownerRows = filledRows.filter((entry) => entry.accountId === RAK_OWNER_ADMIN_ACCOUNT_ID).length;
+  const duplicateIds = Array.from(counts.entries()).filter(([, count]) => count > 1).map(([id]) => id);
+  return {
+    filledRows,
+    completeAdmins,
+    enabledAdmins: completeAdmins.length,
+    missingPassword,
+    incompleteRows,
+    ownerRows,
+    duplicateIds
+  };
+}
+
+function buildAdminAccountsStatusHtml(source) {
+  const settings = source && typeof source === 'object' && Array.isArray(source.admins)
+    ? source
+    : rakAdminGetAccountsSettings();
+  const rows = source && typeof source === 'object' && Array.isArray(source.rows)
+    ? source.rows
+    : (Array.isArray(settings.admins) ? settings.admins : []);
+  const status = normalizeAdminAccountDraftRows(rows);
+  const canManage = typeof rakAdminCanManageAdmins === 'function' && rakAdminCanManageAdmins();
+  const activeTotal = 1 + status.enabledAdmins;
+  const passwordValue = status.missingPassword > 0 ? String(status.missingPassword) + ' chybi' : 'OK';
+  const passwordDetail = status.missingPassword > 0
+    ? 'Doplneni hesla je nutne pred ulozenim spravce.'
+    : 'Kazdy rozepsany spravce s uctem ma heslo.';
+  const issueCount = status.incompleteRows + status.ownerRows + status.duplicateIds.length;
+  const issueDetail = issueCount > 0
+    ? [
+        status.incompleteRows ? String(status.incompleteRows) + ' nedokoncene' : '',
+        status.ownerRows ? 'owner se nepridava do tabulky' : '',
+        status.duplicateIds.length ? 'duplicity: ' + status.duplicateIds.join(', ') : ''
+      ].filter(Boolean).join('; ')
+    : 'Prazdne radky se pri ulozeni ignoruji.';
+  return [
+    '<div class="adminAccountsStatus" id="adminAccountsStatus" aria-live="polite">',
+    '  <div class="adminAccountsStatusTitle">Stav spravcu</div>',
+    '  <div class="adminAccountsStatusGrid">',
+    adminAccountsStatusItemHtml('Opravneni', canManage ? 'Hlavni admin' : 'Jen cteni', canManage ? 'Tento ucet muze menit spravce.' : 'Seznam spravcu muze menit jen hlavni admin.', canManage ? 'isOk' : 'isWarn'),
+    adminAccountsStatusItemHtml('Aktivni spravci', String(activeTotal) + ' celkem', 'Ucet ' + RAK_OWNER_ADMIN_ACCOUNT_ID + ' + ' + String(status.enabledAdmins) + ' dalsi.', 'isOk'),
+    adminAccountsStatusItemHtml('Hesla', passwordValue, passwordDetail, status.missingPassword > 0 ? 'isWarn' : 'isOk'),
+    adminAccountsStatusItemHtml('Kontrola radku', issueCount > 0 ? String(issueCount) + ' k reseni' : 'OK', issueDetail, issueCount > 0 ? 'isWarn' : 'isOk'),
+    '  </div>',
+    '</div>'
+  ].join('');
+}
+
 function buildAdminAccountsSettingsHtml() {
   if (!rakAdminCanManageAdmins()) {
     return [
+      buildAdminAccountsStatusHtml(rakAdminGetAccountsSettings()),
       '<div class="adminAccountsReadonlyNotice">',
       '  <b>Seznam spravcu muze menit jen hlavni admin.</b>',
       '  <span>Bezny admin muze spravovat provoz, rozpisy a nastaveni, ale nemuze pridavat dalsi spravce ani menit jejich hesla.</span>',
@@ -244,13 +336,14 @@ function buildAdminAccountsSettingsHtml() {
   const rows = settings.admins.concat(Array.from({ length: 4 }, () => ({ accountId: '', label: '', password: '', enabled: true })));
   const body = rows.map((entry) => [
     '<tr data-admin-account-row>',
-    '  <td><input class="appMenuInlineInput" data-admin-account-id value="' + escapeHtml(entry.accountId || '') + '" placeholder="os. c."></td>',
-    '  <td><input class="appMenuInlineInput" data-admin-account-label value="' + escapeHtml(entry.label || '') + '" placeholder="jmeno / poznamka"></td>',
-    '  <td><input class="appMenuInlineInput" data-admin-account-password type="password" value="' + escapeHtml(entry.password || '') + '" placeholder="heslo"></td>',
-    '  <td><label class="adminRotationOvertimeSwitch"><input type="checkbox" data-admin-account-enabled ' + (entry.enabled === false ? '' : 'checked') + '><span>ANO</span></label></td>',
+    '  <td><input class="appMenuInlineInput" data-admin-account-field="accountId" data-admin-account-id value="' + escapeHtml(entry.accountId || '') + '" placeholder="os. c."></td>',
+    '  <td><input class="appMenuInlineInput" data-admin-account-field="label" data-admin-account-label value="' + escapeHtml(entry.label || '') + '" placeholder="jmeno / poznamka"></td>',
+    '  <td><input class="appMenuInlineInput" data-admin-account-field="password" data-admin-account-password type="password" value="' + escapeHtml(entry.password || '') + '" placeholder="heslo"></td>',
+    '  <td><label class="adminRotationOvertimeSwitch"><input type="checkbox" data-admin-account-field="enabled" data-admin-account-enabled ' + (entry.enabled === false ? '' : 'checked') + '><span>ANO</span></label></td>',
     '</tr>'
   ].join('')).join('');
   return [
+    buildAdminAccountsStatusHtml({ rows }),
     buildAdminAccountsRoleOverviewHtml(settings),
     '<div class="tableWrap appMenuTableWrap uMt8">',
     '  <div class="smallText uMb10">Tady pridavas dalsi admin ucty, ktere po prihlaseni uvidi administraci. Pro odebrani spravce smaz ucet nebo heslo a uloz.</div>',
@@ -262,19 +355,45 @@ function buildAdminAccountsSettingsHtml() {
   ].join('');
 }
 
+function readAdminAccountsDraftRowsFromDom(root) {
+  const scope = root && root.querySelectorAll ? root : document;
+  const rows = [];
+  scope.querySelectorAll('tr[data-admin-account-row]').forEach((row) => {
+    rows.push({
+      accountId: String(row.querySelector('[data-admin-account-id]')?.value || '').trim(),
+      label: String(row.querySelector('[data-admin-account-label]')?.value || '').trim(),
+      password: String(row.querySelector('[data-admin-account-password]')?.value || '').trim(),
+      enabled: !!(row.querySelector('[data-admin-account-enabled]') && row.querySelector('[data-admin-account-enabled]').checked)
+    });
+  });
+  return rows;
+}
+
+function adminAccountsRefreshStatus(root) {
+  const scope = root && root.querySelector ? root : document;
+  const statusEl = scope.querySelector ? scope.querySelector('#adminAccountsStatus') : document.getElementById('adminAccountsStatus');
+  if (!statusEl) return false;
+  const html = buildAdminAccountsStatusHtml({ rows: readAdminAccountsDraftRowsFromDom(scope) });
+  const wrapper = document.createElement('div');
+  wrapper.innerHTML = html;
+  const fresh = wrapper.firstElementChild;
+  if (!fresh) return false;
+  statusEl.replaceWith(fresh);
+  return true;
+}
+
 function readAdminAccountsSettingsFromDom() {
   const map = new Map();
-  document.querySelectorAll('#appMenuBody tr[data-admin-account-row]').forEach((row) => {
-    const accountId = String(row.querySelector('[data-admin-account-id]')?.value || '').trim();
-    const label = String(row.querySelector('[data-admin-account-label]')?.value || '').trim();
-    const password = String(row.querySelector('[data-admin-account-password]')?.value || '').trim();
-    const enabledInput = row.querySelector('[data-admin-account-enabled]');
+  readAdminAccountsDraftRowsFromDom(document.getElementById('appMenuBody') || document).forEach((entry) => {
+    const accountId = String(entry.accountId || '').trim();
+    const label = String(entry.label || '').trim();
+    const password = String(entry.password || '').trim();
     if (!accountId || accountId === RAK_OWNER_ADMIN_ACCOUNT_ID || !password) return;
     map.set(accountId, {
       accountId,
       label,
       password,
-      enabled: !!(enabledInput && enabledInput.checked)
+      enabled: entry.enabled !== false
     });
   });
   return {
@@ -316,6 +435,9 @@ try {
   window.rakAdminCanOpenAdmin = rakAdminCanOpenAdmin;
   window.rakAdminCanManageAdmins = rakAdminCanManageAdmins;
   window.buildAdminAccountsRoleOverviewHtml = buildAdminAccountsRoleOverviewHtml;
+  window.buildAdminAccountsStatusHtml = buildAdminAccountsStatusHtml;
+  window.adminAccountsRefreshStatus = adminAccountsRefreshStatus;
+  window.readAdminAccountsDraftRowsFromDom = readAdminAccountsDraftRowsFromDom;
   window.buildAdminAccountsSettingsHtml = buildAdminAccountsSettingsHtml;
   window.readAdminAccountsSettingsFromDom = readAdminAccountsSettingsFromDom;
   window.mergeAdminAccountsSettingsRows = mergeAdminAccountsSettingsRows;
