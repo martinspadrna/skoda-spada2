@@ -1428,26 +1428,158 @@ function buildAdminFhbTargetSettingsHtml() {
 
 
 
+function adminMachineIsEditableMachineRow(row) {
+  const cat = String(row && row.category ? row.category : '').trim();
+  const key = String(row && row.machine_key ? row.machine_key : '').trim();
+  return cat !== 'brus'
+    && cat !== 'fhb_target'
+    && cat !== 'food_schedule'
+    && cat !== 'vacation_countdown_settings'
+    && cat !== 'admin_accounts_settings'
+    && key !== 'ADMIN_ACCOUNTS_SETTINGS'
+    && key !== 'VACATION_COUNTDOWN_SETTINGS'
+    && cat !== ADMIN_ROTATION_OVERTIME_SETTINGS_CATEGORY
+    && !(typeof rakAdminIsAccountsSettingsRow === 'function' && rakAdminIsAccountsSettingsRow(row))
+    && !(typeof isRakExternalLinksSettingsRow === 'function' && isRakExternalLinksSettingsRow(row))
+    && !(typeof isRakAppContactSettingsRow === 'function' && isRakAppContactSettingsRow(row))
+    && !(typeof isRakPayrollSettingsRow === 'function' && isRakPayrollSettingsRow(row))
+    && !(typeof isRakSpecialDaysSettingsRow === 'function' && isRakSpecialDaysSettingsRow(row))
+    && !adminIsRotationGeneratorSettingsRow(row);
+}
+
+function adminMachineNormalizeNumberText(value) {
+  return String(value ?? '').trim().replace(',', '.');
+}
+
+function adminMachineIsPositiveNumber(value) {
+  const raw = adminMachineNormalizeNumberText(value);
+  if (!raw) return false;
+  const num = Number(raw);
+  return Number.isFinite(num) && num > 0;
+}
+
+function adminMachineIsFiniteNumber(value) {
+  const raw = adminMachineNormalizeNumberText(value);
+  if (!raw) return false;
+  return Number.isFinite(Number(raw));
+}
+
+function adminMachineReadStatusFromDom(root) {
+  const scope = root || document.getElementById('appMenuBody') || document;
+  const summary = { machines: 0, brus: 0, fhb: 0, incomplete: 0, duplicates: 0 };
+  const seen = new Set();
+  if (!scope.querySelectorAll) return summary;
+  scope.querySelectorAll('tr[data-machine-row-index]').forEach((tr) => {
+    const get = (field) => String(tr.querySelector('[data-machine-field="' + field + '"]')?.value ?? '').trim();
+    const machineCode = get('machine_code');
+    const machineIndex = get('machine_index');
+    const label = get('label');
+    const cycleTime = get('cycle_time');
+    const dressTime = get('dress_time');
+    const dressCount = get('dress_count');
+    if (!machineCode && !machineIndex && !label && !cycleTime && !dressTime && !dressCount) return;
+    const category = machineCode.toUpperCase().startsWith('TBKR') ? 'brus' : (machineCode.toUpperCase().startsWith('TPKW') ? 'pracka' : 'frezka');
+    const machineKey = makeMachineKey(machineCode, machineIndex, category);
+    const key = String(machineKey || (machineCode + '-' + machineIndex)).trim().toUpperCase();
+    if (key) {
+      if (seen.has(key)) summary.duplicates += 1;
+      else seen.add(key);
+    }
+    if (category === 'brus') summary.brus += 1;
+    else summary.machines += 1;
+    if (!machineCode || !adminMachineIsPositiveNumber(cycleTime)) summary.incomplete += 1;
+    if (category === 'brus' && (!machineIndex || !adminMachineIsPositiveNumber(dressTime) || !adminMachineIsPositiveNumber(dressCount))) summary.incomplete += 1;
+  });
+  scope.querySelectorAll('tr[data-fhb-target-row]').forEach((tr) => {
+    const get = (field) => String(tr.querySelector('[data-fhb-target-field="' + field + '"]')?.value ?? '').trim();
+    const key = String(tr.getAttribute('data-fhb-target-row') || '').trim();
+    summary.fhb += 1;
+    if (!key || !adminMachineIsFiniteNumber(get('left')) || !adminMachineIsFiniteNumber(get('right'))) summary.incomplete += 1;
+  });
+  return summary;
+}
+
+function adminMachineBuildInitialStatus(machineRows, brusRows, allRows) {
+  const summary = { machines: 0, brus: 0, fhb: 0, incomplete: 0, duplicates: 0 };
+  const seen = new Set();
+  const addRow = (row, category) => {
+    const machineCode = String(row && (row.machine_code || splitMachineKey(row.machine_key).machine) || '').trim();
+    const machineIndex = String(row && (row.machine_index || splitMachineKey(row.machine_key).index) || '').trim();
+    const cycleTime = row && (row.cycle_time ?? row.speed ?? (row.settings_json && row.settings_json.cycle_time));
+    const dressTime = row && (row.dress_time ?? (row.settings_json && row.settings_json.dress_time));
+    const dressCount = row && (row.dress_count ?? (row.settings_json && row.settings_json.dress_count));
+    const key = String(row && row.machine_key || makeMachineKey(machineCode, machineIndex, category)).trim().toUpperCase();
+    if (key) {
+      if (seen.has(key)) summary.duplicates += 1;
+      else seen.add(key);
+    }
+    if (category === 'brus') summary.brus += 1;
+    else summary.machines += 1;
+    if (!machineCode || !adminMachineIsPositiveNumber(cycleTime)) summary.incomplete += 1;
+    if (category === 'brus' && (!machineIndex || !adminMachineIsPositiveNumber(dressTime) || !adminMachineIsPositiveNumber(dressCount))) summary.incomplete += 1;
+  };
+  (Array.isArray(machineRows) ? machineRows : []).forEach((row) => addRow(row, String(row && row.category || '').trim() || 'frezka'));
+  (Array.isArray(brusRows) ? brusRows : []).forEach((row) => addRow(row, 'brus'));
+  let fhbRows = (Array.isArray(allRows) ? allRows : []).filter((row) => String(row && row.category || '').trim() === 'fhb_target');
+  if (!fhbRows.length && typeof getAdminFhbTargetRows === 'function') fhbRows = getAdminFhbTargetRows();
+  fhbRows.forEach((row) => {
+    const settings = row && row.settings_json && typeof row.settings_json === 'object' ? row.settings_json : {};
+    const left = settings.target_left ?? row.left;
+    const right = settings.target_right ?? row.right;
+    summary.fhb += 1;
+    if (!adminMachineIsFiniteNumber(left) || !adminMachineIsFiniteNumber(right)) summary.incomplete += 1;
+  });
+  return summary;
+}
+
+function adminMachineStatusItemHtml(label, value, detail, state) {
+  const safeState = state || 'ok';
+  return [
+    '<div class="adminMachineStatusItem is' + escapeHtml(safeState.charAt(0).toUpperCase() + safeState.slice(1)) + '">',
+    '  <span>' + escapeHtml(label || '') + '</span>',
+    '  <b>' + escapeHtml(value || '') + '</b>',
+    detail ? '  <small>' + escapeHtml(detail) + '</small>' : '',
+    '</div>'
+  ].join('');
+}
+
+function buildAdminMachineStatusHtml(summary) {
+  const safe = summary || { machines: 0, brus: 0, fhb: 0, incomplete: 0, duplicates: 0 };
+  const items = [
+    { label: 'Frezky / pračka', value: String(safe.machines || 0) + '×', detail: 'Řádky s jedním časem výroby kola.', state: safe.machines ? 'ok' : 'warn' },
+    { label: 'Brusy', value: String(safe.brus || 0) + '×', detail: 'Brusy vyžadují stroj, index, čas výroby, orovnání a počet ks.', state: safe.brus ? 'ok' : 'warn' },
+    { label: 'FHB středy', value: String(safe.fhb || 0) + '×', detail: 'Cíle a tolerance pro výpočet frezky FHB.', state: safe.fhb ? 'ok' : 'info' },
+    {
+      label: 'Kontrola',
+      value: safe.incomplete || safe.duplicates ? 'zkontrolovat' : 'OK',
+      detail: safe.duplicates ? ('Duplicitní klíče: ' + String(safe.duplicates) + '×.') : (safe.incomplete ? ('Neúplné/nenumerické hodnoty: ' + String(safe.incomplete) + '×.') : 'Změny se zapíšou až tlačítkem Uložit stroje.'),
+      state: safe.incomplete || safe.duplicates ? 'warn' : 'ok'
+    }
+  ];
+  return [
+    '<div class="adminMachineStatus" id="adminMachineStatus">',
+    '  <div class="appMenuSubTitle">Stav nastavení strojů</div>',
+    '  <div class="smallText uMb10">Souhrn vychází z řádků níže a pomáhá před uložením zachytit prázdné nebo podezřelé hodnoty.</div>',
+    '  <div class="adminMachineStatusGrid">',
+    items.map((item) => adminMachineStatusItemHtml(item.label, item.value, item.detail, item.state)).join(''),
+    '  </div>',
+    '</div>'
+  ].join('');
+}
+
+function adminMachineRefreshStatus(root) {
+  const scope = root || document.getElementById('appMenuBody') || document;
+  const box = scope.querySelector ? scope.querySelector('#adminMachineStatus') : null;
+  if (!box) return;
+  const wrap = document.createElement('div');
+  wrap.innerHTML = buildAdminMachineStatusHtml(adminMachineReadStatusFromDom(scope));
+  const next = wrap.firstElementChild;
+  if (next) box.replaceWith(next);
+}
+
 function buildAdminMachineSettingsTableHtml() {
   const rows = Array.isArray(app.machineSettingsRows) ? app.machineSettingsRows : [];
-  const machineRows = rows.filter(row => {
-    const cat = String(row && row.category ? row.category : '').trim();
-    const key = String(row && row.machine_key ? row.machine_key : '').trim();
-    return cat !== 'brus'
-      && cat !== 'fhb_target'
-      && cat !== 'food_schedule'
-      && cat !== 'vacation_countdown_settings'
-      && cat !== 'admin_accounts_settings'
-      && key !== 'ADMIN_ACCOUNTS_SETTINGS'
-      && key !== 'VACATION_COUNTDOWN_SETTINGS'
-      && cat !== ADMIN_ROTATION_OVERTIME_SETTINGS_CATEGORY
-      && !(typeof rakAdminIsAccountsSettingsRow === 'function' && rakAdminIsAccountsSettingsRow(row))
-      && !(typeof isRakExternalLinksSettingsRow === 'function' && isRakExternalLinksSettingsRow(row))
-      && !(typeof isRakAppContactSettingsRow === 'function' && isRakAppContactSettingsRow(row))
-      && !(typeof isRakPayrollSettingsRow === 'function' && isRakPayrollSettingsRow(row))
-      && !(typeof isRakSpecialDaysSettingsRow === 'function' && isRakSpecialDaysSettingsRow(row))
-      && !adminIsRotationGeneratorSettingsRow(row);
-  });
+  const machineRows = rows.filter(adminMachineIsEditableMachineRow);
   const brusRows = rows.filter(row => String(row && row.category ? row.category : '').trim() === 'brus');
 
   const machineDefaults = machineRows.length ? machineRows : [
@@ -1502,6 +1634,7 @@ function buildAdminMachineSettingsTableHtml() {
     '<div class="appMenuSubSection" id="adminMachinesSection">',
     '  <div class="appMenuSubTitle">Nastavení strojů</div>',
     '  <div class="appMenuText">Frezky a pračka mají jen čas výroby kola. Brusky mají stroj, index, čas výroby kola, čas orovnání a počet kusů po orovnání. Níž upravíš i středy fhβ.</div>',
+    buildAdminMachineStatusHtml(adminMachineBuildInitialStatus(machineDefaults, brusDefaults, rows)),
     '  <div class="tableWrap appMenuTableWrap">',
     '    <div class="smallText">Frezky a pračka</div>',
     '    <table class="appMenuTable appMenuAdminTable appMenuAdminTableDense">',

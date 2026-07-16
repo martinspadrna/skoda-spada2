@@ -1889,6 +1889,9 @@ function bindAppMenuHandlers(body) {
     if (target && target.matches && target.matches('[data-special-day-field]') && typeof adminSpecialDaysRefreshStatus === 'function') {
       adminSpecialDaysRefreshStatus(body);
     }
+    if (target && target.matches && target.matches('[data-machine-field], [data-fhb-target-field]') && typeof adminMachineRefreshStatus === 'function') {
+      adminMachineRefreshStatus(body);
+    }
   }, true);
 
   body.addEventListener('change', (event) => {
@@ -1905,6 +1908,9 @@ function bindAppMenuHandlers(body) {
     }
     if (target.matches('[data-special-day-field]') && typeof adminSpecialDaysRefreshStatus === 'function') {
       adminSpecialDaysRefreshStatus(body);
+    }
+    if (target.matches('[data-machine-field], [data-fhb-target-field]') && typeof adminMachineRefreshStatus === 'function') {
+      adminMachineRefreshStatus(body);
     }
   }, true);
 

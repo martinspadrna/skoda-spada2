@@ -1,3 +1,10 @@
+## RaK 1.2 (1.221)
+
+- Administrace / Nastavení strojů: přidaný admin-only souhrn `Stav nastavení strojů`, který ukazuje počty frezky/pračka, brusů, FHB středů a stav kontroly hodnot.
+- Nastavení strojů: souhrn se přepočítává podle rozepsaných řádků ještě před uložením a upozorní na duplicitní klíče nebo neúplné/nenumerické parametry.
+- Smoke guard: `app-usage-smoke-v963.js` hlídá nový stav strojů, jeho živé přepočítání a responsive admin-only styl.
+- Release metadata sjednocená na `RaK 1.2 (1.221)`, technická verze `1.2.221`, cache `v1.2-1.221`.
+
 ## RaK 1.2 (1.220)
 
 - Administrace / Mimořádné volné dny: přidaný admin-only souhrn `Stav mimořádných dnů`, který ukazuje počet zadaných dnů, budoucí dny, nejbližší datum a rozpad odstávka/volno.
