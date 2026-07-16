@@ -1146,8 +1146,8 @@ function buildAdminSettingsMapStatusHtml(items) {
   ].join('');
 }
 
-function buildAdminSettingsMapHtml() {
-  const items = [
+function getAdminSettingsMapItems() {
+  return [
     {
       title: 'Rozpis a absence',
       scope: 'Administrace / Rozpisy',
@@ -1219,12 +1219,67 @@ function buildAdminSettingsMapHtml() {
       ]
     }
   ];
+}
+
+function buildAdminSettingsMapHtml() {
+  const items = getAdminSettingsMapItems();
   return [
     buildAdminSettingsMapStatusHtml(items),
     '<div class="adminSettingsMapGrid">',
     items.map(adminSettingsMapItemHtml).join(''),
     '</div>'
   ].join('');
+}
+
+function buildAdminSettingsMapText() {
+  const items = getAdminSettingsMapItems();
+  const version = formatRakDisplayVersion((typeof app !== 'undefined' && app.version) || (typeof APP_VERSION !== 'undefined' ? APP_VERSION : ''));
+  const ownerAccess = typeof rakAdminCanManageAdmins === 'function' && rakAdminCanManageAdmins();
+  const lines = [
+    'RaK - Kde co upravit',
+    'Verze: ' + version,
+    'Vytvořeno: ' + new Date().toLocaleString('cs-CZ'),
+    '',
+    'Pravidlo',
+    '- Tenhle soubor je jen mapa administrace. Nic sám nemění ani neukládá.',
+    '- Změny dělej jen v administraci a ukládej v konkrétní sekci.',
+    '- Běžný uživatel nemá mít možnost měnit rozpis, provoz ani nastavení.',
+    '- Správci: ' + (ownerAccess ? 'hlavní admin může měnit další správce.' : 'běžný admin nemůže měnit seznam správců.'),
+    '',
+    'Oblasti'
+  ];
+  items.forEach((item, index) => {
+    const actions = Array.isArray(item && item.actions) ? item.actions : [];
+    lines.push(String(index + 1) + '. ' + String(item && item.title || 'Oblast'));
+    lines.push('- Sekce: ' + String(item && item.scope || 'administrace'));
+    lines.push('- K čemu slouží: ' + String(item && item.detail || ''));
+    lines.push('- Kde se projeví: ' + String(item && item.visible || ''));
+    lines.push('- Otevřít v aplikaci: ' + (actions.length ? actions.map((action) => String(action && action.label || 'Otevřít')).join(', ') : 'bez rychlé akce'));
+    lines.push('');
+  });
+  lines.push('Kontrola po úpravě');
+  lines.push('- Po uložení zkontroluj stav synchronizace na hlavní stránce.');
+  lines.push('- U rozpisů před větší změnou ověř zálohy a po dokončení podle potřeby stáhni Excel nebo ZIP.');
+  lines.push('');
+  return lines.join('\n');
+}
+
+function downloadAdminSettingsMapText() {
+  const text = buildAdminSettingsMapText();
+  const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  const dateKey = new Date().toISOString().slice(0, 10);
+  a.href = url;
+  a.download = 'RaK_kde_co_upravit_' + dateKey + '.txt';
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(() => {
+    try { URL.revokeObjectURL(url); } catch (err) {}
+    try { a.remove(); } catch (err) {}
+  }, 0);
+  const status = document.getElementById('adminOnlineSaveStatus');
+  if (status) status.textContent = 'Mapa nastavení stažena jako textový soubor.';
 }
 
 function buildAdminManualText(monthKey) {
@@ -1616,6 +1671,7 @@ function renderAdminMenuBody(body, section) {
     '  </div>',
     buildAdminSettingsMapHtml(),
     '  <div class="appMenuActionRow">',
+    '    <button type="button" class="appMenuAction isActive" data-admin-action="download-settings-map">Stáhnout mapu</button>',
     '    <button type="button" class="appMenuAction" data-admin-action="open-admin-manual">Příručka správce</button>',
     '    <button type="button" class="appMenuAction" data-admin-action="back-admin">Zpět</button>',
     '  </div>',
@@ -2108,6 +2164,10 @@ function bindAppMenuHandlers(body) {
       }
       if (adminAction === 'download-handover-status') {
         downloadAdminHandoverStatusText();
+        return;
+      }
+      if (adminAction === 'download-settings-map') {
+        downloadAdminSettingsMapText();
         return;
       }
       if (menuAction === 'export' || adminAction === 'export') {

@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// RaK 1.2 (1.234) – smoke test přehledu připojení + Dashboard/appearance contract guard.
+// RaK 1.2 (1.235) – smoke test přehledu připojení + Dashboard/appearance contract guard.
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
@@ -225,12 +225,12 @@ const dashboardReleaseIsolationGuardV198 = Object.freeze({
 });
 
 const releaseMetadataContractV199 = Object.freeze({
-  displayVersion: '1.2 (1.234)',
-  appLabel: 'RaK 1.2 (1.234)',
-  packageVersion: '1.2.234',
-  cacheVersion: 'v1.2-1.234',
+  displayVersion: '1.2 (1.235)',
+  appLabel: 'RaK 1.2 (1.235)',
+  packageVersion: '1.2.235',
+  cacheVersion: 'v1.2-1.235',
   realtimeChannel: 'rak-public-live-v1-2-1-126',
-  changelogHeader: '## RaK 1.2 (1.234)',
+  changelogHeader: '## RaK 1.2 (1.235)',
   previousBuildFragments: Object.freeze(['1.2 (1.138)', '1.2.138', 'v1.2-1.138', '1.2 (1.137)', '1.2.137', 'v1.2-1.137', '1.2 (1.118)', '1.2.118', 'v1.2-1.118', 'rak-public-live-v1-2-1-118'])
 });
 
@@ -339,8 +339,8 @@ function assertDashboardReleaseIsolationGuardV198() {
 function assertReleaseMetadataContractV199() {
   const contract = releaseMetadataContractV199;
   assertIncludes(exportJs, 'RAK_RELEASE_METADATA_CONTRACT_V199', 'export.js musí obsahovat release metadata contract v1.99');
-  assertIncludes(exportJs, "displayVersion: '1.2 (1.234)'", 'Release contract v export.js musí držet display verzi 1.105');
-  assertIncludes(exportJs, "packageVersion: '1.2.234'", 'Release contract v export.js musí držet package verzi 1.2.114');
+  assertIncludes(exportJs, "displayVersion: '1.2 (1.235)'", 'Release contract v export.js musí držet display verzi 1.105');
+  assertIncludes(exportJs, "packageVersion: '1.2.235'", 'Release contract v export.js musí držet package verzi 1.2.114');
   assert(packageJson.version === contract.packageVersion, `package.json version drift: čekám ${contract.packageVersion}, mám ${packageJson.version}`);
   assertIncludes(coreJs, `const APP_VERSION = "${contract.displayVersion}";`, 'core.js APP_VERSION není sjednocený s 1.105');
   assertIncludes(serviceWorkerJs, `const CACHE_VERSION = '${contract.cacheVersion}';`, 'sw.js CACHE_VERSION není sjednocený s 1.105');
@@ -1475,9 +1475,12 @@ function assertAdminHandoverGuideContractV1142() {
   assertIncludes(ui, 'function buildAdminManualHtml', 'Admin musi mit samostatnou prirucku spravce');
   assertIncludes(ui, 'function adminManualSectionHtml', 'Prirucka spravce musi mit rozbalovaci postupy');
   assertIncludes(ui, 'function buildAdminSettingsMapHtml', 'Admin musi mit mapu kde co upravit');
+  assertIncludes(ui, 'function getAdminSettingsMapItems', 'Mapa nastaveni musi mit spolecny zdroj pro UI i textovy export');
   assertIncludes(ui, 'function adminSettingsMapItemHtml', 'Mapa nastaveni musi mit samostatne polozky');
   assertIncludes(ui, 'function buildAdminSettingsMapStatusHtml', 'Mapa nastaveni musi mit horní souhrn pokryti a bezpecnosti');
   assertIncludes(ui, 'function adminSettingsMapStatusItemHtml', 'Souhrn mapy nastaveni musi mit samostatne stavove polozky');
+  assertIncludes(ui, 'function buildAdminSettingsMapText', 'Mapa nastaveni musi mit textovy export pro predani');
+  assertIncludes(ui, 'function downloadAdminSettingsMapText', 'Mapa nastaveni musi jit stahnout jako soubor');
   assertIncludes(ui, 'function buildAdminManualText', 'Prirucka spravce musi mit textovy export pro predani');
   assertIncludes(ui, 'function downloadAdminManualText', 'Prirucka spravce musi jit stahnout jako soubor');
   assertIncludes(ui, 'function adminGuideHasMonthRows', 'Pruvodce musi umet poznat, jestli ma vybrany mesic rozpis');
@@ -1506,6 +1509,7 @@ function assertAdminHandoverGuideContractV1142() {
   assertIncludes(ui, 'data-admin-action="download-admin-manual"', 'Prirucka spravce musi mit tlacitko Stahnout prirucku');
   assertIncludes(ui, 'data-admin-action="download-monthly-workflow"', 'Mesicni postup musi mit tlacitko Stahnout postup');
   assertIncludes(ui, 'data-admin-action="download-handover-status"', 'Predani spravy musi mit tlacitko Stahnout stav');
+  assertIncludes(ui, 'data-admin-action="download-settings-map"', 'Mapa nastaveni musi mit tlacitko Stahnout mapu');
   assertIncludes(ui, "adminAction === 'open-handover'", 'Admin menu musi umet otevrit panel Predani spravy');
   assertIncludes(ui, "adminAction === 'open-monthly-workflow'", 'Admin menu musi umet otevrit mesicni postup');
   assertIncludes(ui, "adminAction === 'open-admin-manual'", 'Admin menu musi umet otevrit prirucku spravce');
@@ -1513,6 +1517,7 @@ function assertAdminHandoverGuideContractV1142() {
   assertIncludes(ui, "adminAction === 'download-admin-manual'", 'Admin menu musi umet stahnout prirucku spravce');
   assertIncludes(ui, "adminAction === 'download-monthly-workflow'", 'Admin menu musi umet stahnout mesicni postup');
   assertIncludes(ui, "adminAction === 'download-handover-status'", 'Admin menu musi umet stahnout stav predani');
+  assertIncludes(ui, "adminAction === 'download-settings-map'", 'Admin menu musi umet stahnout mapu nastaveni');
   assertIncludes(ui, "'admin-handover'", 'Predani spravy musi byt mezi chranenymi admin view');
   assertIncludes(ui, "'admin-monthly-workflow'", 'Mesicni postup musi byt mezi chranenymi admin view');
   assertIncludes(ui, "'admin-manual'", 'Prirucka spravce musi byt mezi chranenymi admin view');
@@ -1530,6 +1535,7 @@ function assertAdminHandoverGuideContractV1142() {
   assertIncludes(ui, 'RaK_prirucka_spravce_', 'Textovy export prirucky musi mit jasny nazev souboru');
   assertIncludes(ui, 'RaK_mesicni_postup_', 'Textovy export mesicniho postupu musi mit jasny nazev souboru');
   assertIncludes(ui, 'RaK_stav_predani_', 'Textovy export stavu predani musi mit jasny nazev souboru');
+  assertIncludes(ui, 'RaK_kde_co_upravit_', 'Textovy export mapy nastaveni musi mit jasny nazev souboru');
   assertIncludes(ui, 'Kde co upravit', 'Mapa nastaveni musi byt pojmenovana srozumitelne pro spravce');
   assertIncludes(ui, 'Stav mapy nastaveni', 'Mapa nastaveni musi nahore vysvetlit, ze jde o rozcestnik');
   assertIncludes(ui, 'Tlacitka jen oteviraji admin sekce, sama nic neukladaji.', 'Mapa nastaveni nesmi pusobit jako ulozeni zmen');

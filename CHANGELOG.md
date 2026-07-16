@@ -1,3 +1,10 @@
+## RaK 1.2 (1.235)
+
+- Administrace / Kde co upravit: pridane tlacitko `Stahnout mapu`, ktere vytvori textovy soubor s prehledem, kde se co v aplikaci upravuje.
+- Predani spravy: mapa nastaveni ma spolecny zdroj pro UI i textovy export, aby se novemu spravci nestahla jina pravidla nez vidi v aplikaci.
+- Smoke guard: `app-usage-smoke-v963.js` hlida export mapy, tlacitko, handler a nazev souboru `RaK_kde_co_upravit_`.
+- Release metadata sjednocená na `RaK 1.2 (1.235)`, technická verze `1.2.235`, cache `v1.2-1.235`.
+
 ## RaK 1.2 (1.234)
 
 - Administrace: na uvod pridan kratky admin-only blok `Co ted zkontrolovat`, ktery z mesicniho postupu vybere nejblizsi kroky podle aktualniho stavu.
