@@ -1,3 +1,10 @@
+## RaK 1.2 (1.264)
+
+- Administrace: rozšířena `Legenda tlačítek` o rizikové akce `Import` a `Obnovit`, aby nový správce hned viděl, že nejde o běžné načtení.
+- Předání správy: `Import` je označen jako přepis rozpisů z Excelu a `Obnovit` jako přepsání aktuálního rozpisu zálohou.
+- Smoke guard: `app-usage-smoke-v963.js` hlídá nové položky legendy a jejich varovné zvýraznění.
+- Release metadata sjednocená na `RaK 1.2 (1.264)`, technická verze `1.2.264`, cache `v1.2-1.264`.
+
 ## RaK 1.2 (1.263)
 
 - Administrace / Zálohy rozpisů: doplněna admin-only `Bezpečnost obnovy`, aby správce před obnovou viděl, že záloha přepíše aktuální rozpis.

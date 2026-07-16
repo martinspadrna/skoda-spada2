@@ -1380,6 +1380,8 @@ function buildAdminHandoverExportsHtml(monthKey) {
 function buildAdminActionLegendHtml() {
   const items = [
     { label: 'Uložit', detail: 'mění online data', state: 'save' },
+    { label: 'Import', detail: 'přepisuje rozpisy z Excelu', state: 'import' },
+    { label: 'Obnovit', detail: 'přepíše aktuální rozpis zálohou', state: 'restore' },
     { label: 'Načíst', detail: 'jen načte uložený stav', state: 'load' },
     { label: 'Stáhnout', detail: 'jen vytvoří soubor', state: 'download' },
     { label: 'Zpět', detail: 'nic nemění', state: 'back' }
