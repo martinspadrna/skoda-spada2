@@ -1,3 +1,10 @@
+## RaK 1.2 (1.262)
+
+- Administrace / Export / import: doplněna admin-only `Bezpečnost importu`, aby správce jasně viděl rozdíl mezi exportem, který jen stahuje data, a importem, který přepisuje rozpisy.
+- Import: kontrola připomíná ověření rozsahu měsíc/rok, zálohu před větším importem a kontrolu rozpisů/exportu po načtení Excelu.
+- Smoke guard: `app-usage-smoke-v963.js` hlídá bezpečnostní panel importu, text o přepisování dat a responzivní admin styl.
+- Release metadata sjednocená na `RaK 1.2 (1.262)`, technická verze `1.2.262`, cache `v1.2-1.262`.
+
 ## RaK 1.2 (1.261)
 
 - Administrace / Nastavení strojů: doplněna admin-only `Kontrola dopadu strojů`, aby správce po uložení ověřil kalkulačky, návazné rozpisové kontroly a online stav.

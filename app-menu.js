@@ -110,6 +110,31 @@ function renderAdminExportImportStatus() {
   if (next) box.replaceWith(next);
 }
 
+function adminExportImportSafetyItemHtml(label, value, detail, state) {
+  const safeState = state || 'info';
+  return [
+    '<div class="adminExportImportSafetyItem is' + escapeHtml(safeState.charAt(0).toUpperCase() + safeState.slice(1)) + '">',
+    '  <span>' + escapeHtml(label || '') + '</span>',
+    '  <b>' + escapeHtml(value || '') + '</b>',
+    detail ? '  <small>' + escapeHtml(detail) + '</small>' : '',
+    '</div>'
+  ].join('');
+}
+
+function buildAdminExportImportSafetyHtml() {
+  return [
+    '<div class="adminExportImportSafety">',
+    '  <div class="appMenuSubTitle">Bezpečnost importu</div>',
+    '  <div class="smallText uMb10">Export jen stahuje data. Import naopak přepisuje rozpisy z načteného Excelu, proto před tlačítkem Načíst do rozpisů ověř rozsah a zálohy.</div>',
+    '  <div class="adminExportImportSafetyGrid">',
+    adminExportImportSafetyItemHtml('Rozsah', 'měsíc / rok', 'Před importem zkontroluj, jestli má být vybraný jen jeden měsíc, nebo celý načtený Excel.', 'warn'),
+    adminExportImportSafetyItemHtml('Záloha', 'před importem', 'U většího importu nejdřív otevři Zálohy rozpisů nebo stáhni Excel aktuálního stavu.', 'info'),
+    adminExportImportSafetyItemHtml('Kontrola po importu', 'rozpis + export', 'Po importu otevři Rozpisy, ověř absence/výjimky a stáhni kontrolní Excel podle potřeby.', 'info'),
+    '  </div>',
+    '</div>'
+  ].join('');
+}
+
 
 function ensureAppMenuOverlay() {
   let page = document.getElementById('menu');
@@ -2457,6 +2482,7 @@ function renderAdminMenuBody(body, section) {
     '    <div class="smallText" id="rakExcelImportStatus">ZIP export stáhne kompletní build aplikace. XLSX rozpis stáhne jen vybraný měsíc v kopírovacím layoutu.</div>',
     '  </div>',
     buildAdminExportImportStatusHtml(monthKey),
+    buildAdminExportImportSafetyHtml(),
     '  <div class="appMenuSettingsList">',
     '    <div class="appMenuSubTitle">XLSX rozpis pro kopírování</div>',
     '    <div class="smallText">Stejný export jako v generátoru: Tvrdota v A:F, Měkota pod ní v A:F a Absence od H dál po pracovních dnech.</div>',
