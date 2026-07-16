@@ -1449,6 +1449,31 @@ function buildAdminPayrollPublicCheckHtml() {
   ].join('');
 }
 
+function adminFoodPublicCheckItemHtml(label, value, detail, state) {
+  const safeState = state || 'info';
+  return [
+    '<div class="adminFoodPublicCheckItem is' + escapeHtml(safeState.charAt(0).toUpperCase() + safeState.slice(1)) + '">',
+    '  <span>' + escapeHtml(label || '') + '</span>',
+    '  <b>' + escapeHtml(value || '') + '</b>',
+    detail ? '  <small>' + escapeHtml(detail) + '</small>' : '',
+    '</div>'
+  ].join('');
+}
+
+function buildAdminFoodPublicCheckHtml() {
+  return [
+    '<div class="adminFoodPublicCheck">',
+    '  <div class="appMenuSubTitle">Veřejná kontrola provozu</div>',
+    '  <div class="smallText uMb10">Časy kantýny a jídelny jsou viditelné na home kartách. Po uložení ověř běžnou aplikaci, ne jen administraci.</div>',
+    '  <div class="adminFoodPublicCheckGrid">',
+    adminFoodPublicCheckItemHtml('Home karty', 'Kantýna / Jídelna', 'Ověř stav otevřeno/zavřeno, čas „Do“ a řádek „Další“ na home.', 'warn'),
+    adminFoodPublicCheckItemHtml('Běžné časy', 'týden', 'Po změně běžné otevírací doby zkontroluj pracovní den i neděli.', 'info'),
+    adminFoodPublicCheckItemHtml('Přesčasy', 'budoucí neděle', 'U přesčasů ověř datum, časy a že minulé termíny zůstaly jen schované.', 'info'),
+    '  </div>',
+    '</div>'
+  ].join('');
+}
+
 function buildAdminMonthlyWorkflowHtml(monthKey) {
   const workflow = getAdminMonthlyWorkflowItems(monthKey);
   return [
@@ -2059,6 +2084,7 @@ function renderAdminMenuBody(body, section) {
     '    <div class="smallText" id="adminOnlineSaveStatus">Stav uložení se zobrazí po kliknutí na Uložit časy.</div>',
     '  </div>',
     buildAdminFoodScheduleSettingsHtml(),
+    buildAdminFoodPublicCheckHtml(),
     '  <div class="appMenuActionRow">',
     '    <button type="button" class="appMenuAction" data-admin-action="load-food-schedule">Načíst online</button>',
     '    <button type="button" class="appMenuAction isActive" data-admin-action="save-food-schedule">Uložit časy</button>',

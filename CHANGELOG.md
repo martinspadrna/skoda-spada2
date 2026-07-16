@@ -1,3 +1,10 @@
+## RaK 1.2 (1.256)
+
+- Administrace / Kantýna a jídelna: doplněna admin-only `Veřejná kontrola provozu`, aby správce po uložení ověřil home karty Kantýna/Jídelna.
+- Provoz: kontrola připomíná stav otevřeno/zavřeno, čas `Do`, řádek `Další`, běžné časy a budoucí přesčasové neděle.
+- Smoke guard: `app-usage-smoke-v963.js` hlídá veřejnou kontrolu provozu, vložení do admin obrazovky a responsive styl.
+- Release metadata sjednocená na `RaK 1.2 (1.256)`, technická verze `1.2.256`, cache `v1.2-1.256`.
+
 ## RaK 1.2 (1.255)
 
 - Administrace / Výplata: doplněna admin-only `Veřejná kontrola výplaty`, aby správce po uložení ověřil home kartu Výplata a text odpočtu.

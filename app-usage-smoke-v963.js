@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// RaK 1.2 (1.255) – smoke test přehledu připojení + Dashboard/appearance contract guard.
+// RaK 1.2 (1.256) – smoke test přehledu připojení + Dashboard/appearance contract guard.
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
@@ -225,12 +225,12 @@ const dashboardReleaseIsolationGuardV198 = Object.freeze({
 });
 
 const releaseMetadataContractV199 = Object.freeze({
-  displayVersion: '1.2 (1.255)',
-  appLabel: 'RaK 1.2 (1.255)',
-  packageVersion: '1.2.255',
-  cacheVersion: 'v1.2-1.255',
+  displayVersion: '1.2 (1.256)',
+  appLabel: 'RaK 1.2 (1.256)',
+  packageVersion: '1.2.256',
+  cacheVersion: 'v1.2-1.256',
   realtimeChannel: 'rak-public-live-v1-2-1-126',
-  changelogHeader: '## RaK 1.2 (1.255)',
+  changelogHeader: '## RaK 1.2 (1.256)',
   previousBuildFragments: Object.freeze(['1.2 (1.138)', '1.2.138', 'v1.2-1.138', '1.2 (1.137)', '1.2.137', 'v1.2-1.137', '1.2 (1.118)', '1.2.118', 'v1.2-1.118', 'rak-public-live-v1-2-1-118'])
 });
 
@@ -339,8 +339,8 @@ function assertDashboardReleaseIsolationGuardV198() {
 function assertReleaseMetadataContractV199() {
   const contract = releaseMetadataContractV199;
   assertIncludes(exportJs, 'RAK_RELEASE_METADATA_CONTRACT_V199', 'export.js musí obsahovat release metadata contract v1.99');
-  assertIncludes(exportJs, "displayVersion: '1.2 (1.255)'", 'Release contract v export.js musí držet display verzi 1.105');
-  assertIncludes(exportJs, "packageVersion: '1.2.255'", 'Release contract v export.js musí držet package verzi 1.2.114');
+  assertIncludes(exportJs, "displayVersion: '1.2 (1.256)'", 'Release contract v export.js musí držet display verzi 1.105');
+  assertIncludes(exportJs, "packageVersion: '1.2.256'", 'Release contract v export.js musí držet package verzi 1.2.114');
   assert(packageJson.version === contract.packageVersion, `package.json version drift: čekám ${contract.packageVersion}, mám ${packageJson.version}`);
   assertIncludes(coreJs, `const APP_VERSION = "${contract.displayVersion}";`, 'core.js APP_VERSION není sjednocený s 1.105');
   assertIncludes(serviceWorkerJs, `const CACHE_VERSION = '${contract.cacheVersion}';`, 'sw.js CACHE_VERSION není sjednocený s 1.105');
@@ -1259,8 +1259,13 @@ function assertRotationOvertimeShiftFilterContractV1128() {
   assertIncludes(adminFoodJs, 'const dates = allDates.filter', 'Kantyna/jidelna ma v tabulce ukazovat jen budouci prescasove nedele');
   assertIncludes(adminFoodJs, 'preservedPastDateInputs', 'Stare prescasove nedele ve food nastaveni se nesmi pri ulozeni potichu smazat');
   assertIncludes(adminFoodJs, 'data-food-past-overtime-date', 'Skryte stare food prescasy musi mit vlastni znacku');
+  assertIncludes(menuJs, 'function buildAdminFoodPublicCheckHtml', 'Kantyna/jidelna musi mit admin-only kontrolu verejneho dopadu');
+  assertIncludes(menuJs, 'Veřejná kontrola provozu', 'Kantyna/jidelna musi spravci rikat, ze jde o verejne viditelnou zmenu');
+  assertIncludes(menuJs, 'Ověř stav otevřeno/zavřeno', 'Kantyna/jidelna musi mit jasnou kontrolu po ulozeni na home');
+  assertIncludes(menuJs, 'buildAdminFoodPublicCheckHtml()', 'Kontrola verejneho dopadu kantyny/jidelny musi byt vlozena do admin obrazovky');
   assertIncludes(menuJs, 'adminFoodRefreshStatus(body)', 'Admin menu musi prepocitat souhrn kantyny/jidelny pri zmene pole');
   assertIncludes(css, '.adminFoodStatusGrid', 'Souhrn kantyny/jidelny musi mit vlastni responsive admin styl');
+  assertIncludes(css, '.adminFoodPublicCheckGrid', 'Verejna kontrola kantyny/jidelny musi mit vlastni responsive admin styl');
   assertIncludes(qrJs, 'function formatFoodFutureSpecialSundayDates', 'Verejna Kantyna/jidelna musi ukazovat jen budouci prescasove nedele');
   assertIncludes(qrJs, 'Budoucí přesčasové neděle:', 'Popisek verejneho seznamu prescasu musi rikat, ze jde jen o budouci terminy');
   assertNotIncludes(qrJs, "Seznam přesčasových nedělí: ' + escapeHtml(formatFoodSpecialSundayDates())", 'Verejna Kantyna/jidelna nesmi zobrazovat historicky seznam vsech prescasu');
