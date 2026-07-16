@@ -1,3 +1,10 @@
+## RaK 1.2 (1.232)
+
+- Administrace / Kde co upravit: pridany admin-only souhrn `Stav mapy nastaveni`, ktery ukazuje pocet oblasti, rychlych akci, verejny dopad a stav spravcovskych opravneni.
+- Mapa nastaveni: souhrn jasne rika, ze tlacitka jen oteviraji admin sekce a sama nic neukladaji, aby byla bezpecnejsi pro predani spravy.
+- Smoke guard: `app-usage-smoke-v963.js` hlida novy souhrn mapy nastaveni a responsive admin-only styl.
+- Release metadata sjednocená na `RaK 1.2 (1.232)`, technická verze `1.2.232`, cache `v1.2-1.232`.
+
 ## RaK 1.2 (1.231)
 
 - Administrace / Kantyna a jidelna: pridany admin-only souhrn `Stav kantyny / jidelny`, ktery ukazuje vyplnenost beznych casu, prescasovych casu, budoucich nedeli a kontrolu datumu.

@@ -1080,6 +1080,36 @@ function adminSettingsMapItemHtml(item) {
   ].join('');
 }
 
+function adminSettingsMapStatusItemHtml(label, value, detail, state) {
+  const safeState = state || 'ok';
+  return [
+    '<div class="adminSettingsMapStatusItem is' + escapeHtml(safeState.charAt(0).toUpperCase() + safeState.slice(1)) + '">',
+    '  <span>' + escapeHtml(label || '') + '</span>',
+    '  <b>' + escapeHtml(value || '') + '</b>',
+    detail ? '  <small>' + escapeHtml(detail) + '</small>' : '',
+    '</div>'
+  ].join('');
+}
+
+function buildAdminSettingsMapStatusHtml(items) {
+  const list = Array.isArray(items) ? items : [];
+  const actionCount = list.reduce((sum, item) => sum + (Array.isArray(item && item.actions) ? item.actions.length : 0), 0);
+  const publicCount = list.filter((item) => /Viditeln|home|Rotace|export|menu/i.test(String(item && item.visible || ''))).length;
+  const adminOnlyCount = list.length - publicCount;
+  const ownerAccess = typeof rakAdminCanManageAdmins === 'function' && rakAdminCanManageAdmins();
+  return [
+    '<div class="adminSettingsMapStatus">',
+    '  <div class="appMenuSubTitle">Stav mapy nastaveni</div>',
+    '  <div class="adminSettingsMapStatusGrid">',
+    adminSettingsMapStatusItemHtml('Oblasti', String(list.length), 'Mapa pokryva hlavni provozni a spravcovske casti.', list.length >= 7 ? 'ok' : 'warn'),
+    adminSettingsMapStatusItemHtml('Rychle akce', String(actionCount), 'Tlacitka jen oteviraji admin sekce, sama nic neukladaji.', actionCount ? 'ok' : 'warn'),
+    adminSettingsMapStatusItemHtml('Dopad pro lidi', String(publicCount), adminOnlyCount ? String(adminOnlyCount) + ' oblasti jsou jen pro spravce.' : 'Vsechny oblasti mohou mit verejny dopad.', publicCount ? 'info' : 'warn'),
+    adminSettingsMapStatusItemHtml('Spravci', ownerAccess ? 'owner' : 'bezny admin', ownerAccess ? 'Tento ucet muze menit dalsi spravce.' : 'Spravce smi menit provoz, ale ne seznam spravcu.', ownerAccess ? 'ok' : 'info'),
+    '  </div>',
+    '</div>'
+  ].join('');
+}
+
 function buildAdminSettingsMapHtml() {
   const items = [
     {
@@ -1154,6 +1184,7 @@ function buildAdminSettingsMapHtml() {
     }
   ];
   return [
+    buildAdminSettingsMapStatusHtml(items),
     '<div class="adminSettingsMapGrid">',
     items.map(adminSettingsMapItemHtml).join(''),
     '</div>'
