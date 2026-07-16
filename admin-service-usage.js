@@ -150,6 +150,72 @@ function buildAdminUsageGroups(devices) {
   return Array.from(map.values()).sort((a, b) => (Date.parse(b.lastSeen || '') || 0) - (Date.parse(a.lastSeen || '') || 0));
 }
 
+function adminUsageStatusItemHtml(label, value, detail, state) {
+  const safeState = state || 'ok';
+  return [
+    '<div class="adminUsageStatusItem is' + escapeHtml(safeState.charAt(0).toUpperCase() + safeState.slice(1)) + '">',
+    '  <span>' + escapeHtml(label || '') + '</span>',
+    '  <b>' + escapeHtml(value || '') + '</b>',
+    detail ? '  <small>' + escapeHtml(detail) + '</small>' : '',
+    '</div>'
+  ].join('');
+}
+
+function buildAdminUsageStatusHtml(snapshot, groups, devices, events, summary) {
+  const ok = !!(snapshot && snapshot.ok !== false);
+  const safeGroups = Array.isArray(groups) ? groups : [];
+  const safeDevices = Array.isArray(devices) ? devices : [];
+  const safeEvents = Array.isArray(events) ? events : [];
+  const safeSummary = summary && typeof summary === 'object' ? summary : {};
+  const newestGroup = safeGroups[0] || null;
+  const newestDevice = newestGroup && newestGroup.newest ? newestGroup.newest : null;
+  const newestAgo = newestDevice ? formatAdminUsageAgo(newestDevice.minutes_since_seen) : '';
+  const active24h = safeSummary.active_24h ?? safeDevices.filter((row) => {
+    const seen = Date.parse(row && row.last_seen_at || '') || 0;
+    return seen && Date.now() - seen <= 24 * 60 * 60 * 1000;
+  }).length;
+  const active7d = safeSummary.active_7d ?? safeDevices.filter((row) => {
+    const seen = Date.parse(row && row.last_seen_at || '') || 0;
+    return seen && Date.now() - seen <= 7 * 24 * 60 * 60 * 1000;
+  }).length;
+  const deviceCount = safeSummary.device_count ?? safeDevices.length;
+  const items = [
+    {
+      label: 'Načtení',
+      value: snapshot ? (ok ? 'načteno' : 'chyba') : 'nenačteno',
+      detail: snapshot ? (ok ? ('Načteno: ' + formatAdminUsageDate(snapshot.fetchedAt || new Date().toISOString(), true) + '.') : ('Důvod: ' + String((snapshot.error && snapshot.error.message) || snapshot.reason || 'zkontroluj Supabase.'))) : 'Klikni na Načíst připojení.',
+      state: snapshot && ok ? 'ok' : 'warn'
+    },
+    {
+      label: 'Aktivita',
+      value: String(active24h) + ' / 24 h',
+      detail: String(active7d) + ' aktivních za 7 dní · událostí: ' + String(safeEvents.length) + '.',
+      state: Number(active24h || 0) ? 'ok' : 'info'
+    },
+    {
+      label: 'Profily / zařízení',
+      value: String(safeGroups.length) + ' / ' + String(deviceCount),
+      detail: 'Profily jsou sloučené podle jména nebo čísla účtu.',
+      state: deviceCount ? 'ok' : 'info'
+    },
+    {
+      label: 'Naposledy',
+      value: newestGroup ? String(newestGroup.name || 'Bez profilu') : '—',
+      detail: newestGroup ? ((newestAgo || formatAdminUsageDate(newestGroup.lastSeen, true)) + ' · ' + String(newestGroup.devices.length) + ' zařízení.') : 'Zatím není načtené žádné zařízení.',
+      state: newestGroup ? 'ok' : 'info'
+    }
+  ];
+  return [
+    '<div class="adminUsageStatus" id="adminUsageStatus">',
+    '  <div class="appMenuSubTitle">Stav připojení</div>',
+    '  <div class="smallText uMb10">Souhrn vychází z načtených zařízení a událostí níže. Tahle obrazovka jen kontroluje provoz, nic neupravuje.</div>',
+    '  <div class="adminUsageStatusGrid">',
+    items.map((item) => adminUsageStatusItemHtml(item.label, item.value, item.detail, item.state)).join(''),
+    '  </div>',
+    '</div>'
+  ].join('');
+}
+
 function buildAdminUsageHtml() {
   const snapshot = app && app.adminUsageSnapshot && typeof app.adminUsageSnapshot === 'object'
     ? app.adminUsageSnapshot
@@ -226,6 +292,7 @@ function buildAdminUsageHtml() {
     '    <div>Každé jméno je tady jen jednou. Po rozkliknutí uvidíš všechna zařízení, ze kterých se profil připojil, včetně rozlišení displeje.</div>',
     '    <div class="smallText" id="adminOnlineSaveStatus">' + escapeHtml(status) + '</div>',
     '  </div>',
+    buildAdminUsageStatusHtml(snapshot, groups, devices, events, summary),
     '  <div class="adminUsageGrid">' + cards + '</div>',
     newestGroup ? ('  <div class="adminUsageLatest smallText">Naposledy: ' + escapeHtml(String(newestGroup.name || 'Bez profilu')) + ' · ' + escapeHtml(formatAdminUsageDate(newestGroup.lastSeen, true)) + '</div>') : '',
     '  <div class="adminUsageList">' + list + '</div>',
@@ -559,6 +626,7 @@ function readAdminAnnouncementFromDom() {
 }
 
 try {
+  window.buildAdminUsageStatusHtml = buildAdminUsageStatusHtml;
   window.buildAdminServiceStatusHtml = buildAdminServiceStatusHtml;
   window.buildAdminAnnouncementStatusHtml = buildAdminAnnouncementStatusHtml;
   window.adminAnnouncementRefreshStatus = adminAnnouncementRefreshStatus;

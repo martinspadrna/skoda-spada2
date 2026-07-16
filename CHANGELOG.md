@@ -1,3 +1,10 @@
+## RaK 1.2 (1.228)
+
+- Administrace / Přehled připojení: přidaný admin-only souhrn `Stav připojení`, který ukazuje načtení dat, aktivitu za 24 hodin, profily/zařízení a poslední připojení.
+- Přehled připojení: souhrn se zobrazuje nad detailními metrikami a seznamem zařízení, aby správce hned viděl provozní stav bez rozklikávání profilů.
+- Smoke guard: `app-usage-smoke-v963.js` hlídá nový stav připojení, jeho vložení nad metriky a responsive admin-only styl.
+- Release metadata sjednocená na `RaK 1.2 (1.228)`, technická verze `1.2.228`, cache `v1.2-1.228`.
+
 ## RaK 1.2 (1.227)
 
 - Administrace / Servis synchronizace: přidaný admin-only souhrn `Stav servisu`, který ukazuje načtení online stavu, synchronizaci, položky k řešení a provoz/PWA update.
