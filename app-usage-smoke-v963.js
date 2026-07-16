@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// RaK 1.2 (1.222) – smoke test přehledu připojení + Dashboard/appearance contract guard.
+// RaK 1.2 (1.223) – smoke test přehledu připojení + Dashboard/appearance contract guard.
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
@@ -224,12 +224,12 @@ const dashboardReleaseIsolationGuardV198 = Object.freeze({
 });
 
 const releaseMetadataContractV199 = Object.freeze({
-  displayVersion: '1.2 (1.222)',
-  appLabel: 'RaK 1.2 (1.222)',
-  packageVersion: '1.2.222',
-  cacheVersion: 'v1.2-1.222',
+  displayVersion: '1.2 (1.223)',
+  appLabel: 'RaK 1.2 (1.223)',
+  packageVersion: '1.2.223',
+  cacheVersion: 'v1.2-1.223',
   realtimeChannel: 'rak-public-live-v1-2-1-126',
-  changelogHeader: '## RaK 1.2 (1.222)',
+  changelogHeader: '## RaK 1.2 (1.223)',
   previousBuildFragments: Object.freeze(['1.2 (1.138)', '1.2.138', 'v1.2-1.138', '1.2 (1.137)', '1.2.137', 'v1.2-1.137', '1.2 (1.118)', '1.2.118', 'v1.2-1.118', 'rak-public-live-v1-2-1-118'])
 });
 
@@ -338,8 +338,8 @@ function assertDashboardReleaseIsolationGuardV198() {
 function assertReleaseMetadataContractV199() {
   const contract = releaseMetadataContractV199;
   assertIncludes(exportJs, 'RAK_RELEASE_METADATA_CONTRACT_V199', 'export.js musí obsahovat release metadata contract v1.99');
-  assertIncludes(exportJs, "displayVersion: '1.2 (1.222)'", 'Release contract v export.js musí držet display verzi 1.105');
-  assertIncludes(exportJs, "packageVersion: '1.2.222'", 'Release contract v export.js musí držet package verzi 1.2.114');
+  assertIncludes(exportJs, "displayVersion: '1.2 (1.223)'", 'Release contract v export.js musí držet display verzi 1.105');
+  assertIncludes(exportJs, "packageVersion: '1.2.223'", 'Release contract v export.js musí držet package verzi 1.2.114');
   assert(packageJson.version === contract.packageVersion, `package.json version drift: čekám ${contract.packageVersion}, mám ${packageJson.version}`);
   assertIncludes(coreJs, `const APP_VERSION = "${contract.displayVersion}";`, 'core.js APP_VERSION není sjednocený s 1.105');
   assertIncludes(serviceWorkerJs, `const CACHE_VERSION = '${contract.cacheVersion}';`, 'sw.js CACHE_VERSION není sjednocený s 1.105');
@@ -1593,8 +1593,12 @@ function assertAdminAppContactSettingsContractV1145() {
   assertIncludes(ui, "const RAK_APP_CONTACT_SETTINGS_CATEGORY = 'app_contact_settings'", 'Kontakt aplikace musi mit vlastni kategorii nastaveni');
   assertIncludes(ui, 'function getRakAppContactSettings', 'Verejny kontakt musi cist ulozene admin nastaveni');
   assertIncludes(ui, 'function buildAdminAppContactSettingsHtml', 'Administrace musi mit formular kontaktu aplikace');
+  assertIncludes(ui, 'function buildAdminAppContactStatusHtml', 'Administrace musi mit souhrn stavu kontaktu aplikace');
+  assertIncludes(ui, 'function adminAppContactRefreshStatus', 'Souhrn kontaktu aplikace se musi prepocitat podle rozepsanych radku');
   assertIncludes(ui, 'function readAdminAppContactSettingsFromDom', 'Administrace musi umet nacist kontakt z formulare');
   assertIncludes(ui, 'function mergeRakAppContactSettingsRows', 'Kontakt aplikace se musi ukladat do machine_settings bez mazani ostatnich nastaveni');
+  assertIncludes(ui, 'adminAppContactRefreshStatus(body)', 'Admin menu musi prepocitat souhrn kontaktu pri zmene pole');
+  assertIncludes(stylesAdminPolishCss, '.adminAppContactStatusGrid', 'Souhrn kontaktu musi mit vlastni responsive admin styl');
   assertIncludes(ui, "action: 'open-app-contact', label: 'Kontakt aplikace'", 'Admin menu musi obsahovat sekci Kontakt aplikace');
   assertIncludes(ui, "adminAction === 'open-app-contact'", 'Admin menu musi umet otevrit kontakt aplikace');
   assertIncludes(ui, "adminAction === 'save-app-contact'", 'Admin menu musi umet ulozit kontakt aplikace');

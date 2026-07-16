@@ -1895,6 +1895,9 @@ function bindAppMenuHandlers(body) {
     if (target && target.matches && target.matches('[data-external-link-field]') && typeof adminExternalLinksRefreshStatus === 'function') {
       adminExternalLinksRefreshStatus(body);
     }
+    if (target && target.matches && target.matches('[data-app-contact-field]') && typeof adminAppContactRefreshStatus === 'function') {
+      adminAppContactRefreshStatus(body);
+    }
   }, true);
 
   body.addEventListener('change', (event) => {
@@ -1917,6 +1920,9 @@ function bindAppMenuHandlers(body) {
     }
     if (target.matches('[data-external-link-field]') && typeof adminExternalLinksRefreshStatus === 'function') {
       adminExternalLinksRefreshStatus(body);
+    }
+    if (target.matches('[data-app-contact-field]') && typeof adminAppContactRefreshStatus === 'function') {
+      adminAppContactRefreshStatus(body);
     }
   }, true);
 

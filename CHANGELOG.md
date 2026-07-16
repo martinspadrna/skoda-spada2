@@ -1,3 +1,10 @@
+## RaK 1.2 (1.223)
+
+- Administrace / Kontakt aplikace: přidaný admin-only souhrn `Stav kontaktu`, který ukazuje vyplněnost jména, telefonu a e-mailu.
+- Kontakt aplikace: souhrn se přepočítává podle rozepsaných řádků ještě před uložením a upozorní na prázdné údaje nebo podezřelý formát e-mailu.
+- Smoke guard: `app-usage-smoke-v963.js` hlídá nový stav kontaktu, jeho živé přepočítání a responsive admin-only styl.
+- Release metadata sjednocená na `RaK 1.2 (1.223)`, technická verze `1.2.223`, cache `v1.2-1.223`.
+
 ## RaK 1.2 (1.222)
 
 - Administrace / Odkazy: přidaný admin-only souhrn `Stav odkazů`, který ukazuje vyplněné URL, názvy, URL kontrolu a texty karet.

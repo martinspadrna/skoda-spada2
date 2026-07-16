@@ -762,6 +762,93 @@ function mergeRakAppContactSettingsRows(settings) {
   return rows;
 }
 
+function isRakAppContactEmailValid(value) {
+  const raw = String(value || '').trim();
+  return !!raw && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(raw);
+}
+
+function readAdminAppContactStatusFromDom(root) {
+  const scope = root || document.getElementById('appMenuBody') || document;
+  const get = (field) => String(scope.querySelector && scope.querySelector('[data-app-contact-field="' + field + '"]')?.value || '').trim();
+  return {
+    name: get('name'),
+    phone: get('phone'),
+    email: get('email')
+  };
+}
+
+function adminAppContactStatusItemHtml(label, value, detail, state) {
+  const safeState = state || 'ok';
+  return [
+    '<div class="adminAppContactStatusItem is' + escapeHtml(safeState.charAt(0).toUpperCase() + safeState.slice(1)) + '">',
+    '  <span>' + escapeHtml(label || '') + '</span>',
+    '  <b>' + escapeHtml(value || '') + '</b>',
+    detail ? '  <small>' + escapeHtml(detail) + '</small>' : '',
+    '</div>'
+  ].join('');
+}
+
+function buildAdminAppContactStatusHtml(contact) {
+  const source = contact && typeof contact === 'object' ? contact : {};
+  const safe = {
+    name: String(source.name || '').trim(),
+    phone: String(source.phone || '').trim(),
+    email: String(source.email || '').trim()
+  };
+  const fields = [
+    { key: 'name', label: 'Jméno', value: safe.name, detail: 'Zobrazí se v menu Kontakt.' },
+    { key: 'phone', label: 'Telefon', value: safe.phone, detail: 'Telefon pro běžné uživatele.' },
+    { key: 'email', label: 'E-mail', value: safe.email, detail: isRakAppContactEmailValid(safe.email) ? 'E-mail vypadá platně.' : 'Zkontroluj formát e-mailu.' }
+  ];
+  const filled = fields.filter((field) => String(field.value || '').trim()).length;
+  const invalidEmail = safe.email && !isRakAppContactEmailValid(safe.email);
+  const items = [
+    {
+      label: 'Vyplněno',
+      value: String(filled) + '/3',
+      detail: filled === 3 ? 'Kontakt má všechny tři údaje.' : 'Doplň prázdné kontaktní údaje.',
+      state: filled === 3 ? 'ok' : 'warn'
+    },
+    {
+      label: 'Veřejný kontakt',
+      value: safe.name || 'bez jména',
+      detail: 'Tohle uvidí běžný uživatel v menu Kontakt.',
+      state: safe.name ? 'ok' : 'warn'
+    },
+    {
+      label: 'Telefon',
+      value: safe.phone || 'chybí',
+      detail: safe.phone ? 'Telefon je vyplněný.' : 'Telefon není vyplněný.',
+      state: safe.phone ? 'ok' : 'warn'
+    },
+    {
+      label: 'E-mail',
+      value: invalidEmail ? 'zkontrolovat' : (safe.email ? 'OK' : 'chybí'),
+      detail: invalidEmail ? 'E-mail nemá běžný formát.' : (safe.email ? 'E-mail je vyplněný.' : 'E-mail není vyplněný.'),
+      state: invalidEmail || !safe.email ? 'warn' : 'ok'
+    }
+  ];
+  return [
+    '<div class="adminAppContactStatus" id="adminAppContactStatus">',
+    '  <div class="appMenuSubTitle">Stav kontaktu</div>',
+    '  <div class="smallText uMb10">Souhrn vychází z řádků níže. Veřejný kontakt se změní až po uložení.</div>',
+    '  <div class="adminAppContactStatusGrid">',
+    items.map((item) => adminAppContactStatusItemHtml(item.label, item.value, item.detail, item.state)).join(''),
+    '  </div>',
+    '</div>'
+  ].join('');
+}
+
+function adminAppContactRefreshStatus(root) {
+  const scope = root || document.getElementById('appMenuBody') || document;
+  const box = scope.querySelector ? scope.querySelector('#adminAppContactStatus') : null;
+  if (!box) return;
+  const wrap = document.createElement('div');
+  wrap.innerHTML = buildAdminAppContactStatusHtml(readAdminAppContactStatusFromDom(scope));
+  const next = wrap.firstElementChild;
+  if (next) box.replaceWith(next);
+}
+
 function buildAdminAppContactSettingsHtml() {
   const contact = getRakAppContactSettings();
   const rows = [
@@ -775,6 +862,7 @@ function buildAdminAppContactSettingsHtml() {
     '</tr>'
   ].join('')).join('');
   return [
+    buildAdminAppContactStatusHtml(contact),
     '<div class="tableWrap appMenuTableWrap uMt12">',
     '  <table class="appMenuTable appMenuAdminTable appMenuAdminTableDense adminAppContactTable">',
     '    <thead><tr><th>Položka</th><th>Hodnota</th></tr></thead>',
@@ -800,6 +888,7 @@ try {
   window.buildAdminAppContactSettingsHtml = buildAdminAppContactSettingsHtml;
   window.readAdminAppContactSettingsFromDom = readAdminAppContactSettingsFromDom;
   window.mergeRakAppContactSettingsRows = mergeRakAppContactSettingsRows;
+  window.adminAppContactRefreshStatus = adminAppContactRefreshStatus;
 } catch (err) {}
 
 function normalizeExternalTileUrl(url, key = 'openExternalTile') {
