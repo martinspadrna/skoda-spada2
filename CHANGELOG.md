@@ -1,3 +1,10 @@
+## RaK 1.2 (1.257)
+
+- Administrace / Dovolená a odstávky: doplněna admin-only `Veřejná kontrola dovolené`, aby správce po uložení ověřil home kartu Dovolená.
+- Dovolená: kontrola připomíná název období, počet dní, pravou část se směnou D, přesné Od/Do a ověření odpočtu podle skutečného rozpisu.
+- Smoke guard: `app-usage-smoke-v963.js` hlídá veřejnou kontrolu dovolené, vložení do admin obrazovky a responsive styl.
+- Release metadata sjednocená na `RaK 1.2 (1.257)`, technická verze `1.2.257`, cache `v1.2-1.257`.
+
 ## RaK 1.2 (1.256)
 
 - Administrace / Kantýna a jídelna: doplněna admin-only `Veřejná kontrola provozu`, aby správce po uložení ověřil home karty Kantýna/Jídelna.

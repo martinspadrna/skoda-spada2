@@ -1474,6 +1474,31 @@ function buildAdminFoodPublicCheckHtml() {
   ].join('');
 }
 
+function adminVacationPublicCheckItemHtml(label, value, detail, state) {
+  const safeState = state || 'info';
+  return [
+    '<div class="adminVacationPublicCheckItem is' + escapeHtml(safeState.charAt(0).toUpperCase() + safeState.slice(1)) + '">',
+    '  <span>' + escapeHtml(label || '') + '</span>',
+    '  <b>' + escapeHtml(value || '') + '</b>',
+    detail ? '  <small>' + escapeHtml(detail) + '</small>' : '',
+    '</div>'
+  ].join('');
+}
+
+function buildAdminVacationPublicCheckHtml() {
+  return [
+    '<div class="adminVacationPublicCheck">',
+    '  <div class="appMenuSubTitle">Veřejná kontrola dovolené</div>',
+    '  <div class="smallText uMb10">Dovolená a odstávky mění home kartu Dovolená i počítání směn. Po uložení ověř běžnou aplikaci a rozpis, ne jen administraci.</div>',
+    '  <div class="adminVacationPublicCheckGrid">',
+    adminVacationPublicCheckItemHtml('Home karta', 'Dovolená', 'Ověř název období, počet dní a pravou část se směnou D.', 'warn'),
+    adminVacationPublicCheckItemHtml('Od / Do', 'hodiny', 'Zkontroluj přesný začátek a konec, protože během období se směna bere jako volno.', 'info'),
+    adminVacationPublicCheckItemHtml('Rozpis', 'směny D', 'U vytvořeného měsíce ověř, že odpočet směn bere skutečný rozpis.', 'info'),
+    '  </div>',
+    '</div>'
+  ].join('');
+}
+
 function buildAdminMonthlyWorkflowHtml(monthKey) {
   const workflow = getAdminMonthlyWorkflowItems(monthKey);
   return [
@@ -2101,6 +2126,7 @@ function renderAdminMenuBody(body, section) {
     '    <div class="smallText" id="adminOnlineSaveStatus">Prázdné řádky se neukládají. Pro odstranění řádek vymaž a ulož.</div>',
     '  </div>',
     buildAdminVacationCountdownSettingsHtml(),
+    buildAdminVacationPublicCheckHtml(),
     '  <div class="appMenuActionRow">',
     '    <button type="button" class="appMenuAction" data-admin-action="load-vacation-countdown">Načíst online</button>',
     '    <button type="button" class="appMenuAction isActive" data-admin-action="save-vacation-countdown">Uložit dovolenou</button>',

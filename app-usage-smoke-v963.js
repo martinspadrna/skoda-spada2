@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// RaK 1.2 (1.256) – smoke test přehledu připojení + Dashboard/appearance contract guard.
+// RaK 1.2 (1.257) – smoke test přehledu připojení + Dashboard/appearance contract guard.
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
@@ -225,12 +225,12 @@ const dashboardReleaseIsolationGuardV198 = Object.freeze({
 });
 
 const releaseMetadataContractV199 = Object.freeze({
-  displayVersion: '1.2 (1.256)',
-  appLabel: 'RaK 1.2 (1.256)',
-  packageVersion: '1.2.256',
-  cacheVersion: 'v1.2-1.256',
+  displayVersion: '1.2 (1.257)',
+  appLabel: 'RaK 1.2 (1.257)',
+  packageVersion: '1.2.257',
+  cacheVersion: 'v1.2-1.257',
   realtimeChannel: 'rak-public-live-v1-2-1-126',
-  changelogHeader: '## RaK 1.2 (1.256)',
+  changelogHeader: '## RaK 1.2 (1.257)',
   previousBuildFragments: Object.freeze(['1.2 (1.138)', '1.2.138', 'v1.2-1.138', '1.2 (1.137)', '1.2.137', 'v1.2-1.137', '1.2 (1.118)', '1.2.118', 'v1.2-1.118', 'rak-public-live-v1-2-1-118'])
 });
 
@@ -339,8 +339,8 @@ function assertDashboardReleaseIsolationGuardV198() {
 function assertReleaseMetadataContractV199() {
   const contract = releaseMetadataContractV199;
   assertIncludes(exportJs, 'RAK_RELEASE_METADATA_CONTRACT_V199', 'export.js musí obsahovat release metadata contract v1.99');
-  assertIncludes(exportJs, "displayVersion: '1.2 (1.256)'", 'Release contract v export.js musí držet display verzi 1.105');
-  assertIncludes(exportJs, "packageVersion: '1.2.256'", 'Release contract v export.js musí držet package verzi 1.2.114');
+  assertIncludes(exportJs, "displayVersion: '1.2 (1.257)'", 'Release contract v export.js musí držet display verzi 1.105');
+  assertIncludes(exportJs, "packageVersion: '1.2.257'", 'Release contract v export.js musí držet package verzi 1.2.114');
   assert(packageJson.version === contract.packageVersion, `package.json version drift: čekám ${contract.packageVersion}, mám ${packageJson.version}`);
   assertIncludes(coreJs, `const APP_VERSION = "${contract.displayVersion}";`, 'core.js APP_VERSION není sjednocený s 1.105');
   assertIncludes(serviceWorkerJs, `const CACHE_VERSION = '${contract.cacheVersion}';`, 'sw.js CACHE_VERSION není sjednocený s 1.105');
@@ -1324,8 +1324,13 @@ assertIncludes(appearanceThemeJs, '"id": "light-zigzag"', 'Musí existovat zákl
   assertIncludes(adminFoodJs, 'function adminVacationRefreshStatus', 'Souhrn dovolene/odstavek se musi umet prepocitat podle rozepsanych radku');
   assertIncludes(adminFoodJs, 'adminVacationReadPeriodsFromRoot', 'Souhrn dovolene/odstavek musi vychazet z aktualnich DOM radku pred ulozenim');
   assertIncludes(adminFoodJs, 'data-vacation-period-row', 'Formular dovolene/odstavek musi ukladat vice pojmenovanych obdobi od-do');
+  assertIncludes(menuJs, 'function buildAdminVacationPublicCheckHtml', 'Dovolena/odstavky musi mit admin-only kontrolu verejneho dopadu');
+  assertIncludes(menuJs, 'Veřejná kontrola dovolené', 'Dovolena/odstavky musi spravci rikat, ze jde o verejne viditelnou zmenu');
+  assertIncludes(menuJs, 'Ověř název období, počet dní a pravou část se směnou D.', 'Dovolena/odstavky musi mit jasnou kontrolu home karty po ulozeni');
+  assertIncludes(menuJs, 'buildAdminVacationPublicCheckHtml()', 'Kontrola verejneho dopadu dovolene musi byt vlozena do admin obrazovky');
   assertIncludes(menuJs, 'adminVacationRefreshStatus(body)', 'Admin menu musi prepocitat souhrn dovolene/odstavek pri zmene pole');
   assertIncludes(css, '.adminVacationStatusGrid', 'Souhrn dovolene/odstavek musi mit vlastni responsive admin styl');
+  assertIncludes(css, '.adminVacationPublicCheckGrid', 'Verejna kontrola dovolene musi mit vlastni responsive admin styl');
   assertIncludes(menuJs, "adminAction === 'open-vacation'", 'Admin menu musi otevirat samostatny panel dovolene/odstavek');
   assertIncludes(menuJs, "adminAction === 'save-vacation-countdown'", 'Admin menu musi umet ulozit nastaveni dovolene/odstavek');
   assertIncludes(supabaseBridgeJs, 'VACATION_COUNTDOWN_SETTINGS', 'Supabase ukladani musi podporovat samostatny radek dovolene/odstavek mimo starsi RPC kategorie');
