@@ -1,3 +1,9 @@
+## RaK 1.2 (1.306)
+
+- Oprava: ukládání Pracovníků (přihlašovací čísla, dovednosti strojů) v Administraci hlásilo "invalid category" a uložení selhalo. Kategorie `worker_roster_settings` (a `calendar_notes_settings` pro Upozornění v kalendáři) chyběla v seznamu speciálních administrativních nastavení v supabase-bridge.js, takže se před odesláním na server neskryla na povolenou hodnotu – server ji odmítal. Doplněno podle stejného vzoru jako u ostatních administrativních nastavení (výplata, kontakt, zálohy...), ověřeno end-to-end mockovaným uložením (kategorie se teď správně přepíše, reálná hodnota zůstává dohledatelná).
+- Oprava: hlášení `gamesEnsureScoreResetV912 failed ReferenceError: TTT_HARD_WIN_KEY is not defined` v konzoli při každém načtení aplikace – jednorázová úklidová migrace v games-profile.js se odkazovala na konstanty definované až v games-gomoku.js, který se načítá později, takže migrace nikdy neproběhla celá. Nahrazeno přímými hodnotami klíčů, migrace teď proběhne a označí se jako hotová.
+- Release metadata sjednocena na `RaK 1.2 (1.306)`, technicka verze `1.2.306`, cache `v1.2-1.306`; loader modulu ma cache znacku `1.2.306`.
+
 ## RaK 1.2 (1.305)
 
 - Když admin v Pracovnících uloží nového pracovníka s přihlašovacím číslem, jeho herní profil (výchozí téma/pozadí) se rovnou vytvoří na Supabase – nemusí se nejdřív sám přihlásit a odehrát hru, aby se objevil online. Existující profily se nepřepisují (kontroluje se, jestli číslo už má záznam, než se něco pošle). Stav uložení ukáže počet nově vytvořených profilů.

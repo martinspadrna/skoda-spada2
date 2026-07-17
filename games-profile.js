@@ -93,10 +93,10 @@ function gamesEnsureScoreResetV912() {
     next.profileVersion = GAMES_PROFILE_RESET_VERSION;
     if (typeof setLocalStorageIfChanged === 'function') setLocalStorageIfChanged(GAMES_PROFILE_KEY, JSON.stringify(next));
     else localStorage.setItem(GAMES_PROFILE_KEY, JSON.stringify(next));
-    localStorage.removeItem(TTT_HARD_WIN_KEY);
+    localStorage.removeItem('tttHardWins');
     localStorage.removeItem('rotace_supabase_gomoku_wins_v1');
-    localStorage.removeItem(TTT_ONLINE_RESULT_STORE_KEY);
-    localStorage.removeItem(TTT_ONLINE_JOIN_DIAG_KEY);
+    localStorage.removeItem('rotace_ttt_online_results_v1');
+    localStorage.removeItem('rotace_ttt_online_join_diag_v1');
     const toRemove = [];
     const removePrefixes = [
       'rotace_supabase_game_stats_',

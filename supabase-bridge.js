@@ -2011,7 +2011,11 @@
       || key === 'ADMIN_ACCOUNTS_SETTINGS'
       || category === 'admin_full_settings_backup'
       || key.indexOf('ADMIN_FULL_SETTINGS_BACKUP_') === 0
-      || category === 'admin_settings_deleted';
+      || category === 'admin_settings_deleted'
+      || category === 'worker_roster_settings'
+      || key === 'WORKER_ROSTER_SETTINGS'
+      || category === 'calendar_notes_settings'
+      || key === 'CALENDAR_NOTES_SETTINGS';
   }
 
   function makeMachineSettingsRpcPayload(payload) {
