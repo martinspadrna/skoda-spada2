@@ -1762,6 +1762,10 @@
 .adminRotationOvertimeDateCol{width:128px;}
 .adminRotationOvertimeToCol{width:74px;}
 .adminRotationOvertimeDeleteCol{width:44px;}
+.adminGeneratorBaseNameCol{width:84px;}
+.adminGeneratorBaseMachineCol{width:auto;}
+.adminFullSettingsBackupLabelCol{width:224px;}
+.adminFullSettingsBackupActionCol{width:112px;}
 .adminRotationOvertimeDateInput{min-width:104px;}
 .adminRotationOvertimeNoteInput{min-width:150px;}
 .adminRotationOvertimeSwitch{

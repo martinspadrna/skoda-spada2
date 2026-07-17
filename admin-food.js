@@ -162,22 +162,12 @@ function buildAdminFoodScheduleStatusHtml(source) {
     : adminFoodScheduleStatusFromSnapshot(source || {});
   const regularState = status.regularFilled && !status.regularInvalid ? 'ok' : 'warn';
   const overtimeState = status.overtimeFilled && !status.overtimeInvalid ? 'ok' : 'warn';
-  const dateIssues = status.invalidDates.length + status.duplicateDates.length;
-  const nearestDate = status.futureDates[0] ? adminFoodIsoToCzechDate(status.futureDates[0]) : 'neni';
-  const dateDetail = dateIssues
-    ? [
-        status.invalidDates.length ? 'neplatne: ' + status.invalidDates.slice(0, 3).join(', ') : '',
-        status.duplicateDates.length ? 'duplicity: ' + status.duplicateDates.map(adminFoodIsoToCzechDate).join(', ') : ''
-      ].filter(Boolean).join('; ')
-    : 'V tabulce se ukazuji jen dnesni a budouci terminy.';
   return [
     '<div class="adminFoodStatus" id="adminFoodStatus" aria-live="polite">',
     '  <div class="appMenuSubTitle">Stav kantyny / jidelny</div>',
     '  <div class="adminFoodStatusGrid">',
     adminFoodStatusItemHtml('Bezne casy', String(status.regularFilled) + '/' + String(status.regularTotal), status.regularInvalid ? String(status.regularInvalid) + ' radku ma spatny format casu.' : 'Format napr. 05:30-09:00, 10:00-12:00.', regularState),
     adminFoodStatusItemHtml('Prescasove casy', String(status.overtimeFilled) + '/' + String(status.overtimeTotal), status.overtimeInvalid ? String(status.overtimeInvalid) + ' radku ma spatny format casu.' : 'Pouziva se jen ve food kartach, ne pro smenu.', overtimeState),
-    adminFoodStatusItemHtml('Budouci nedele', String(status.futureDates.length) + 'x', 'Nejblizsi: ' + nearestDate + '. Minule terminy jsou schovane a zustanou zachovane.', dateIssues ? 'warn' : 'ok'),
-    adminFoodStatusItemHtml('Kontrola datumu', dateIssues ? String(dateIssues) + ' k reseni' : 'OK', dateDetail, dateIssues ? 'warn' : 'ok'),
     '  </div>',
     '</div>'
   ].join('');
@@ -382,34 +372,55 @@ function adminVacationRefreshStatus(root) {
   if (next) box.replaceWith(next);
 }
 
+function adminVacationPeriodRowHtml(period) {
+  const safe = period && typeof period === 'object' ? period : {};
+  const label = String(safe.label || safe.name || '').trim();
+  const key = String(safe.key || '').trim();
+  const countdownLabel = String(safe.countdownLabel || safe.countdown_label || label || '').trim();
+  const workLabel = String(safe.workLabel || safe.work_label || label || '').trim();
+  const start = adminVacationFormatInputDateTime(safe.startText || safe.start || '');
+  const end = adminVacationFormatInputDateTime(safe.endText || safe.end || '');
+  return [
+    '<tr data-vacation-period-row data-vacation-key="' + escapeHtml(key) + '" data-vacation-countdown-label="' + escapeHtml(countdownLabel) + '" data-vacation-work-label="' + escapeHtml(workLabel) + '">',
+    '  <td><input class="appMenuInlineInput adminVacationNameInput" data-vacation-field="label" value="' + escapeHtml(label) + '" placeholder="CZD"></td>',
+    '  <td><input class="appMenuInlineInput adminVacationDateTimeInput" data-vacation-field="start" type="datetime-local" value="' + escapeHtml(start) + '"></td>',
+    '  <td><input class="appMenuInlineInput adminVacationDateTimeInput" data-vacation-field="end" type="datetime-local" value="' + escapeHtml(end) + '"></td>',
+    '</tr>'
+  ].join('');
+}
+
 function buildAdminVacationCountdownSettingsHtml() {
   const snapshot = (typeof getVacationCountdownAdminSettingsSnapshot === 'function') ? getVacationCountdownAdminSettingsSnapshot() : { periods: [] };
   const periods = snapshot && Array.isArray(snapshot.periods) ? snapshot.periods : [];
-  const rowCount = Math.max(8, periods.length + 4);
-  const rows = Array.from({ length: rowCount }, (_, index) => {
-    const period = periods[index] || {};
-    const label = String(period.label || period.name || '').trim();
-    const key = String(period.key || '').trim();
-    const countdownLabel = String(period.countdownLabel || period.countdown_label || label || '').trim();
-    const workLabel = String(period.workLabel || period.work_label || label || '').trim();
-    const start = adminVacationFormatInputDateTime(period.startText || period.start || '');
-    const end = adminVacationFormatInputDateTime(period.endText || period.end || '');
+  const currentYear = new Date().getFullYear();
+  const yearSet = new Set([String(currentYear)]);
+  periods.forEach((period) => {
+    const match = String(period && (period.startText || period.start) || '').trim().match(/^(\d{4})-/);
+    if (match) yearSet.add(match[1]);
+  });
+  const years = Array.from(yearSet).sort();
+  const groups = years.map((year) => {
+    const yearPeriods = periods.filter((period) => String(period && (period.startText || period.start) || '').trim().startsWith(year + '-'));
+    const rows = yearPeriods.map(adminVacationPeriodRowHtml);
+    for (let i = 0; i < 4; i += 1) rows.push(adminVacationPeriodRowHtml({}));
+    const yearNumber = Number(year);
+    const openAttr = Number.isFinite(yearNumber) && yearNumber >= currentYear ? ' open' : '';
     return [
-      '<tr data-vacation-period-row data-vacation-key="' + escapeHtml(key) + '" data-vacation-countdown-label="' + escapeHtml(countdownLabel) + '" data-vacation-work-label="' + escapeHtml(workLabel) + '">',
-      '  <td><input class="appMenuInlineInput adminVacationNameInput" data-vacation-field="label" value="' + escapeHtml(label) + '" placeholder="CZD"></td>',
-      '  <td><input class="appMenuInlineInput adminVacationDateTimeInput" data-vacation-field="start" type="datetime-local" value="' + escapeHtml(start) + '"></td>',
-      '  <td><input class="appMenuInlineInput adminVacationDateTimeInput" data-vacation-field="end" type="datetime-local" value="' + escapeHtml(end) + '"></td>',
-      '</tr>'
+      '<details class="appMenuFoldSection adminVacationCountdownYear"' + openAttr + '>',
+      '  <summary>Rok ' + escapeHtml(year) + ' <span class="smallText">' + String(yearPeriods.length) + '×</span></summary>',
+      '  <div class="tableWrap appMenuTableWrap">',
+      '    <table class="appMenuTable appMenuAdminTable appMenuAdminTableDense adminVacationCountdownTable">',
+      '      <thead><tr><th>Název</th><th>Od</th><th>Do</th></tr></thead>',
+      '      <tbody>' + rows.join('') + '</tbody>',
+      '    </table>',
+      '  </div>',
+      '</details>'
     ].join('');
   }).join('');
   return [
     buildAdminVacationCountdownStatusHtml(periods),
-    '<div class="tableWrap appMenuTableWrap uMt8">',
-    '  <table class="appMenuTable appMenuAdminTable appMenuAdminTableDense adminVacationCountdownTable">',
-    '    <thead><tr><th>Název</th><th>Od</th><th>Do</th></tr></thead>',
-    '    <tbody>' + rows + '</tbody>',
-    '  </table>',
-    '</div>'
+    '<div class="smallText uMb10">Nový rok se objeví sám, jakmile zadáš a uložíš období s jeho datem – nic se pro to v appce nemusí měnit.</div>',
+    groups
   ].join('');
 }
 
@@ -459,26 +470,11 @@ function buildAdminFoodScheduleSettingsHtml() {
     '  <td><input class="appMenuInlineInput adminFoodWindowsInput" data-food-schedule-field data-food-overtime-field="windows" value="' + escapeHtml(location.overtimeText || '') + '" placeholder="17:30–21:00, 21:30–23:30"></td>',
     '</tr>'
   ].join('')).join('');
-  const todayIso = adminFoodTodayIso();
-  const allDates = Array.isArray(snapshot.dates) ? snapshot.dates.slice().sort() : [];
-  const pastDates = allDates.filter((date) => String(date || '').trim() && String(date || '').trim() < todayIso);
-  const dates = allDates.filter((date) => String(date || '').trim() && String(date || '').trim() >= todayIso);
-  const preservedPastDateInputs = pastDates.map((date) => '<input type="hidden" data-food-schedule-field data-food-overtime-date value="' + escapeHtml(adminFoodIsoToCzechDate(date)) + '" data-food-past-overtime-date="1">').join('');
-  const minRows = Math.max(18, dates.length + 8);
-  const dateRows = Array.from({ length: minRows }, (_, index) => {
-    const value = adminFoodIsoToCzechDate(dates[index] || '');
-    return [
-      '<tr data-food-overtime-date-row>',
-      '  <td>' + String(index + 1) + '</td>',
-      '  <td><input class="appMenuInlineInput adminFoodDateInput" data-food-schedule-field data-food-overtime-date value="' + escapeHtml(value) + '" placeholder="11.1.2027" inputmode="numeric"></td>',
-      '</tr>'
-    ].join('');
-  }).join('');
   return [
     buildAdminFoodScheduleStatusHtml(adminFoodScheduleStatusFromSnapshot(snapshot)),
     '<details class="appMenuFoldSection adminFoodScheduleFold" open>',
     '  <summary>Kantýna / jídelna</summary>',
-    '  <div class="smallText uMb10">Tady si můžeš upravit běžnou otevírací dobu, přesčasovou dobu kantýny/jídelny a seznam přesčasových nedělí. Časy piš třeba <b>05:30–09:00, 10:00–12:00</b>. Datumy piš česky, třeba <b>11.1.2027</b>. <br><b>Pozn.:</b> seznam přesčasových nedělí se pro Dashboard směny bere jen jako nedělní noční směna <b>18:00–6:00</b>. Časy v tabulce přesčasové doby jsou jen pro kantýnu/jídelnu.</div>',
+    '  <div class="smallText uMb10">Tady si můžeš upravit běžnou otevírací dobu a přesčasovou dobu kantýny/jídelny. Časy piš třeba <b>05:30–09:00, 10:00–12:00</b>. <br><b>Pozn.:</b> které neděle jsou přesčasové se nastavuje v Provoz / Přesčasy, ne tady.</div>',
     '  <div class="tableWrap appMenuTableWrap uMt8">',
     '    <div class="smallText">Běžná otevírací doba</div>',
     '    <table class="appMenuTable appMenuAdminTable appMenuAdminTableDense adminFoodScheduleTable adminFoodRegularTable">',
@@ -493,15 +489,6 @@ function buildAdminFoodScheduleSettingsHtml() {
     '      <colgroup><col class="adminFoodColPlace"><col class="adminFoodColTime"></colgroup>',
     '      <thead><tr><th>Místo</th><th>Časy při přesčasu</th></tr></thead>',
     '      <tbody>' + overtimeRows + '</tbody>',
-    '    </table>',
-    '  </div>',
-    '  <div class="tableWrap appMenuTableWrap uMt12">',
-    '    <div class="smallText">Seznam přesčasových nedělí · pro směnu jen 18:00–6:00</div>',
-    preservedPastDateInputs,
-    '    <table class="appMenuTable appMenuAdminTable appMenuAdminTableDense adminFoodDatesTable">',
-    '      <colgroup><col class="adminFoodDateNumberCol"><col class="adminFoodDateValueCol"></colgroup>',
-    '      <thead><tr><th>#</th><th>Datum</th></tr></thead>',
-    '      <tbody>' + dateRows + '</tbody>',
     '    </table>',
     '  </div>',
     '</details>'
@@ -525,13 +512,9 @@ function readAdminFoodScheduleSettingsFromDom() {
     if (!location) return;
     overtime[location] = value;
   });
-  const overtimeDates = [];
-  document.querySelectorAll('#appMenuBody [data-food-overtime-date]').forEach((input) => {
-    const normalized = adminFoodNormalizeDateInput(input.value || '');
-    if (normalized && normalized !== input.value) input.value = normalized;
-    const value = adminFoodCzechDateToIso(normalized);
-    if (value && !overtimeDates.includes(value)) overtimeDates.push(value);
-  });
-  overtimeDates.sort();
+  // Seznam prescasovych nedeli uz tahle obrazovka needituje (viz Provoz / Prescasy),
+  // takze puvodni ulozeny seznam se pri ukladani jen prenese beze zmeny.
+  const existingSnapshot = (typeof getFoodAdminSettingsSnapshot === 'function') ? getFoodAdminSettingsSnapshot() : null;
+  const overtimeDates = Array.isArray(existingSnapshot && existingSnapshot.dates) ? existingSnapshot.dates.slice() : [];
   return { type: 'food_schedule', regular, overtime, overtimeDates };
 }

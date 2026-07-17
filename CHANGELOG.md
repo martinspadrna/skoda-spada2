@@ -1,3 +1,13 @@
+## RaK 1.2 (1.294)
+
+- Správci: poslední zmínka o "předání" v bezpečnostním souhrnu přejmenována na Hesla (jen hash, nikam se nestahují).
+- Admin menu: sekce přejmenované na "1. Provoz", "2. Rozpisy", "3. Pro zaměstnance" (bylo "Provoz před rozpisem" / "Rozpisy a předání").
+- Kantýna / jídelna: odstraněn vlastní editovatelný seznam přesčasových nedělí – které neděle jsou přesčasové se teď nastavuje jen v Provoz / Přesčasy. Dřívější uložené termíny se při uložení kantýny zachovají beze změny (jen se tu už needitují).
+- Dovolená / odstávky a Mimořádné volné dny: obě sekce mají teď stejné rozbalovací řazení podle roku jako Přesčasy – nový rok se objeví automaticky po prvním uložení záznamu s jeho datem, bez zásahu do kódu.
+- Pravidla generátoru: sloupec Jméno u "Základní soustruhy měkoty" zúžen na 84px (byl poloviční jako Stroj, teď je Stroj širší).
+- Zálohy nastavení: sloupce tabulky přeskládány v poměru cca 2:1 (Záloha nastavení : Akce) místo původního 1:1.
+- Release metadata sjednocena na `RaK 1.2 (1.294)`, technicka verze `1.2.294`, cache `v1.2-1.294`; loader modulu ma cache znacku `1.2.294`.
+
 ## RaK 1.2 (1.293)
 
 - Zálohy: každé uložení rozpisu teď samo vytvoří automatickou zálohu stavu před změnou (drží se posledních 8), vedle stávajících ručních záloh. Obnova jde přímo ze sekce Zálohy rozpisů.

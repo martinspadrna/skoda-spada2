@@ -875,7 +875,8 @@ function buildAdminFullSettingsBackupsHtml() {
   ].join('')).join('');
   return [
     '<div class="tableWrap appMenuTableWrap uMt8">',
-    '  <table class="appMenuTable appMenuAdminTable appMenuAdminTableDense">',
+    '  <table class="appMenuTable appMenuAdminTable appMenuAdminTableDense adminFullSettingsBackupsTable">',
+    '    <colgroup><col class="adminFullSettingsBackupLabelCol"><col class="adminFullSettingsBackupActionCol"></colgroup>',
     '    <thead><tr><th>Záloha nastavení</th><th>Akce</th></tr></thead>',
     '    <tbody>' + rows + '</tbody>',
     '  </table>',
@@ -3404,14 +3405,14 @@ function renderAdminMenuBody(body, section) {
     '    <div class="smallText" id="adminOnlineSaveStatus">Vyber sekci, kterou chceš upravit.</div>',
     '  </div>',
     '  <div class="adminMenuSections">',
-    buildAdminMenuSectionHtml('1. Provoz před rozpisem', 'Co musí sedět před generováním dalšího měsíce.', [
+    buildAdminMenuSectionHtml('1. Provoz', 'Stroje, provozní doby a absence – vstupy pro tvorbu rozpisu.', [
       { action: 'open-machines', label: 'Nastavení strojů' },
       { action: 'open-food', label: 'Kantýna / jídelna' },
       { action: 'open-overtime', label: 'Přesčasy' },
       { action: 'open-vacation', label: 'Dovolená / odstávky' },
       { action: 'open-special-days', label: 'Mimořádné volné dny' }
     ]),
-    buildAdminMenuSectionHtml('2. Rozpisy a předání', 'Tvorba, kontrola, zálohy a export rozpisu.', [
+    buildAdminMenuSectionHtml('2. Rozpisy', 'Tvorba, kontrola, historie, zálohy a export rozpisu.', [
       { action: 'open-rotation', label: 'Rozpisy' },
       { action: 'open-workers', label: 'Pracovníci' },
       { action: 'open-generator-settings', label: 'Pravidla generátoru' },
@@ -3419,7 +3420,7 @@ function renderAdminMenuBody(body, section) {
       { action: 'open-backups', label: 'Zálohy rozpisů' },
       { action: 'open-export', label: 'Export / import' }
     ]),
-    buildAdminMenuSectionHtml('3. Aplikace pro lidi', 'Texty, odkazy a informace viditelné v běžné aplikaci.', [
+    buildAdminMenuSectionHtml('3. Pro zaměstnance', 'Texty, odkazy a informace viditelné v běžné aplikaci.', [
       { action: 'open-announcement', label: 'Oznámení Dashboard' },
       { action: 'open-external-links', label: 'Odkazy' }
     ].concat((typeof rakAdminCanManageAdmins === 'function' && rakAdminCanManageAdmins()) ? [{ action: 'open-app-contact', label: 'Kontakt aplikace' }] : []).concat([
@@ -3455,7 +3456,7 @@ function renderAdminMenuBody(body, section) {
     '<div class="appMenuCard appMenuAdminCard adminFoodScheduleCard">',
     '  <div class="appMenuCardTitle">Kantýna / jídelna</div>',
     '  <div class="appMenuText">',
-    '    <div>Tady si nastavíš běžnou otevírací dobu, přesčasovou dobu a seznam přesčasových nedělí. Datumy piš česky: třeba 11.1.2027.</div>',
+    '    <div>Tady si nastavíš běžnou otevírací dobu a přesčasovou dobu kantýny/jídelny. Které neděle jsou přesčasové se nastavuje v Provoz / Přesčasy.</div>',
     '    <div class="smallText" id="adminOnlineSaveStatus">Stav uložení se zobrazí po kliknutí na Uložit časy.</div>',
     '  </div>',
     buildAdminFoodScheduleSettingsHtml(),

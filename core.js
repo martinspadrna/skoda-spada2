@@ -1,7 +1,7 @@
-// RaK 1.2 (1.293) – core stav, verze a sdílené helpery aplikace.
+// RaK 1.2 (1.294) – core stav, verze a sdílené helpery aplikace.
 
 const APP_KEY = "rotace_kalkulacky_state_v123";
-const APP_VERSION = "1.2 (1.293)";
+const APP_VERSION = "1.2 (1.294)";
 window.APP_VERSION = APP_VERSION;
 const ROTATION_BUILD = "2026-06-03-" + APP_VERSION;
 window.ROTATION_BUILD = ROTATION_BUILD;
@@ -474,31 +474,53 @@ function adminSpecialDaysRefreshStatus(root) {
   if (next) box.replaceWith(next);
 }
 
+function adminSpecialDayRowHtml(entry) {
+  const safe = entry && typeof entry === 'object' ? entry : {};
+  const type = String(safe.type || 'shutdown');
+  return [
+    '<tr data-special-day-row>',
+    '  <td><input class="appMenuInlineInput" data-special-day-field="date" type="date" value="' + escapeHtml(safe.date || '') + '"></td>',
+    '  <td><select class="appMenuInlineInput" data-special-day-field="type">',
+    '    <option value="shutdown"' + (type === 'shutdown' ? ' selected' : '') + '>Odstávka</option>',
+    '    <option value="holiday"' + (type === 'holiday' ? ' selected' : '') + '>Volno</option>',
+    '  </select></td>',
+    '  <td><input class="appMenuInlineInput" data-special-day-field="label" value="' + escapeHtml(safe.label || '') + '" placeholder="např. Odstávka"></td>',
+    '</tr>'
+  ].join('');
+}
+
 function buildAdminSpecialDaysSettingsHtml() {
   const settings = getRakSpecialDaysSettings();
-  const rowCount = Math.max(8, (settings.days || []).length + 4);
-  const rows = Array.from({ length: rowCount }, (_, index) => {
-    const entry = settings.days[index] || {};
-    const type = String(entry.type || 'shutdown');
+  const days = Array.isArray(settings.days) ? settings.days : [];
+  const currentYear = new Date().getFullYear();
+  const yearSet = new Set([String(currentYear)]);
+  days.forEach((entry) => {
+    const match = String(entry && entry.date || '').trim().match(/^(\d{4})-/);
+    if (match) yearSet.add(match[1]);
+  });
+  const years = Array.from(yearSet).sort();
+  const groups = years.map((year) => {
+    const yearDays = days.filter((entry) => String(entry && entry.date || '').trim().startsWith(year + '-'));
+    const rows = yearDays.map(adminSpecialDayRowHtml);
+    for (let i = 0; i < 4; i += 1) rows.push(adminSpecialDayRowHtml({}));
+    const yearNumber = Number(year);
+    const openAttr = Number.isFinite(yearNumber) && yearNumber >= currentYear ? ' open' : '';
     return [
-      '<tr data-special-day-row>',
-      '  <td><input class="appMenuInlineInput" data-special-day-field="date" type="date" value="' + escapeHtml(entry.date || '') + '"></td>',
-      '  <td><select class="appMenuInlineInput" data-special-day-field="type">',
-      '    <option value="shutdown"' + (type === 'shutdown' ? ' selected' : '') + '>Odstávka</option>',
-      '    <option value="holiday"' + (type === 'holiday' ? ' selected' : '') + '>Volno</option>',
-      '  </select></td>',
-      '  <td><input class="appMenuInlineInput" data-special-day-field="label" value="' + escapeHtml(entry.label || '') + '" placeholder="např. Odstávka"></td>',
-      '</tr>'
+      '<details class="appMenuFoldSection adminSpecialDaysYear"' + openAttr + '>',
+      '  <summary>Rok ' + escapeHtml(year) + ' <span class="smallText">' + String(yearDays.length) + '×</span></summary>',
+      '  <div class="tableWrap appMenuTableWrap">',
+      '    <table class="appMenuTable appMenuAdminTable appMenuAdminTableDense adminSpecialDaysTable">',
+      '      <thead><tr><th>Datum</th><th>Typ</th><th>Název</th></tr></thead>',
+      '      <tbody>' + rows.join('') + '</tbody>',
+      '    </table>',
+      '  </div>',
+      '</details>'
     ].join('');
   }).join('');
   return [
-    buildAdminSpecialDaysStatusHtml({ days: settings.days || [], duplicateCount: 0 }),
-    '<div class="tableWrap appMenuTableWrap uMt8">',
-    '  <table class="appMenuTable appMenuAdminTable appMenuAdminTableDense adminSpecialDaysTable">',
-    '    <thead><tr><th>Datum</th><th>Typ</th><th>Název</th></tr></thead>',
-    '    <tbody>' + rows + '</tbody>',
-    '  </table>',
-    '</div>'
+    buildAdminSpecialDaysStatusHtml({ days, duplicateCount: 0 }),
+    '<div class="smallText uMb10">Nový rok se objeví sám, jakmile zadáš a uložíš den s jeho datem – nic se pro to v appce nemusí měnit.</div>',
+    groups
   ].join('');
 }
 

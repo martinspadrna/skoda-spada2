@@ -614,7 +614,7 @@ function buildAdminAccountsSafetyHtml(source) {
     '  <div class="adminAccountsSafetyGrid">',
     adminAccountsSafetyItemHtml('Owner ucet', RAK_OWNER_ADMIN_ACCOUNT_ID, 'Vestaveny hlavni admin se do tabulky nepridava.', 'isOwner'),
     adminAccountsSafetyItemHtml('Nizsi admini', String(enabledAdmins) + ' aktivni', 'Kazdy nizsi admin musi mit vlastni ucet a heslo.', 'isOk'),
-    adminAccountsSafetyItemHtml('Predani', 'bez hesel', 'Predavaci exporty hesla nestahuji; hesla se nastavuji jen tady.', 'isInfo'),
+    adminAccountsSafetyItemHtml('Hesla', 'jen hash', 'Hesla se ukladaji jen jako hash a nikam se z appky nedaji stahnout; nastavuji se jen tady.', 'isInfo'),
     adminAccountsSafetyItemHtml('Bezni uzivatele', 'bez zmen', 'Bez admin hesla nevidi admin menu a nemeni provozni data.', 'isInfo'),
     '  </div>',
     '</div>'

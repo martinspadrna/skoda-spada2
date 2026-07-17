@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// RaK 1.2 (1.293) – smoke test přehledu připojení + Dashboard/appearance contract guard.
+// RaK 1.2 (1.294) – smoke test přehledu připojení + Dashboard/appearance contract guard.
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
@@ -226,12 +226,12 @@ const dashboardReleaseIsolationGuardV198 = Object.freeze({
 });
 
 const releaseMetadataContractV199 = Object.freeze({
-  displayVersion: '1.2 (1.293)',
-  appLabel: 'RaK 1.2 (1.293)',
-  packageVersion: '1.2.293',
-  cacheVersion: 'v1.2-1.293',
+  displayVersion: '1.2 (1.294)',
+  appLabel: 'RaK 1.2 (1.294)',
+  packageVersion: '1.2.294',
+  cacheVersion: 'v1.2-1.294',
   realtimeChannel: 'rak-public-live-v1-2-1-126',
-  changelogHeader: '## RaK 1.2 (1.293)',
+  changelogHeader: '## RaK 1.2 (1.294)',
   previousBuildFragments: Object.freeze(['1.2 (1.138)', '1.2.138', 'v1.2-1.138', '1.2 (1.137)', '1.2.137', 'v1.2-1.137', '1.2 (1.118)', '1.2.118', 'v1.2-1.118', 'rak-public-live-v1-2-1-118'])
 });
 
@@ -340,8 +340,8 @@ function assertDashboardReleaseIsolationGuardV198() {
 function assertReleaseMetadataContractV199() {
   const contract = releaseMetadataContractV199;
   assertIncludes(exportJs, 'RAK_RELEASE_METADATA_CONTRACT_V199', 'export.js musí obsahovat release metadata contract v1.99');
-  assertIncludes(exportJs, "displayVersion: '1.2 (1.293)'", 'Release contract v export.js musí držet display verzi 1.105');
-  assertIncludes(exportJs, "packageVersion: '1.2.293'", 'Release contract v export.js musí držet package verzi 1.2.114');
+  assertIncludes(exportJs, "displayVersion: '1.2 (1.294)'", 'Release contract v export.js musí držet display verzi 1.105');
+  assertIncludes(exportJs, "packageVersion: '1.2.294'", 'Release contract v export.js musí držet package verzi 1.2.114');
   assert(packageJson.version === contract.packageVersion, `package.json version drift: čekám ${contract.packageVersion}, mám ${packageJson.version}`);
   assertIncludes(coreJs, `const APP_VERSION = "${contract.displayVersion}";`, 'core.js APP_VERSION není sjednocený s 1.105');
   assertIncludes(serviceWorkerJs, `const CACHE_VERSION = '${contract.cacheVersion}';`, 'sw.js CACHE_VERSION není sjednocený s 1.105');
@@ -1264,9 +1264,8 @@ function assertRotationOvertimeShiftFilterContractV1128() {
   assertIncludes(adminFoodJs, 'function buildAdminFoodScheduleStatusHtml', 'Kantyna/jidelna musi mit admin-only souhrn stavu');
   assertIncludes(adminFoodJs, 'function adminFoodRefreshStatus', 'Souhrn kantyny/jidelny se musi prepocitat podle rozepsanych radku');
   assertIncludes(adminFoodJs, 'adminFoodReadScheduleStatusFromRoot', 'Souhrn kantyny/jidelny musi vychazet z aktualniho DOM pred ulozenim');
-  assertIncludes(adminFoodJs, 'const dates = allDates.filter', 'Kantyna/jidelna ma v tabulce ukazovat jen budouci prescasove nedele');
-  assertIncludes(adminFoodJs, 'preservedPastDateInputs', 'Stare prescasove nedele ve food nastaveni se nesmi pri ulozeni potichu smazat');
-  assertIncludes(adminFoodJs, 'data-food-past-overtime-date', 'Skryte stare food prescasy musi mit vlastni znacku');
+  assertIncludes(adminFoodJs, 'existingSnapshot.dates.slice()', 'Stare prescasove nedele ve food nastaveni se nesmi pri ulozeni potichu smazat');
+  assertNotIncludes(adminFoodJs, 'data-food-overtime-date-row', 'Kantyna/jidelna uz nesmi mit vlastni editovatelny seznam prescasovych nedeli - to patri do Provoz / Prescasy');
   assertIncludes(menuJs, 'function buildAdminFoodPublicCheckHtml', 'Kantyna/jidelna musi mit admin-only kontrolu verejneho dopadu');
   assertIncludes(menuJs, 'Veřejná kontrola provozu', 'Kantyna/jidelna musi spravci rikat, ze jde o verejne viditelnou zmenu');
   assertIncludes(menuJs, 'Ověř stav otevřeno/zavřeno', 'Kantyna/jidelna musi mit jasnou kontrolu po ulozeni na home');
@@ -1480,7 +1479,7 @@ function assertAdminAccountLoginContractV1141() {
   assertIncludes(adminUnlockJs, 'Stav spravcu', 'Sprava spravcu musi mit jasny stavovy souhrn');
   assertIncludes(adminUnlockJs, 'function buildAdminAccountsSafetyHtml', 'Sprava spravcu musi mit bezpecnostni souhrn pro predani');
   assertIncludes(adminUnlockJs, 'Bezpecnost pristupu', 'Sprava spravcu musi jasne pojmenovat bezpecnost pristupu');
-  assertIncludes(adminUnlockJs, 'Predavaci exporty hesla nestahuji', 'Predavaci podklady nesmi vytahovat admin hesla');
+  assertIncludes(adminUnlockJs, 'Hesla se ukladaji jen jako hash', 'Sprava spravcu musi jasne rikat, ze hesla jsou jen hash');
   assertIncludes(adminUnlockJs, 'Kontrola radku', 'Sprava spravcu musi upozornovat na nedokoncene nebo duplicitni radky');
   assertIncludes(adminUnlockJs, 'Muzou spravovat pracovni casti administrace, ale nemuzou menit hesla ani dalsi adminy.', 'Nizsi admini nesmi byt popsani jako owner admini');
   assertIncludes(ui, 'Provoz, rozpisy, absence, zálohy, exporty a nastavení aplikace.', 'Prehled opravneni musi rikat, ze nizsi admin muze menit pracovni casti aplikace');
@@ -1494,7 +1493,7 @@ function assertAdminAccountLoginContractV1141() {
   assertIncludes(ui, 'function appMenuShouldShowAdminEntry', 'Menu musi ukazat vstup do administrace i admin uctu pred dokoncenym obnovenim session');
   assertIncludes(ui, "localStorage.getItem('adminPersistentSessionV1')", 'Menu musi poznat ulozenou admin session bez viditelneho dopadu na bezne ucty');
   assertIncludes(ui, 'appMenuShouldShowAdminEntry() ? \'  <button type="button" class="appMenuAction isActive" data-menu-action="admin">Administrace</button>\'', 'Tlacitko Administrace musi pouzivat admin-entry helper');
-  assertIncludes(ui, 'Provoz před rozpisem', 'Admin menu musi byt rozdelene do prehlednych provoznich skupin');
+  assertIncludes(ui, "buildAdminMenuSectionHtml('1. Provoz'", 'Admin menu musi byt rozdelene do prehlednych provoznich skupin');
   assertIncludes(ui, 'buildAdminMenuSectionHtml', 'Admin menu musi skladat prehledne skupiny pres spolecny helper');
   assertIncludes(ui, 'adminMenuSections', 'Admin uvod musi mit zabalitelne skupiny spravcovskych oblasti');
   assertIncludes(ui, 'Hesla a další adminy spravuje jen hlavní admin.', 'Admin menu musi nizsimu adminovi vysvetlit, proc nema spravu hesel');
