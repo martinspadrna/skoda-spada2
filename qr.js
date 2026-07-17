@@ -164,10 +164,21 @@ function cloneFoodWindow(window, specialOvertime) {
 function getFoodSpecialDateSet() {
   const settings = getFoodMachineSettings();
   const hasCustom = Object.prototype.hasOwnProperty.call(settings, 'overtimeDates') || Object.prototype.hasOwnProperty.call(settings, 'overtime_dates');
-  if (!hasCustom) return new Set(FOOD_SPECIAL_SUNDAY_DATES);
-  const raw = settings.overtimeDates ?? settings.overtime_dates;
-  const list = Array.isArray(raw) ? raw : String(raw || '').split(/[\n,;\s]+/);
-  return new Set(list.map((item) => String(item || '').trim()).filter((item) => /^\d{4}-\d{2}-\d{2}$/.test(item)));
+  const result = hasCustom ? new Set() : new Set(FOOD_SPECIAL_SUNDAY_DATES);
+  if (hasCustom) {
+    const raw = settings.overtimeDates ?? settings.overtime_dates;
+    const list = Array.isArray(raw) ? raw : String(raw || '').split(/[\n,;\s]+/);
+    list.map((item) => String(item || '').trim()).filter((item) => /^\d{4}-\d{2}-\d{2}$/.test(item)).forEach((date) => result.add(date));
+  }
+  // Od verze 1.294 je Provoz / Prescasy (ROTATION_OVERTIME_SETTINGS) jediny editovatelny
+  // zdroj prescasovych terminu - kantyna uz vlastni seznam needituje, jen se sem
+  // pripoji, aby home karty Kantyna/Jidelna ukazaly spravne hodiny i pro nove pridane terminy.
+  try {
+    if (typeof window !== 'undefined' && typeof window.getRotationOvertimeDateSet === 'function') {
+      window.getRotationOvertimeDateSet().forEach((date) => result.add(date));
+    }
+  } catch (err) {}
+  return result;
 }
 
 function getFoodAdminWindowText(windows) {

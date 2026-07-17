@@ -1,3 +1,9 @@
+## RaK 1.2 (1.295)
+
+- Oprava: home karty Kantýna/Jídelna teď poznají přesčasovou neděli i z termínů zadaných v Provoz / Přesčasy, ne jen ze starého (od 1.294 needitovatelného) seznamu v nastavení kantýny. Bez týhle opravy by nový přesčasový termín přidaný jen v Přesčasech neukázal správné hodiny kantýny na home.
+- `getFoodSpecialDateSet()` (qr.js) teď sjednocuje starý zamrzlý seznam kantýny s živým seznamem z Přesčasů, takže se nic neztratí a nové termíny fungují bez zásahu do kódu.
+- Release metadata sjednocena na `RaK 1.2 (1.295)`, technicka verze `1.2.295`, cache `v1.2-1.295`; loader modulu ma cache znacku `1.2.295`.
+
 ## RaK 1.2 (1.294)
 
 - Správci: poslední zmínka o "předání" v bezpečnostním souhrnu přejmenována na Hesla (jen hash, nikam se nestahují).
