@@ -1,3 +1,11 @@
+## RaK 1.2 (1.301)
+
+- Theme / barvy aplikace a Pozadí: zredukováno na kurátorovanou pevnou sadu 6 témat (Zelená, Světlá, Modrá, Grafitová, Oranžová, Fialová) a 6 pozadí (Tmavé sklo, Škoda zelená, Modré sklo, Teplé sklo, Světlé, AMOLED mřížka) - odstraněny duplicitní a skoro identické varianty (mj. dřívější duplicitní id `storm-signal` ve dvou různých pozadích).
+- Odstraněn celý systém odemykání vzhledu (rank/achievementy/počet her) i systém, který za běhu tiše přepisoval popisky a barvy pozadí na jiný patternový vzhled, než měl zdrojový kód - výběr tématu i pozadí je teď vždy okamžitě dostupný a klikatelný, bez zámků a bez odznaků "odemčeno za...".
+- Po přihlášení / obnově zálohy se uložené téma a pozadí použijí přesně tak, jak přišly, bez kontroly odemčení, která je dřív mohla tiše přepsat zpět na výchozí.
+- Smoke testy (`app-usage-smoke-v963.js`) přepsány na nová pravidla - kontrola přesně 6+6 položek, žádné duplicitní id, žádná zamykací pole (`unlockText`/`minPlays`/`minAchievements`/`minRank`), žádné pozůstatky starého odemykacího/patternového systému.
+- Release metadata sjednocena na `RaK 1.2 (1.301)`, technicka verze `1.2.301`, cache `v1.2-1.301`; loader modulu ma cache znacku `1.2.301`.
+
 ## RaK 1.2 (1.300)
 
 - Oprava: sloupce Měsíc/Datum výplaty u ručních výjimek se od minulé úpravy (1.299, 107px) na mobilu vzájemně překrývaly – natvrdo zúžené inputy `type="month"`/`type="date"` mají v prohlížeči nesmrštitelné minimum (~137/120 px), pod které je CSS `width` nedostane. Sloupce teď mají bezpečnou šířku nad tímto minimem (Měsíc 170px, Datum 150px, Poznámka 320px), tabulka se vrátila k běžnému chování (žádný `width:auto` override).

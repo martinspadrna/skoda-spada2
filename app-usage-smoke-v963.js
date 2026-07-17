@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// RaK 1.2 (1.300) – smoke test přehledu připojení + Dashboard/appearance contract guard.
+// RaK 1.2 (1.301) – smoke test přehledu připojení + Dashboard/appearance contract guard.
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
@@ -226,12 +226,12 @@ const dashboardReleaseIsolationGuardV198 = Object.freeze({
 });
 
 const releaseMetadataContractV199 = Object.freeze({
-  displayVersion: '1.2 (1.300)',
-  appLabel: 'RaK 1.2 (1.300)',
-  packageVersion: '1.2.300',
-  cacheVersion: 'v1.2-1.300',
+  displayVersion: '1.2 (1.301)',
+  appLabel: 'RaK 1.2 (1.301)',
+  packageVersion: '1.2.301',
+  cacheVersion: 'v1.2-1.301',
   realtimeChannel: 'rak-public-live-v1-2-1-126',
-  changelogHeader: '## RaK 1.2 (1.300)',
+  changelogHeader: '## RaK 1.2 (1.301)',
   previousBuildFragments: Object.freeze(['1.2 (1.138)', '1.2.138', 'v1.2-1.138', '1.2 (1.137)', '1.2.137', 'v1.2-1.137', '1.2 (1.118)', '1.2.118', 'v1.2-1.118', 'rak-public-live-v1-2-1-118'])
 });
 
@@ -340,8 +340,8 @@ function assertDashboardReleaseIsolationGuardV198() {
 function assertReleaseMetadataContractV199() {
   const contract = releaseMetadataContractV199;
   assertIncludes(exportJs, 'RAK_RELEASE_METADATA_CONTRACT_V199', 'export.js musí obsahovat release metadata contract v1.99');
-  assertIncludes(exportJs, "displayVersion: '1.2 (1.300)'", 'Release contract v export.js musí držet display verzi 1.105');
-  assertIncludes(exportJs, "packageVersion: '1.2.300'", 'Release contract v export.js musí držet package verzi 1.2.114');
+  assertIncludes(exportJs, "displayVersion: '1.2 (1.301)'", 'Release contract v export.js musí držet display verzi 1.105');
+  assertIncludes(exportJs, "packageVersion: '1.2.301'", 'Release contract v export.js musí držet package verzi 1.2.114');
   assert(packageJson.version === contract.packageVersion, `package.json version drift: čekám ${contract.packageVersion}, mám ${packageJson.version}`);
   assertIncludes(coreJs, `const APP_VERSION = "${contract.displayVersion}";`, 'core.js APP_VERSION není sjednocený s 1.105');
   assertIncludes(serviceWorkerJs, `const CACHE_VERSION = '${contract.cacheVersion}';`, 'sw.js CACHE_VERSION není sjednocený s 1.105');
@@ -717,88 +717,37 @@ assertOrder(dashboardPolishCss, 'Dashboard viewport stack contract guard', 'Dash
   assertIncludes(dashboardPolishCss, fragment, `Chybí 1.80 hero height guard: ${fragment}`);
 });
 
-// 1.80: theme/pozadí nesmí znovu bobtnat skoro stejnými variantami a nové výrazné kusy nesmí být zadarmo.
+// 1.80: theme/pozadí jsou teď pevná kurátorovaná sada bez odemykání – žádné zamykání, žádné duplicity, žádné gating pole.
 const themeDefs = readAppearanceArray('RAK_THEME_DEFS');
 const backgroundDefs = readAppearanceArray('RAK_BACKGROUND_DEFS');
-const themeIds = new Set(themeDefs.map((item) => String(item && item.id || '')));
-const backgroundIds = new Set(backgroundDefs.map((item) => String(item && item.id || '')));
-['electric-ocean', 'gold-rush-neon', 'arctic-radar', 'candy-voltage', 'stealth-purple', 'ultra-violet'].forEach((id) => {
-  assert(!themeIds.has(id), `Podobné/duplicitní theme má zůstat vyřazené: ${id}`);
+const themeIdList = themeDefs.map((item) => String(item && item.id || ''));
+const backgroundIdList = backgroundDefs.map((item) => String(item && item.id || ''));
+const themeIds = new Set(themeIdList);
+const backgroundIds = new Set(backgroundIdList);
+assert(themeDefs.length === 6, `Theme seznam musí mít přesně 6 kurátorovaných položek, nalezeno ${themeDefs.length}`);
+assert(backgroundDefs.length === 6, `Pozadí seznam musí mít přesně 6 kurátorovaných položek, nalezeno ${backgroundDefs.length}`);
+assert(themeIds.size === themeIdList.length, 'Theme seznam nesmí obsahovat duplicitní id');
+assert(backgroundIds.size === backgroundIdList.length, 'Pozadí seznam nesmí obsahovat duplicitní id');
+['default', 'light-brown', 'midnight-blue', 'graphite', 'sunset-plasma', 'violet-pulse'].forEach((id) => {
+  assert(themeIds.has(id), `Theme seznam musí obsahovat ${id}`);
 });
-['nebula-shock', 'emerald-smoke', 'ruby-circuit', 'cobalt-fire', 'solar-flare'].forEach((id) => {
-  assert(!backgroundIds.has(id), `Podobné/duplicitní pozadí má zůstat vyřazené: ${id}`);
+['ios-mesh', 'skoda-green', 'deep-aurora', 'sunset-plasma', 'light-zigzag', 'amoled-grid'].forEach((id) => {
+  assert(backgroundIds.has(id), `Pozadí seznam musí obsahovat ${id}`);
 });
-['storm-signal', 'matrix-redline'].forEach((id) => {
-  const theme = themeDefs.find((item) => String(item && item.id || '') === id);
-  assert(theme, `Ponechaný výrazný theme chybí: ${id}`);
-  assert(String(theme.unlockText || '').includes('Rank') && Number(theme.minAchievements || 0) > 0, `Theme ${id} musí být postupně odemykaný rankem/achievementem`);
-});
-['storm-signal', 'midnight-gold'].forEach((id) => {
-  const bg = backgroundDefs.find((item) => String(item && item.id || '') === id);
-  assert(bg, `Ponechané výrazné pozadí chybí: ${id}`);
-  assertIncludes(appearanceThemeJs, `'${id}': { unlockText: 'Rank`, `Pozadí ${id} musí mít rank/achievement unlock v mapě`);
-});
-const freeThemes = themeDefs.filter((item) => String(item && item.unlockText || '') === 'Vždy dostupné').map((item) => String(item.id || ''));
-assert(freeThemes.includes('default') && freeThemes.includes('light-brown') && freeThemes.length === 2, `Vždy dostupné mají být základní theme default + light-brown, nalezeno: ${freeThemes.join(', ')}`);
-assert(themeDefs.length <= 19, 'Theme seznam je po 1.80 zbytečně podobný/nafouknutý');
-assert(backgroundDefs.length <= 25, 'Pozadí seznam je po 1.80 zbytečně podobný/nafouknutý');
-
-// 1.81: appearance reward contract – budoucí theme/pozadí mohou přibývat, ale ne jako skoro stejné kopie bez postupného odemykání.
-assertIncludes(appearanceThemeJs, 'RAK_APPEARANCE_REWARD_CONTRACT_V181', 'Chybí 1.81 appearance reward contract');
-assertIncludes(appearanceThemeJs, "intent: 'distinct-progressive-appearance-rewards'", 'Appearance contract musí jasně řešit odlišnost a postupné odemykání');
-assertIncludes(appearanceThemeJs, "defaultThemeId: 'default'", 'Appearance contract musí držet základní theme');
-assertIncludes(appearanceThemeJs, "defaultBackgroundId: 'ios-mesh'", 'Appearance contract musí držet základní pozadí');
-[
-  'Vždy dostupné mohou být základní theme a základní světlý theme/pozadí podle pracovního nastavení.',
-  'Nové theme/pozadí nesmí být jen lehce přebarvená kopie existujícího skinu.',
-  'Každý nový výrazný skin musí mít minPlays, minAchievements nebo minRank.',
-  'Před přidáním nového skinu porovnat hlavní color/swatch/akcent s existující rodinou.',
-  'Když nový skin spadá do stejné rodiny, musí mít jiný kontrast, náladu nebo účel v UI.'
-].forEach((rule) => assertIncludes(appearanceThemeJs, rule, `Appearance contract pravidlo chybí: ${rule}`));
-['green', 'blueCyan', 'violetPink', 'redOrange', 'neutralPremium'].forEach((family) => {
-  assertIncludes(appearanceThemeJs, family + ': Object.freeze([', `Theme family contract chybí: ${family}`);
-});
-['green', 'blueCyan', 'violetPink', 'warm', 'calm'].forEach((family) => {
-  assertIncludes(appearanceThemeJs, family + ': Object.freeze([', `Background family contract chybí: ${family}`);
-});
-['electric-ocean', 'gold-rush-neon', 'arctic-radar', 'candy-voltage', 'stealth-purple', 'ultra-violet'].forEach((id) => {
-  assertIncludes(appearanceThemeJs, id, `Vyřazený theme ${id} musí být dohledatelný v reservedRemovedThemeIds`);
-});
-['nebula-shock', 'emerald-smoke', 'ruby-circuit', 'cobalt-fire', 'solar-flare'].forEach((id) => {
-  assertIncludes(appearanceThemeJs, id, `Vyřazené pozadí ${id} musí být dohledatelné v reservedRemovedBackgroundIds`);
-});
-const backgroundFreeEntries = Object.entries({
-  'ios-mesh': 'Vždy dostupné',
-  'light-zigzag': 'Vždy dostupné',
-  'amoled-grid': 'Vždy dostupné'
-}).filter(([id]) => backgroundIds.has(id));
-assert(backgroundFreeEntries.some(([id]) => id === 'ios-mesh') && backgroundFreeEntries.some(([id]) => id === 'light-zigzag') && backgroundFreeEntries.some(([id]) => id === 'amoled-grid') && backgroundFreeEntries.length === 3, 'Základní volná pozadí mají být ios-mesh + light-zigzag + amoled-grid');
-['storm-signal', 'midnight-gold'].forEach((id) => {
-  assertIncludes(appearanceThemeJs, `'${id}': { unlockText: 'Rank`, `Pozadí ${id} musí zůstat v rank/achievement unlock mapě i po 1.81 contractu`);
-});
-assertOrder(appearanceThemeJs, 'RAK_BACKGROUND_UNLOCKS_V927', 'RAK_APPEARANCE_REWARD_CONTRACT_V181', 'Appearance contract má být až za unlock mapou, aby navazoval na reálné odemykání');
-assertOrder(appearanceThemeJs, 'RAK_APPEARANCE_REWARD_CONTRACT_V181', 'window.RAK_BACKGROUND_DEFS = RAK_BACKGROUND_DEFS', 'Appearance contract má být dostupný před finálním vystavením background definic');
-
-// 1.89: readability guard – odemykané theme/pozadí mohou být výrazné, ale musí držet čitelnost na Dashboardu a v Administraci.
-assertIncludes(appearanceThemeJs, 'RAK_APPEARANCE_READABILITY_CONTRACT_V189', 'Chybí 1.89 appearance readability contract');
-assertIncludes(appearanceThemeJs, "intent: 'dashboard-admin-readable-appearance'", 'Readability contract musí mířit na Dashboard/Admin čitelnost');
-['dashboard', 'admin-connections', 'settings-appearance', 'games-leaderboards'].forEach((screen) => {
-  assertIncludes(appearanceThemeJs, screen, `Readability contract musí chránit obrazovku ${screen}`);
-});
-['--bg', '--panel', '--panel2', '--green', '--green2', '--muted', '--soft', '--rakThemeGlow', '--rakThemeBorder'].forEach((varName) => {
-  assertIncludes(appearanceThemeJs, varName, `Readability contract musí hlídat theme proměnnou ${varName}`);
-});
-['--rakBgBase', '--rakAppBackground', '--rakAppBackgroundOverlay', '--rakAppBackgroundLite', '--rakBgAccent'].forEach((varName) => {
-  assertIncludes(appearanceThemeJs, varName, `Readability contract musí hlídat background proměnnou ${varName}`);
+[...themeDefs, ...backgroundDefs].forEach((item) => {
+  ['unlockText', 'minPlays', 'minAchievements', 'minRank'].forEach((field) => {
+    assert(!Object.prototype.hasOwnProperty.call(item || {}, field), `Položka ${item && item.id} nesmí mít gating pole ${field} – výběr je vždy dostupný`);
+  });
 });
 [
-  'Každé theme musí mít světlé --soft a dostatečně čitelné --muted proti --bg.',
-  'Pozadí může být tmavé nebo světlé, ale glass panely a text musí zůstat čitelné.',
-  'Dashboard, Administrace a Nastavení vzhledu nesmí spoléhat jen na barvu akcentu.',
-  'Výrazný reward skin může měnit náladu, ale nesmí zhoršit kontrast textu a panelů.'
-].forEach((rule) => assertIncludes(appearanceThemeJs, rule, `Readability pravidlo chybí: ${rule}`));
-assertOrder(appearanceThemeJs, 'RAK_APPEARANCE_REWARD_CONTRACT_V181', 'RAK_APPEARANCE_READABILITY_CONTRACT_V189', 'Readability contract musí navazovat na reward contract');
-assertOrder(appearanceThemeJs, 'RAK_APPEARANCE_READABILITY_CONTRACT_V189', 'window.RAK_BACKGROUND_DEFS = RAK_BACKGROUND_DEFS', 'Readability contract má být vystavený před background definicemi');
+  'getThemeUnlockMetrics', 'getThemeUnlockScore', 'isAppearanceRewardUnlocked', 'getRakProfileAppearanceRewardHealth',
+  'RAK_BACKGROUND_UNLOCKS_V927', 'RAK_APPEARANCE_REWARD_CONTRACT_V181', 'RAK_APPEARANCE_READABILITY_CONTRACT_V189',
+  'RAK_APPEARANCE_LOCKED_PREFERENCE_PRESERVE_CONTRACT_V1144', 'RAK_PATTERN_BACKGROUND_META_V1132',
+  'RAK_PATTERN_BACKGROUND_VARIANTS_V1132', 'applyPatternBackgroundsV1132', 'applyLightPatternBackgroundsV1131',
+  'appMenuThemeBadge'
+].forEach((token) => {
+  assert(!appearanceThemeJs.includes(token), `appearance-theme.js už nesmí obsahovat odemykací/pattern pozůstatek: ${token}`);
+});
 themeDefs.forEach((theme) => {
   const vars = theme && theme.vars ? theme.vars : {};
   ['--bg', '--panel', '--panel2', '--green', '--green2', '--muted', '--soft', '--rakThemeGlow', '--rakThemeBorder'].forEach((varName) => {
@@ -1112,11 +1061,8 @@ function assertGamesActiveAccountDirectStatsContractV1144() {
   assertIncludes(ui, 'GAMES_ACTIVE_ACCOUNT_DIRECT_STATS_CONTRACT_V1144', 'games-profile.js musí dokumentovat přímý sync aktivního účtu v1.145');
   assertIncludes(ui, 'bridge.loadGameStatsForAccount(activeAccountId', 'Profilový sync musí používat přímé statistiky aktivního účtu');
   assertIncludes(ui, 'login-remote-stats', 'Po přihlášení se musí vynutit přepočet ranku/theme po stažení statistik účtu');
-  assertIncludes(appearanceThemeJs, 'RAK_APPEARANCE_LOCKED_PREFERENCE_PRESERVE_CONTRACT_V1144', 'appearance musí chránit uložené theme/pozadí před předčasným přepsáním na default');
-  assertIncludes(appearanceThemeJs, 'const themeToApply = savedThemeUnlocked', 'Zamčené uložené theme se má dočasně jen vizuálně nahradit defaultem');
-  assertIncludes(appearanceThemeJs, 'const bgToApply = savedBgUnlocked', 'Zamčené uložené pozadí se má dočasně jen vizuálně nahradit defaultem');
-  assert(!appearanceThemeJs.includes("if (!isAppearanceRewardUnlocked(savedTheme, rewardMetrics, 'default')) { ui.themeId = defaultTheme"), 'Uložené profilové theme se nesmí mazat při dočasně nízkém ranku');
-  assert(!appearanceThemeJs.includes("if (!isAppearanceRewardUnlocked(savedBg, rewardMetrics, 'ios-mesh')) { ui.backgroundId = defaultBg"), 'Uložené profilové pozadí se nesmí mazat při dočasně nízkém ranku');
+  assertIncludes(appearanceThemeJs, 'const themeToApply = ui.themeId || defaultTheme', 'Načtené profilové theme se musí použít přímo bez unlock kontroly');
+  assertIncludes(appearanceThemeJs, 'const bgToApply = ui.backgroundId || defaultBg', 'Načtené profilové pozadí se musí použít přímo bez unlock kontroly');
 }
 
 
@@ -1402,25 +1348,6 @@ function assertRotationOvertimeDefaults2025ContractV1129() {
     assertIncludes(coreJs, '"' + date + '"', 'Rozpisové přesčasy 2025 musí obsahovat ' + date);
     assertIncludes(qrJs, '"' + date + '"', 'Food/kantýna přesčasy 2025 musí obsahovat ' + date);
   });
-}
-
-function assertLightPatternThemeContractV1131() {
-  const convertedBackgroundIds = [
-    'skoda-green', 'light-green', 'deep-aurora', 'ember', 'neon-lagoon', 'electric-lime',
-    'skoda-electric', 'candy-glass', 'aurora-punch', 'violet-storm', 'sunset-plasma', 'polar-mint', 'blue-orbit'
-  ];
-  assertIncludes(appearanceThemeJs, 'RAK_PATTERN_BACKGROUND_VARIANTS_V1132', 'Pozadí musí mít patch pro patternová pozadí v1.132');
-  assert(!themeIds.has('amoled-midnight'), 'AMOLED černý theme má být po 1.134 odstraněný');
-  assertIncludes(appearanceThemeJs, 'function applyLightPatternBackgroundsV1131', 'Světlé patterny musí být aplikované kompatibilním patchem přes původní ID');
-  assertIncludes(appearanceThemeJs, '"label": "Světlý modrý"', 'Původní světlý hnědý theme musí být přejmenovaný na světlý modrý');
-  assertIncludes(appearanceThemeJs, '"--text": "#0F2E5F"', 'Světlý modrý theme musí mít modré písmo');
-  assertIncludes(appearanceThemeJs, '"--rakThemeBorder": "rgba(37,99,235,.34)"', 'Světlý modrý theme musí mít modré okraje');
-  convertedBackgroundIds.forEach((id) => {
-    assertIncludes(appearanceThemeJs, "'" + id + "': Object.freeze", 'Světlý pattern patch musí obsahovat pozadí ' + id);
-  });
-  assertIncludes(appearanceThemeJs, 'Modrý blueprint', 'Mezi světlými pozadími musí být odlišný blueprint vzor');
-  assertIncludes(appearanceThemeJs, 'Lagoon vlnky', 'Mezi světlými pozadími musí být odlišný vlnkový vzor');
-  assertIncludes(appearanceThemeJs, 'Modré orbity', 'Mezi světlými pozadími musí být odlišný orbitální vzor');
 }
 
 function assertAdminAccountLoginContractV1141() {
@@ -2007,7 +1934,6 @@ assertStatsPressMachineSplitContractV1123();
 assertStatsPressMachineMoOnlyExceptionContractV1124();
 assertRotationOvertimeShiftFilterContractV1128();
 assertRotationOvertimeDefaults2025ContractV1129();
-assertLightPatternThemeContractV1131();
 assertAdminAccountLoginContractV1141();
 assertAdminHandoverGuideContractV1142();
 assertAdminGeneratorSettingsContractV1143();
