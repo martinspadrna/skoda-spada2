@@ -405,22 +405,15 @@ function rakAdminRestorePersistentSessionForActiveAccount(reason) {
   if (!activeId || !session || String(session.accountId || '') !== activeId) return false;
   if (!rakAdminIsOwnerAccount(activeId) && !rakAdminAccountRequiresPassword(activeId)) return false;
   if (!rakAdminSessionMatchesSettings(session)) {
-    rakAdminLock({ clearPersistent: true });
+    // Nemazat ulozenou relaci jen kvuli tomu, ze prave nacitana nastaveni session
+    // neobsahuji (prazdny/nekompletni/cache-fallback nacteni pri pomale/vypadle
+    // siti). Skutecne odhlaseni zarizeni resi vyhradne rakAdminRevokePersistentSession
+    // (tlacitko Odhlasit), kde uz je jiste, ze data jsou cerstva.
     return false;
   }
   const restored = rakAdminApplyUnlockedAccount(activeId, RAK_ADMIN_TRUSTED_SESSION_MARKER, { touchPersistent: false, source: reason || 'persistent' });
   if (restored) rakAdminPersistUnlockedSession(activeId);
   return restored;
-}
-
-function rakAdminCheckPersistentSessionAgainstSettings() {
-  const session = rakAdminReadPersistentSession();
-  if (!session) return false;
-  if (!rakAdminSessionMatchesSettings(session)) {
-    rakAdminLock({ clearPersistent: true });
-    return false;
-  }
-  return true;
 }
 
 function rakAdminUnlockForAccount(accountId, pin, options) {
@@ -499,12 +492,25 @@ function rakAdminScheduleStartupPrompt() {
   });
 }
 
+function rakAdminSupabaseLooksHealthy() {
+  try {
+    if (typeof window === 'undefined' || typeof window.getSupabaseSyncStatus !== 'function') return true;
+    const status = window.getSupabaseSyncStatus();
+    const kind = String(status && status.kind || '').trim();
+    return kind !== 'offline' && kind !== 'error';
+  } catch (err) {
+    return true;
+  }
+}
+
 function rakAdminLoadSettingsThenCheck(reason) {
   const activeId = rakAdminGetActiveAccountId();
   if (!activeId) return false;
   const alreadyKnownAdmin = rakAdminIsOwnerAccount(activeId) || rakAdminAccountRequiresPassword(activeId);
   const persistentResult = alreadyKnownAdmin ? rakAdminRestorePersistentSessionForActiveAccount(reason || 'persistent') : false;
-  const promptResult = alreadyKnownAdmin && !persistentResult ? rakAdminPromptOnceForActiveAccount(reason) : persistentResult;
+  // Blokujici prompt() jde spustit jen kdyz je Supabase zdravy - jinak by nejistota
+  // zpusobena pomalou/vypadlou siti zamkla celou appku za nativnim dialogem na heslo.
+  const promptResult = alreadyKnownAdmin && !persistentResult && rakAdminSupabaseLooksHealthy() ? rakAdminPromptOnceForActiveAccount(reason) : persistentResult;
   if (!(window.RotationSupabaseBridge && typeof window.RotationSupabaseBridge.loadMachineSettings === 'function')) return promptResult;
   if (window.__rakAdminSettingsLoadPending === true) return promptResult;
   window.__rakAdminSettingsLoadPending = true;
@@ -513,9 +519,8 @@ function rakAdminLoadSettingsThenCheck(reason) {
     if (typeof app !== 'undefined' && app) app.machineSettingsRows = Array.isArray(rows) ? rows : [];
     const restoredPersistent = rakAdminRestorePersistentSessionForActiveAccount(reason || 'settings-loaded');
     if (restoredPersistent) return;
-    rakAdminCheckPersistentSessionAgainstSettings();
     const restoredAfterSettings = rakAdminRestoreSessionForActiveAccount();
-    if (!restoredAfterSettings) rakAdminPromptOnceForActiveAccount(reason || 'settings-loaded');
+    if (!restoredAfterSettings && rakAdminSupabaseLooksHealthy()) rakAdminPromptOnceForActiveAccount(reason || 'settings-loaded');
   }).catch(() => {
     window.__rakAdminSettingsLoadPending = false;
   });

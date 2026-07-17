@@ -1,3 +1,11 @@
+## RaK 1.2 (1.296)
+
+- Oprava: pomalé nebo nedostupné Supabase spojení mohlo při startu appky vést k tomu, že se automaticky spustil blokující nativní dialog na admin heslo, i když ho uživatel vůbec nechtěl otevírat - appka pak vypadala jako zaseknutá ("dlouho se načítá", nešlo nic kliknout).
+- `rakAdminLoadSettingsThenCheck` teď automatický dialog na heslo spustí jen když je Supabase v pořádku (ne offline/error stav); tichá obnova uložené admin relace funguje beze změny.
+- Odstraněno agresivní mazání uložené admin relace na základě neúplných/starých dat (např. při výpadku sítě) - relace se teď maže jen výslovným odhlášením zařízení ve Správcích.
+- O aplikaci: doplněn souhrn verzí 1.290-1.296.
+- Release metadata sjednocena na `RaK 1.2 (1.296)`, technicka verze `1.2.296`, cache `v1.2-1.296`; loader modulu ma cache znacku `1.2.296`.
+
 ## RaK 1.2 (1.295)
 
 - Oprava: home karty Kantýna/Jídelna teď poznají přesčasovou neděli i z termínů zadaných v Provoz / Přesčasy, ne jen ze starého (od 1.294 needitovatelného) seznamu v nastavení kantýny. Bez týhle opravy by nový přesčasový termín přidaný jen v Přesčasech neukázal správné hodiny kantýny na home.

@@ -735,6 +735,15 @@ function buildSupabaseKeepaliveStatusHtml(options) {
 function buildAppHistoryHtml(versionText) {
   const sections = [
     {
+      range: 'v.1.2 1.290–1.296',
+      title: 'Vlastní správa lidí, historie a stabilita',
+      lines: [
+        'Přibyla admin sekce Pracovníci (kdo se počítá v rozpisu a statistikách), hesla nižších správců se ukládají jen jako hash a nová Historie změn zaznamenává, kdo a kdy uložil dovolenou, přesčasy nebo rozpis.',
+        'Admin úvod zjednodušen na přehledné menu bez průvodce, kategorie přejmenované a přesčasové neděle se nastavují jen na jednom místě (Přesčasy), odkud se promítají i do kantýny.',
+        'Opravena chyba, kdy pomalé nebo nedostupné Supabase spojení mohlo zamknout celou appku za nativním dialogem na heslo; appka teď zůstane použitelná i při výpadku připojení.'
+      ]
+    },
+    {
       range: 'v.1.2 1.234–1.289',
       title: 'Průvodce předáním a bezpečnost adminů',
       lines: [
