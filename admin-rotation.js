@@ -2468,6 +2468,7 @@ function adminRotationGeneratorIsDayBlocked(notes) {
 }
 
 function adminRotationGeneratorCreateCounters(model) {
+  const generatorRules = getAdminRotationGeneratorRules();
   const softCoreState = model && model.softCoreCycleState ? model.softCoreCycleState : {};
   const counters = {
     total: Object.create(null),

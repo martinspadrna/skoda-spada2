@@ -3727,6 +3727,8 @@ function appMenuAdminModeSet() {
     'rotation',
     'overtime',
     'generator-settings',
+    'workers',
+    'change-log',
     'monthly-workflow',
     'handover',
     'manual',
@@ -3913,7 +3915,7 @@ function bindAppMenuHandlers(body) {
 
   body.addEventListener('click', async (event) => {
     const target = event.target && typeof event.target.closest === 'function'
-      ? event.target.closest('[data-menu-action], [data-admin-action], [data-admin-month-key], [data-admin-year-key], [data-admin-clear-field], [data-admin-selected-remove], [data-ui-pref], [data-ui-reset], [data-menu-back], [data-rot-field], [data-note-field]')
+      ? event.target.closest('[data-menu-action], [data-admin-action], [data-admin-month-key], [data-admin-year-key], [data-admin-clear-field], [data-admin-selected-remove], [data-ui-pref], [data-ui-reset], [data-calendar-note-pref], [data-menu-back], [data-rot-field], [data-note-field]')
       : null;
     if (!target || !body.contains(target)) return;
 
@@ -3921,6 +3923,7 @@ function bindAppMenuHandlers(body) {
     const adminAction = target.getAttribute('data-admin-action');
     const uiPref = target.getAttribute('data-ui-pref');
     const uiReset = target.hasAttribute('data-ui-reset');
+    const calendarNotePref = target.getAttribute('data-calendar-note-pref');
     const menuBack = target.getAttribute('data-menu-back');
     const currentView = String(body.dataset.adminView || '');
     const select = body.querySelector('#adminMonthSelect');
@@ -5107,6 +5110,11 @@ function bindAppMenuHandlers(body) {
         openAppMenu('settings');
         return;
       }
+      if (calendarNotePref) {
+        if (typeof toggleCalendarNotePref === 'function') toggleCalendarNotePref(calendarNotePref);
+        openAppMenu('settings');
+        return;
+      }
     } catch (err) {
       console.error('Menu/admin action failed', err);
       alert(err && err.message ? err.message : 'Akce se nepodařila.');
@@ -5291,6 +5299,10 @@ function openAppMenu(view) {
       const profileCard = buildGamesProfileSettingsHtml();
       const performanceCard = typeof buildRakDevicePerformanceSettingsHtml === 'function' ? buildRakDevicePerformanceSettingsHtml() : '';
       const themeCards = buildThemeSystemSettingsHtml();
+      const calendarNotePrefs = typeof getCalendarNotePrefs === 'function' ? getCalendarNotePrefs() : {};
+      const calendarNoteButtons = (typeof RAK_CALENDAR_NOTE_DEFS !== 'undefined' ? RAK_CALENDAR_NOTE_DEFS : [])
+        .map(def => '<button type="button" class="appMenuAction appMenuSettingBtn" data-calendar-note-pref="' + escapeHtml(def.id) + '">' + (calendarNotePrefs[def.id] ? '✓ ' : '') + escapeHtml(def.label) + '</button>')
+        .join('');
       body.innerHTML = [
         profileCard,
         performanceCard,
@@ -5302,6 +5314,12 @@ function openAppMenu(view) {
         '    <button type="button" class="appMenuAction appMenuSettingBtn" data-menu-action="app-diagnostics">Diagnostika</button>',
         '    <button type="button" class="appMenuAction appMenuSettingBtn" data-ui-reset="1">Výchozí</button>',
         '    <button type="button" class="appMenuAction appMenuSettingBtn appMenuDangerBtn" data-menu-action="reset-state">Smazat data</button>',
+        '  </div>',
+        '</div>',
+        '<div class="appMenuCard appMenuSettingsCard appMenuAppSettingsCard">',
+        '  <div class="appMenuCardTitle">Upozornění v kalendáři</div>',
+        '  <div class="appMenuSettingsList appMenuSettingsGrid">',
+        calendarNoteButtons,
         '  </div>',
         '</div>',
         themeCards,

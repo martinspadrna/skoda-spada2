@@ -150,6 +150,32 @@ function buildAdminUsageGroups(devices) {
   return Array.from(map.values()).sort((a, b) => (Date.parse(b.lastSeen || '') || 0) - (Date.parse(a.lastSeen || '') || 0));
 }
 
+function buildAdminUsageMonthGroupsHtml(itemsHtml) {
+  const monthNames = ['leden', 'únor', 'březen', 'duben', 'květen', 'červen', 'červenec', 'srpen', 'září', 'říjen', 'listopad', 'prosinec'];
+  const groupOrder = [];
+  const groups = new Map();
+  itemsHtml.forEach((item) => {
+    const date = item.lastSeen ? new Date(item.lastSeen) : null;
+    const hasDate = date && Number.isFinite(date.getTime());
+    const groupKey = hasDate ? (date.getFullYear() + '-' + String(date.getMonth() + 1).padStart(2, '0')) : 'neznamo';
+    if (!groups.has(groupKey)) {
+      const label = hasDate ? (monthNames[date.getMonth()] + ' ' + date.getFullYear()) : 'Neznámé datum';
+      groups.set(groupKey, { label: label.charAt(0).toUpperCase() + label.slice(1), items: [] });
+      groupOrder.push(groupKey);
+    }
+    groups.get(groupKey).items.push(item.html);
+  });
+  return groupOrder.map((key, idx) => {
+    const group = groups.get(key);
+    return [
+      '<details class="appMenuFoldSection adminUsageMonthGroup"' + (idx === 0 ? ' open' : '') + '>',
+      '  <summary>' + escapeHtml(group.label) + ' <span class="smallText">' + String(group.items.length) + '×</span></summary>',
+      '  <div class="adminUsageMonthGroupList">' + group.items.join('') + '</div>',
+      '</details>'
+    ].join('');
+  }).join('');
+}
+
 function buildAdminUsageHtml() {
   const snapshot = app && app.adminUsageSnapshot && typeof app.adminUsageSnapshot === 'object'
     ? app.adminUsageSnapshot
@@ -169,7 +195,7 @@ function buildAdminUsageHtml() {
     ['Aktivní 24 h', summary.active_24h ?? '—'],
     ['Aktivní 7 dní', summary.active_7d ?? '—']
   ].map(pair => '<div class="adminUsageMetric"><span>' + escapeHtml(pair[0]) + '</span><b>' + escapeHtml(String(pair[1])) + '</b></div>').join('');
-  const list = groups.length ? groups.map((group) => {
+  const list = groups.length ? buildAdminUsageMonthGroupsHtml(groups.map((group) => {
     const newest = group.newest || group.devices[0] || {};
     const ago = formatAdminUsageAgo(newest.minutes_since_seen);
     const deviceCount = group.devices.length;
@@ -195,7 +221,7 @@ function buildAdminUsageHtml() {
         ].join('');
       }).join('');
     const initials = buildAdminUsageInitials(group.name || group.account || 'Profil');
-    return [
+    const itemHtml = [
       '<details class="adminUsageItem" name="adminUsageConnectionProfiles">',
       '  <summary class="adminUsageSummary">',
       '    <span class="adminUsageAvatar" aria-hidden="true" title="' + escapeHtml(group.name || 'Profil') + '">' + escapeHtml(initials) + '</span>',
@@ -214,7 +240,8 @@ function buildAdminUsageHtml() {
       '  </div>',
       '</details>'
     ].join('');
-  }).join('') : '<div class="smallText adminUsageEmpty">Zatím tu nejsou žádná zařízení. Jakmile někdo otevře novou verzi a Supabase migrace bude nasazená, objeví se tady.</div>';
+    return { lastSeen: group.lastSeen, html: itemHtml };
+  })) : '<div class="smallText adminUsageEmpty">Zatím tu nejsou žádná zařízení. Jakmile někdo otevře novou verzi a Supabase migrace bude nasazená, objeví se tady.</div>';
   const recentEvents = events.slice(0, 8).map((ev) => {
     const label = [ev.player_name || ev.account_number || 'Bez profilu', ev.event_type || 'open', formatAdminUsageDate(ev.seen_at)].filter(Boolean).join(' · ');
     return '<div class="adminUsageEvent">' + escapeHtml(label) + '</div>';

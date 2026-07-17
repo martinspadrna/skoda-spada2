@@ -1,3 +1,12 @@
+## RaK 1.2 (1.302)
+
+- Oprava: generátor rozpisu na nový měsíc hlásil "Návrh se nepodařilo vygenerovat: generatorRules is not defined" – funkce `adminRotationGeneratorCreateCounters` v admin-rotation.js používala `generatorRules.hardCycle`, aniž by si (na rozdíl od všech ostatních generátorových funkcí) proměnnou lokálně načetla. Doplněno, generátor teď reálně naplní rozpis (ověřeno end-to-end).
+- Oprava: v sekci Pracovníci → Historie změn (a na obrazovce Pracovníci) tlačítko Zpět a další akce místo návratu na Administraci hodily uživatele do "Více" – seznam `appMenuAdminModeSet()` v app-menu.js chyběl o 'workers' a 'change-log', takže guard admin akcí je bral jako neplatné.
+- Nové nastavení v Nastavení aplikace: "Upozornění v kalendáři" – jde vypnout zvlášť upozornění "Pondělí – Brusy: spálení" a "První ranní v měsíci – Roznýtování laborka", která se zobrazují v kalendáři na Home.
+- Přehled připojení: profily/zařízení jsou teď sbalené podle měsíce poslední aktivity (nejnovější měsíc rozbalený), stejně jako už fungují Zálohy rozpisů.
+- Zúžení sloupců podle živě ověřené bezpečné šířky (bez oříznutí obsahu, bez překryvu): Dovolená/odstávky Od/Do o 50 % (195→98px), Mimořádné volné dny Datum o 20 % (130→104px), Zálohy rozpisů Záloha o 70 % a Akce o 50 % (224→67px, 140→70px), Výplata Měsíc/Datum/Poznámka o 50 % (170→85px, 150→75px, 320→160px), Zálohy nastavení Akce o 70 % (112→34px).
+- Release metadata sjednocena na `RaK 1.2 (1.302)`, technicka verze `1.2.302`, cache `v1.2-1.302`; loader modulu ma cache znacku `1.2.302`.
+
 ## RaK 1.2 (1.301)
 
 - Theme / barvy aplikace a Pozadí: zredukováno na kurátorovanou pevnou sadu 6 témat (Zelená, Světlá, Modrá, Grafitová, Oranžová, Fialová) a 6 pozadí (Tmavé sklo, Škoda zelená, Modré sklo, Teplé sklo, Světlé, AMOLED mřížka) - odstraněny duplicitní a skoro identické varianty (mj. dřívější duplicitní id `storm-signal` ve dvou různých pozadích).

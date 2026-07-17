@@ -917,15 +917,15 @@
 .adminSpecialDaysStatus:not([open]) > summary::after{transform:rotate(-90deg);}
 .adminVacationStatus[open] > summary,
 .adminSpecialDaysStatus[open] > summary{margin-bottom:7px;}
-.adminPayrollMonthCol{width:170px;}
-.adminPayrollDateCol{width:150px;}
-.adminPayrollNoteCol{width:320px;}
-.adminVacationCountdownTable{min-width:496px !important;}
+.adminPayrollMonthCol{width:85px;}
+.adminPayrollDateCol{width:75px;}
+.adminPayrollNoteCol{width:160px;}
+.adminVacationCountdownTable{min-width:302px !important;}
 .adminVacationNameCol{width:106px;}
-.adminVacationStartCol{width:195px;}
-.adminVacationEndCol{width:195px;}
-.adminSpecialDaysTable{min-width:389px !important;}
-.adminSpecialDaysDateCol{width:130px;}
+.adminVacationStartCol{width:98px;}
+.adminVacationEndCol{width:98px;}
+.adminSpecialDaysTable{min-width:363px !important;}
+.adminSpecialDaysDateCol{width:104px;}
 .adminSpecialDaysTypeCol{width:110px;}
 .adminSpecialDaysNameCol{width:149px;}
 .adminAppContactTable{min-width:320px !important;}
@@ -1070,7 +1070,7 @@
 .adminGeneratorBaseNameCol{width:84px;}
 .adminGeneratorBaseMachineCol{width:auto;}
 .adminFullSettingsBackupLabelCol{width:41px;}
-.adminFullSettingsBackupActionCol{width:112px;}
+.adminFullSettingsBackupActionCol{width:34px;}
 .adminRotationOvertimeDateInput{min-width:104px;}
 .adminRotationOvertimeNoteInput{min-width:150px;}
 .adminRotationOvertimeSwitch{
@@ -1574,8 +1574,8 @@
 .adminRotationBackupMonthGroup > summary::after{content:'⌄';font-size:16px;line-height:1;opacity:.8;transform:rotate(0deg);transition:transform .18s ease;}
 .adminRotationBackupMonthGroup:not([open]) > summary::after{transform:rotate(-90deg);}
 .adminRotationBackupMonthGroup .tableWrap{margin:0 !important;border-top:1px solid rgba(255,255,255,.08) !important;border-radius:0 !important;}
-.adminRotationBackupsLabelCol{width:224px;}
-.adminRotationBackupsActionCol{width:140px;}
+.adminRotationBackupsLabelCol{width:67px;}
+.adminRotationBackupsActionCol{width:70px;}
 .adminAccountsRoleOverview{
   display:grid !important;
   grid-template-columns:repeat(3,minmax(0,1fr)) !important;
