@@ -71,117 +71,7 @@ function adminFoodWindowTextHasValidRanges(value) {
   return ranges.every((range) => /^([01]?\d|2[0-3]):[0-5]\d\s*-\s*([01]?\d|2[0-3]):[0-5]\d$/.test(range));
 }
 
-function adminFoodStatusItemHtml(label, value, detail, state) {
-  const safeState = state || 'ok';
-  return [
-    '<div class="adminFoodStatusItem is' + escapeHtml(safeState.charAt(0).toUpperCase() + safeState.slice(1)) + '">',
-    '  <span>' + escapeHtml(label || '') + '</span>',
-    '  <b>' + escapeHtml(value || '') + '</b>',
-    detail ? '  <small>' + escapeHtml(detail) + '</small>' : '',
-    '</div>'
-  ].join('');
-}
-
-function adminFoodReadScheduleStatusFromRoot(root) {
-  const scope = root && root.querySelectorAll ? root : document;
-  const regularRows = Array.from(scope.querySelectorAll('tr[data-food-regular-row]'));
-  const overtimeRows = Array.from(scope.querySelectorAll('tr[data-food-overtime-row]'));
-  const dateInputs = Array.from(scope.querySelectorAll('[data-food-overtime-date]'));
-  const todayIso = adminFoodTodayIso();
-  const regularFilled = regularRows.filter((row) => String(row.querySelector('[data-food-regular-field="windows"]')?.value || '').trim()).length;
-  const regularInvalid = regularRows.filter((row) => {
-    const value = String(row.querySelector('[data-food-regular-field="windows"]')?.value || '').trim();
-    return value && !adminFoodWindowTextHasValidRanges(value);
-  }).length;
-  const overtimeFilled = overtimeRows.filter((row) => String(row.querySelector('[data-food-overtime-field="windows"]')?.value || '').trim()).length;
-  const overtimeInvalid = overtimeRows.filter((row) => {
-    const value = String(row.querySelector('[data-food-overtime-field="windows"]')?.value || '').trim();
-    return value && !adminFoodWindowTextHasValidRanges(value);
-  }).length;
-  const futureDates = [];
-  const invalidDates = [];
-  const pastPreserved = [];
-  dateInputs.forEach((input) => {
-    const raw = String(input && input.value || '').trim();
-    if (!raw) return;
-    const iso = adminFoodCzechDateToIso(raw);
-    if (!iso) {
-      invalidDates.push(raw);
-      return;
-    }
-    if (input && input.getAttribute && input.getAttribute('data-food-past-overtime-date') === '1') {
-      pastPreserved.push(iso);
-      return;
-    }
-    if (iso >= todayIso) futureDates.push(iso);
-  });
-  const counts = new Map();
-  futureDates.forEach((date) => counts.set(date, (counts.get(date) || 0) + 1));
-  const duplicates = Array.from(counts.entries()).filter(([, count]) => count > 1).map(([date]) => date);
-  return {
-    regularTotal: regularRows.length,
-    regularFilled,
-    regularInvalid,
-    overtimeTotal: overtimeRows.length,
-    overtimeFilled,
-    overtimeInvalid,
-    futureDates: Array.from(new Set(futureDates)).sort(),
-    invalidDates,
-    duplicateDates: duplicates,
-    pastPreserved
-  };
-}
-
-function adminFoodScheduleStatusFromSnapshot(snapshot) {
-  const locations = snapshot && Array.isArray(snapshot.locations) ? snapshot.locations : [];
-  const todayIso = adminFoodTodayIso();
-  const regularRows = [];
-  const overtimeRows = [];
-  locations.forEach((location) => {
-    (Array.isArray(location.regular) ? location.regular : []).forEach((day) => regularRows.push(String(day && day.windowsText || '').trim()));
-    overtimeRows.push(String(location && location.overtimeText || '').trim());
-  });
-  const allDates = Array.isArray(snapshot && snapshot.dates) ? snapshot.dates.map((date) => String(date || '').trim()).filter(Boolean) : [];
-  return {
-    regularTotal: regularRows.length,
-    regularFilled: regularRows.filter(Boolean).length,
-    regularInvalid: regularRows.filter((value) => value && !adminFoodWindowTextHasValidRanges(value)).length,
-    overtimeTotal: overtimeRows.length,
-    overtimeFilled: overtimeRows.filter(Boolean).length,
-    overtimeInvalid: overtimeRows.filter((value) => value && !adminFoodWindowTextHasValidRanges(value)).length,
-    futureDates: Array.from(new Set(allDates.filter((date) => date >= todayIso))).sort(),
-    invalidDates: [],
-    duplicateDates: [],
-    pastPreserved: allDates.filter((date) => date < todayIso)
-  };
-}
-
-function buildAdminFoodScheduleStatusHtml(source) {
-  const status = source && typeof source === 'object' && Object.prototype.hasOwnProperty.call(source, 'regularTotal')
-    ? source
-    : adminFoodScheduleStatusFromSnapshot(source || {});
-  const regularState = status.regularFilled && !status.regularInvalid ? 'ok' : 'warn';
-  const overtimeState = status.overtimeFilled && !status.overtimeInvalid ? 'ok' : 'warn';
-  return [
-    '<div class="adminFoodStatus" id="adminFoodStatus" aria-live="polite">',
-    '  <div class="appMenuSubTitle">Stav kantyny / jidelny</div>',
-    '  <div class="adminFoodStatusGrid">',
-    adminFoodStatusItemHtml('Bezne casy', String(status.regularFilled) + '/' + String(status.regularTotal), status.regularInvalid ? String(status.regularInvalid) + ' radku ma spatny format casu.' : 'Format napr. 05:30-09:00, 10:00-12:00.', regularState),
-    adminFoodStatusItemHtml('Prescasove casy', String(status.overtimeFilled) + '/' + String(status.overtimeTotal), status.overtimeInvalid ? String(status.overtimeInvalid) + ' radku ma spatny format casu.' : 'Pouziva se jen ve food kartach, ne pro smenu.', overtimeState),
-    '  </div>',
-    '</div>'
-  ].join('');
-}
-
-function adminFoodRefreshStatus(root) {
-  const scope = root || document.getElementById('appMenuBody') || document;
-  const box = scope.querySelector ? scope.querySelector('#adminFoodStatus') : null;
-  if (!box) return;
-  const wrap = document.createElement('div');
-  wrap.innerHTML = buildAdminFoodScheduleStatusHtml(adminFoodReadScheduleStatusFromRoot(scope));
-  const next = wrap.firstElementChild;
-  if (next) box.replaceWith(next);
-}
+function adminFoodRefreshStatus() {}
 
 function makeAdminFoodScheduleSettingsRow(foodSettings) {
   const settings = foodSettings && typeof foodSettings === 'object' ? foodSettings : { type: 'food_schedule', regular: {}, overtime: {}, overtimeDates: [] };
@@ -471,9 +361,8 @@ function buildAdminFoodScheduleSettingsHtml() {
     '</tr>'
   ].join('')).join('');
   return [
-    buildAdminFoodScheduleStatusHtml(adminFoodScheduleStatusFromSnapshot(snapshot)),
-    '<details class="appMenuFoldSection adminFoodScheduleFold" open>',
-    '  <summary>Kantýna / jídelna</summary>',
+    '<div class="appMenuFoldSection adminFoodScheduleFold">',
+    '  <div class="appMenuSubTitle">Kantýna / jídelna</div>',
     '  <div class="smallText uMb10">Tady si můžeš upravit běžnou otevírací dobu a přesčasovou dobu kantýny/jídelny. Časy piš třeba <b>05:30–09:00, 10:00–12:00</b>. <br><b>Pozn.:</b> které neděle jsou přesčasové se nastavuje v Provoz / Přesčasy, ne tady.</div>',
     '  <div class="tableWrap appMenuTableWrap uMt8">',
     '    <div class="smallText">Běžná otevírací doba</div>',
@@ -491,7 +380,7 @@ function buildAdminFoodScheduleSettingsHtml() {
     '      <tbody>' + overtimeRows + '</tbody>',
     '    </table>',
     '  </div>',
-    '</details>'
+    '</div>'
   ].join('');
 }
 

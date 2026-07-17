@@ -1,3 +1,11 @@
+## RaK 1.2 (1.298)
+
+- Nastavení strojů: odstraněny boxy "Stav nastavení strojů" a "Kontrola dopadu strojů" - byly jen informativní a zabíraly místo.
+- Kantýna / jídelna: odstraněny boxy "Stav kantyny/jidelny" a "Verejna kontrola provozu"; sekce už není rozbalovací (skládací), protože v ní po odstranění boxů není co skrývat.
+- Přesčasy: "Stav přesčasů" a "Filtrovat podle směny" jsou teď rozbalovací (sbalené ve výchozím stavu; filtr se sám rozbalí, když je aktivní jiná směna než Vše).
+- Přesčasy: datum přidávané přes numerickou klávesnici (např. `10052027` nebo `1052027`) se po opuštění pole samo přeformátuje na `D.M.RRRR` (např. `10.5.2027`).
+- Release metadata sjednocena na `RaK 1.2 (1.298)`, technicka verze `1.2.298`, cache `v1.2-1.298`; loader modulu ma cache znacku `1.2.298`.
+
 ## RaK 1.2 (1.297) — KRITICKÁ OPRAVA
 
 - Oprava: `getFoodSpecialDateSet()` (qr.js, zavedeno v 1.295) a `getRotationOvertimeDefaultDateList()` (core.js) se navzájem volaly v nekonečné rekurzi vždy, když ještě neexistuje uložený řádek `ROTATION_OVERTIME_SETTINGS` - tedy prakticky pro každého uživatele. Appka se kvůli tomu při každém vykreslení dashboardu zasekla na `RangeError: Maximum call stack size exceeded`, což se navenek projevilo jako "dlouho se načítá", "Offline cache" a nereagující kliknutí (dashboard se opakovaně pokoušel dopočítat a pokaždé spadl).

@@ -153,6 +153,40 @@ function adminRotationOvertimeCzechDateToIso(value, fallbackYear) {
   return String(year) + '-' + String(month).padStart(2, '0') + '-' + String(day).padStart(2, '0');
 }
 
+function adminRotationOvertimeIsValidDateParts(day, month, year) {
+  if (!Number.isFinite(day) || !Number.isFinite(month) || !Number.isFinite(year)) return false;
+  if (year < 2000 || year > 2100 || month < 1 || month > 12 || day < 1 || day > 31) return false;
+  const date = new Date(year, month - 1, day);
+  return date.getFullYear() === year && date.getMonth() === month - 1 && date.getDate() === day;
+}
+
+function adminRotationOvertimeNormalizeDateInput(value) {
+  const raw = String(value || '').trim();
+  if (!raw || !/^\d+$/.test(raw)) return raw;
+  const combosByLength = {
+    4: [[1, 1, 2]],
+    5: [[2, 1, 2], [1, 2, 2]],
+    6: [[2, 2, 2], [1, 1, 4]],
+    7: [[2, 1, 4], [1, 2, 4]],
+    8: [[2, 2, 4]]
+  };
+  const combos = combosByLength[raw.length];
+  if (!combos) return raw;
+  for (const combo of combos) {
+    const dLen = combo[0];
+    const mLen = combo[1];
+    const yLen = combo[2];
+    const day = Number(raw.slice(0, dLen));
+    const month = Number(raw.slice(dLen, dLen + mLen));
+    let year = Number(raw.slice(dLen + mLen, dLen + mLen + yLen));
+    if (yLen === 2) year += 2000;
+    if (adminRotationOvertimeIsValidDateParts(day, month, year)) {
+      return String(day) + '.' + String(month) + '.' + String(year);
+    }
+  }
+  return raw;
+}
+
 function adminIsRotationOvertimeSettingsRow(row) {
   const settings = adminRotationSettingsJson(row);
   return String(row && row.category || '').trim() === ADMIN_ROTATION_OVERTIME_SETTINGS_CATEGORY
@@ -734,13 +768,13 @@ function buildAdminRotationOvertimeStatusHtml(entries) {
     }
   ];
   return [
-    '<div class="adminRotationOvertimeStatus" id="adminRotationOvertimeStatus">',
-    '  <div class="appMenuSubTitle">Stav přesčasů</div>',
+    '<details class="appMenuFoldSection adminRotationOvertimeStatus" id="adminRotationOvertimeStatus">',
+    '  <summary class="appMenuSubTitle">Stav přesčasů</summary>',
     '  <div class="smallText uMb10">Souhrn vychází z řádků níže, takže ukáže i rozepsané změny před uložením.</div>',
     '  <div class="adminRotationOvertimeStatusGrid">',
     items.map((item) => adminRotationOvertimeStatusItemHtml(item.label, item.value, item.detail, item.state)).join(''),
     '  </div>',
-    '</div>'
+    '</details>'
   ].join('');
 }
 
@@ -767,11 +801,11 @@ function buildAdminRotationOvertimeFilterHtml() {
     { value: 'D', label: 'D' }
   ];
   return [
-    '<div class="adminRotationOvertimeFilterBox">',
-    '  <div class="adminRotationOvertimeFilterTitle">Filtrovat podle směny</div>',
+    '<details class="appMenuFoldSection adminRotationOvertimeFilterBox"' + (selected !== 'ALL' ? ' open' : '') + '>',
+    '  <summary class="appMenuSubTitle">Filtrovat podle směny' + (selected !== 'ALL' ? ' <span class="smallText">(' + escapeHtml(selected) + ')</span>' : '') + '</summary>',
     '  <div class="adminRotationOvertimeFilterBar">' + chips.map((chip) => '<button type="button" class="adminRotationOvertimeFilterChip' + (selected === chip.value ? ' isActive' : '') + '" data-admin-action="overtime-shift-filter" data-overtime-shift-filter="' + escapeHtml(chip.value) + '">' + escapeHtml(chip.label) + '</button>').join('') + '</div>',
     '  <div class="smallText">Směna se dopočítá automaticky z data podle rotačního cyklu. Uložené záznamy se nemažou ani při zapnutém filtru.</div>',
-    '</div>'
+    '</details>'
   ].join('');
 }
 
@@ -874,10 +908,14 @@ function adminRotationRefreshOvertimeStatus(root) {
   const scope = root || document.getElementById('appMenuBody') || document;
   const box = scope.querySelector ? scope.querySelector('#adminRotationOvertimeStatus') : null;
   if (!box) return;
+  const wasOpen = !!(box.hasAttribute && box.hasAttribute('open'));
   const wrap = document.createElement('div');
   wrap.innerHTML = buildAdminRotationOvertimeStatusHtml(adminRotationOvertimeReadEntriesFromRoot(scope));
   const next = wrap.firstElementChild;
-  if (next) box.replaceWith(next);
+  if (next) {
+    if (wasOpen && next.setAttribute) next.setAttribute('open', '');
+    box.replaceWith(next);
+  }
 }
 
 function adminRotationRefreshOvertimeShiftBadges(root, applyFilter) {
@@ -1691,41 +1729,6 @@ function adminMachineIsFiniteNumber(value) {
   return Number.isFinite(Number(raw));
 }
 
-function adminMachineReadStatusFromDom(root) {
-  const scope = root || document.getElementById('appMenuBody') || document;
-  const summary = { machines: 0, brus: 0, fhb: 0, incomplete: 0, duplicates: 0 };
-  const seen = new Set();
-  if (!scope.querySelectorAll) return summary;
-  scope.querySelectorAll('tr[data-machine-row-index]').forEach((tr) => {
-    const get = (field) => String(tr.querySelector('[data-machine-field="' + field + '"]')?.value ?? '').trim();
-    const machineCode = get('machine_code');
-    const machineIndex = get('machine_index');
-    const label = get('label');
-    const cycleTime = get('cycle_time');
-    const dressTime = get('dress_time');
-    const dressCount = get('dress_count');
-    if (!machineCode && !machineIndex && !label && !cycleTime && !dressTime && !dressCount) return;
-    const category = machineCode.toUpperCase().startsWith('TBKR') ? 'brus' : (machineCode.toUpperCase().startsWith('TPKW') ? 'pracka' : 'frezka');
-    const machineKey = makeMachineKey(machineCode, machineIndex, category);
-    const key = String(machineKey || (machineCode + '-' + machineIndex)).trim().toUpperCase();
-    if (key) {
-      if (seen.has(key)) summary.duplicates += 1;
-      else seen.add(key);
-    }
-    if (category === 'brus') summary.brus += 1;
-    else summary.machines += 1;
-    if (!machineCode || !adminMachineIsPositiveNumber(cycleTime)) summary.incomplete += 1;
-    if (category === 'brus' && (!machineIndex || !adminMachineIsPositiveNumber(dressTime) || !adminMachineIsPositiveNumber(dressCount))) summary.incomplete += 1;
-  });
-  scope.querySelectorAll('tr[data-fhb-target-row]').forEach((tr) => {
-    const get = (field) => String(tr.querySelector('[data-fhb-target-field="' + field + '"]')?.value ?? '').trim();
-    const key = String(tr.getAttribute('data-fhb-target-row') || '').trim();
-    summary.fhb += 1;
-    if (!key || !adminMachineIsFiniteNumber(get('left')) || !adminMachineIsFiniteNumber(get('right'))) summary.incomplete += 1;
-  });
-  return summary;
-}
-
 function adminMachineBuildInitialStatus(machineRows, brusRows, allRows) {
   const summary = { machines: 0, brus: 0, fhb: 0, incomplete: 0, duplicates: 0 };
   const seen = new Set();
@@ -1759,50 +1762,7 @@ function adminMachineBuildInitialStatus(machineRows, brusRows, allRows) {
   return summary;
 }
 
-function adminMachineStatusItemHtml(label, value, detail, state) {
-  const safeState = state || 'ok';
-  return [
-    '<div class="adminMachineStatusItem is' + escapeHtml(safeState.charAt(0).toUpperCase() + safeState.slice(1)) + '">',
-    '  <span>' + escapeHtml(label || '') + '</span>',
-    '  <b>' + escapeHtml(value || '') + '</b>',
-    detail ? '  <small>' + escapeHtml(detail) + '</small>' : '',
-    '</div>'
-  ].join('');
-}
-
-function buildAdminMachineStatusHtml(summary) {
-  const safe = summary || { machines: 0, brus: 0, fhb: 0, incomplete: 0, duplicates: 0 };
-  const items = [
-    { label: 'Frezky / pračka', value: String(safe.machines || 0) + '×', detail: 'Řádky s jedním časem výroby kola.', state: safe.machines ? 'ok' : 'warn' },
-    { label: 'Brusy', value: String(safe.brus || 0) + '×', detail: 'Brusy vyžadují stroj, index, čas výroby, orovnání a počet ks.', state: safe.brus ? 'ok' : 'warn' },
-    { label: 'FHB středy', value: String(safe.fhb || 0) + '×', detail: 'Cíle a tolerance pro výpočet frezky FHB.', state: safe.fhb ? 'ok' : 'info' },
-    {
-      label: 'Kontrola',
-      value: safe.incomplete || safe.duplicates ? 'zkontrolovat' : 'OK',
-      detail: safe.duplicates ? ('Duplicitní klíče: ' + String(safe.duplicates) + '×.') : (safe.incomplete ? ('Neúplné/nenumerické hodnoty: ' + String(safe.incomplete) + '×.') : 'Změny se zapíšou až tlačítkem Uložit stroje.'),
-      state: safe.incomplete || safe.duplicates ? 'warn' : 'ok'
-    }
-  ];
-  return [
-    '<div class="adminMachineStatus" id="adminMachineStatus">',
-    '  <div class="appMenuSubTitle">Stav nastavení strojů</div>',
-    '  <div class="smallText uMb10">Souhrn vychází z řádků níže a pomáhá před uložením zachytit prázdné nebo podezřelé hodnoty.</div>',
-    '  <div class="adminMachineStatusGrid">',
-    items.map((item) => adminMachineStatusItemHtml(item.label, item.value, item.detail, item.state)).join(''),
-    '  </div>',
-    '</div>'
-  ].join('');
-}
-
-function adminMachineRefreshStatus(root) {
-  const scope = root || document.getElementById('appMenuBody') || document;
-  const box = scope.querySelector ? scope.querySelector('#adminMachineStatus') : null;
-  if (!box) return;
-  const wrap = document.createElement('div');
-  wrap.innerHTML = buildAdminMachineStatusHtml(adminMachineReadStatusFromDom(scope));
-  const next = wrap.firstElementChild;
-  if (next) box.replaceWith(next);
-}
+function adminMachineRefreshStatus() {}
 
 function buildAdminMachineSettingsTableHtml() {
   const rows = Array.isArray(app.machineSettingsRows) ? app.machineSettingsRows : [];
@@ -1861,7 +1821,6 @@ function buildAdminMachineSettingsTableHtml() {
     '<div class="appMenuSubSection" id="adminMachinesSection">',
     '  <div class="appMenuSubTitle">Nastavení strojů</div>',
     '  <div class="appMenuText">Frezky a pračka mají jen čas výroby kola. Brusky mají stroj, index, čas výroby kola, čas orovnání a počet kusů po orovnání. Níž upravíš i středy fhβ.</div>',
-    buildAdminMachineStatusHtml(adminMachineBuildInitialStatus(machineDefaults, brusDefaults, rows)),
     '  <div class="tableWrap appMenuTableWrap">',
     '    <div class="smallText">Frezky a pračka</div>',
     '    <table class="appMenuTable appMenuAdminTable appMenuAdminTableDense">',

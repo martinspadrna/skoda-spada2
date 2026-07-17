@@ -2691,31 +2691,6 @@ function buildAdminPayrollPublicCheckHtml() {
   ].join('');
 }
 
-function adminFoodPublicCheckItemHtml(label, value, detail, state) {
-  const safeState = state || 'info';
-  return [
-    '<div class="adminFoodPublicCheckItem is' + escapeHtml(safeState.charAt(0).toUpperCase() + safeState.slice(1)) + '">',
-    '  <span>' + escapeHtml(label || '') + '</span>',
-    '  <b>' + escapeHtml(value || '') + '</b>',
-    detail ? '  <small>' + escapeHtml(detail) + '</small>' : '',
-    '</div>'
-  ].join('');
-}
-
-function buildAdminFoodPublicCheckHtml() {
-  return [
-    '<div class="adminFoodPublicCheck">',
-    '  <div class="appMenuSubTitle">Veřejná kontrola provozu</div>',
-    '  <div class="smallText uMb10">Časy kantýny a jídelny jsou viditelné na home kartách. Po uložení ověř běžnou aplikaci, ne jen administraci.</div>',
-    '  <div class="adminFoodPublicCheckGrid">',
-    adminFoodPublicCheckItemHtml('Home karty', 'Kantýna / Jídelna', 'Ověř stav otevřeno/zavřeno, čas „Do“ a řádek „Další“ na home.', 'warn'),
-    adminFoodPublicCheckItemHtml('Běžné časy', 'týden', 'Po změně běžné otevírací doby zkontroluj pracovní den i neděli.', 'info'),
-    adminFoodPublicCheckItemHtml('Přesčasy', 'budoucí neděle', 'U přesčasů ověř datum, časy a že minulé termíny zůstaly jen schované.', 'info'),
-    '  </div>',
-    '</div>'
-  ].join('');
-}
-
 function adminVacationPublicCheckItemHtml(label, value, detail, state) {
   const safeState = state || 'info';
   return [
@@ -2761,31 +2736,6 @@ function buildAdminSpecialDaysPublicCheckHtml() {
     adminSpecialDaysPublicCheckItemHtml('Datum', 'jeden den', 'Zkontroluj přesný den a důvod, aby se neblokoval jiný termín.', 'warn'),
     adminSpecialDaysPublicCheckItemHtml('Rozpis', 'volno', 'Ověř, že se v rozpisu a výpočtech ten den nebere jako běžná práce.', 'info'),
     adminSpecialDaysPublicCheckItemHtml('Návaznost', 'dovolená', 'Delší období patří do Dovolená / odstávky, tady nech jen jednorázové dny.', 'info'),
-    '  </div>',
-    '</div>'
-  ].join('');
-}
-
-function adminMachinePublicCheckItemHtml(label, value, detail, state) {
-  const safeState = state || 'info';
-  return [
-    '<div class="adminMachinePublicCheckItem is' + escapeHtml(safeState.charAt(0).toUpperCase() + safeState.slice(1)) + '">',
-    '  <span>' + escapeHtml(label || '') + '</span>',
-    '  <b>' + escapeHtml(value || '') + '</b>',
-    detail ? '  <small>' + escapeHtml(detail) + '</small>' : '',
-    '</div>'
-  ].join('');
-}
-
-function buildAdminMachinePublicCheckHtml() {
-  return [
-    '<div class="adminMachinePublicCheck">',
-    '  <div class="appMenuSubTitle">Kontrola dopadu strojů</div>',
-    '  <div class="smallText uMb10">Nastavení strojů může změnit výpočty v kalkulačkách a návazné kontroly v administraci. Po uložení ověř běžnou aplikaci, ne jen tabulku.</div>',
-    '  <div class="adminMachinePublicCheckGrid">',
-    adminMachinePublicCheckItemHtml('Kalkulačky', 'výpočty', 'Otevři soustruhy nebo brusky a ověř, že nový čas, rychlost nebo orovnání dávají smysl.', 'warn'),
-    adminMachinePublicCheckItemHtml('Rozpis / statistiky', 'návaznost', 'Po změně strojů ověř, že rozpis a souhrny pořád používají správné názvy strojů.', 'info'),
-    adminMachinePublicCheckItemHtml('Online stav', 'zeleně', 'Po uložení zkontroluj synchronizaci a podle potřeby načti nastavení na dalším zařízení.', 'info'),
     '  </div>',
     '</div>'
   ].join('');
@@ -3443,7 +3393,6 @@ function renderAdminMenuBody(body, section) {
     '    <div class="smallText" id="adminOnlineSaveStatus">Stav uložení se zobrazí po kliknutí na Uložit stroje.</div>',
     '  </div>',
     buildAdminMachineSettingsTableHtml(),
-    buildAdminMachinePublicCheckHtml(),
     '  <div class="appMenuActionRow">',
     '    <button type="button" class="appMenuAction" data-admin-action="load-machines">Načíst online</button>',
     '    <button type="button" class="appMenuAction isActive" data-admin-action="save-machines">Uložit stroje</button>',
@@ -3460,7 +3409,6 @@ function renderAdminMenuBody(body, section) {
     '    <div class="smallText" id="adminOnlineSaveStatus">Stav uložení se zobrazí po kliknutí na Uložit časy.</div>',
     '  </div>',
     buildAdminFoodScheduleSettingsHtml(),
-    buildAdminFoodPublicCheckHtml(),
     '  <div class="appMenuActionRow">',
     '    <button type="button" class="appMenuAction" data-admin-action="load-food-schedule">Načíst online</button>',
     '    <button type="button" class="appMenuAction isActive" data-admin-action="save-food-schedule">Uložit časy</button>',
@@ -4146,6 +4094,15 @@ function bindAppMenuHandlers(body) {
     const target = event.target;
     if (target && target.matches && target.matches('[data-rot-field^="cell-"], [data-note-field="person"]')) adminShowRotationSelectedRemove(target);
     else adminHideRotationSelectedRemove();
+  }, true);
+  body.addEventListener('focusout', (event) => {
+    const target = event.target;
+    if (target && target.matches && target.matches('[data-rotation-overtime-date]') && typeof adminRotationOvertimeNormalizeDateInput === 'function') {
+      const normalized = adminRotationOvertimeNormalizeDateInput(target.value);
+      if (normalized !== target.value) target.value = normalized;
+      if (typeof adminRotationRefreshOvertimeShiftBadges === 'function') adminRotationRefreshOvertimeShiftBadges(body, true);
+      if (typeof adminRotationRefreshOvertimeStatus === 'function') adminRotationRefreshOvertimeStatus(body);
+    }
   }, true);
   body.addEventListener('input', (event) => {
     const target = event.target;

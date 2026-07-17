@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// RaK 1.2 (1.297) – smoke test přehledu připojení + Dashboard/appearance contract guard.
+// RaK 1.2 (1.298) – smoke test přehledu připojení + Dashboard/appearance contract guard.
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
@@ -226,12 +226,12 @@ const dashboardReleaseIsolationGuardV198 = Object.freeze({
 });
 
 const releaseMetadataContractV199 = Object.freeze({
-  displayVersion: '1.2 (1.297)',
-  appLabel: 'RaK 1.2 (1.297)',
-  packageVersion: '1.2.297',
-  cacheVersion: 'v1.2-1.297',
+  displayVersion: '1.2 (1.298)',
+  appLabel: 'RaK 1.2 (1.298)',
+  packageVersion: '1.2.298',
+  cacheVersion: 'v1.2-1.298',
   realtimeChannel: 'rak-public-live-v1-2-1-126',
-  changelogHeader: '## RaK 1.2 (1.297)',
+  changelogHeader: '## RaK 1.2 (1.298)',
   previousBuildFragments: Object.freeze(['1.2 (1.138)', '1.2.138', 'v1.2-1.138', '1.2 (1.137)', '1.2.137', 'v1.2-1.137', '1.2 (1.118)', '1.2.118', 'v1.2-1.118', 'rak-public-live-v1-2-1-118'])
 });
 
@@ -340,8 +340,8 @@ function assertDashboardReleaseIsolationGuardV198() {
 function assertReleaseMetadataContractV199() {
   const contract = releaseMetadataContractV199;
   assertIncludes(exportJs, 'RAK_RELEASE_METADATA_CONTRACT_V199', 'export.js musí obsahovat release metadata contract v1.99');
-  assertIncludes(exportJs, "displayVersion: '1.2 (1.297)'", 'Release contract v export.js musí držet display verzi 1.105');
-  assertIncludes(exportJs, "packageVersion: '1.2.297'", 'Release contract v export.js musí držet package verzi 1.2.114');
+  assertIncludes(exportJs, "displayVersion: '1.2 (1.298)'", 'Release contract v export.js musí držet display verzi 1.105');
+  assertIncludes(exportJs, "packageVersion: '1.2.298'", 'Release contract v export.js musí držet package verzi 1.2.114');
   assert(packageJson.version === contract.packageVersion, `package.json version drift: čekám ${contract.packageVersion}, mám ${packageJson.version}`);
   assertIncludes(coreJs, `const APP_VERSION = "${contract.displayVersion}";`, 'core.js APP_VERSION není sjednocený s 1.105');
   assertIncludes(serviceWorkerJs, `const CACHE_VERSION = '${contract.cacheVersion}';`, 'sw.js CACHE_VERSION není sjednocený s 1.105');
@@ -1260,19 +1260,17 @@ function assertRotationOvertimeShiftFilterContractV1128() {
   assertIncludes(css, 'var(--rakGlassActiveBg', 'Filtr směn musí používat theme/glass aktivní barvy aplikace');
   assertIncludes(css, '.adminRotationOvertimeYearSummary', 'Roční přehled přesčasů musí mít vlastní čitelný theme styl');
   assertIncludes(css, '.adminRotationOvertimeStatusGrid', 'Stav přesčasů musí mít vlastní responsive rozložení');
+  assertIncludes(ui, 'function adminRotationOvertimeNormalizeDateInput', 'Datum přesčasu zadané jen číslicemi z numerické klávesnice se musí umět přeformátovat na D.M.RRRR');
+  assertIncludes(menuJs, 'adminRotationOvertimeNormalizeDateInput(target.value)', 'Admin menu musí po opuštění pole data přesčasu zavolat přeformátování na D.M.RRRR');
+  assertIncludes(menuJs, "target.matches('[data-rotation-overtime-date]')", 'Admin menu musí sledovat pole data přesčasu při odchodu z pole (focusout)');
   assertIncludes(adminFoodJs, 'function adminFoodTodayIso', 'Kantyna/jidelna musi umet filtrovat seznam prescasu od dneska');
-  assertIncludes(adminFoodJs, 'function buildAdminFoodScheduleStatusHtml', 'Kantyna/jidelna musi mit admin-only souhrn stavu');
-  assertIncludes(adminFoodJs, 'function adminFoodRefreshStatus', 'Souhrn kantyny/jidelny se musi prepocitat podle rozepsanych radku');
-  assertIncludes(adminFoodJs, 'adminFoodReadScheduleStatusFromRoot', 'Souhrn kantyny/jidelny musi vychazet z aktualniho DOM pred ulozenim');
   assertIncludes(adminFoodJs, 'existingSnapshot.dates.slice()', 'Stare prescasove nedele ve food nastaveni se nesmi pri ulozeni potichu smazat');
   assertNotIncludes(adminFoodJs, 'data-food-overtime-date-row', 'Kantyna/jidelna uz nesmi mit vlastni editovatelny seznam prescasovych nedeli - to patri do Provoz / Prescasy');
-  assertIncludes(menuJs, 'function buildAdminFoodPublicCheckHtml', 'Kantyna/jidelna musi mit admin-only kontrolu verejneho dopadu');
-  assertIncludes(menuJs, 'Veřejná kontrola provozu', 'Kantyna/jidelna musi spravci rikat, ze jde o verejne viditelnou zmenu');
-  assertIncludes(menuJs, 'Ověř stav otevřeno/zavřeno', 'Kantyna/jidelna musi mit jasnou kontrolu po ulozeni na home');
-  assertIncludes(menuJs, 'buildAdminFoodPublicCheckHtml()', 'Kontrola verejneho dopadu kantyny/jidelny musi byt vlozena do admin obrazovky');
-  assertIncludes(menuJs, 'adminFoodRefreshStatus(body)', 'Admin menu musi prepocitat souhrn kantyny/jidelny pri zmene pole');
-  assertIncludes(css, '.adminFoodStatusGrid', 'Souhrn kantyny/jidelny musi mit vlastni responsive admin styl');
-  assertIncludes(css, '.adminFoodPublicCheckGrid', 'Verejna kontrola kantyny/jidelny musi mit vlastni responsive admin styl');
+  assertNotIncludes(adminFoodJs, 'function buildAdminFoodScheduleStatusHtml', 'Stav kantyny/jidelny byl na zadost odstranen z admin obrazovky');
+  assertNotIncludes(menuJs, 'function buildAdminFoodPublicCheckHtml', 'Verejna kontrola provozu byla na zadost odstranena z admin obrazovky kantyny/jidelny');
+  assertNotIncludes(css, '.adminFoodStatusGrid', 'Stav kantyny/jidelny byl odstranen, admin styl uz nema existovat');
+  assertNotIncludes(css, '.adminFoodPublicCheckGrid', 'Verejna kontrola kantyny/jidelny byla odstranena, admin styl uz nema existovat');
+  assertNotIncludes(adminFoodJs, '<details class="appMenuFoldSection adminFoodScheduleFold"', 'Kantyna/jidelna uz nema byt rozbalovaci, kdyz v ni po odstraneni stavu neni co skryvat');
   assertIncludes(qrJs, 'function formatFoodFutureSpecialSundayDates', 'Verejna Kantyna/jidelna musi ukazovat jen budouci prescasove nedele');
   assertIncludes(qrJs, 'Budoucí přesčasové neděle:', 'Popisek verejneho seznamu prescasu musi rikat, ze jde jen o budouci terminy');
   assertNotIncludes(qrJs, "Seznam přesčasových nedělí: ' + escapeHtml(formatFoodSpecialSundayDates())", 'Verejna Kantyna/jidelna nesmi zobrazovat historicky seznam vsech prescasu');
@@ -1368,15 +1366,10 @@ assertIncludes(appearanceThemeJs, '"id": "light-zigzag"', 'Musí existovat zákl
   assertIncludes(menuJs, "adminAction === 'save-special-days'", 'Admin menu musi umet ulozit mimoradne volne dny');
   assertIncludes(menuJs, "adminAction === 'load-special-days'", 'Admin menu musi umet nacist mimoradne volne dny online');
   assertIncludes(menuJs, "'admin-special-days'", 'Mimoradne volne dny musi byt mezi chranenymi admin view');
-  assertIncludes(ui, 'function buildAdminMachineStatusHtml', 'Administrace stroju musi mit kontrolni souhrn pred ulozenim');
-  assertIncludes(ui, 'function adminMachineRefreshStatus', 'Souhrn stroju se musi prepocitat podle rozepsanych radku');
-  assertIncludes(ui, 'adminMachineReadStatusFromDom', 'Souhrn stroju musi vychazet z aktualnich DOM radku pred ulozenim');
-  assertIncludes(menuJs, 'adminMachineRefreshStatus(body)', 'Admin menu musi prepocitat souhrn stroju pri zmene pole');
-  assertIncludes(menuJs, 'function buildAdminMachinePublicCheckHtml', 'Nastaveni stroju musi mit admin-only kontrolu dopadu');
-  assertIncludes(menuJs, 'Kontrola dopadu strojů', 'Nastaveni stroju musi spravci rikat, co po ulozeni overit');
-  assertIncludes(menuJs, 'buildAdminMachinePublicCheckHtml()', 'Kontrola dopadu stroju musi byt vlozena do admin obrazovky stroju');
-  assertIncludes(css, '.adminMachineStatusGrid', 'Souhrn stroju musi mit vlastni responsive admin styl');
-  assertIncludes(css, '.adminMachinePublicCheckGrid', 'Kontrola dopadu stroju musi mit vlastni responsive admin styl');
+  assertNotIncludes(ui, 'function buildAdminMachineStatusHtml', 'Stav nastaveni stroju byl na zadost odstranen z admin obrazovky');
+  assertNotIncludes(menuJs, 'function buildAdminMachinePublicCheckHtml', 'Kontrola dopadu stroju byla na zadost odstranena z admin obrazovky stroju');
+  assertNotIncludes(css, '.adminMachineStatusGrid', 'Stav nastaveni stroju byl odstranen, admin styl uz nema existovat');
+  assertNotIncludes(css, '.adminMachinePublicCheckGrid', 'Kontrola dopadu stroju byla odstranena, admin styl uz nema existovat');
   assertIncludes(ui, 'app.machineSettingsRows.filter(isRakSpecialDaysSettingsRow)', 'Ulozeni stroju nesmi smazat mimoradne volne dny');
   assertIncludes(supabaseBridgeJs, "category === 'special_days_settings'", 'Supabase compatibility save musi povolit mimoradne volne dny');
   assertIncludes(supabaseBridgeJs, "key === 'SPECIAL_DAYS_SETTINGS'", 'Supabase compatibility save musi povolit klic mimoradnych volnych dnu');
