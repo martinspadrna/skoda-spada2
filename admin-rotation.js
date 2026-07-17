@@ -1437,14 +1437,14 @@ function buildAdminStatsAnomalyHtml(year) {
 
 function buildAdminRotationPreSaveChecklistHtml(monthKey) {
   return [
-    '<div class="adminRotationPreSaveCheck" id="adminRotationPreSaveCheck" data-pre-save-month="' + escapeHtml(monthKey || '') + '">',
-    '  <div class="appMenuSubTitle">Kontrola před uložením</div>',
+    '<details class="appMenuFoldSection adminRotationPreSaveCheck" id="adminRotationPreSaveCheck" data-pre-save-month="' + escapeHtml(monthKey || '') + '">',
+    '  <summary class="appMenuSubTitle">Kontrola před uložením</summary>',
     '  <div class="smallText uMb10">Rychlý stav rozpisu. Přepočítá se i při úpravách v tabulce a nic sám neukládá.</div>',
     '  <div class="adminRotationPreSaveGrid">',
     adminRotationPreSaveItemHtml({ state: 'info', title: 'Měsíc', value: monthKey || '—', detail: 'Vybraný měsíc rozpisu.' }),
     adminRotationPreSaveItemHtml({ state: 'info', title: 'Stav', value: 'počítám', detail: 'Kontrola se dopočítá po vykreslení editoru.' }),
     '  </div>',
-    '</div>'
+    '</details>'
   ].join('');
 }
 
@@ -1503,7 +1503,7 @@ function adminRenderRotationPreSaveChecklist(root) {
   ];
   const fingerprint = JSON.stringify(status);
   const buildContent = () => {
-    const title = document.createElement('div');
+    const title = document.createElement('summary');
     title.className = 'appMenuSubTitle';
     title.textContent = 'Kontrola před uložením';
     const detail = document.createElement('div');

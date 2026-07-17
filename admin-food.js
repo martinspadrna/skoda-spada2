@@ -242,13 +242,13 @@ function buildAdminVacationCountdownStatusHtml(periods) {
     }
   ];
   return [
-    '<div class="adminVacationStatus" id="adminVacationStatus">',
-    '  <div class="appMenuSubTitle">Stav dovolené / odstávek</div>',
+    '<details class="appMenuFoldSection adminVacationStatus" id="adminVacationStatus">',
+    '  <summary class="appMenuSubTitle">Stav dovolené / odstávek</summary>',
     '  <div class="smallText uMb10">Souhrn vychází z řádků níže a ukazuje, co uvidí home panel Dovolená.</div>',
     '  <div class="adminVacationStatusGrid">',
     items.map((item) => adminVacationStatusItemHtml(item.label, item.value, item.detail, item.state)).join(''),
     '  </div>',
-    '</div>'
+    '</details>'
   ].join('');
 }
 
@@ -256,10 +256,14 @@ function adminVacationRefreshStatus(root) {
   const scope = root || document.getElementById('appMenuBody') || document;
   const box = scope.querySelector ? scope.querySelector('#adminVacationStatus') : null;
   if (!box) return;
+  const wasOpen = !!(box.hasAttribute && box.hasAttribute('open'));
   const wrap = document.createElement('div');
   wrap.innerHTML = buildAdminVacationCountdownStatusHtml(adminVacationReadPeriodsFromRoot(scope));
   const next = wrap.firstElementChild;
-  if (next) box.replaceWith(next);
+  if (next) {
+    if (wasOpen && next.setAttribute) next.setAttribute('open', '');
+    box.replaceWith(next);
+  }
 }
 
 function adminVacationPeriodRowHtml(period) {

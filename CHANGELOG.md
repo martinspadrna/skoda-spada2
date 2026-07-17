@@ -1,3 +1,16 @@
+## RaK 1.2 (1.299)
+
+- Dovolená / odstávky a Mimořádné volné dny: odstraněny boxy "Veřejná kontrola" u obou sekcí; "Stav" u obou je teď sbalitelný (sbalený ve výchozím stavu).
+- Rozpisy: odstraněna "Veřejná kontrola rozpisu"; "Kontrola před uložením" je teď sbalitelná (sbalená ve výchozím stavu).
+- Zálohy rozpisů: "Stav záloh" je sbalitelný, "Bezpečnost obnovy" odstraněna; online zálohy jsou teď sbalitelné podle měsíce vzniku (nejnovější měsíc rozbalený); sloupec "Záloha" zúžen o 20 %, sloupec "Akce" o 50 %.
+- Export/Import: odstraněny "Bezpečnost importu" a "Stav exportu/importu"; tlačítko "Export ZIP" přejmenováno na "Export ZIP (stáhnout app)".
+- Oznámení Dashboard, Odkazy, Kontakt, Výplata: odstraněny boxy "Stav" a "Veřejná kontrola" ze všech čtyř obrazovek (živý náhled oznámení na Dashboardu zůstává beze změny).
+- Výplata: sloupce Měsíc, Datum výplaty a Poznámka u ručních výjimek zúženy o 50 %.
+- Přehled připojení: odstraněn box "Stav připojení" (metriky připojení a seznam zařízení zůstávají beze změny).
+- Zálohy nastavení: přibylo tlačítko "Vytvořit zálohu (jen online)" (uloží jen do Supabase, bez stažení JSON); tlačítko "Nahrát zálohu" nahrazeno tlačítkem "Obnovit ze souboru (telefon)", které soubor rovnou nahraje i obnoví - vedle stávající obnovy online ze Supabase (výběr řádku v seznamu) jde teď o dvě jasně oddělené cesty obnovy.
+- Drobná oprava: dva `window.*` exporty (`buildAdminAnnouncementStatusHtml`, `buildAdminPayrollStatusHtml`, `buildAdminUsageStatusHtml`) odkazovaly na právě odstraněné funkce a tiše by shodily zbytek `try` bloku i exporty za nimi - opraveno spolu s úklidem.
+- Release metadata sjednocena na `RaK 1.2 (1.299)`, technicka verze `1.2.299`, cache `v1.2-1.299`; loader modulu ma cache znacku `1.2.299`.
+
 ## RaK 1.2 (1.298)
 
 - Nastavení strojů: odstraněny boxy "Stav nastavení strojů" a "Kontrola dopadu strojů" - byly jen informativní a zabíraly místo.

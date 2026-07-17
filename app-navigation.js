@@ -548,100 +548,7 @@ function isRakExternalLinkUrlValid(value) {
   }
 }
 
-function readAdminExternalLinksStatusFromDom(root) {
-  const scope = root || document.getElementById('appMenuBody') || document;
-  const summary = { total: 0, labels: 0, urls: 0, invalid: 0, emptyText: 0 };
-  if (!scope.querySelectorAll) return summary;
-  scope.querySelectorAll('tr[data-external-link-row]').forEach((tr) => {
-    const get = (field) => String(tr.querySelector('[data-external-link-field="' + field + '"]')?.value || '').trim();
-    const label = get('label');
-    const value = get('value');
-    const meta = get('meta');
-    const url = get('url');
-    summary.total += 1;
-    if (label) summary.labels += 1;
-    if (url) summary.urls += 1;
-    if (url && !isRakExternalLinkUrlValid(url)) summary.invalid += 1;
-    if (!value && !meta) summary.emptyText += 1;
-  });
-  return summary;
-}
-
-function buildAdminExternalLinksStatusFromSettings(settings) {
-  const safe = normalizeRakExternalLinksSettings(settings);
-  const summary = { total: 0, labels: 0, urls: 0, invalid: 0, emptyText: 0 };
-  ['food', 'eportal', 'payroll', 'calendar'].forEach((key) => {
-    const link = normalizeRakExternalLinkEntry(key, safe.links[key]);
-    summary.total += 1;
-    if (link.label) summary.labels += 1;
-    if (link.url) summary.urls += 1;
-    if (link.url && !isRakExternalLinkUrlValid(link.url)) summary.invalid += 1;
-    if (!link.value && !link.meta) summary.emptyText += 1;
-  });
-  return summary;
-}
-
-function adminExternalLinksStatusItemHtml(label, value, detail, state) {
-  const safeState = state || 'ok';
-  return [
-    '<div class="adminExternalLinksStatusItem is' + escapeHtml(safeState.charAt(0).toUpperCase() + safeState.slice(1)) + '">',
-    '  <span>' + escapeHtml(label || '') + '</span>',
-    '  <b>' + escapeHtml(value || '') + '</b>',
-    detail ? '  <small>' + escapeHtml(detail) + '</small>' : '',
-    '</div>'
-  ].join('');
-}
-
-function buildAdminExternalLinksStatusHtml(summary) {
-  const safe = summary || { total: 0, labels: 0, urls: 0, invalid: 0, emptyText: 0 };
-  const missingLabels = Math.max(0, Number(safe.total || 0) - Number(safe.labels || 0));
-  const missingUrls = Math.max(0, Number(safe.total || 0) - Number(safe.urls || 0));
-  const items = [
-    {
-      label: 'Odkazy',
-      value: String(safe.urls || 0) + '/' + String(safe.total || 0),
-      detail: missingUrls ? ('Bez URL: ' + String(missingUrls) + '×.') : 'Všechny odkazy mají URL.',
-      state: missingUrls ? 'warn' : 'ok'
-    },
-    {
-      label: 'Názvy',
-      value: String(safe.labels || 0) + '/' + String(safe.total || 0),
-      detail: missingLabels ? ('Chybí název: ' + String(missingLabels) + '×.') : 'Každá karta má název.',
-      state: missingLabels ? 'warn' : 'ok'
-    },
-    {
-      label: 'URL kontrola',
-      value: safe.invalid ? 'zkontrolovat' : 'OK',
-      detail: safe.invalid ? ('Neplatné odkazy: ' + String(safe.invalid) + '×.') : 'Povoleny jsou http/https adresy.',
-      state: safe.invalid ? 'warn' : 'ok'
-    },
-    {
-      label: 'Text karet',
-      value: safe.emptyText ? 'doplnit' : 'OK',
-      detail: safe.emptyText ? ('Bez textu/popisu: ' + String(safe.emptyText) + '×.') : 'Text nebo popis je vyplněný.',
-      state: safe.emptyText ? 'info' : 'ok'
-    }
-  ];
-  return [
-    '<div class="adminExternalLinksStatus" id="adminExternalLinksStatus">',
-    '  <div class="appMenuSubTitle">Stav odkazů</div>',
-    '  <div class="smallText uMb10">Souhrn vychází z řádků níže. Odkazy se v běžné aplikaci změní až po uložení.</div>',
-    '  <div class="adminExternalLinksStatusGrid">',
-    items.map((item) => adminExternalLinksStatusItemHtml(item.label, item.value, item.detail, item.state)).join(''),
-    '  </div>',
-    '</div>'
-  ].join('');
-}
-
-function adminExternalLinksRefreshStatus(root) {
-  const scope = root || document.getElementById('appMenuBody') || document;
-  const box = scope.querySelector ? scope.querySelector('#adminExternalLinksStatus') : null;
-  if (!box) return;
-  const wrap = document.createElement('div');
-  wrap.innerHTML = buildAdminExternalLinksStatusHtml(readAdminExternalLinksStatusFromDom(scope));
-  const next = wrap.firstElementChild;
-  if (next) box.replaceWith(next);
-}
+function adminExternalLinksRefreshStatus() {}
 
 function buildAdminExternalLinksSettingsHtml() {
   const settings = getRakExternalLinksSettings();
@@ -657,7 +564,6 @@ function buildAdminExternalLinksSettingsHtml() {
     ].join('');
   }).join('');
   return [
-    buildAdminExternalLinksStatusHtml(buildAdminExternalLinksStatusFromSettings(settings)),
     '<div class="tableWrap appMenuTableWrap uMt12">',
     '  <table class="appMenuTable appMenuAdminTable appMenuAdminTableDense adminExternalLinksTable">',
     '    <thead><tr><th>Název</th><th>Text</th><th>Popis</th><th>Odkaz</th></tr></thead>',
@@ -785,87 +691,7 @@ function getRakAppContactEmailHref(contact) {
   return 'mailto:' + encodeURIComponent(raw);
 }
 
-function readAdminAppContactStatusFromDom(root) {
-  const scope = root || document.getElementById('appMenuBody') || document;
-  const get = (field) => String(scope.querySelector && scope.querySelector('[data-app-contact-field="' + field + '"]')?.value || '').trim();
-  return {
-    name: get('name'),
-    phone: get('phone'),
-    email: get('email')
-  };
-}
-
-function adminAppContactStatusItemHtml(label, value, detail, state) {
-  const safeState = state || 'ok';
-  return [
-    '<div class="adminAppContactStatusItem is' + escapeHtml(safeState.charAt(0).toUpperCase() + safeState.slice(1)) + '">',
-    '  <span>' + escapeHtml(label || '') + '</span>',
-    '  <b>' + escapeHtml(value || '') + '</b>',
-    detail ? '  <small>' + escapeHtml(detail) + '</small>' : '',
-    '</div>'
-  ].join('');
-}
-
-function buildAdminAppContactStatusHtml(contact) {
-  const source = contact && typeof contact === 'object' ? contact : {};
-  const safe = {
-    name: String(source.name || '').trim(),
-    phone: String(source.phone || '').trim(),
-    email: String(source.email || '').trim()
-  };
-  const fields = [
-    { key: 'name', label: 'Jméno', value: safe.name, detail: 'Zobrazí se v menu Kontakt.' },
-    { key: 'phone', label: 'Telefon', value: safe.phone, detail: 'Telefon pro běžné uživatele.' },
-    { key: 'email', label: 'E-mail', value: safe.email, detail: isRakAppContactEmailValid(safe.email) ? 'E-mail vypadá platně.' : 'Zkontroluj formát e-mailu.' }
-  ];
-  const filled = fields.filter((field) => String(field.value || '').trim()).length;
-  const invalidEmail = safe.email && !isRakAppContactEmailValid(safe.email);
-  const items = [
-    {
-      label: 'Vyplněno',
-      value: String(filled) + '/3',
-      detail: filled === 3 ? 'Kontakt má všechny tři údaje.' : 'Doplň prázdné kontaktní údaje.',
-      state: filled === 3 ? 'ok' : 'warn'
-    },
-    {
-      label: 'Veřejný kontakt',
-      value: safe.name || 'bez jména',
-      detail: 'Tohle uvidí běžný uživatel v menu Kontakt.',
-      state: safe.name ? 'ok' : 'warn'
-    },
-    {
-      label: 'Telefon',
-      value: safe.phone || 'chybí',
-      detail: safe.phone ? 'Telefon je vyplněný.' : 'Telefon není vyplněný.',
-      state: safe.phone ? 'ok' : 'warn'
-    },
-    {
-      label: 'E-mail',
-      value: invalidEmail ? 'zkontrolovat' : (safe.email ? 'OK' : 'chybí'),
-      detail: invalidEmail ? 'E-mail nemá běžný formát.' : (safe.email ? 'E-mail je vyplněný.' : 'E-mail není vyplněný.'),
-      state: invalidEmail || !safe.email ? 'warn' : 'ok'
-    }
-  ];
-  return [
-    '<div class="adminAppContactStatus" id="adminAppContactStatus">',
-    '  <div class="appMenuSubTitle">Stav kontaktu</div>',
-    '  <div class="smallText uMb10">Souhrn vychází z řádků níže. Veřejný kontakt se změní až po uložení.</div>',
-    '  <div class="adminAppContactStatusGrid">',
-    items.map((item) => adminAppContactStatusItemHtml(item.label, item.value, item.detail, item.state)).join(''),
-    '  </div>',
-    '</div>'
-  ].join('');
-}
-
-function adminAppContactRefreshStatus(root) {
-  const scope = root || document.getElementById('appMenuBody') || document;
-  const box = scope.querySelector ? scope.querySelector('#adminAppContactStatus') : null;
-  if (!box) return;
-  const wrap = document.createElement('div');
-  wrap.innerHTML = buildAdminAppContactStatusHtml(readAdminAppContactStatusFromDom(scope));
-  const next = wrap.firstElementChild;
-  if (next) box.replaceWith(next);
-}
+function adminAppContactRefreshStatus() {}
 
 function buildAdminAppContactSettingsHtml() {
   const contact = getRakAppContactSettings();
@@ -880,7 +706,6 @@ function buildAdminAppContactSettingsHtml() {
     '</tr>'
   ].join('')).join('');
   return [
-    buildAdminAppContactStatusHtml(contact),
     '<div class="tableWrap appMenuTableWrap uMt12">',
     '  <table class="appMenuTable appMenuAdminTable appMenuAdminTableDense adminAppContactTable">',
     '    <thead><tr><th>Položka</th><th>Hodnota</th></tr></thead>',

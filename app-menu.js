@@ -69,98 +69,7 @@ function buildRakRotationExcelExportMonthOptions(selectedMonthKey) {
   }).join('');
 }
 
-function adminExportImportStatusItemHtml(item) {
-  const state = String(item && item.state || 'info').trim() || 'info';
-  return [
-    '<div class="adminExportImportStatusItem is' + escapeHtml(state.charAt(0).toUpperCase() + state.slice(1)) + '">',
-    '  <span>' + escapeHtml(item && item.title || '') + '</span>',
-    '  <b>' + escapeHtml(item && item.value || '') + '</b>',
-    item && item.detail ? '  <small>' + escapeHtml(item.detail) + '</small>' : '',
-    '</div>'
-  ].join('');
-}
-
-function buildAdminExportImportStatusHtml(selectedMonthKey) {
-  const preview = (typeof getRakExcelImportPreview === 'function') ? getRakExcelImportPreview() : null;
-  const exportMonthEl = document.getElementById('rakRotationExcelExportMonth');
-  const exportMonthKey = String((exportMonthEl && exportMonthEl.value) || selectedMonthKey || app.selectedMonth || '').trim();
-  const scopeEl = document.getElementById('rakExcelImportScope');
-  const detectedMonthEl = document.getElementById('rakExcelImportDetectedMonth');
-  const scope = String(scopeEl && scopeEl.value ? scopeEl.value : 'all');
-  const selectedImportMonth = String(detectedMonthEl && detectedMonthEl.value ? detectedMonthEl.value : '').trim();
-  const monthCount = preview && Array.isArray(preview.monthKeys) ? preview.monthKeys.length : 0;
-  const items = [
-    {
-      state: 'info',
-      title: 'ZIP export',
-      value: 'celá aplikace',
-      detail: 'Stáhne kompletní build aplikace pro zálohu nebo nahrání.'
-    },
-    {
-      state: exportMonthKey ? 'ok' : 'warn',
-      title: 'Excel rozpisu',
-      value: exportMonthKey || 'nevybrán',
-      detail: exportMonthKey ? 'Stáhne jen vybraný měsíc v kopírovacím layoutu.' : 'Nejdřív vyber měsíc rozpisu.'
-    },
-    {
-      state: monthCount ? 'ok' : 'info',
-      title: 'Importovaný Excel',
-      value: preview ? (preview.fileName || 'Excel') : 'nevybrán',
-      detail: monthCount ? ('Použitelných měsíčních listů: ' + String(monthCount) + '.') : 'Po výběru souboru se načtou jen měsíční listy typu 01.2025.'
-    },
-    {
-      state: preview && scope === 'month' && !selectedImportMonth ? 'warn' : 'info',
-      title: 'Rozsah importu',
-      value: scope === 'month' ? (selectedImportMonth || 'vyber měsíc') : 'celý Excel / rok',
-      detail: scope === 'month' ? 'Import přepíše jen vybraný měsíc z načteného Excelu.' : 'Import přepíše všechny použitelné měsíce z načteného Excelu.'
-    }
-  ];
-  return [
-    '<div class="adminExportImportStatus" id="adminExportImportStatus">',
-    '  <div class="appMenuSubTitle">Stav exportu / importu</div>',
-    '  <div class="smallText uMb10">Rychlá kontrola před stažením nebo načtením dat. Tohle samo nic neimportuje.</div>',
-    '  <div class="adminExportImportStatusGrid">',
-    items.map(adminExportImportStatusItemHtml).join(''),
-    '  </div>',
-    '</div>'
-  ].join('');
-}
-
-function renderAdminExportImportStatus() {
-  const box = document.getElementById('adminExportImportStatus');
-  if (!box) return;
-  const exportMonthEl = document.getElementById('rakRotationExcelExportMonth');
-  const selectedMonthKey = String((exportMonthEl && exportMonthEl.value) || app.selectedMonth || '').trim();
-  const wrapper = document.createElement('div');
-  wrapper.innerHTML = buildAdminExportImportStatusHtml(selectedMonthKey);
-  const next = wrapper.firstElementChild;
-  if (next) box.replaceWith(next);
-}
-
-function adminExportImportSafetyItemHtml(label, value, detail, state) {
-  const safeState = state || 'info';
-  return [
-    '<div class="adminExportImportSafetyItem is' + escapeHtml(safeState.charAt(0).toUpperCase() + safeState.slice(1)) + '">',
-    '  <span>' + escapeHtml(label || '') + '</span>',
-    '  <b>' + escapeHtml(value || '') + '</b>',
-    detail ? '  <small>' + escapeHtml(detail) + '</small>' : '',
-    '</div>'
-  ].join('');
-}
-
-function buildAdminExportImportSafetyHtml() {
-  return [
-    '<div class="adminExportImportSafety">',
-    '  <div class="appMenuSubTitle">Bezpečnost importu</div>',
-    '  <div class="smallText uMb10">Export jen stahuje data. Import naopak přepisuje rozpisy z načteného Excelu, proto před tlačítkem Načíst do rozpisů ověř rozsah a zálohy.</div>',
-    '  <div class="adminExportImportSafetyGrid">',
-    adminExportImportSafetyItemHtml('Rozsah', 'měsíc / rok', 'Před importem zkontroluj, jestli má být vybraný jen jeden měsíc, nebo celý načtený Excel.', 'warn'),
-    adminExportImportSafetyItemHtml('Záloha', 'před importem', 'U většího importu nejdřív otevři Zálohy rozpisů nebo stáhni Excel aktuálního stavu.', 'info'),
-    adminExportImportSafetyItemHtml('Kontrola po importu', 'rozpis + export', 'Po importu otevři Rozpisy, ověř absence/výjimky a stáhni kontrolní Excel podle potřeby.', 'info'),
-    '  </div>',
-    '</div>'
-  ].join('');
-}
+function renderAdminExportImportStatus() {}
 
 
 function ensureAppMenuOverlay() {
@@ -265,15 +174,25 @@ async function handleFullSettingsBackupFileSelection(input, body) {
   if (!file) return;
   if (target.dataset.rakFullSettingsBackupImporting === '1') return;
   target.dataset.rakFullSettingsBackupImporting = '1';
+  const autoRestore = !!(typeof app !== 'undefined' && app && app.pendingFullSettingsBackupAutoRestore);
+  if (typeof app !== 'undefined' && app) app.pendingFullSettingsBackupAutoRestore = false;
   const statusEl = document.getElementById('adminOnlineSaveStatus');
   try {
     if (statusEl) statusEl.textContent = 'Nahrávám zálohu nastavení…';
     const result = await importAdminFullSettingsBackupFile(file);
     if (!result || result.ok === false) throw new Error(adminFullSettingsBackupImportErrorMessage(result && result.reason));
+    let restoreResult = null;
+    if (autoRestore) {
+      const backupId = result.backup && result.backup.machine_key ? result.backup.machine_key : '';
+      const restoreStatus = document.getElementById('adminOnlineSaveStatus');
+      if (restoreStatus) restoreStatus.textContent = 'Záloha nahraná, obnovuji nastavení…';
+      restoreResult = backupId ? await restoreAdminFullSettingsBackupOnline(backupId) : { ok: false };
+      if (!restoreResult || restoreResult.ok === false) throw new Error('Záloha se nahrála, ale obnovení nastavení selhalo.');
+    }
     const menuBody = body || document.querySelector('#appMenuBody');
     if (menuBody && typeof renderAdminMenuBody === 'function') renderAdminMenuBody(menuBody, 'settings-backups');
     const nextStatus = document.getElementById('adminOnlineSaveStatus');
-    if (nextStatus) nextStatus.textContent = 'Záloha nastavení nahraná online ✓';
+    if (nextStatus) nextStatus.textContent = autoRestore ? 'Záloha nahraná ze souboru a nastavení obnovené ✓' : 'Záloha nastavení nahraná online ✓';
   } catch (err) {
     if (statusEl) statusEl.textContent = 'Nahrání zálohy nastavení selhalo.';
     try { alert(err && err.message ? err.message : 'Nahrání zálohy nastavení selhalo.'); } catch (alertErr) {}
@@ -281,6 +200,17 @@ async function handleFullSettingsBackupFileSelection(input, body) {
     try { delete target.dataset.rakFullSettingsBackupImporting; } catch (err) {}
     try { target.value = ''; } catch (err) {}
   }
+}
+
+function adminRotationBackupSafetyItemHtml(label, value, detail, state) {
+  const safeState = state || 'info';
+  return [
+    '<div class="adminRotationBackupSafetyItem is' + escapeHtml(safeState.charAt(0).toUpperCase() + safeState.slice(1)) + '">',
+    '  <span>' + escapeHtml(label || '') + '</span>',
+    '  <b>' + escapeHtml(value || '') + '</b>',
+    detail ? '  <small>' + escapeHtml(detail) + '</small>' : '',
+    '</div>'
+  ].join('');
 }
 
 function formatAdminRotationBackupDate(value) {
@@ -347,38 +277,13 @@ function buildAdminRotationBackupStatusHtml() {
     }
   ];
   return [
-    '<div class="adminRotationBackupStatus">',
-    '  <div class="appMenuSubTitle">Stav záloh</div>',
+    '<details class="appMenuFoldSection adminRotationBackupStatus">',
+    '  <summary class="appMenuSubTitle">Stav záloh</summary>',
     '  <div class="smallText uMb10">Rychlá kontrola před obnovou. Tahle část sama nic neobnovuje ani neukládá.</div>',
     '  <div class="adminRotationBackupStatusGrid">',
     items.map(adminRotationBackupStatusItemHtml).join(''),
     '  </div>',
-    '</div>'
-  ].join('');
-}
-
-function adminRotationBackupSafetyItemHtml(label, value, detail, state) {
-  const safeState = state || 'info';
-  return [
-    '<div class="adminRotationBackupSafetyItem is' + escapeHtml(safeState.charAt(0).toUpperCase() + safeState.slice(1)) + '">',
-    '  <span>' + escapeHtml(label || '') + '</span>',
-    '  <b>' + escapeHtml(value || '') + '</b>',
-    detail ? '  <small>' + escapeHtml(detail) + '</small>' : '',
-    '</div>'
-  ].join('');
-}
-
-function buildAdminRotationBackupSafetyHtml() {
-  return [
-    '<div class="adminRotationBackupSafety">',
-    '  <div class="appMenuSubTitle">Bezpečnost obnovy</div>',
-    '  <div class="smallText uMb10">Obnova zálohy přepíše aktuální rozpis. Před kliknutím na Obnovit ověř měsíc zálohy, stáří a že současný stav může být nahrazen.</div>',
-    '  <div class="adminRotationBackupSafetyGrid">',
-    adminRotationBackupSafetyItemHtml('Vybraná záloha', 'datum + měsíc', 'Zkontroluj řádek zálohy, hlavně datum vytvoření a měsíc, kterého se obnova týká.', 'warn'),
-    adminRotationBackupSafetyItemHtml('Současný stav', 'uloží se bokem', 'Před obnovou se aktuální rozpis uloží jako nová záloha, ale veřejný rozpis se po obnově změní.', 'info'),
-    adminRotationBackupSafetyItemHtml('Po obnově', 'ověřit', 'Otevři Rozpisy, zkontroluj výjimky/absence a podle potřeby stáhni kontrolní Excel.', 'info'),
-    '  </div>',
-    '</div>'
+    '</details>'
   ].join('');
 }
 
@@ -589,7 +494,8 @@ function buildAdminRotationBackupsHtml() {
   if (!backups.length) {
     return '<div class="smallText uMt8">Zatím nejsou načtené žádné zálohy. Klikni na Načíst zálohy.</div>';
   }
-  const rows = backups.map((backup) => {
+  const monthNames = ['leden', 'únor', 'březen', 'duben', 'květen', 'červen', 'červenec', 'srpen', 'září', 'říjen', 'listopad', 'prosinec'];
+  const rowHtml = (backup) => {
     const id = String(backup && backup.id || '');
     const source = String(backup && backup.source || '').trim() || 'uložení rozpisu';
     const monthKey = String(backup && backup.month_key || '').trim();
@@ -607,15 +513,41 @@ function buildAdminRotationBackupsHtml() {
       '  <td><button type="button" class="appMenuAction" data-admin-action="restore-rotation-backup" data-backup-id="' + escapeHtml(id) + '">Obnovit</button></td>',
       '</tr>'
     ].join('');
+  };
+  const sorted = backups.slice().sort((a, b) => {
+    const ad = new Date(a && a.replaced_at || 0).getTime();
+    const bd = new Date(b && b.replaced_at || 0).getTime();
+    return (Number.isFinite(bd) ? bd : 0) - (Number.isFinite(ad) ? ad : 0);
+  });
+  const groupOrder = [];
+  const groups = new Map();
+  sorted.forEach((backup) => {
+    const date = new Date(backup && backup.replaced_at || 0);
+    const hasDate = Number.isFinite(date.getTime()) && date.getTime() > 0;
+    const groupKey = hasDate ? (date.getFullYear() + '-' + String(date.getMonth() + 1).padStart(2, '0')) : 'neznamo';
+    if (!groups.has(groupKey)) {
+      const label = hasDate ? (monthNames[date.getMonth()] + ' ' + date.getFullYear()) : 'Neznámé datum';
+      groups.set(groupKey, { label: label.charAt(0).toUpperCase() + label.slice(1), items: [] });
+      groupOrder.push(groupKey);
+    }
+    groups.get(groupKey).items.push(backup);
+  });
+  const groupsHtml = groupOrder.map((key, idx) => {
+    const group = groups.get(key);
+    return [
+      '<details class="appMenuFoldSection adminRotationBackupMonthGroup"' + (idx === 0 ? ' open' : '') + '>',
+      '  <summary>' + escapeHtml(group.label) + ' <span class="smallText">' + String(group.items.length) + '×</span></summary>',
+      '  <div class="tableWrap appMenuTableWrap">',
+      '    <table class="appMenuTable appMenuAdminTable appMenuAdminTableDense adminRotationBackupsTable">',
+      '      <colgroup><col class="adminRotationBackupsLabelCol"><col class="adminRotationBackupsActionCol"></colgroup>',
+      '      <thead><tr><th>Záloha</th><th>Akce</th></tr></thead>',
+      '      <tbody>' + group.items.map(rowHtml).join('') + '</tbody>',
+      '    </table>',
+      '  </div>',
+      '</details>'
+    ].join('');
   }).join('');
-  return [
-    '<div class="tableWrap appMenuTableWrap uMt8">',
-    '  <table class="appMenuTable appMenuAdminTable appMenuAdminTableDense">',
-    '    <thead><tr><th>Záloha</th><th>Akce</th></tr></thead>',
-    '    <tbody>' + rows + '</tbody>',
-    '  </table>',
-    '</div>'
-  ].join('');
+  return '<div class="uMt8">' + groupsHtml + '</div>';
 }
 
 async function loadAdminRotationBackupsFromSupabase() {
@@ -2591,180 +2523,6 @@ function buildAdminActionLegendHtml() {
   ].join('');
 }
 
-function adminAnnouncementPublicCheckItemHtml(label, value, detail, state) {
-  const safeState = state || 'info';
-  return [
-    '<div class="adminAnnouncementPublicCheckItem is' + escapeHtml(safeState.charAt(0).toUpperCase() + safeState.slice(1)) + '">',
-    '  <span>' + escapeHtml(label || '') + '</span>',
-    '  <b>' + escapeHtml(value || '') + '</b>',
-    detail ? '  <small>' + escapeHtml(detail) + '</small>' : '',
-    '</div>'
-  ].join('');
-}
-
-function buildAdminAnnouncementPublicCheckHtml() {
-  return [
-    '<div class="adminAnnouncementPublicCheck">',
-    '  <div class="appMenuSubTitle">Veřejná kontrola oznámení</div>',
-    '  <div class="smallText uMb10">Oznámení je jedna z mála admin změn, kterou po uložení uvidí běžní lidé hned na home. Tenhle blok nic neukládá, jen připomíná kontrolu.</div>',
-    '  <div class="adminAnnouncementPublicCheckGrid">',
-    adminAnnouncementPublicCheckItemHtml('Kde se projeví', 'Home / Dashboard', 'Po uložení otevři home a ověř, že text sedí a neblokuje ostatní karty.', 'warn'),
-    adminAnnouncementPublicCheckItemHtml('Vypnutí', 'bar zmizí', 'Po vypnutí oznámení zkontroluj, že na home nezůstal starý text z cache.', 'info'),
-    adminAnnouncementPublicCheckItemHtml('Čas Od / Do', 'dobrovolné', 'Když vyplníš časové omezení, ověř, že Od je před Do.', 'info'),
-    '  </div>',
-    '</div>'
-  ].join('');
-}
-
-function adminExternalLinksPublicCheckItemHtml(label, value, detail, state) {
-  const safeState = state || 'info';
-  return [
-    '<div class="adminExternalLinksPublicCheckItem is' + escapeHtml(safeState.charAt(0).toUpperCase() + safeState.slice(1)) + '">',
-    '  <span>' + escapeHtml(label || '') + '</span>',
-    '  <b>' + escapeHtml(value || '') + '</b>',
-    detail ? '  <small>' + escapeHtml(detail) + '</small>' : '',
-    '</div>'
-  ].join('');
-}
-
-function buildAdminExternalLinksPublicCheckHtml() {
-  return [
-    '<div class="adminExternalLinksPublicCheck">',
-    '  <div class="appMenuSubTitle">Veřejná kontrola odkazů</div>',
-    '  <div class="smallText uMb10">Odkazy jsou viditelné v běžné aplikaci. Po uložení je potřeba ověřit, že se otevřou správné firemní stránky a kalendář.</div>',
-    '  <div class="adminExternalLinksPublicCheckGrid">',
-    adminExternalLinksPublicCheckItemHtml('Home a menu', 'otevřít', 'Zkontroluj Jídelní lístek, Eportal, Výplatu a Kalendář z běžné aplikace.', 'warn'),
-    adminExternalLinksPublicCheckItemHtml('Formát URL', 'https', 'U veřejných odkazů používej celé bezpečné adresy, ne zkrácené nebo rozbité odkazy.', 'info'),
-    adminExternalLinksPublicCheckItemHtml('Kalendář', 'iframe', 'Po změně kalendáře otevři modal a ověř, že se vložený kalendář opravdu načte.', 'info'),
-    '  </div>',
-    '</div>'
-  ].join('');
-}
-
-function adminAppContactPublicCheckItemHtml(label, value, detail, state) {
-  const safeState = state || 'info';
-  return [
-    '<div class="adminAppContactPublicCheckItem is' + escapeHtml(safeState.charAt(0).toUpperCase() + safeState.slice(1)) + '">',
-    '  <span>' + escapeHtml(label || '') + '</span>',
-    '  <b>' + escapeHtml(value || '') + '</b>',
-    detail ? '  <small>' + escapeHtml(detail) + '</small>' : '',
-    '</div>'
-  ].join('');
-}
-
-function buildAdminAppContactPublicCheckHtml() {
-  return [
-    '<div class="adminAppContactPublicCheck">',
-    '  <div class="appMenuSubTitle">Veřejná kontrola kontaktu</div>',
-    '  <div class="smallText uMb10">Kontakt je viditelný v běžném menu. Po uložení ověř jméno, telefon a e-mail přes běžnou aplikaci, ne jen v administraci.</div>',
-    '  <div class="adminAppContactPublicCheckGrid">',
-    adminAppContactPublicCheckItemHtml('Běžné menu', 'Kontakt', 'Otevři menu Kontakt a ověř, že jsou údaje čitelné a aktuální.', 'warn'),
-    adminAppContactPublicCheckItemHtml('Telefon', 'volatelný', 'Zkontroluj formát čísla, aby ho mobil uměl rovnou použít.', 'info'),
-    adminAppContactPublicCheckItemHtml('E-mail', 'klikací', 'Zkontroluj adresu bez překlepů a bez zbytečných mezer.', 'info'),
-    '  </div>',
-    '</div>'
-  ].join('');
-}
-
-function adminPayrollPublicCheckItemHtml(label, value, detail, state) {
-  const safeState = state || 'info';
-  return [
-    '<div class="adminPayrollPublicCheckItem is' + escapeHtml(safeState.charAt(0).toUpperCase() + safeState.slice(1)) + '">',
-    '  <span>' + escapeHtml(label || '') + '</span>',
-    '  <b>' + escapeHtml(value || '') + '</b>',
-    detail ? '  <small>' + escapeHtml(detail) + '</small>' : '',
-    '</div>'
-  ].join('');
-}
-
-function buildAdminPayrollPublicCheckHtml() {
-  return [
-    '<div class="adminPayrollPublicCheck">',
-    '  <div class="appMenuSubTitle">Veřejná kontrola výplaty</div>',
-    '  <div class="smallText uMb10">Datum výplaty je viditelné na home kartě Výplata. Po uložení ověř nejbližší datum v běžné aplikaci a zelenou synchronizaci.</div>',
-    '  <div class="adminPayrollPublicCheckGrid">',
-    adminPayrollPublicCheckItemHtml('Home karta', 'Výplata', 'Otevři home a ověř datum i text „za X dní“ po uložení pravidla.', 'warn'),
-    adminPayrollPublicCheckItemHtml('Pravidlo', 'pracovní den', 'Zkontroluj, že pořadí pracovního dne odpovídá dohodnutému výplatnímu pravidlu.', 'info'),
-    adminPayrollPublicCheckItemHtml('Výjimky', 'měsíc', 'U ruční výjimky ověř správný měsíc, datum a poznámku bez překlepů.', 'info'),
-    '  </div>',
-    '</div>'
-  ].join('');
-}
-
-function adminVacationPublicCheckItemHtml(label, value, detail, state) {
-  const safeState = state || 'info';
-  return [
-    '<div class="adminVacationPublicCheckItem is' + escapeHtml(safeState.charAt(0).toUpperCase() + safeState.slice(1)) + '">',
-    '  <span>' + escapeHtml(label || '') + '</span>',
-    '  <b>' + escapeHtml(value || '') + '</b>',
-    detail ? '  <small>' + escapeHtml(detail) + '</small>' : '',
-    '</div>'
-  ].join('');
-}
-
-function buildAdminVacationPublicCheckHtml() {
-  return [
-    '<div class="adminVacationPublicCheck">',
-    '  <div class="appMenuSubTitle">Veřejná kontrola dovolené</div>',
-    '  <div class="smallText uMb10">Dovolená a odstávky mění home kartu Dovolená i počítání směn. Po uložení ověř běžnou aplikaci a rozpis, ne jen administraci.</div>',
-    '  <div class="adminVacationPublicCheckGrid">',
-    adminVacationPublicCheckItemHtml('Home karta', 'Dovolená', 'Ověř název období, počet dní a pravou část se směnou D.', 'warn'),
-    adminVacationPublicCheckItemHtml('Od / Do', 'hodiny', 'Zkontroluj přesný začátek a konec, protože během období se směna bere jako volno.', 'info'),
-    adminVacationPublicCheckItemHtml('Rozpis', 'směny D', 'U vytvořeného měsíce ověř, že odpočet směn bere skutečný rozpis.', 'info'),
-    '  </div>',
-    '</div>'
-  ].join('');
-}
-
-function adminSpecialDaysPublicCheckItemHtml(label, value, detail, state) {
-  const safeState = state || 'info';
-  return [
-    '<div class="adminSpecialDaysPublicCheckItem is' + escapeHtml(safeState.charAt(0).toUpperCase() + safeState.slice(1)) + '">',
-    '  <span>' + escapeHtml(label || '') + '</span>',
-    '  <b>' + escapeHtml(value || '') + '</b>',
-    detail ? '  <small>' + escapeHtml(detail) + '</small>' : '',
-    '</div>'
-  ].join('');
-}
-
-function buildAdminSpecialDaysPublicCheckHtml() {
-  return [
-    '<div class="adminSpecialDaysPublicCheck">',
-    '  <div class="appMenuSubTitle">Veřejná kontrola volných dnů</div>',
-    '  <div class="smallText uMb10">Mimořádný volný den mění práci v konkrétní datum. Po uložení ověř rozpis a běžnou aplikaci, hlavně jestli se směna správně bere jako volno.</div>',
-    '  <div class="adminSpecialDaysPublicCheckGrid">',
-    adminSpecialDaysPublicCheckItemHtml('Datum', 'jeden den', 'Zkontroluj přesný den a důvod, aby se neblokoval jiný termín.', 'warn'),
-    adminSpecialDaysPublicCheckItemHtml('Rozpis', 'volno', 'Ověř, že se v rozpisu a výpočtech ten den nebere jako běžná práce.', 'info'),
-    adminSpecialDaysPublicCheckItemHtml('Návaznost', 'dovolená', 'Delší období patří do Dovolená / odstávky, tady nech jen jednorázové dny.', 'info'),
-    '  </div>',
-    '</div>'
-  ].join('');
-}
-
-function adminRotationPublicCheckItemHtml(label, value, detail, state) {
-  const safeState = state || 'info';
-  return [
-    '<div class="adminRotationPublicCheckItem is' + escapeHtml(safeState.charAt(0).toUpperCase() + safeState.slice(1)) + '">',
-    '  <span>' + escapeHtml(label || '') + '</span>',
-    '  <b>' + escapeHtml(value || '') + '</b>',
-    detail ? '  <small>' + escapeHtml(detail) + '</small>' : '',
-    '</div>'
-  ].join('');
-}
-
-function buildAdminRotationPublicCheckHtml() {
-  return [
-    '<div class="adminRotationPublicCheck">',
-    '  <div class="appMenuSubTitle">Veřejná kontrola rozpisu</div>',
-    '  <div class="smallText uMb10">Rozpis je viditelný v Rotace / Rozpisy a v exportech. Po uložení ověř veřejný přehled, absence a export, ne jen admin tabulku.</div>',
-    '  <div class="adminRotationPublicCheckGrid">',
-    adminRotationPublicCheckItemHtml('Rotace / Rozpisy', 'měsíc', 'Ověř vybraný měsíc, žluté výjimky a detail výjimky po kliknutí.', 'warn'),
-    adminRotationPublicCheckItemHtml('Absence', 'zkratky', 'Zkontroluj, že důvody jsou zkratkou a více absencí ve dni drží stabilní sloupce.', 'info'),
-    adminRotationPublicCheckItemHtml('Export', 'Excel / obrázek', 'Po větší změně stáhni export a ověř zvýraznění výjimek i kopírovací layout.', 'info'),
-    '  </div>',
-    '</div>'
-  ].join('');
-}
 
 function buildAdminMonthlyWorkflowHtml(monthKey) {
   const workflow = getAdminMonthlyWorkflowItems(monthKey);
@@ -3425,7 +3183,6 @@ function renderAdminMenuBody(body, section) {
     '    <div class="smallText" id="adminOnlineSaveStatus">Prázdné řádky se neukládají. Pro odstranění řádek vymaž a ulož.</div>',
     '  </div>',
     buildAdminVacationCountdownSettingsHtml(),
-    buildAdminVacationPublicCheckHtml(),
     '  <div class="appMenuActionRow">',
     '    <button type="button" class="appMenuAction" data-admin-action="load-vacation-countdown">Načíst online</button>',
     '    <button type="button" class="appMenuAction isActive" data-admin-action="save-vacation-countdown">Uložit dovolenou</button>',
@@ -3442,7 +3199,6 @@ function renderAdminMenuBody(body, section) {
     '    <div class="smallText" id="adminOnlineSaveStatus">Prázdné řádky se neukládají. Pro odstranění řádek vymaž a ulož.</div>',
     '  </div>',
     buildAdminSpecialDaysSettingsHtml(),
-    buildAdminSpecialDaysPublicCheckHtml(),
     '  <div class="appMenuActionRow">',
     '    <button type="button" class="appMenuAction" data-admin-action="load-special-days">Načíst online</button>',
     '    <button type="button" class="appMenuAction isActive" data-admin-action="save-special-days">Uložit volné dny</button>',
@@ -3467,7 +3223,6 @@ function renderAdminMenuBody(body, section) {
     '    <button type="button" class="appMenuAction isActive" data-admin-action="save-rotation">Uložit rozpis</button>',
     '    <button type="button" class="appMenuAction" data-admin-action="back-admin">Zpět</button>',
     '  </div>',
-    buildAdminRotationPublicCheckHtml(),
     (typeof buildAdminStatsAnomalyHtml === 'function' ? buildAdminStatsAnomalyHtml((typeof parseMonthKey === 'function' && parseMonthKey(monthKey) ? parseMonthKey(monthKey).year : new Date().getFullYear())) : ''),
     buildAdminRotationTableHtml(monthKey),
     '</div>'
@@ -3560,7 +3315,6 @@ function renderAdminMenuBody(body, section) {
     '    <div class="smallText" id="adminOnlineSaveStatus">Bez uložené změny zůstávají původní odkazy.</div>',
     '  </div>',
     buildAdminExternalLinksSettingsHtml(),
-    buildAdminExternalLinksPublicCheckHtml(),
     '  <div class="appMenuActionRow">',
     '    <button type="button" class="appMenuAction" data-admin-action="load-external-links">Načíst online</button>',
     '    <button type="button" class="appMenuAction isActive" data-admin-action="save-external-links">Uložit odkazy</button>',
@@ -3577,7 +3331,6 @@ function renderAdminMenuBody(body, section) {
     '    <div class="smallText" id="adminOnlineSaveStatus">Bez uložené změny zůstanou původní údaje.</div>',
     '  </div>',
     buildAdminAppContactSettingsHtml(),
-    buildAdminAppContactPublicCheckHtml(),
     '  <div class="appMenuActionRow">',
     '    <button type="button" class="appMenuAction" data-admin-action="load-app-contact">Načíst online</button>',
     '    <button type="button" class="appMenuAction isActive" data-admin-action="save-app-contact">Uložit kontakt</button>',
@@ -3594,7 +3347,6 @@ function renderAdminMenuBody(body, section) {
     '    <div class="smallText" id="adminOnlineSaveStatus">Bez uložené změny zůstává pravidlo 4. pracovní den v měsíci.</div>',
     '  </div>',
     buildAdminPayrollSettingsHtml(),
-    buildAdminPayrollPublicCheckHtml(),
     '  <div class="appMenuActionRow">',
     '    <button type="button" class="appMenuAction" data-admin-action="load-payroll-settings">Načíst online</button>',
     '    <button type="button" class="appMenuAction isActive" data-admin-action="save-payroll-settings">Uložit výplatu</button>',
@@ -3611,7 +3363,6 @@ function renderAdminMenuBody(body, section) {
     '    <div class="smallText" id="adminOnlineSaveStatus">Načti zálohy a vyber, kterou chceš obnovit.</div>',
     '  </div>',
     buildAdminRotationBackupStatusHtml(),
-    buildAdminRotationBackupSafetyHtml(),
     buildAdminRotationBackupsHtml(),
     '  <div class="appMenuSubTitle uMt12">Automatické zálohy</div>',
     buildRotationSaveBackupsHtml(),
@@ -3627,7 +3378,8 @@ function renderAdminMenuBody(body, section) {
     '<div class="appMenuCard appMenuAdminCard adminFullSettingsBackupsCard">',
     '  <div class="appMenuCardTitle">Zálohy nastavení</div>',
     '  <div class="appMenuText">',
-    '    <div>Tady si hlavní admin vytvoří bod návratu pro všechna online nastavení aplikace. Nová záloha se uloží online do Supabase a zároveň se stáhne jako JSON soubor.</div>',
+    '    <div>Tady si hlavní admin vytvoří bod návratu pro všechna online nastavení aplikace. "Vytvořit a stáhnout" uloží zálohu online do Supabase a zároveň ji stáhne jako JSON soubor, "Vytvořit zálohu (jen online)" ji uloží jen do Supabase bez stažení.</div>',
+    '    <div class="smallText">Obnovit lze dvěma způsoby: online ze Supabase (vyber řádek v seznamu níže a klikni Obnovit), nebo nahráním souboru z telefonu (tlačítko Obnovit ze souboru).</div>',
     '    <div class="smallText" id="adminOnlineSaveStatus">Vytvořit, nahrát nebo obnovit může jen hlavní admin účet.</div>',
     '  </div>',
     buildAdminFullSettingsBackupStatusHtml(),
@@ -3635,8 +3387,9 @@ function renderAdminMenuBody(body, section) {
     buildAdminFullSettingsBackupsHtml(),
     '  <div class="appMenuActionRow">',
     '    <button type="button" class="appMenuAction" data-admin-action="load-full-settings-backups">Načíst online</button>',
-    (typeof rakAdminCanManageAdmins === 'function' && rakAdminCanManageAdmins() ? '    <button type="button" class="appMenuAction" data-admin-action="import-full-settings-backup">Nahrát zálohu</button>' : ''),
+    (typeof rakAdminCanManageAdmins === 'function' && rakAdminCanManageAdmins() ? '    <button type="button" class="appMenuAction" data-admin-action="restore-full-settings-backup-from-file">Obnovit ze souboru (telefon)</button>' : ''),
     (typeof rakAdminCanManageAdmins === 'function' && rakAdminCanManageAdmins() ? '    <button type="button" class="appMenuAction isActive" data-admin-action="create-full-settings-backup">Vytvořit a stáhnout</button>' : ''),
+    (typeof rakAdminCanManageAdmins === 'function' && rakAdminCanManageAdmins() ? '    <button type="button" class="appMenuAction" data-admin-action="create-full-settings-backup-online">Vytvořit zálohu (jen online)</button>' : ''),
     '    <button type="button" class="appMenuAction" data-admin-action="back-admin">Zpět</button>',
     '  </div>',
     '</div>'
@@ -3718,10 +3471,7 @@ function renderAdminMenuBody(body, section) {
     '</div>'
   ].join('');
 
-  const announcementHtml = [
-    buildAdminAnnouncementHtml(),
-    buildAdminAnnouncementPublicCheckHtml()
-  ].join('');
+  const announcementHtml = buildAdminAnnouncementHtml();
   const usageHtml = buildAdminUsageHtml();
 
   const importPreview = (typeof getRakExcelImportPreview === 'function') ? getRakExcelImportPreview() : null;
@@ -3733,8 +3483,6 @@ function renderAdminMenuBody(body, section) {
     '    <div>Import funguje ve dvou krocích: vybereš Excel, appka načte jen měsíční listy typu 01.2025 a potom si vybereš celý rok nebo konkrétní měsíc. Pomocné listy se ignorují.</div>',
     '    <div class="smallText" id="rakExcelImportStatus">ZIP export stáhne kompletní build aplikace. XLSX rozpis stáhne jen vybraný měsíc v kopírovacím layoutu.</div>',
     '  </div>',
-    buildAdminExportImportStatusHtml(monthKey),
-    buildAdminExportImportSafetyHtml(),
     '  <div class="appMenuSettingsList">',
     '    <div class="appMenuSubTitle">XLSX rozpis pro kopírování</div>',
     '    <div class="smallText">Stejný export jako v generátoru: Tvrdota v A:F, Měkota pod ní v A:F a Absence od H dál po pracovních dnech.</div>',
@@ -3756,7 +3504,7 @@ function renderAdminMenuBody(body, section) {
     '  </div>',
     '  <div class="appMenuActionRow">',
     '    <button type="button" class="appMenuAction isActive" id="rakExcelImportCommitBtn" data-admin-action="excel-import" disabled>Načíst do rozpisů</button>',
-    '    <button type="button" class="appMenuAction" data-admin-action="export">Export ZIP</button>',
+    '    <button type="button" class="appMenuAction" data-admin-action="export">Export ZIP (stáhnout app)</button>',
     '    <button type="button" class="appMenuAction" data-admin-action="back-admin">Zpět</button>',
     '  </div>',
     '</div>'
@@ -5009,8 +4757,22 @@ function bindAppMenuHandlers(body) {
         if (nextStatus) nextStatus.textContent = 'Úplná záloha nastavení vytvořená online a stažená jako JSON ✓';
         return;
       }
-      if (adminAction === 'import-full-settings-backup') {
+      if (adminAction === 'create-full-settings-backup-online') {
         if (!(typeof rakAdminCanManageAdmins === 'function' && rakAdminCanManageAdmins())) return;
+        if (!confirm('Vytvořit úplnou zálohu všech online nastavení jen na Supabase, bez stažení souboru?')) return;
+        const statusEl = document.getElementById('adminOnlineSaveStatus');
+        if (statusEl) statusEl.textContent = 'Vytvářím úplnou zálohu nastavení (jen online)…';
+        const result = await createAdminFullSettingsBackupOnline();
+        if (!result || result.ok === false) throw (result && result.error ? result.error : new Error('Vytvoření zálohy nastavení selhalo.'));
+        renderAdminMenuBody(body, 'settings-backups');
+        const nextStatus = document.getElementById('adminOnlineSaveStatus');
+        if (nextStatus) nextStatus.textContent = 'Úplná záloha nastavení vytvořená online ✓';
+        return;
+      }
+      if (adminAction === 'restore-full-settings-backup-from-file') {
+        if (!(typeof rakAdminCanManageAdmins === 'function' && rakAdminCanManageAdmins())) return;
+        if (!confirm('Nahrát zálohu nastavení ze souboru z telefonu a rovnou obnovit nastavení? Přepíše to uložená nastavení aplikace hodnotami ze souboru.')) return;
+        if (typeof app !== 'undefined' && app) app.pendingFullSettingsBackupAutoRestore = true;
         startFullSettingsBackupImport();
         return;
       }

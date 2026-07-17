@@ -1,7 +1,7 @@
-// RaK 1.2 (1.298) – core stav, verze a sdílené helpery aplikace.
+// RaK 1.2 (1.299) – core stav, verze a sdílené helpery aplikace.
 
 const APP_KEY = "rotace_kalkulacky_state_v123";
-const APP_VERSION = "1.2 (1.298)";
+const APP_VERSION = "1.2 (1.299)";
 window.APP_VERSION = APP_VERSION;
 const ROTATION_BUILD = "2026-06-03-" + APP_VERSION;
 window.ROTATION_BUILD = ROTATION_BUILD;
@@ -454,13 +454,13 @@ function buildAdminSpecialDaysStatusHtml(input) {
     }
   ];
   return [
-    '<div class="adminSpecialDaysStatus" id="adminSpecialDaysStatus">',
-    '  <div class="appMenuSubTitle">Stav mimořádných dnů</div>',
+    '<details class="appMenuFoldSection adminSpecialDaysStatus" id="adminSpecialDaysStatus">',
+    '  <summary class="appMenuSubTitle">Stav mimořádných dnů</summary>',
     '  <div class="smallText uMb10">Souhrn vychází z řádků níže a pomáhá zkontrolovat jednorázové volno před uložením.</div>',
     '  <div class="adminSpecialDaysStatusGrid">',
     items.map((item) => adminSpecialDaysStatusItemHtml(item.label, item.value, item.detail, item.state)).join(''),
     '  </div>',
-    '</div>'
+    '</details>'
   ].join('');
 }
 
@@ -468,10 +468,14 @@ function adminSpecialDaysRefreshStatus(root) {
   const scope = root || document.getElementById('appMenuBody') || document;
   const box = scope.querySelector ? scope.querySelector('#adminSpecialDaysStatus') : null;
   if (!box) return;
+  const wasOpen = !!(box.hasAttribute && box.hasAttribute('open'));
   const wrap = document.createElement('div');
   wrap.innerHTML = buildAdminSpecialDaysStatusHtml(readRakSpecialDaysEntriesFromRoot(scope));
   const next = wrap.firstElementChild;
-  if (next) box.replaceWith(next);
+  if (next) {
+    if (wasOpen && next.setAttribute) next.setAttribute('open', '');
+    box.replaceWith(next);
+  }
 }
 
 function adminSpecialDayRowHtml(entry) {

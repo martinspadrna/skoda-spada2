@@ -147,134 +147,7 @@ function formatRakPayrollAdminDate(date) {
   }
 }
 
-function readAdminPayrollDraftSummary(root) {
-  const scope = root || document.getElementById('appMenuBody') || document;
-  const ordinalInput = scope.querySelector ? scope.querySelector('#adminPayrollWorkdayOrdinal') : null;
-  const rawOrdinal = String(ordinalInput && ordinalInput.value || '').trim();
-  const ordinalNumber = Number(rawOrdinal || RAK_DEFAULT_PAYROLL_SETTINGS.workdayOrdinal);
-  const ordinal = Math.max(1, Math.min(15, ordinalNumber || RAK_DEFAULT_PAYROLL_SETTINGS.workdayOrdinal));
-  const validOverrides = [];
-  const seenMonths = new Set();
-  let partialRows = 0;
-  let invalidRows = 0;
-  let duplicateMonths = 0;
-
-  if (scope.querySelectorAll) {
-    scope.querySelectorAll('tr[data-payroll-override-row]').forEach((row) => {
-      const get = (field) => String(row.querySelector('[data-payroll-override-field="' + field + '"]')?.value || '').trim();
-      const month = get('month');
-      const date = get('date');
-      const note = get('note');
-      if (!month && !date && !note) return;
-      if (!month || !date) {
-        partialRows += 1;
-        return;
-      }
-      const normalized = normalizeRakPayrollOverride({ month, date, note });
-      if (!normalized) {
-        invalidRows += 1;
-        return;
-      }
-      if (seenMonths.has(normalized.month)) {
-        duplicateMonths += 1;
-        return;
-      }
-      seenMonths.add(normalized.month);
-      validOverrides.push(normalized);
-    });
-  }
-
-  return {
-    workdayOrdinal: ordinal,
-    ordinalClamped: String(ordinal) !== String(rawOrdinal || ordinal),
-    overrides: validOverrides.sort((a, b) => a.month.localeCompare(b.month)),
-    partialRows,
-    invalidRows,
-    duplicateMonths
-  };
-}
-
-function buildAdminPayrollStatusSummary(settings) {
-  const safe = normalizeRakPayrollSettings(settings || getRakPayrollSettings());
-  return {
-    workdayOrdinal: safe.workdayOrdinal,
-    ordinalClamped: false,
-    overrides: safe.overrides,
-    partialRows: 0,
-    invalidRows: 0,
-    duplicateMonths: 0
-  };
-}
-
-function adminPayrollStatusItemHtml(label, value, detail, state) {
-  const safeState = state || 'ok';
-  return [
-    '<div class="adminPayrollStatusItem is' + escapeHtml(safeState.charAt(0).toUpperCase() + safeState.slice(1)) + '">',
-    '  <span>' + escapeHtml(label || '') + '</span>',
-    '  <b>' + escapeHtml(value || '') + '</b>',
-    detail ? '  <small>' + escapeHtml(detail) + '</small>' : '',
-    '</div>'
-  ].join('');
-}
-
-function buildAdminPayrollStatusHtml(summary) {
-  const safe = summary || buildAdminPayrollStatusSummary();
-  const nextDate = getNextPayrollDateWithSettings({
-    workdayOrdinal: safe.workdayOrdinal,
-    overrides: safe.overrides
-  }, new Date());
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const diffDays = nextDate ? Math.max(0, Math.round((nextDate.getTime() - today.getTime()) / 86400000)) : null;
-  const nextMonthKey = nextDate ? payrollMonthKey(nextDate.getFullYear(), nextDate.getMonth()) : '';
-  const nextOverride = nextMonthKey && (safe.overrides || []).some((entry) => entry.month === nextMonthKey);
-  const issueCount = Number(safe.partialRows || 0) + Number(safe.invalidRows || 0) + Number(safe.duplicateMonths || 0) + (safe.ordinalClamped ? 1 : 0);
-  const items = [
-    {
-      label: 'Pravidlo',
-      value: String(safe.workdayOrdinal || RAK_DEFAULT_PAYROLL_SETTINGS.workdayOrdinal) + '. pracovní den',
-      detail: safe.ordinalClamped ? 'Hodnota bude při uložení omezena na rozsah 1-15.' : 'Základ pro měsíce bez ruční výjimky.',
-      state: safe.ordinalClamped ? 'warn' : 'ok'
-    },
-    {
-      label: 'Ruční výjimky',
-      value: String((safe.overrides || []).length),
-      detail: (safe.overrides || []).length ? 'Měsíce s pevným datem výplaty.' : 'Bez výjimek, používá se pravidlo.',
-      state: (safe.overrides || []).length ? 'info' : 'ok'
-    },
-    {
-      label: 'Nejbližší výplata',
-      value: formatRakPayrollAdminDate(nextDate),
-      detail: nextDate ? ((diffDays === 0 ? 'Dnes.' : ('Za ' + String(diffDays) + ' ' + pluralizeDays(diffDays) + '.')) + (nextOverride ? ' Použita ruční výjimka.' : ' Spočítáno podle pravidla.')) : 'Zkontroluj pravidlo a volné dny.',
-      state: nextDate ? 'ok' : 'warn'
-    },
-    {
-      label: 'Kontrola',
-      value: issueCount ? 'zkontrolovat' : 'OK',
-      detail: issueCount ? ('Neúplné: ' + String(safe.partialRows || 0) + ' · neplatné: ' + String(safe.invalidRows || 0) + ' · duplicity: ' + String(safe.duplicateMonths || 0) + '.') : 'Zadané řádky jsou použitelné.',
-      state: issueCount ? 'warn' : 'ok'
-    }
-  ];
-  return [
-    '<div class="adminPayrollStatus" id="adminPayrollStatus">',
-    '  <div class="appMenuSubTitle">Stav výplaty</div>',
-    '  <div class="smallText uMb10">Souhrn vychází z polí níže. Karta Výplata se v běžné aplikaci změní až po uložení.</div>',
-    '  <div class="adminPayrollStatusGrid">',
-    items.map((item) => adminPayrollStatusItemHtml(item.label, item.value, item.detail, item.state)).join(''),
-    '  </div>',
-    '</div>'
-  ].join('');
-}
-
-function adminPayrollRefreshStatus(root) {
-  const scope = root || document.getElementById('appMenuBody') || document;
-  const box = scope.querySelector ? scope.querySelector('#adminPayrollStatus') : null;
-  if (!box) return;
-  const wrap = document.createElement('div');
-  wrap.innerHTML = buildAdminPayrollStatusHtml(readAdminPayrollDraftSummary(scope));
-  const next = wrap.firstElementChild;
-  if (next) box.replaceWith(next);
-}
+function adminPayrollRefreshStatus() {}
 
 function buildAdminPayrollSettingsHtml() {
   const settings = getRakPayrollSettings();
@@ -287,13 +160,13 @@ function buildAdminPayrollSettingsHtml() {
     '</tr>'
   ].join('')).join('');
   return [
-    buildAdminPayrollStatusHtml(buildAdminPayrollStatusSummary(settings)),
     '<div class="appMenuSettingsList adminPayrollSettingsList">',
     '  <label class="appMenuFieldLabel" for="adminPayrollWorkdayOrdinal">Výchozí pořadí pracovního dne v měsíci</label>',
     '  <input id="adminPayrollWorkdayOrdinal" class="appMenuInlineInput" type="number" min="1" max="15" step="1" value="' + escapeHtml(String(settings.workdayOrdinal)) + '">',
     '  <div class="appMenuSubTitle">Ruční výjimky</div>',
     '  <div class="tableWrap appMenuTableWrap">',
     '    <table class="appMenuTable appMenuAdminTable appMenuAdminTableDense adminPayrollOverridesTable">',
+    '      <colgroup><col class="adminPayrollMonthCol"><col class="adminPayrollDateCol"><col class="adminPayrollNoteCol"></colgroup>',
     '      <thead><tr><th>Měsíc</th><th>Datum výplaty</th><th>Poznámka</th></tr></thead>',
     '      <tbody>' + rows + '</tbody>',
     '    </table>',
@@ -355,7 +228,6 @@ try {
   window.isRakPayrollSettingsRow = isRakPayrollSettingsRow;
   window.getRakPayrollSettings = getRakPayrollSettings;
   window.buildAdminPayrollSettingsHtml = buildAdminPayrollSettingsHtml;
-  window.buildAdminPayrollStatusHtml = buildAdminPayrollStatusHtml;
   window.adminPayrollRefreshStatus = adminPayrollRefreshStatus;
   window.readAdminPayrollSettingsFromDom = readAdminPayrollSettingsFromDom;
   window.mergeRakPayrollSettingsRows = mergeRakPayrollSettingsRows;

@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// RaK 1.2 (1.298) – smoke test přehledu připojení + Dashboard/appearance contract guard.
+// RaK 1.2 (1.299) – smoke test přehledu připojení + Dashboard/appearance contract guard.
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
@@ -226,12 +226,12 @@ const dashboardReleaseIsolationGuardV198 = Object.freeze({
 });
 
 const releaseMetadataContractV199 = Object.freeze({
-  displayVersion: '1.2 (1.298)',
-  appLabel: 'RaK 1.2 (1.298)',
-  packageVersion: '1.2.298',
-  cacheVersion: 'v1.2-1.298',
+  displayVersion: '1.2 (1.299)',
+  appLabel: 'RaK 1.2 (1.299)',
+  packageVersion: '1.2.299',
+  cacheVersion: 'v1.2-1.299',
   realtimeChannel: 'rak-public-live-v1-2-1-126',
-  changelogHeader: '## RaK 1.2 (1.298)',
+  changelogHeader: '## RaK 1.2 (1.299)',
   previousBuildFragments: Object.freeze(['1.2 (1.138)', '1.2.138', 'v1.2-1.138', '1.2 (1.137)', '1.2.137', 'v1.2-1.137', '1.2 (1.118)', '1.2.118', 'v1.2-1.118', 'rak-public-live-v1-2-1-118'])
 });
 
@@ -340,8 +340,8 @@ function assertDashboardReleaseIsolationGuardV198() {
 function assertReleaseMetadataContractV199() {
   const contract = releaseMetadataContractV199;
   assertIncludes(exportJs, 'RAK_RELEASE_METADATA_CONTRACT_V199', 'export.js musí obsahovat release metadata contract v1.99');
-  assertIncludes(exportJs, "displayVersion: '1.2 (1.298)'", 'Release contract v export.js musí držet display verzi 1.105');
-  assertIncludes(exportJs, "packageVersion: '1.2.298'", 'Release contract v export.js musí držet package verzi 1.2.114');
+  assertIncludes(exportJs, "displayVersion: '1.2 (1.299)'", 'Release contract v export.js musí držet display verzi 1.105');
+  assertIncludes(exportJs, "packageVersion: '1.2.299'", 'Release contract v export.js musí držet package verzi 1.2.114');
   assert(packageJson.version === contract.packageVersion, `package.json version drift: čekám ${contract.packageVersion}, mám ${packageJson.version}`);
   assertIncludes(coreJs, `const APP_VERSION = "${contract.displayVersion}";`, 'core.js APP_VERSION není sjednocený s 1.105');
   assertIncludes(serviceWorkerJs, `const CACHE_VERSION = '${contract.cacheVersion}';`, 'sw.js CACHE_VERSION není sjednocený s 1.105');
@@ -1080,20 +1080,17 @@ function assertRotationGeneratorExcelCopyContractV1138() {
   assertIncludes(exportJs, 'RAK_ADMIN_EXPORT_IMPORT_EXCEL_MONTH_GROUP_CONTRACT_V1140', 'export.js musí dokumentovat skupinovaný výběr měsíců pro XLSX export v1.145');
   assertIncludes(ui, 'RAK_ADMIN_EXPORT_IMPORT_EXCEL_MONTH_GROUP_CONTRACT_V1140', 'app-menu.js musí mít contract pro řazení a skupiny roků v XLSX exportu v1.145');
   assertIncludes(ui, 'function buildRakRotationExcelExportMonthOptions', 'Export / import musí mít vlastní builder výběru měsíců pro XLSX export');
-  assertIncludes(ui, 'function buildAdminExportImportStatusHtml', 'Export / import musi mit admin-only souhrn stavu');
-  assertIncludes(ui, 'function buildAdminExportImportSafetyHtml', 'Export / import musi mit admin-only bezpecnostni kontrolu importu');
-  assertIncludes(ui, 'Bezpečnost importu', 'Export / import musi spravci vysvetlit riziko prepsani dat');
-  assertIncludes(ui, 'Export jen stahuje data. Import naopak přepisuje rozpisy', 'Export / import musi jasne rozlisit stazeni a prepsani dat');
+  assertNotIncludes(ui, 'function buildAdminExportImportStatusHtml', 'Stav exportu/importu byl na zadost odstranen z admin obrazovky');
+  assertNotIncludes(ui, 'function buildAdminExportImportSafetyHtml', 'Bezpecnost importu byla na zadost odstranena z admin obrazovky');
   assertIncludes(ui, 'function confirmRakExcelImportOverwrite', 'Excel import musi mit potvrzeni pred prepsanim rozpisu');
   assertIncludes(ui, 'Tahle akce změní rozpisy. Před importem zkontroluj rozsah a zálohy.', 'Excel import musi v potvrzeni jasne popsat dopad');
   assertIncludes(ui, 'Import zrušený. Rozpisy zůstaly beze změny.', 'Excel import musi pri zruseni potvrzeni nechat rozpis beze zmeny');
-  assertIncludes(ui, 'function renderAdminExportImportStatus', 'Export / import musi umet zive prekreslit souhrn stavu');
-  assertIncludes(ui, 'Stav exportu / importu', 'Export / import musi ukazovat rychly stav exportu a importu');
-  assertIncludes(ui, 'renderAdminExportImportStatus()', 'Zmena Excel importu musi prepocitat souhrn exportu/importu');
+  assertIncludes(ui, 'function renderAdminExportImportStatus', 'Zive prekresleni souhrnu exportu/importu zustava jako neskodny no-op po odstraneni boxu');
+  assertIncludes(ui, 'renderAdminExportImportStatus()', 'Zmena Excel importu musi stale volat (uz neskodny no-op) prepocet souhrnu exportu/importu');
   assertIncludes(ui, '#rakRotationExcelExportMonth, #rakExcelImportScope, #rakExcelImportDetectedMonth', 'Export / import musi prepocitat souhrn pri zmene vyberu');
-  assertIncludes(stylesAdminPolishCss, '.adminExportImportStatus', 'Souhrn exportu/importu musi mit vlastni admin-only styl');
-  assertIncludes(stylesAdminPolishCss, '.adminExportImportStatusGrid', 'Souhrn exportu/importu musi mit prehlednou mrizku');
-  assertIncludes(stylesAdminPolishCss, '.adminExportImportSafetyGrid', 'Bezpecnost importu musi mit vlastni responsive admin styl');
+  assertNotIncludes(stylesAdminPolishCss, '.adminExportImportStatus', 'Stav exportu/importu byl na zadost odstranen, admin styl uz nema existovat');
+  assertNotIncludes(stylesAdminPolishCss, '.adminExportImportSafetyGrid', 'Bezpecnost importu byla odstranena, admin styl uz nema existovat');
+  assertIncludes(ui, 'Export ZIP (stáhnout app)', 'Tlacitko exportu ZIP musi jasne rikat, ze jde o stazeni cele aplikace');
   assertNotIncludes(ui, 'adminRotationGeneratorBuildMonthOptions(selected)', 'Export / import nesmí přebírat omezený výběr měsíce z generátoru');
   assertIncludes(ui, '<optgroup label="Rok ', 'Výběr XLSX exportu musí skupinovat měsíce podle roku');
   assertIncludes(ui, 'function adminRotationGeneratorBuildExcelAbsenceSlots', 'Excel export musí dynamicky určit počet dvojic Jméno/Kód pro absence');
@@ -1329,13 +1326,11 @@ assertIncludes(appearanceThemeJs, '"id": "light-zigzag"', 'Musí existovat zákl
   assertIncludes(adminFoodJs, 'function adminVacationRefreshStatus', 'Souhrn dovolene/odstavek se musi umet prepocitat podle rozepsanych radku');
   assertIncludes(adminFoodJs, 'adminVacationReadPeriodsFromRoot', 'Souhrn dovolene/odstavek musi vychazet z aktualnich DOM radku pred ulozenim');
   assertIncludes(adminFoodJs, 'data-vacation-period-row', 'Formular dovolene/odstavek musi ukladat vice pojmenovanych obdobi od-do');
-  assertIncludes(menuJs, 'function buildAdminVacationPublicCheckHtml', 'Dovolena/odstavky musi mit admin-only kontrolu verejneho dopadu');
-  assertIncludes(menuJs, 'Veřejná kontrola dovolené', 'Dovolena/odstavky musi spravci rikat, ze jde o verejne viditelnou zmenu');
-  assertIncludes(menuJs, 'Ověř název období, počet dní a pravou část se směnou D.', 'Dovolena/odstavky musi mit jasnou kontrolu home karty po ulozeni');
-  assertIncludes(menuJs, 'buildAdminVacationPublicCheckHtml()', 'Kontrola verejneho dopadu dovolene musi byt vlozena do admin obrazovky');
   assertIncludes(menuJs, 'adminVacationRefreshStatus(body)', 'Admin menu musi prepocitat souhrn dovolene/odstavek pri zmene pole');
   assertIncludes(css, '.adminVacationStatusGrid', 'Souhrn dovolene/odstavek musi mit vlastni responsive admin styl');
-  assertIncludes(css, '.adminVacationPublicCheckGrid', 'Verejna kontrola dovolene musi mit vlastni responsive admin styl');
+  assertNotIncludes(menuJs, 'function buildAdminVacationPublicCheckHtml', 'Verejna kontrola dovolene byla na zadost odstranena z admin obrazovky');
+  assertNotIncludes(css, '.adminVacationPublicCheckGrid', 'Verejna kontrola dovolene byla odstranena, admin styl uz nema existovat');
+  assertIncludes(adminFoodJs, '<details class="appMenuFoldSection adminVacationStatus" id="adminVacationStatus">', 'Stav dovolene/odstavek musi byt sbalitelny (details/summary), ne pevny box');
   assertIncludes(menuJs, "adminAction === 'open-vacation'", 'Admin menu musi otevirat samostatny panel dovolene/odstavek');
   assertIncludes(menuJs, "adminAction === 'save-vacation-countdown'", 'Admin menu musi umet ulozit nastaveni dovolene/odstavek');
   assertIncludes(supabaseBridgeJs, 'VACATION_COUNTDOWN_SETTINGS', 'Supabase ukladani musi podporovat samostatny radek dovolene/odstavek mimo starsi RPC kategorie');
@@ -1349,18 +1344,13 @@ assertIncludes(appearanceThemeJs, '"id": "light-zigzag"', 'Musí existovat zákl
   assertIncludes(coreJs, 'readRakSpecialDaysEntriesFromRoot', 'Souhrn mimoradnych volnych dnu musi vychazet z aktualnich DOM radku pred ulozenim');
   assertIncludes(coreJs, 'function readAdminSpecialDaysSettingsFromDom', 'Administrace musi umet nacist mimoradne volne dny z formulare');
   assertIncludes(coreJs, 'function mergeRakSpecialDaysSettingsRows', 'Mimoradne volne dny se musi ukladat do machine_settings bez mazani ostatnich nastaveni');
-  assertIncludes(menuJs, 'function buildAdminSpecialDaysPublicCheckHtml', 'Mimoradne volne dny musi mit admin-only kontrolu verejneho dopadu');
-  assertIncludes(menuJs, 'Veřejná kontrola volných dnů', 'Mimoradne volne dny musi spravci rikat, ze jde o verejne viditelnou zmenu');
-  assertIncludes(menuJs, 'Ověř, že se v rozpisu a výpočtech ten den nebere jako běžná práce.', 'Mimoradne volne dny musi mit jasnou kontrolu dopadu na rozpis');
-  assertIncludes(menuJs, 'buildAdminSpecialDaysPublicCheckHtml()', 'Kontrola verejneho dopadu volnych dnu musi byt vlozena do admin obrazovky');
   assertIncludes(menuJs, 'adminSpecialDaysRefreshStatus(body)', 'Admin menu musi prepocitat souhrn mimoradnych volnych dnu pri zmene pole');
   assertIncludes(css, '.adminSpecialDaysStatusGrid', 'Souhrn mimoradnych volnych dnu musi mit vlastni responsive admin styl');
-  assertIncludes(css, '.adminSpecialDaysPublicCheckGrid', 'Verejna kontrola mimoradnych volnych dnu musi mit vlastni responsive admin styl');
-  assertIncludes(menuJs, 'function buildAdminRotationPublicCheckHtml', 'Rozpisy musi mit admin-only kontrolu verejneho dopadu');
-  assertIncludes(menuJs, 'Veřejná kontrola rozpisu', 'Rozpisy musi spravci rikat, ze jde o verejne viditelnou zmenu');
-  assertIncludes(menuJs, 'Ověř vybraný měsíc, žluté výjimky', 'Rozpisy musi mit jasnou kontrolu po ulozeni v Rotace / Rozpisy');
-  assertIncludes(menuJs, 'buildAdminRotationPublicCheckHtml()', 'Kontrola verejneho dopadu rozpisu musi byt vlozena do admin obrazovky');
-  assertIncludes(css, '.adminRotationPublicCheckGrid', 'Verejna kontrola rozpisu musi mit vlastni responsive admin styl');
+  assertNotIncludes(menuJs, 'function buildAdminSpecialDaysPublicCheckHtml', 'Verejna kontrola mimoradnych volnych dnu byla na zadost odstranena z admin obrazovky');
+  assertNotIncludes(css, '.adminSpecialDaysPublicCheckGrid', 'Verejna kontrola mimoradnych volnych dnu byla odstranena, admin styl uz nema existovat');
+  assertIncludes(coreJs, '<details class="appMenuFoldSection adminSpecialDaysStatus" id="adminSpecialDaysStatus">', 'Stav mimoradnych volnych dnu musi byt sbalitelny (details/summary), ne pevny box');
+  assertNotIncludes(menuJs, 'function buildAdminRotationPublicCheckHtml', 'Verejna kontrola rozpisu byla na zadost odstranena z admin obrazovky');
+  assertNotIncludes(css, '.adminRotationPublicCheckGrid', 'Verejna kontrola rozpisu byla odstranena, admin styl uz nema existovat');
   assertIncludes(menuJs, "action: 'open-special-days', label: 'Mimořádné volné dny'", 'Admin menu musi obsahovat sekci Mimoradne volne dny');
   assertIncludes(menuJs, "adminAction === 'open-special-days'", 'Admin menu musi umet otevrit mimoradne volne dny');
   assertIncludes(menuJs, "adminAction === 'save-special-days'", 'Admin menu musi umet ulozit mimoradne volne dny');
@@ -1508,16 +1498,19 @@ function assertAdminAccountLoginContractV1141() {
   assertIncludes(ui, 'function makeDeletedMachineSettingsRow', 'Rollback nastaveni musi umet skryt radky, ktere v zaloze nebyly');
   assertIncludes(ui, 'deletedCount: deletedRows.length', 'Obnova nastaveni musi vracet pocet skrytych radku mimo zalohu');
   assertIncludes(ui, "adminAction === 'create-full-settings-backup'", 'Hlavni admin musi umet vytvorit uplnou zalohu nastaveni');
+  assertIncludes(ui, "adminAction === 'create-full-settings-backup-online'", 'Hlavni admin musi umet vytvorit zalohu jen online bez stazeni souboru');
   assertIncludes(ui, "adminAction === 'download-full-settings-backup'", 'Hlavni admin musi umet stahnout uplnou zalohu nastaveni');
   assertIncludes(ui, 'function downloadAdminFullSettingsBackup', 'Uplna zaloha nastaveni musi mit JSON export pro offline archiv');
   assertIncludes(ui, "type: 'rak-full-settings-backup-export'", 'JSON export uplne zalohy musi mit jasny typ');
   assertIncludes(ui, "RaK_zaloha_nastaveni_", 'Stazena zaloha nastaveni musi mit jasny nazev souboru');
   assertIncludes(ui, "downloadAdminFullSettingsBackup(backupId)", 'Vytvoreni zalohy nastaveni musi ulozit Supabase bod a hned stahnout JSON');
-  assertIncludes(ui, "adminAction === 'import-full-settings-backup'", 'Hlavni admin musi umet nahrat stazenou JSON zalohu zpet online');
+  assertNotIncludes(ui, "adminAction === 'import-full-settings-backup'", 'Samostatna akce jen-nahrat byla nahrazena kombinovanou volbou obnovy ze souboru');
+  assertIncludes(ui, "adminAction === 'restore-full-settings-backup-from-file'", 'Hlavni admin musi mit vyber obnovy ze souboru (telefon) vedle obnovy online ze Supabase');
+  assertIncludes(ui, 'app.pendingFullSettingsBackupAutoRestore = true', 'Obnova ze souboru musi po nahrani rovnou spustit obnoveni nastaveni');
   assertIncludes(ui, 'function ensureFullSettingsBackupFileInput', 'Import zalohy nastaveni musi mit vlastni file input');
   assertIncludes(ui, 'function importAdminFullSettingsBackupFile', 'Import zalohy nastaveni musi umet ulozit JSON zalohu do Supabase');
   assertIncludes(ui, "source: 'imported'", 'Importovana zaloha nastaveni musi byt v seznamu rozlisena');
-  assertIncludes(ui, "adminAction === 'restore-full-settings-backup'", 'Hlavni admin musi umet obnovit uplnou zalohu nastaveni');
+  assertIncludes(ui, "adminAction === 'restore-full-settings-backup'", 'Hlavni admin musi umet obnovit uplnou zalohu nastaveni online ze seznamu');
   assertIncludes(ui, "v === 'admin-settings-backups' && !(typeof rakAdminCanManageAdmins === 'function' && rakAdminCanManageAdmins())", 'Nizsi admin nesmi otevrit uplne zalohy nastaveni primo');
   assertIncludes(bridge, "category === 'admin_full_settings_backup'", 'Supabase compatibility save musi povolit uplne zalohy nastaveni');
   assertIncludes(bridge, "category === 'admin_settings_deleted'", 'Supabase compatibility save musi povolit skryte deleted radky pro rollback nastaveni');
@@ -1617,9 +1610,14 @@ function assertAdminHandoverGuideContractV1142() {
   assertIncludes(ui, 'function buildAdminPostSaveCheckText', 'Kontrola po ulozeni musi byt soucasti predavacich textu');
   assertIncludes(ui, 'function buildAdminRotationBackupStatusHtml', 'Zalohy rozpisu musi mit admin-only souhrn stavu');
   assertIncludes(ui, 'function adminRotationBackupStatusItemHtml', 'Souhrn zaloh musi mit samostatne stavove polozky');
-  assertIncludes(ui, 'function buildAdminRotationBackupSafetyHtml', 'Zalohy rozpisu musi mit admin-only bezpecnostni kontrolu obnovy');
-  assertIncludes(ui, 'Bezpečnost obnovy', 'Zalohy musi spravci vysvetlit riziko obnovy');
-  assertIncludes(ui, 'Obnova zálohy přepíše aktuální rozpis', 'Zalohy musi jasne rikat, ze obnova prepise aktualni rozpis');
+  assertIncludes(ui, '<details class="appMenuFoldSection adminRotationBackupStatus">', 'Stav zaloh rozpisu musi byt sbalitelny (details/summary), ne pevny box');
+  assertNotIncludes(ui, 'function buildAdminRotationBackupSafetyHtml', 'Bezpecnost obnovy zaloh rozpisu byla na zadost odstranena (zustava jen u Zaloh nastaveni)');
+  assertIncludes(ui, 'Bezpečnost obnovy', 'Zalohy nastaveni musi spravci vysvetlit riziko obnovy');
+  assertIncludes(ui, 'adminRotationBackupMonthGroup', 'Zalohy rozpisu musi byt sbalitelne po mesicich');
+  assertIncludes(ui, 'class="adminRotationBackupsLabelCol"', 'Sloupec Zaloha u zaloh rozpisu musi mit vlastni uzsi sirku');
+  assertIncludes(ui, 'class="adminRotationBackupsActionCol"', 'Sloupec Akce u zaloh rozpisu musi mit vlastni uzsi sirku');
+  assertIncludes(stylesAdminPolishCss, '.adminRotationBackupsLabelCol{width:224px;}', 'Sloupec Zaloha musi byt o 20% uzsi nez zakladnich 280px');
+  assertIncludes(stylesAdminPolishCss, '.adminRotationBackupsActionCol{width:140px;}', 'Sloupec Akce musi byt o 50% uzsi nez zakladnich 280px');
   assertIncludes(ui, 'function buildAdminManualHtml', 'Admin musi mit samostatnou prirucku spravce');
   assertIncludes(ui, 'function adminManualSectionHtml', 'Prirucka spravce musi mit rozbalovaci postupy');
   assertIncludes(ui, 'function buildAdminSettingsMapHtml', 'Admin musi mit mapu kde co upravit');
@@ -1817,18 +1815,12 @@ function assertAdminExternalLinksSettingsContractV1144() {
   assertIncludes(ui, 'function getRakExternalLinksSettings', 'Verejne odkazy musi cist ulozene admin nastaveni');
   assertIncludes(ui, 'function getRakExternalLinkUrl', 'Klikaci akce musi umet nacist URL z admin nastaveni');
   assertIncludes(ui, 'function buildAdminExternalLinksSettingsHtml', 'Administrace musi mit formular externich odkazu');
-  assertIncludes(ui, 'function buildAdminExternalLinksStatusHtml', 'Administrace musi mit souhrn stavu externich odkazu');
-  assertIncludes(ui, 'function buildAdminExternalLinksPublicCheckHtml', 'Externi odkazy musi mit admin-only kontrolu verejneho dopadu');
-  assertIncludes(ui, 'Veřejná kontrola odkazů', 'Externi odkazy musi spravci rikat, ze jde o verejne viditelnou zmenu');
-  assertIncludes(ui, 'Zkontroluj Jídelní lístek, Eportal, Výplatu a Kalendář', 'Externi odkazy musi mit jasnou kontrolu po ulozeni z bezne aplikace');
-  assertIncludes(ui, 'buildAdminExternalLinksPublicCheckHtml()', 'Kontrola verejneho dopadu odkazu musi byt vlozena do admin obrazovky odkazu');
-  assertIncludes(ui, 'function adminExternalLinksRefreshStatus', 'Souhrn externich odkazu se musi prepocitat podle rozepsanych radku');
-  assertIncludes(ui, 'readAdminExternalLinksStatusFromDom', 'Souhrn externich odkazu musi vychazet z aktualnich DOM radku pred ulozenim');
+  assertNotIncludes(ui, 'function buildAdminExternalLinksStatusHtml', 'Stav externich odkazu byl na zadost odstranen z admin obrazovky');
+  assertNotIncludes(ui, 'function buildAdminExternalLinksPublicCheckHtml', 'Verejna kontrola odkazu byla na zadost odstranena z admin obrazovky');
   assertIncludes(ui, 'function readAdminExternalLinksSettingsFromDom', 'Administrace musi umet nacist externi odkazy z formulare');
   assertIncludes(ui, 'function mergeRakExternalLinksSettingsRows', 'Externi odkazy se musi ukladat do machine_settings bez mazani ostatnich nastaveni');
-  assertIncludes(ui, 'adminExternalLinksRefreshStatus(body)', 'Admin menu musi prepocitat souhrn externich odkazu pri zmene pole');
-  assertIncludes(stylesAdminPolishCss, '.adminExternalLinksStatusGrid', 'Souhrn externich odkazu musi mit vlastni responsive admin styl');
-  assertIncludes(stylesAdminPolishCss, '.adminExternalLinksPublicCheckGrid', 'Verejna kontrola odkazu musi mit vlastni responsive admin styl');
+  assertNotIncludes(stylesAdminPolishCss, '.adminExternalLinksStatusGrid', 'Stav externich odkazu byl odstranen, admin styl uz nema existovat');
+  assertNotIncludes(stylesAdminPolishCss, '.adminExternalLinksPublicCheckGrid', 'Verejna kontrola odkazu byla odstranena, admin styl uz nema existovat');
   assertIncludes(ui, "action: 'open-external-links', label: 'Odkazy'", 'Admin menu musi obsahovat sekci Odkazy');
   assertIncludes(ui, "adminAction === 'open-external-links'", 'Admin menu musi umet otevrit odkazy');
   assertIncludes(ui, "adminAction === 'save-external-links'", 'Admin menu musi umet ulozit odkazy');
@@ -1863,17 +1855,12 @@ function assertAdminAppContactSettingsContractV1145() {
   assertIncludes(ui, 'function getRakAppContactPhoneHref', 'Verejny kontakt musi umet vytvorit tel odkaz z admin telefonu');
   assertIncludes(ui, 'function getRakAppContactEmailHref', 'Verejny kontakt musi umet vytvorit mailto odkaz z admin e-mailu');
   assertIncludes(ui, 'function buildAdminAppContactSettingsHtml', 'Administrace musi mit formular kontaktu aplikace');
-  assertIncludes(ui, 'function buildAdminAppContactStatusHtml', 'Administrace musi mit souhrn stavu kontaktu aplikace');
-  assertIncludes(ui, 'function buildAdminAppContactPublicCheckHtml', 'Kontakt aplikace musi mit admin-only kontrolu verejneho dopadu');
-  assertIncludes(ui, 'Veřejná kontrola kontaktu', 'Kontakt aplikace musi spravci rikat, ze jde o verejne viditelnou zmenu');
-  assertIncludes(ui, 'Otevři menu Kontakt a ověř', 'Kontakt aplikace musi mit jasnou kontrolu po ulozeni v bezne aplikaci');
-  assertIncludes(ui, 'buildAdminAppContactPublicCheckHtml()', 'Kontrola verejneho dopadu kontaktu musi byt vlozena do admin obrazovky kontaktu');
-  assertIncludes(ui, 'function adminAppContactRefreshStatus', 'Souhrn kontaktu aplikace se musi prepocitat podle rozepsanych radku');
+  assertNotIncludes(ui, 'function buildAdminAppContactStatusHtml', 'Stav kontaktu aplikace byl na zadost odstranen z admin obrazovky');
+  assertNotIncludes(ui, 'function buildAdminAppContactPublicCheckHtml', 'Verejna kontrola kontaktu byla na zadost odstranena z admin obrazovky');
   assertIncludes(ui, 'function readAdminAppContactSettingsFromDom', 'Administrace musi umet nacist kontakt z formulare');
   assertIncludes(ui, 'function mergeRakAppContactSettingsRows', 'Kontakt aplikace se musi ukladat do machine_settings bez mazani ostatnich nastaveni');
-  assertIncludes(ui, 'adminAppContactRefreshStatus(body)', 'Admin menu musi prepocitat souhrn kontaktu pri zmene pole');
-  assertIncludes(stylesAdminPolishCss, '.adminAppContactStatusGrid', 'Souhrn kontaktu musi mit vlastni responsive admin styl');
-  assertIncludes(stylesAdminPolishCss, '.adminAppContactPublicCheckGrid', 'Verejna kontrola kontaktu musi mit vlastni responsive admin styl');
+  assertNotIncludes(stylesAdminPolishCss, '.adminAppContactStatusGrid', 'Stav kontaktu byl odstranen, admin styl uz nema existovat');
+  assertNotIncludes(stylesAdminPolishCss, '.adminAppContactPublicCheckGrid', 'Verejna kontrola kontaktu byla odstranena, admin styl uz nema existovat');
   assertIncludes(ui, "action: 'open-app-contact', label: 'Kontakt aplikace'", 'Admin menu musi obsahovat sekci Kontakt aplikace');
   assertIncludes(ui, "adminAction === 'open-app-contact'", 'Admin menu musi umet otevrit kontakt aplikace');
   assertIncludes(ui, "adminAction === 'save-app-contact'", 'Admin menu musi umet ulozit kontakt aplikace');
@@ -1894,21 +1881,22 @@ function assertAdminPayrollSettingsContractV1146() {
   assertIncludes(payrollJs, "const RAK_PAYROLL_SETTINGS_CATEGORY = 'payroll_settings'", 'Vyplata musi mit vlastni kategorii nastaveni');
   assertIncludes(payrollJs, 'function getRakPayrollSettings', 'Vyplata musi cist ulozene admin nastaveni');
   assertIncludes(payrollJs, 'function buildAdminPayrollSettingsHtml', 'Administrace musi mit formular nastaveni vyplaty');
-  assertIncludes(payrollJs, 'function buildAdminPayrollStatusHtml', 'Administrace musi mit souhrn stavu vyplaty');
-  assertIncludes(ui, 'function buildAdminPayrollPublicCheckHtml', 'Vyplata musi mit admin-only kontrolu verejneho dopadu');
-  assertIncludes(ui, 'Veřejná kontrola výplaty', 'Vyplata musi spravci rikat, ze jde o verejne viditelnou zmenu');
-  assertIncludes(ui, 'Otevři home a ověř datum', 'Vyplata musi mit jasnou kontrolu po ulozeni na home');
-  assertIncludes(ui, 'buildAdminPayrollPublicCheckHtml()', 'Kontrola verejneho dopadu vyplaty musi byt vlozena do admin obrazovky vyplaty');
-  assertIncludes(payrollJs, 'function adminPayrollRefreshStatus', 'Souhrn vyplaty se musi prepocitat podle rozepsanych radku');
+  assertNotIncludes(payrollJs, 'function buildAdminPayrollStatusHtml', 'Stav vyplaty byl na zadost odstranen z admin obrazovky');
+  assertNotIncludes(ui, 'function buildAdminPayrollPublicCheckHtml', 'Verejna kontrola vyplaty byla na zadost odstranena z admin obrazovky');
   assertIncludes(payrollJs, 'function readAdminPayrollSettingsFromDom', 'Administrace musi umet nacist nastaveni vyplaty z formulare');
   assertIncludes(payrollJs, 'function mergeRakPayrollSettingsRows', 'Vyplata se musi ukladat do machine_settings bez mazani ostatnich nastaveni');
   assertIncludes(payrollJs, 'function getNextPayrollDateWithSettings', 'Souhrn vyplaty musi pouzivat stejny vypocet nejblizsiho terminu');
   assertIncludes(payrollJs, 'const payrollSettings = getRakPayrollSettings();', 'Vypocet vyplaty musi pouzivat adminovatelne pravidlo');
   assertIncludes(payrollJs, "workdayCount === payrollSettings.workdayOrdinal", 'Vypocet vyplaty nesmi mit natvrdo 4. pracovni den');
   assertNotIncludes(payrollJs, 'workdayCount === 4', 'payroll.js nesmi nechavat pevne pravidlo 4. pracovni den');
-  assertIncludes(ui, 'adminPayrollRefreshStatus(body)', 'Admin menu musi prepocitat souhrn vyplaty pri zmene pole');
-  assertIncludes(stylesAdminPolishCss, '.adminPayrollStatusGrid', 'Souhrn vyplaty musi mit vlastni responsive admin styl');
-  assertIncludes(stylesAdminPolishCss, '.adminPayrollPublicCheckGrid', 'Verejna kontrola vyplaty musi mit vlastni responsive admin styl');
+  assertNotIncludes(stylesAdminPolishCss, '.adminPayrollStatusGrid', 'Stav vyplaty byl odstranen, admin styl uz nema existovat');
+  assertNotIncludes(stylesAdminPolishCss, '.adminPayrollPublicCheckGrid', 'Verejna kontrola vyplaty byla odstranena, admin styl uz nema existovat');
+  assertIncludes(payrollJs, 'class="adminPayrollMonthCol"', 'Sloupec Mesic u rucnich vyjimek vyplaty musi mit vlastni uzsi sirku');
+  assertIncludes(payrollJs, 'class="adminPayrollDateCol"', 'Sloupec Datum vyplaty u rucnich vyjimek musi mit vlastni uzsi sirku');
+  assertIncludes(payrollJs, 'class="adminPayrollNoteCol"', 'Sloupec Poznamka u rucnich vyjimek musi mit vlastni uzsi sirku');
+  assertIncludes(stylesAdminPolishCss, '.adminPayrollMonthCol{width:107px;}', 'Sloupec Mesic musi byt o 50% uzsi');
+  assertIncludes(stylesAdminPolishCss, '.adminPayrollDateCol{width:107px;}', 'Sloupec Datum vyplaty musi byt o 50% uzsi');
+  assertIncludes(stylesAdminPolishCss, '.adminPayrollNoteCol{width:107px;}', 'Sloupec Poznamka musi byt o 50% uzsi');
   assertIncludes(ui, "action: 'open-payroll-settings', label: 'Výplata'", 'Admin menu musi obsahovat sekci Vyplata');
   assertIncludes(ui, "adminAction === 'open-payroll-settings'", 'Admin menu musi umet otevrit nastaveni vyplaty');
   assertIncludes(ui, "adminAction === 'save-payroll-settings'", 'Admin menu musi umet ulozit nastaveni vyplaty');
@@ -1921,17 +1909,14 @@ function assertAdminPayrollSettingsContractV1146() {
 
 function assertAdminAnnouncementStatusContractV1157() {
   assertIncludes(ui, 'function buildAdminAnnouncementHtml', 'Administrace musi mit formular oznameni na Dashboardu');
-  assertIncludes(ui, 'function buildAdminAnnouncementStatusHtml', 'Oznameni musi mit admin-only souhrn stavu');
-  assertIncludes(ui, 'function buildAdminAnnouncementPublicCheckHtml', 'Oznameni musi mit admin-only kontrolu verejneho dopadu');
-  assertIncludes(ui, 'Veřejná kontrola oznámení', 'Oznameni musi spravci rikat, ze jde o verejne viditelnou zmenu');
-  assertIncludes(ui, 'Po uložení otevři home', 'Oznameni musi mit jasnou kontrolu po ulozeni na home');
-  assertIncludes(ui, 'buildAdminAnnouncementPublicCheckHtml()', 'Kontrola verejneho dopadu oznameni musi byt vlozena do admin obrazovky');
-  assertIncludes(ui, 'function adminAnnouncementRefreshStatus', 'Souhrn oznameni se musi prepocitat podle rozepsanych poli');
-  assertIncludes(ui, 'function readAdminAnnouncementDraftFromDom', 'Souhrn oznameni musi vychazet z aktualnich DOM poli pred ulozenim');
-  assertIncludes(ui, 'adminAnnouncementRefreshStatus(body)', 'Admin menu musi prepocitat souhrn oznameni pri zmene pole');
+  assertNotIncludes(ui, 'function buildAdminAnnouncementStatusHtml', 'Stav oznameni byl na zadost odstranen z admin obrazovky');
+  assertNotIncludes(ui, 'function buildAdminAnnouncementPublicCheckHtml', 'Verejna kontrola oznameni byla na zadost odstranena z admin obrazovky');
+  assertIncludes(ui, 'function adminAnnouncementRefreshStatus', 'Admin nahled oznameni se musi zive prekreslit podle rozepsanych poli');
+  assertIncludes(ui, 'function readAdminAnnouncementDraftFromDom', 'Nahled oznameni musi vychazet z aktualnich DOM poli pred ulozenim');
+  assertIncludes(ui, 'adminAnnouncementRefreshStatus(body)', 'Admin menu musi prekreslit nahled oznameni pri zmene pole');
   assertIncludes(ui, 'adminAnnouncementPreview', 'Oznameni musi mit admin nahled');
-  assertIncludes(stylesAdminPolishCss, '.adminAnnouncementStatusGrid', 'Souhrn oznameni musi mit vlastni responsive admin styl');
-  assertIncludes(stylesAdminPolishCss, '.adminAnnouncementPublicCheckGrid', 'Verejna kontrola oznameni musi mit vlastni responsive admin styl');
+  assertNotIncludes(stylesAdminPolishCss, '.adminAnnouncementStatusGrid', 'Stav oznameni byl odstranen, admin styl uz nema existovat');
+  assertNotIncludes(stylesAdminPolishCss, '.adminAnnouncementPublicCheckGrid', 'Verejna kontrola oznameni byla odstranena, admin styl uz nema existovat');
   assertIncludes(ui, "adminAction === 'save-announcement'", 'Admin menu musi umet ulozit oznameni');
   assertIncludes(ui, "adminAction === 'clear-announcement'", 'Admin menu musi umet vypnout oznameni');
   assertIncludes(ui, "'admin-announcement'", 'Oznameni musi byt mezi chranenymi admin view');
@@ -1965,11 +1950,10 @@ function assertAdminServiceStatusContractV1159() {
 
 function assertAdminUsageStatusContractV1160() {
   assertIncludes(ui, 'function buildAdminUsageHtml', 'Administrace musi mit prehled pripojeni');
-  assertIncludes(ui, 'function buildAdminUsageStatusHtml', 'Prehled pripojeni musi mit admin-only souhrn stavu');
-  assertIncludes(ui, 'buildAdminUsageStatusHtml(snapshot, groups, devices, events, summary)', 'Souhrn pripojeni musi byt vlozeny nad metriky pripojeni');
-  assertIncludes(ui, 'window.buildAdminUsageStatusHtml', 'Souhrn pripojeni musi byt dostupny pro smoke guard a ladeni');
+  assertNotIncludes(ui, 'function buildAdminUsageStatusHtml', 'Stav pripojeni byl na zadost odstranen z admin obrazovky');
+  assertNotIncludes(ui, 'window.buildAdminUsageStatusHtml', 'Stav pripojeni byl odstranen, export uz nema existovat');
   assertIncludes(ui, 'function buildAdminUsageGroups', 'Souhrn pripojeni musi sdilet seskupeny model profilu a zarizeni');
-  assertIncludes(stylesAdminPolishCss, '.adminUsageStatusGrid', 'Souhrn pripojeni musi mit vlastni responsive admin styl');
+  assertNotIncludes(stylesAdminPolishCss, '.adminUsageStatusGrid', 'Stav pripojeni byl odstranen, admin styl uz nema existovat');
   assertIncludes(ui, "adminAction === 'usage-load'", 'Admin prehled pripojeni musi umet nacist online data');
   assertIncludes(ui, "'admin-usage'", 'Prehled pripojeni musi byt mezi chranenymi admin view');
 }
