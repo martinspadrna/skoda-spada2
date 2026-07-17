@@ -1,3 +1,10 @@
+## RaK 1.2 (1.297) — KRITICKÁ OPRAVA
+
+- Oprava: `getFoodSpecialDateSet()` (qr.js, zavedeno v 1.295) a `getRotationOvertimeDefaultDateList()` (core.js) se navzájem volaly v nekonečné rekurzi vždy, když ještě neexistuje uložený řádek `ROTATION_OVERTIME_SETTINGS` - tedy prakticky pro každého uživatele. Appka se kvůli tomu při každém vykreslení dashboardu zasekla na `RangeError: Maximum call stack size exceeded`, což se navenek projevilo jako "dlouho se načítá", "Offline cache" a nereagující kliknutí (dashboard se opakovaně pokoušel dopočítat a pokaždé spadl).
+- `getFoodSpecialDateSet()` teď čte uložené termíny z Přesčasů přímo (`getRotationOvertimeSettingsRow`), ne přes `getRotationOvertimeDateSet()`/`getRotationOvertimeSettings()`, které umí spustit seed-větev volající zpátky do kantýny.
+- Ověřeno živě: dashboard po opravě ukazuje `🟢 Online synchronizováno`, klikání funguje a "bude chybět" správně ukazuje reálné jméno/a místo "Nikdo".
+- Release metadata sjednocena na `RaK 1.2 (1.297)`, technicka verze `1.2.297`, cache `v1.2-1.297`; loader modulu ma cache znacku `1.2.297`.
+
 ## RaK 1.2 (1.296)
 
 - Oprava: pomalé nebo nedostupné Supabase spojení mohlo při startu appky vést k tomu, že se automaticky spustil blokující nativní dialog na admin heslo, i když ho uživatel vůbec nechtěl otevírat - appka pak vypadala jako zaseknutá ("dlouho se načítá", nešlo nic kliknout).

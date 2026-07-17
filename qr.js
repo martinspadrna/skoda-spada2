@@ -173,9 +173,23 @@ function getFoodSpecialDateSet() {
   // Od verze 1.294 je Provoz / Prescasy (ROTATION_OVERTIME_SETTINGS) jediny editovatelny
   // zdroj prescasovych terminu - kantyna uz vlastni seznam needituje, jen se sem
   // pripoji, aby home karty Kantyna/Jidelna ukazaly spravne hodiny i pro nove pridane terminy.
+  // POZOR: cist jen surova ulozena data (getRotationOvertimeSettingsRow), NIKDY
+  // getRotationOvertimeDateSet()/getRotationOvertimeSettings() - ty bez vlastniho
+  // radku spousti default-seed vetev, ktera se zpatky ptá teto funkce a zpusobi
+  // nekonecnou rekurzi (zamrznuti cele appky pro kazdeho uzivatele).
   try {
-    if (typeof window !== 'undefined' && typeof window.getRotationOvertimeDateSet === 'function') {
-      window.getRotationOvertimeDateSet().forEach((date) => result.add(date));
+    if (typeof getRotationOvertimeSettingsRow === 'function' && typeof parseRotationOvertimeSettingsJson === 'function') {
+      const row = getRotationOvertimeSettingsRow();
+      if (row) {
+        const settings = parseRotationOvertimeSettingsJson(row.settings_json);
+        const rawEntries = Array.isArray(settings.entries)
+          ? settings.entries
+          : (Array.isArray(settings.overtimes) ? settings.overtimes : (Array.isArray(settings.dates) ? settings.dates : []));
+        rawEntries.forEach((item) => {
+          const date = String((item && typeof item === 'object' ? (item.date || item.iso || item.day) : item) || '').trim();
+          if (/^\d{4}-\d{2}-\d{2}$/.test(date)) result.add(date);
+        });
+      }
     }
   } catch (err) {}
   return result;
