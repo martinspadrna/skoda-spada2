@@ -577,6 +577,38 @@ function gamesAccountById(accountId) {
   return GAMES_ACCOUNT_LIST.find(acc => acc.id === id) || null;
 }
 
+async function ensureGameAccountExistsForLoginNumber(loginNumber) {
+  const id = String(loginNumber || '').trim();
+  if (!id || GAMES_ACCOUNT_BLOCKLIST.has(id)) return { ok: false, reason: 'invalid-login-number' };
+  const bridge = window.RotationSupabaseBridge;
+  if (!bridge || typeof bridge.loadGameAccountUiSettings !== 'function' || typeof bridge.saveGameAccountUiSettings !== 'function') {
+    return { ok: false, reason: 'missing-bridge' };
+  }
+  try {
+    const existing = await bridge.loadGameAccountUiSettings(id);
+    if (existing) return { ok: true, created: false };
+    const result = await bridge.saveGameAccountUiSettings({
+      account_number: id,
+      theme_id: 'default',
+      background_id: 'ios-mesh',
+      reason: 'admin-worker-created'
+    });
+    return { ok: !!(result && result.ok !== false), created: !!(result && result.ok !== false) };
+  } catch (err) {
+    console.warn('ensureGameAccountExistsForLoginNumber failed', err);
+    return { ok: false, error: err };
+  }
+}
+window.ensureGameAccountExistsForLoginNumber = ensureGameAccountExistsForLoginNumber;
+
+async function ensureGameAccountsExistForWorkers(workers) {
+  const list = Array.isArray(workers) ? workers.filter((w) => w && String(w.loginNumber || '').trim()) : [];
+  if (!list.length) return [];
+  const results = await Promise.all(list.map((w) => ensureGameAccountExistsForLoginNumber(w.loginNumber)));
+  return results;
+}
+window.ensureGameAccountsExistForWorkers = ensureGameAccountsExistForWorkers;
+
 function gamesApplyActiveAccountUI(account) {
   const cardEl = document.getElementById('gamesAccountCard');
   const topEl = document.getElementById('gamesAccountTop') || (cardEl ? cardEl.querySelector('.gamesAccountTop') : null);

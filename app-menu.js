@@ -4864,9 +4864,17 @@ function bindAppMenuHandlers(body) {
           try { if (typeof renderStatsPanel === 'function') renderStatsPanel(); } catch (err) {}
           renderAdminMenuBody(body, 'workers');
           const statusEl = document.getElementById('adminOnlineSaveStatus');
+          let newProfilesText = '';
+          if (!result.queued && typeof ensureGameAccountsExistForWorkers === 'function') {
+            try {
+              const ensured = await ensureGameAccountsExistForWorkers(workerSettings.workers);
+              const createdCount = ensured.filter((r) => r && r.created).length;
+              if (createdCount) newProfilesText = ' · nových herních profilů: ' + createdCount;
+            } catch (err) { console.warn('ensureGameAccountsExistForWorkers failed', err); }
+          }
           if (statusEl) statusEl.textContent = (result && result.queued)
             ? 'Pracovníci uložení lokálně ✓ · po připojení se synchronizují'
-            : 'Pracovníci uložení online ✓';
+            : ('Pracovníci uložení online ✓' + newProfilesText);
         }
         return;
       }

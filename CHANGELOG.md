@@ -1,3 +1,8 @@
+## RaK 1.2 (1.305)
+
+- Když admin v Pracovnících uloží nového pracovníka s přihlašovacím číslem, jeho herní profil (výchozí téma/pozadí) se rovnou vytvoří na Supabase – nemusí se nejdřív sám přihlásit a odehrát hru, aby se objevil online. Existující profily se nepřepisují (kontroluje se, jestli číslo už má záznam, než se něco pošle). Stav uložení ukáže počet nově vytvořených profilů.
+- Release metadata sjednocena na `RaK 1.2 (1.305)`, technicka verze `1.2.305`, cache `v1.2-1.305`; loader modulu ma cache znacku `1.2.305`.
+
 ## RaK 1.2 (1.304)
 
 - Oprava: přihlašovací chyba her/profilu se kvůli chybné znakové sadě zobrazovala jako "PĹ™ihlĂˇĹˇenĂ­ se nepovedlo" místo "Přihlášení se nepovedlo".
