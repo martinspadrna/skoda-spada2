@@ -928,6 +928,13 @@
 .adminSpecialDaysDateCol{width:104px;}
 .adminSpecialDaysTypeCol{width:110px;}
 .adminSpecialDaysNameCol{width:149px;}
+.adminWorkerRosterTable{min-width:520px !important;}
+.adminWorkerNameCol{width:120px;}
+.adminWorkerLoginCol{width:90px;}
+.adminWorkerMachinesCol{width:310px;}
+.adminWorkerMachineChecks{display:flex;flex-wrap:wrap;gap:4px 10px;}
+.adminWorkerMachineCheck{display:inline-flex;align-items:center;gap:4px;font-size:12px;white-space:nowrap;}
+.adminWorkerMachineCheck input{width:16px;height:16px;flex:0 0 auto;}
 .adminAppContactTable{min-width:320px !important;}
 .adminAppContactLabelCol{width:160px;}
 .adminAppContactValueCol{width:160px;}

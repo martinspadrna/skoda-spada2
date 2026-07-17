@@ -1,7 +1,7 @@
-// RaK 1.2 (1.303) – core stav, verze a sdílené helpery aplikace.
+// RaK 1.2 (1.304) – core stav, verze a sdílené helpery aplikace.
 
 const APP_KEY = "rotace_kalkulacky_state_v123";
-const APP_VERSION = "1.2 (1.303)";
+const APP_VERSION = "1.2 (1.304)";
 window.APP_VERSION = APP_VERSION;
 const ROTATION_BUILD = "2026-06-03-" + APP_VERSION;
 window.ROTATION_BUILD = ROTATION_BUILD;
@@ -620,12 +620,38 @@ function isRakWorkerRosterSettingsRow(row) {
     || String(settings && settings.admin_settings_key || '').trim() === RAK_WORKER_ROSTER_SETTINGS_KEY;
 }
 
+const RAK_WORKER_MACHINE_GROUPS = ['MSK', 'MFK', 'TNK', 'TBK', 'TPKW01', 'TPKW02'];
+window.RAK_WORKER_MACHINE_GROUPS = RAK_WORKER_MACHINE_GROUPS;
+
+function normalizeRakWorkerLoginNumber(value) {
+  return String(value || '').trim().replace(/\D/g, '').slice(0, 4);
+}
+
+function normalizeRakWorkerEntry(entry) {
+  if (entry && typeof entry === 'string') {
+    const name = entry.trim();
+    return name ? { name, loginNumber: '', machines: [] } : null;
+  }
+  if (!entry || typeof entry !== 'object') return null;
+  const name = String(entry.name || '').trim();
+  if (!name) return null;
+  const loginNumber = normalizeRakWorkerLoginNumber(entry.loginNumber || entry.login_number || '');
+  const machinesRaw = Array.isArray(entry.machines) ? entry.machines.map((m) => String(m || '').trim().toUpperCase()) : [];
+  const machines = RAK_WORKER_MACHINE_GROUPS.filter((group) => machinesRaw.includes(group));
+  return { name, loginNumber, machines };
+}
+
 function normalizeRakWorkerRosterSettings(settings) {
   const raw = settings && typeof settings === 'object' ? settings : {};
   const source = Array.isArray(raw.workers) ? raw.workers : (Array.isArray(raw.names) ? raw.names : []);
-  const workers = typeof adminRotationSplitGeneratorList === 'function'
-    ? adminRotationSplitGeneratorList(source)
-    : source.map((name) => String(name || '').trim()).filter(Boolean);
+  const seen = new Set();
+  const workers = source
+    .map(normalizeRakWorkerEntry)
+    .filter((entry) => {
+      if (!entry || seen.has(entry.name)) return false;
+      seen.add(entry.name);
+      return true;
+    });
   return {
     type: RAK_WORKER_ROSTER_SETTINGS_CATEGORY,
     custom: true,
@@ -640,16 +666,45 @@ function getRakWorkerRosterSettingsRow() {
 
 function getRakWorkerRosterSettings() {
   const row = getRakWorkerRosterSettingsRow();
-  if (!row) return { type: RAK_WORKER_ROSTER_SETTINGS_CATEGORY, custom: false, workers: Array.from(KNOWN_STAT_NAMES) };
+  if (!row) return { type: RAK_WORKER_ROSTER_SETTINGS_CATEGORY, custom: false, workers: Array.from(KNOWN_STAT_NAMES).map((name) => ({ name, loginNumber: '', machines: [] })) };
   return normalizeRakWorkerRosterSettings(rakWorkerRosterSettingsJson(row));
 }
+window.getRakWorkerRosterSettings = getRakWorkerRosterSettings;
 
 function getActiveWorkerNames() {
   const settings = getRakWorkerRosterSettings();
-  const names = Array.isArray(settings.workers) ? settings.workers : [];
+  const names = Array.isArray(settings.workers) ? settings.workers.map((w) => w.name) : [];
   return new Set(names.length ? names : Array.from(KNOWN_STAT_NAMES));
 }
 window.getActiveWorkerNames = getActiveWorkerNames;
+
+function getWorkerRosterEntry(name) {
+  const wanted = String(name || '').trim();
+  if (!wanted) return null;
+  const settings = getRakWorkerRosterSettings();
+  return (settings.workers || []).find((w) => w.name === wanted) || null;
+}
+
+function getWorkerMachineSkills(name) {
+  const entry = getWorkerRosterEntry(name);
+  return entry && Array.isArray(entry.machines) ? entry.machines : [];
+}
+window.getWorkerMachineSkills = getWorkerMachineSkills;
+
+function getWorkerLoginNumber(name) {
+  const entry = getWorkerRosterEntry(name);
+  return entry ? String(entry.loginNumber || '') : '';
+}
+window.getWorkerLoginNumber = getWorkerLoginNumber;
+
+function getWorkerNameByLoginNumber(loginNumber) {
+  const wanted = normalizeRakWorkerLoginNumber(loginNumber);
+  if (!wanted) return '';
+  const settings = getRakWorkerRosterSettings();
+  const entry = (settings.workers || []).find((w) => w.loginNumber === wanted);
+  return entry ? entry.name : '';
+}
+window.getWorkerNameByLoginNumber = getWorkerNameByLoginNumber;
 
 function makeRakWorkerRosterSettingsRow(settings) {
   const safe = normalizeRakWorkerRosterSettings(settings);
@@ -704,24 +759,50 @@ function buildAdminWorkerRosterStatusHtml(workers) {
   ].join('');
 }
 
+function buildAdminWorkerRosterRowHtml(entry) {
+  const safe = entry && typeof entry === 'object' ? entry : {};
+  const name = String(safe.name || '');
+  const loginNumber = String(safe.loginNumber || '');
+  const machines = Array.isArray(safe.machines) ? safe.machines : [];
+  const checks = RAK_WORKER_MACHINE_GROUPS.map((group) => (
+    '<label class="adminWorkerMachineCheck"><input type="checkbox" data-worker-machine="' + escapeHtml(group) + '"' + (machines.includes(group) ? ' checked' : '') + '>' + escapeHtml(group) + '</label>'
+  )).join('');
+  return [
+    '<tr data-worker-row>',
+    '  <td><input class="appMenuInlineInput adminWorkerNameInput" data-worker-field="name" value="' + escapeHtml(name) + '" placeholder="Jméno"></td>',
+    '  <td><input class="appMenuInlineInput adminWorkerLoginInput" data-worker-field="loginNumber" value="' + escapeHtml(loginNumber) + '" placeholder="0000" inputmode="numeric" maxlength="4"></td>',
+    '  <td><div class="adminWorkerMachineChecks">' + checks + '</div></td>',
+    '</tr>'
+  ].join('');
+}
+
 function buildAdminWorkerRosterSettingsHtml() {
   const settings = getRakWorkerRosterSettings();
   const workers = Array.isArray(settings.workers) ? settings.workers : [];
+  const rows = workers.map(buildAdminWorkerRosterRowHtml).join('')
+    + Array.from({ length: 3 }, () => buildAdminWorkerRosterRowHtml({ name: '', loginNumber: '', machines: [] })).join('');
   return [
-    buildAdminWorkerRosterStatusHtml(workers),
-    '<div class="appMenuSettingsList">',
-    '  <label class="appMenuFieldLabel" for="adminWorkerRosterNames">Aktivní pracovníci (jedno jméno na řádek)</label>',
-    '  <textarea id="adminWorkerRosterNames" class="appMenuTextarea" rows="12">' + escapeHtml(workers.join('\n')) + '</textarea>',
-    '  <div class="smallText">Pro přidání napiš nové jméno na nový řádek. Pro odebrání jméno smaž a ulož. Jméno musí přesně odpovídat tomu, jak je napsané v rozpisu.</div>',
-    '</div>'
+    buildAdminWorkerRosterStatusHtml(workers.map((w) => w.name)),
+    '<div class="tableWrap appMenuTableWrap">',
+    '  <table class="appMenuTable appMenuAdminTable appMenuAdminTableDense adminWorkerRosterTable">',
+    '    <colgroup><col class="adminWorkerNameCol"><col class="adminWorkerLoginCol"><col class="adminWorkerMachinesCol"></colgroup>',
+    '    <thead><tr><th>Jméno</th><th>Přihlaš. číslo</th><th>Umí stroje</th></tr></thead>',
+    '    <tbody>' + rows + '</tbody>',
+    '  </table>',
+    '</div>',
+    '<div class="smallText uMt8">Pro přidání napiš jméno do prázdného řádku. Pro odebrání jméno smaž a ulož. Jméno musí přesně odpovídat tomu, jak je napsané v rozpisu. Přihlašovací číslo (poslední 4 číslice osobního čísla) použije pracovník k přihlášení do her/profilu. Když u pracovníka nezaškrtneš žádný stroj, generátor ho bude nabízet na všechny stroje bez omezení.</div>'
   ].join('');
 }
 
 function readAdminWorkerRosterSettingsFromDom() {
-  const raw = String(document.getElementById('adminWorkerRosterNames')?.value || '');
-  const workers = typeof adminRotationSplitGeneratorList === 'function'
-    ? adminRotationSplitGeneratorList(raw)
-    : raw.split(/\n/).map((name) => name.trim()).filter(Boolean);
+  const workers = [];
+  document.querySelectorAll('#appMenuBody tr[data-worker-row]').forEach((tr) => {
+    const name = String(tr.querySelector('[data-worker-field="name"]')?.value || '').trim();
+    if (!name) return;
+    const loginNumber = String(tr.querySelector('[data-worker-field="loginNumber"]')?.value || '');
+    const machines = Array.from(tr.querySelectorAll('[data-worker-machine]:checked')).map((cb) => cb.getAttribute('data-worker-machine'));
+    workers.push({ name, loginNumber, machines });
+  });
   return normalizeRakWorkerRosterSettings({ workers });
 }
 

@@ -1,3 +1,11 @@
+## RaK 1.2 (1.304)
+
+- Oprava: přihlašovací chyba her/profilu se kvůli chybné znakové sadě zobrazovala jako "PĹ™ihlĂˇĹˇenĂ­ se nepovedlo" místo "Přihlášení se nepovedlo".
+- Administrace → Pracovníci: místo prostého seznamu jmen je teď tabulka s přihlašovacím číslem (poslední 4 číslice os. č.) a zaškrtávacím seznamem strojů, které daný pracovník umí (MSK, MFK, TNK, TBK, TPKW01, TPKW02). Nový pracovník jde přidat i s číslem rovnou v jednom kroku.
+- Přihlašovací číslo nastavené v Pracovnících teď funguje i pro přihlášení do her/profilu – nový pracovník, kterému admin číslo přidělí, se jím může rovnou přihlásit a uvidí své jméno (dřív hlásilo "Uživatel nenalezen", pokud číslo nikdo předtím nepoužil).
+- Generátor rozpisu teď respektuje, které stroje pracovník umí – nabízí ho jen na zaškrtnuté skupiny strojů. Pracovník bez zaškrtnutého stroje zůstává bez omezení (zpětná kompatibilita se stávajícími rozpisy). Ověřeno end-to-end vygenerováním měsíce s omezenými dovednostmi, 0 porušení napříč 150 obsazenými buňkami.
+- Release metadata sjednocena na `RaK 1.2 (1.304)`, technicka verze `1.2.304`, cache `v1.2-1.304`; loader modulu ma cache znacku `1.2.304`.
+
 ## RaK 1.2 (1.303)
 
 - Upozornění v kalendáři (Pondělí spálení / Roznýtování): přesunuto z osobního Nastavení do Administrace → Nastavení strojů – teď je to globální přepínač uložený přes Supabase, platí pro všechny uživatele stejně, ne jen pro jedno zařízení.

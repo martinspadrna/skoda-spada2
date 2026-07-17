@@ -571,7 +571,10 @@ function gamesAccountById(accountId) {
   const id = String(accountId || '').trim();
   if (!id || GAMES_ACCOUNT_BLOCKLIST.has(id)) return null;
   const profile = gamesGetProfile();
-  return (profile.accounts && profile.accounts[id]) || GAMES_ACCOUNT_LIST.find(acc => acc.id === id) || null;
+  if (profile.accounts && profile.accounts[id]) return profile.accounts[id];
+  const rosterName = typeof getWorkerNameByLoginNumber === 'function' ? getWorkerNameByLoginNumber(id) : '';
+  if (rosterName) return { id, name: rosterName };
+  return GAMES_ACCOUNT_LIST.find(acc => acc.id === id) || null;
 }
 
 function gamesApplyActiveAccountUI(account) {
@@ -799,14 +802,14 @@ function gamesRenderAccountChips() {
       }
       try {
         if (!gamesSetActiveAccount(found.id)) {
-          setLoginFeedback('PĹ™ihlĂˇĹˇenĂ­ se nepovedlo');
+          setLoginFeedback('Přihlášení se nepovedlo');
           inputEl.focus();
           inputEl.select();
           return;
         }
       } catch (err) {
         console.warn('games account save failed', err);
-        setLoginFeedback('PĹ™ihlĂˇĹˇenĂ­ se nepovedlo');
+        setLoginFeedback('Přihlášení se nepovedlo');
         inputEl.focus();
         inputEl.select();
         return;

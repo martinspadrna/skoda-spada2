@@ -2826,6 +2826,25 @@ function adminRotationGeneratorBaseLathePerson(machineName, knownNames, availabl
   return person && knownNames.includes(person) && available.includes(person) && !usedNames.has(person) ? person : '';
 }
 
+function adminRotationGeneratorMachineGroupForName(machineName) {
+  const m = String(machineName || '').trim().toUpperCase();
+  if (/^TPKW01/.test(m)) return 'TPKW01';
+  if (/^TPKW02/.test(m)) return 'TPKW02';
+  if (/^MSK/.test(m)) return 'MSK';
+  if (/^MFK/.test(m)) return 'MFK';
+  if (/^TNK/.test(m)) return 'TNK';
+  if (/^TBK/.test(m)) return 'TBK';
+  return '';
+}
+
+function adminRotationGeneratorPersonKnowsMachine(name, machineName) {
+  const skills = typeof getWorkerMachineSkills === 'function' ? getWorkerMachineSkills(name) : [];
+  if (!Array.isArray(skills) || !skills.length) return true;
+  const group = adminRotationGeneratorMachineGroupForName(machineName);
+  if (!group) return true;
+  return skills.includes(group);
+}
+
 function adminRotationGeneratorBuildDay(month, model, counters, rowIdx, dateLabel, blockedNames, monthKey) {
   const knownNames = model.knownNames;
   const generatorRules = getAdminRotationGeneratorRules();
@@ -2845,6 +2864,7 @@ function adminRotationGeneratorBuildDay(month, model, counters, rowIdx, dateLabe
     const machineName = HARD_MACHINE_HEADERS[machineIdx] || '';
     if (machineIdx < 0 || !machineName || !name || usedNames.has(name) || !available.includes(name) || hardCells[machineIdx]) return false;
     if (!adminRotationGeneratorCanUseHardMachine(month, rowIdx, machineName, name, knownNames, monthKey)) return false;
+    if (!adminRotationGeneratorPersonKnowsMachine(name, machineName)) return false;
     hardCells[machineIdx] = name;
     usedNames.add(name);
     adminRotationGeneratorMarkAssignment(counters, 'hard', machineName, name);
@@ -2856,6 +2876,7 @@ function adminRotationGeneratorBuildDay(month, model, counters, rowIdx, dateLabe
   const assignSoftCell = (machineIdx, name, reason) => {
     const machineName = SOFT_MACHINE_HEADERS[machineIdx] || '';
     if (machineIdx < 0 || !machineName || !name || usedNames.has(name) || !available.includes(name) || softCells[machineIdx]) return false;
+    if (!adminRotationGeneratorPersonKnowsMachine(name, machineName)) return false;
     const kind = adminRotationGeneratorSoftKind(machineName);
     softCells[machineIdx] = name;
     usedNames.add(name);
@@ -3279,7 +3300,8 @@ function adminRotationGeneratorBalanceHardMachine(month, machineName, model, mon
   const softCoreNoTnksBalance = generatorRules.softCoreNoTnksBalance || [];
   const workingNames = adminRotationGeneratorCollectWorkingNames(month, knownNames)
     .filter((name) => knownNames.includes(name))
-    .filter((name) => !(isPressBalance && softCoreNoTnksBalance.includes(name)));
+    .filter((name) => !(isPressBalance && softCoreNoTnksBalance.includes(name)))
+    .filter((name) => adminRotationGeneratorPersonKnowsMachine(name, machineName));
   const machineIdx = adminRotationGeneratorMachineIndex(HARD_MACHINE_HEADERS, machineName);
   const tnksIdx = adminRotationGeneratorMachineIndex(HARD_MACHINE_HEADERS, 'TNKS01');
   const tpkw01Idx = adminRotationGeneratorMachineIndex(HARD_MACHINE_HEADERS, 'TPKW01');
