@@ -1,7 +1,7 @@
-// RaK 1.2 (1.302) – core stav, verze a sdílené helpery aplikace.
+// RaK 1.2 (1.303) – core stav, verze a sdílené helpery aplikace.
 
 const APP_KEY = "rotace_kalkulacky_state_v123";
-const APP_VERSION = "1.2 (1.302)";
+const APP_VERSION = "1.2 (1.303)";
 window.APP_VERSION = APP_VERSION;
 const ROTATION_BUILD = "2026-06-03-" + APP_VERSION;
 window.ROTATION_BUILD = ROTATION_BUILD;
@@ -366,6 +366,64 @@ function mergeRakSpecialDaysSettingsRows(settings) {
   rows.push(makeRakSpecialDaysSettingsRow(settings));
   return rows;
 }
+
+const RAK_CALENDAR_NOTES_SETTINGS_KEY = 'CALENDAR_NOTES_SETTINGS';
+const RAK_CALENDAR_NOTES_SETTINGS_CATEGORY = 'calendar_notes_settings';
+const RAK_CALENDAR_NOTE_DEFS = [
+  { id: 'mondayBurn', label: 'Pondělí – Brusy: spálení' },
+  { id: 'firstMorningRivet', label: 'První ranní v měsíci – Roznýtování laborka' }
+];
+window.RAK_CALENDAR_NOTES_SETTINGS_KEY = RAK_CALENDAR_NOTES_SETTINGS_KEY;
+window.RAK_CALENDAR_NOTES_SETTINGS_CATEGORY = RAK_CALENDAR_NOTES_SETTINGS_CATEGORY;
+window.RAK_CALENDAR_NOTE_DEFS = RAK_CALENDAR_NOTE_DEFS;
+
+function rakCalendarNotesSettingsJson(row) {
+  if (row && row.settings_json && typeof row.settings_json === 'object') return row.settings_json;
+  try { return row && row.settings_json ? JSON.parse(String(row.settings_json)) : {}; }
+  catch (err) { return {}; }
+}
+
+function isRakCalendarNotesSettingsRow(row) {
+  return String(row && row.category || '').trim() === RAK_CALENDAR_NOTES_SETTINGS_CATEGORY
+    || String(row && row.machine_key || '').trim() === RAK_CALENDAR_NOTES_SETTINGS_KEY;
+}
+
+function normalizeRakCalendarNotesSettings(settings) {
+  const raw = settings && typeof settings === 'object' ? settings : {};
+  const prefs = {};
+  RAK_CALENDAR_NOTE_DEFS.forEach((def) => { prefs[def.id] = raw[def.id] !== false; });
+  return prefs;
+}
+
+function getRakCalendarNotesSettings() {
+  const rows = (typeof app !== 'undefined' && app && Array.isArray(app.machineSettingsRows)) ? app.machineSettingsRows : [];
+  const row = rows.find(isRakCalendarNotesSettingsRow);
+  return normalizeRakCalendarNotesSettings(row ? rakCalendarNotesSettingsJson(row) : null);
+}
+
+function makeRakCalendarNotesSettingsRow(settings) {
+  const safe = normalizeRakCalendarNotesSettings(settings);
+  return {
+    machine_key: RAK_CALENDAR_NOTES_SETTINGS_KEY,
+    machine_code: 'APP',
+    machine_index: 'calendar-notes',
+    label: 'Upozornění v kalendáři',
+    category: RAK_CALENDAR_NOTES_SETTINGS_CATEGORY,
+    cycle_time: '',
+    speed: '',
+    dress_time: '',
+    dress_count: '',
+    settings_json: Object.assign({ machine: 'APP', index: 'calendar-notes' }, safe)
+  };
+}
+
+function mergeRakCalendarNotesSettingsRows(settings) {
+  const base = Array.isArray(app && app.machineSettingsRows) ? app.machineSettingsRows : [];
+  const rows = base.filter((row) => !isRakCalendarNotesSettingsRow(row));
+  rows.push(makeRakCalendarNotesSettingsRow(settings));
+  return rows;
+}
+window.getRakCalendarNotesSettings = getRakCalendarNotesSettings;
 
 function rakSpecialDaysTodayIso() {
   return dateKeyISO(new Date());

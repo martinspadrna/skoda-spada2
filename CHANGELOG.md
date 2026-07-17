@@ -1,3 +1,13 @@
+## RaK 1.2 (1.303)
+
+- Upozornění v kalendáři (Pondělí spálení / Roznýtování): přesunuto z osobního Nastavení do Administrace → Nastavení strojů – teď je to globální přepínač uložený přes Supabase, platí pro všechny uživatele stejně, ne jen pro jedno zařízení.
+- Dashboard: text "kdo chybí" ve vrchním panelu zvětšen o cca 30 % (živě ověřeno bez oříznutí i s delším seznamem jmen).
+- Ověřeno: Historie změn v Administraci → Rozpisy se reálně zapisuje při uložení rozpisu a zobrazuje se správně (end-to-end test).
+- Ověřeno: úprava Kontaktu aplikace a správa účtů dalších adminů je funkčně omezená jen na hlavního (owner) admina – nižší admin je zablokovaný i na úrovni funkce, ne jen v UI.
+- Další zúžení sloupců (živě ověřeno bez oříznutí obsahu a bez překryvu): Zálohy rozpisů Záloha/Akce o dalších 50 % (67→34px, 70→35px), Výplata Měsíc/Datum o 25 % a Poznámka o 60 % (85→64px, 75→56px, 160→64px), Zálohy nastavení Záloha/Akce o 50 % (41→21px, 34→17px).
+- Láďův režim (výkon pro slabší telefony): opravena skulinka ve specificitě CSS pravidla, kvůli které mohly vícetřídní selektory dál spouštět animace/přechody i při zapnutém Láďově/lightweight/reduceMotion režimu. Nové finální pravidlo garantovaně vypne `animation` i `transition` na všech prvcích bez ohledu na specificitu původního pravidla (živě ověřeno).
+- Release metadata sjednocena na `RaK 1.2 (1.303)`, technicka verze `1.2.303`, cache `v1.2-1.303`; loader modulu ma cache znacku `1.2.303`.
+
 ## RaK 1.2 (1.302)
 
 - Oprava: generátor rozpisu na nový měsíc hlásil "Návrh se nepodařilo vygenerovat: generatorRules is not defined" – funkce `adminRotationGeneratorCreateCounters` v admin-rotation.js používala `generatorRules.hardCycle`, aniž by si (na rozdíl od všech ostatních generátorových funkcí) proměnnou lokálně načetla. Doplněno, generátor teď reálně naplní rozpis (ověřeno end-to-end).

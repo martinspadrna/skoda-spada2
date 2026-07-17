@@ -222,3 +222,19 @@ tr.rakDayModAbsenceRow > td {
 .rakOtTable th, .rakOtTable td { text-align: left; padding: 6px 8px; border-bottom: 1px solid rgba(120,160,220,0.18); }
 .rakOtTable th { color: #aebfda; font-weight: 600; }
 .rakOtTable tr.rakOtOff td { background: rgba(255, 214, 64, 0.16); color: #ffe6a3; }
+
+/* 1.2 (1.303) - Laduv rezim: predchozi plosne animation:none melo nejnizsi moznou specificitu
+   (body.reduceMotion *), takze ho prebily i bezne dvoutridni selektory nize v kaskade a nektere
+   animace/prechody bezely dal i pri zapnutem slabsim rezimu. Tohle finalni pravidlo ma vyssi
+   specificitu i pozdejsi poradi, takze vyhraje vzdy. */
+body.reduceMotion.reduceMotion.reduceMotion *,
+body.reduceMotion.reduceMotion.reduceMotion *::before,
+body.reduceMotion.reduceMotion.reduceMotion *::after,
+body.ladaMode.ladaMode.ladaMode *,
+body.ladaMode.ladaMode.ladaMode *::before,
+body.ladaMode.ladaMode.ladaMode *::after{
+  animation:none !important;
+  animation-duration:0s !important;
+  transition:none !important;
+  transition-duration:0s !important;
+}

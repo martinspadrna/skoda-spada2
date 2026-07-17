@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// RaK 1.2 (1.302) – smoke test přehledu připojení + Dashboard/appearance contract guard.
+// RaK 1.2 (1.303) – smoke test přehledu připojení + Dashboard/appearance contract guard.
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
@@ -226,12 +226,12 @@ const dashboardReleaseIsolationGuardV198 = Object.freeze({
 });
 
 const releaseMetadataContractV199 = Object.freeze({
-  displayVersion: '1.2 (1.302)',
-  appLabel: 'RaK 1.2 (1.302)',
-  packageVersion: '1.2.302',
-  cacheVersion: 'v1.2-1.302',
+  displayVersion: '1.2 (1.303)',
+  appLabel: 'RaK 1.2 (1.303)',
+  packageVersion: '1.2.303',
+  cacheVersion: 'v1.2-1.303',
   realtimeChannel: 'rak-public-live-v1-2-1-126',
-  changelogHeader: '## RaK 1.2 (1.302)',
+  changelogHeader: '## RaK 1.2 (1.303)',
   previousBuildFragments: Object.freeze(['1.2 (1.138)', '1.2.138', 'v1.2-1.138', '1.2 (1.137)', '1.2.137', 'v1.2-1.137', '1.2 (1.118)', '1.2.118', 'v1.2-1.118', 'rak-public-live-v1-2-1-118'])
 });
 
@@ -340,8 +340,8 @@ function assertDashboardReleaseIsolationGuardV198() {
 function assertReleaseMetadataContractV199() {
   const contract = releaseMetadataContractV199;
   assertIncludes(exportJs, 'RAK_RELEASE_METADATA_CONTRACT_V199', 'export.js musí obsahovat release metadata contract v1.99');
-  assertIncludes(exportJs, "displayVersion: '1.2 (1.302)'", 'Release contract v export.js musí držet display verzi 1.105');
-  assertIncludes(exportJs, "packageVersion: '1.2.302'", 'Release contract v export.js musí držet package verzi 1.2.114');
+  assertIncludes(exportJs, "displayVersion: '1.2 (1.303)'", 'Release contract v export.js musí držet display verzi 1.105');
+  assertIncludes(exportJs, "packageVersion: '1.2.303'", 'Release contract v export.js musí držet package verzi 1.2.114');
   assert(packageJson.version === contract.packageVersion, `package.json version drift: čekám ${contract.packageVersion}, mám ${packageJson.version}`);
   assertIncludes(coreJs, `const APP_VERSION = "${contract.displayVersion}";`, 'core.js APP_VERSION není sjednocený s 1.105');
   assertIncludes(serviceWorkerJs, `const CACHE_VERSION = '${contract.cacheVersion}';`, 'sw.js CACHE_VERSION není sjednocený s 1.105');
@@ -1435,7 +1435,8 @@ function assertAdminAccountLoginContractV1141() {
   assertIncludes(ui, 'preRestoreBackup', 'Obnova nastaveni musi vracet bod navratu pred obnovou');
   assertNotIncludes(ui, 'function buildAdminFullSettingsBackupSafetyHtml', 'Bezpecnost obnovy zaloh nastaveni byla na zadost odstranena z admin obrazovky');
   assertIncludes(ui, '<details class="appMenuFoldSection adminRotationBackupStatus adminFullSettingsBackupStatus">', 'Stav zaloh nastaveni musi byt sbalitelny (details/summary), ne pevny box');
-  assertIncludes(stylesAdminPolishCss, '.adminFullSettingsBackupLabelCol{width:41px;}', 'Sloupec Zaloha nastaveni musi byt o 60% uzsi nez soucasnych 373px');
+  assertIncludes(stylesAdminPolishCss, '.adminFullSettingsBackupLabelCol{width:21px;}', 'Sloupec Zaloha nastaveni musi byt o dalsich 50% uzsi nez predchozich 41px');
+  assertIncludes(stylesAdminPolishCss, '.adminFullSettingsBackupActionCol{width:17px;}', 'Sloupec Akce zaloh nastaveni musi byt o dalsich 50% uzsi nez predchozich 34px');
   assertIncludes(ui, 'function makeDeletedMachineSettingsRow', 'Rollback nastaveni musi umet skryt radky, ktere v zaloze nebyly');
   assertIncludes(ui, 'deletedCount: deletedRows.length', 'Obnova nastaveni musi vracet pocet skrytych radku mimo zalohu');
   assertIncludes(ui, "adminAction === 'create-full-settings-backup'", 'Hlavni admin musi umet vytvorit uplnou zalohu nastaveni');
@@ -1557,8 +1558,8 @@ function assertAdminHandoverGuideContractV1142() {
   assertIncludes(ui, 'adminRotationBackupMonthGroup', 'Zalohy rozpisu musi byt sbalitelne po mesicich');
   assertIncludes(ui, 'class="adminRotationBackupsLabelCol"', 'Sloupec Zaloha u zaloh rozpisu musi mit vlastni uzsi sirku');
   assertIncludes(ui, 'class="adminRotationBackupsActionCol"', 'Sloupec Akce u zaloh rozpisu musi mit vlastni uzsi sirku');
-  assertIncludes(stylesAdminPolishCss, '.adminRotationBackupsLabelCol{width:67px;}', 'Sloupec Zaloha musi byt o dalsich 70% uzsi nez predchozich 224px');
-  assertIncludes(stylesAdminPolishCss, '.adminRotationBackupsActionCol{width:70px;}', 'Sloupec Akce musi byt o dalsich 50% uzsi nez predchozich 140px');
+  assertIncludes(stylesAdminPolishCss, '.adminRotationBackupsLabelCol{width:34px;}', 'Sloupec Zaloha musi byt o dalsich 50% uzsi nez predchozich 67px');
+  assertIncludes(stylesAdminPolishCss, '.adminRotationBackupsActionCol{width:35px;}', 'Sloupec Akce musi byt o dalsich 50% uzsi nez predchozich 70px');
   assertIncludes(ui, 'function buildAdminManualHtml', 'Admin musi mit samostatnou prirucku spravce');
   assertIncludes(ui, 'function adminManualSectionHtml', 'Prirucka spravce musi mit rozbalovaci postupy');
   assertIncludes(ui, 'function buildAdminSettingsMapHtml', 'Admin musi mit mapu kde co upravit');
@@ -1839,9 +1840,9 @@ function assertAdminPayrollSettingsContractV1146() {
   assertIncludes(payrollJs, 'class="adminPayrollMonthCol"', 'Sloupec Mesic u rucnich vyjimek vyplaty musi mit vlastni uzsi sirku');
   assertIncludes(payrollJs, 'class="adminPayrollDateCol"', 'Sloupec Datum vyplaty u rucnich vyjimek musi mit vlastni uzsi sirku');
   assertIncludes(payrollJs, 'class="adminPayrollNoteCol"', 'Sloupec Poznamka u rucnich vyjimek musi mit vlastni uzsi sirku');
-  assertIncludes(stylesAdminPolishCss, '.adminPayrollMonthCol{width:85px;}', 'Sloupec Mesic musi byt o dalsich 50% uzsi nez predchozich 170px');
-  assertIncludes(stylesAdminPolishCss, '.adminPayrollDateCol{width:75px;}', 'Sloupec Datum vyplaty musi byt o dalsich 50% uzsi nez predchozich 150px');
-  assertIncludes(stylesAdminPolishCss, '.adminPayrollNoteCol{width:160px;}', 'Sloupec Poznamka musi byt o dalsich 50% uzsi nez predchozich 320px');
+  assertIncludes(stylesAdminPolishCss, '.adminPayrollMonthCol{width:64px;}', 'Sloupec Mesic musi byt o dalsich 25% uzsi nez predchozich 85px');
+  assertIncludes(stylesAdminPolishCss, '.adminPayrollDateCol{width:56px;}', 'Sloupec Datum vyplaty musi byt o dalsich 25% uzsi nez predchozich 75px');
+  assertIncludes(stylesAdminPolishCss, '.adminPayrollNoteCol{width:64px;}', 'Sloupec Poznamka musi byt o dalsich 60% uzsi nez predchozich 160px');
   assertNotIncludes(stylesAdminPolishCss, '.adminPayrollOverridesTable{', 'Tabulka rucnich vyjimek nesmi mit vlastni width:auto override - to zpusobovalo prekryv nativnich date/month poli');
   assertIncludes(ui, "action: 'open-payroll-settings', label: 'Výplata'", 'Admin menu musi obsahovat sekci Vyplata');
   assertIncludes(ui, "adminAction === 'open-payroll-settings'", 'Admin menu musi umet otevrit nastaveni vyplaty');

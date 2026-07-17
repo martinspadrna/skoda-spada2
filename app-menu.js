@@ -3117,6 +3117,10 @@ function renderAdminMenuBody(body, section) {
     '</div>'
   ].join('');
 
+  const calendarNotePrefs = typeof getRakCalendarNotesSettings === 'function' ? getRakCalendarNotesSettings() : {};
+  const calendarNoteButtons = (typeof RAK_CALENDAR_NOTE_DEFS !== 'undefined' ? RAK_CALENDAR_NOTE_DEFS : [])
+    .map(def => '<button type="button" class="appMenuAction appMenuSettingBtn" data-admin-action="toggle-calendar-note" data-calendar-note-id="' + escapeHtml(def.id) + '">' + (calendarNotePrefs[def.id] ? '✓ ' : '') + escapeHtml(def.label) + '</button>')
+    .join('');
   const machinesHtml = [
     '<div class="appMenuCard appMenuAdminCard adminMachinesCard">',
     '  <div class="appMenuCardTitle">Nastavení strojů</div>',
@@ -3129,6 +3133,15 @@ function renderAdminMenuBody(body, section) {
     '    <button type="button" class="appMenuAction" data-admin-action="load-machines">Načíst online</button>',
     '    <button type="button" class="appMenuAction isActive" data-admin-action="save-machines">Uložit stroje</button>',
     '    <button type="button" class="appMenuAction" data-admin-action="back-admin">Zpět</button>',
+    '  </div>',
+    '</div>',
+    '<div class="appMenuCard appMenuAdminCard adminCalendarNotesCard">',
+    '  <div class="appMenuCardTitle">Upozornění v kalendáři</div>',
+    '  <div class="appMenuText">',
+    '    <div>Platí pro všechny - zapíná/vypíná se pro celou appku, ne jen pro tohle zařízení.</div>',
+    '  </div>',
+    '  <div class="appMenuSettingsList appMenuSettingsGrid">',
+    calendarNoteButtons,
     '  </div>',
     '</div>'
   ].join('');
@@ -3915,7 +3928,7 @@ function bindAppMenuHandlers(body) {
 
   body.addEventListener('click', async (event) => {
     const target = event.target && typeof event.target.closest === 'function'
-      ? event.target.closest('[data-menu-action], [data-admin-action], [data-admin-month-key], [data-admin-year-key], [data-admin-clear-field], [data-admin-selected-remove], [data-ui-pref], [data-ui-reset], [data-calendar-note-pref], [data-menu-back], [data-rot-field], [data-note-field]')
+      ? event.target.closest('[data-menu-action], [data-admin-action], [data-admin-month-key], [data-admin-year-key], [data-admin-clear-field], [data-admin-selected-remove], [data-ui-pref], [data-ui-reset], [data-menu-back], [data-rot-field], [data-note-field]')
       : null;
     if (!target || !body.contains(target)) return;
 
@@ -3923,7 +3936,6 @@ function bindAppMenuHandlers(body) {
     const adminAction = target.getAttribute('data-admin-action');
     const uiPref = target.getAttribute('data-ui-pref');
     const uiReset = target.hasAttribute('data-ui-reset');
-    const calendarNotePref = target.getAttribute('data-calendar-note-pref');
     const menuBack = target.getAttribute('data-menu-back');
     const currentView = String(body.dataset.adminView || '');
     const select = body.querySelector('#adminMonthSelect');
@@ -5099,6 +5111,20 @@ function bindAppMenuHandlers(body) {
           return;
         }
       }
+      if (adminAction === 'toggle-calendar-note') {
+        const noteId = target.getAttribute('data-calendar-note-id');
+        const current = typeof getRakCalendarNotesSettings === 'function' ? getRakCalendarNotesSettings() : {};
+        if (noteId && Object.prototype.hasOwnProperty.call(current, noteId) && window.RotationSupabaseBridge && typeof window.RotationSupabaseBridge.saveMachineSettings === 'function') {
+          current[noteId] = !current[noteId];
+          const rows = mergeRakCalendarNotesSettingsRows(current);
+          const result = await window.RotationSupabaseBridge.saveMachineSettings(rows);
+          if (result && result.ok === false) throw (result.error || new Error('Uložení upozornění selhalo.'));
+          app.machineSettingsRows = rows;
+          try { if (typeof updateDashboard === 'function') updateDashboard(); } catch (err) {}
+          renderAdminMenuBody(body, currentView);
+        }
+        return;
+      }
 
       if (uiPref) {
         toggleUiPref(uiPref);
@@ -5107,11 +5133,6 @@ function bindAppMenuHandlers(body) {
       }
       if (uiReset) {
         resetUiPrefs();
-        openAppMenu('settings');
-        return;
-      }
-      if (calendarNotePref) {
-        if (typeof toggleCalendarNotePref === 'function') toggleCalendarNotePref(calendarNotePref);
         openAppMenu('settings');
         return;
       }
@@ -5299,10 +5320,6 @@ function openAppMenu(view) {
       const profileCard = buildGamesProfileSettingsHtml();
       const performanceCard = typeof buildRakDevicePerformanceSettingsHtml === 'function' ? buildRakDevicePerformanceSettingsHtml() : '';
       const themeCards = buildThemeSystemSettingsHtml();
-      const calendarNotePrefs = typeof getCalendarNotePrefs === 'function' ? getCalendarNotePrefs() : {};
-      const calendarNoteButtons = (typeof RAK_CALENDAR_NOTE_DEFS !== 'undefined' ? RAK_CALENDAR_NOTE_DEFS : [])
-        .map(def => '<button type="button" class="appMenuAction appMenuSettingBtn" data-calendar-note-pref="' + escapeHtml(def.id) + '">' + (calendarNotePrefs[def.id] ? '✓ ' : '') + escapeHtml(def.label) + '</button>')
-        .join('');
       body.innerHTML = [
         profileCard,
         performanceCard,
@@ -5314,12 +5331,6 @@ function openAppMenu(view) {
         '    <button type="button" class="appMenuAction appMenuSettingBtn" data-menu-action="app-diagnostics">Diagnostika</button>',
         '    <button type="button" class="appMenuAction appMenuSettingBtn" data-ui-reset="1">Výchozí</button>',
         '    <button type="button" class="appMenuAction appMenuSettingBtn appMenuDangerBtn" data-menu-action="reset-state">Smazat data</button>',
-        '  </div>',
-        '</div>',
-        '<div class="appMenuCard appMenuSettingsCard appMenuAppSettingsCard">',
-        '  <div class="appMenuCardTitle">Upozornění v kalendáři</div>',
-        '  <div class="appMenuSettingsList appMenuSettingsGrid">',
-        calendarNoteButtons,
         '  </div>',
         '</div>',
         themeCards,

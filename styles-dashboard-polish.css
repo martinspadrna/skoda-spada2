@@ -1797,15 +1797,16 @@ html body:not(.lightweightMode):not(.lowEndDevice) .foodScheduleOverlay.isVisibl
 
 
 /* 1.2 (1.146) – Dashboard: „kdo bude chybět“ stejně velké jako řádek se směnou D. */
+/* 1.2 (1.303) – „kdo chybí“ zvětšeno o cca 30 % na žádost uživatele, ať je líp čitelné na první pohled. */
 #home.page.active #dashHero .dashboardHeroLine3Sub{
-  font-size:clamp(15px, 3.9vw, 21px) !important;
+  font-size:clamp(19px, 5.1vw, 27px) !important;
   line-height:1.03 !important;
   font-weight:950 !important;
   color:rgba(232,255,232,.90) !important;
 }
 @media (max-width:440px){
   #home.page.active #dashHero .dashboardHeroLine3Sub{
-    font-size:14.2px !important;
+    font-size:18.5px !important;
     line-height:1.03 !important;
     font-weight:950 !important;
   }

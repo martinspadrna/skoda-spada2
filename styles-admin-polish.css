@@ -917,9 +917,9 @@
 .adminSpecialDaysStatus:not([open]) > summary::after{transform:rotate(-90deg);}
 .adminVacationStatus[open] > summary,
 .adminSpecialDaysStatus[open] > summary{margin-bottom:7px;}
-.adminPayrollMonthCol{width:85px;}
-.adminPayrollDateCol{width:75px;}
-.adminPayrollNoteCol{width:160px;}
+.adminPayrollMonthCol{width:64px;}
+.adminPayrollDateCol{width:56px;}
+.adminPayrollNoteCol{width:64px;}
 .adminVacationCountdownTable{min-width:302px !important;}
 .adminVacationNameCol{width:106px;}
 .adminVacationStartCol{width:98px;}
@@ -1069,8 +1069,8 @@
 .adminRotationOvertimeDeleteCol{width:44px;}
 .adminGeneratorBaseNameCol{width:84px;}
 .adminGeneratorBaseMachineCol{width:auto;}
-.adminFullSettingsBackupLabelCol{width:41px;}
-.adminFullSettingsBackupActionCol{width:34px;}
+.adminFullSettingsBackupLabelCol{width:21px;}
+.adminFullSettingsBackupActionCol{width:17px;}
 .adminRotationOvertimeDateInput{min-width:104px;}
 .adminRotationOvertimeNoteInput{min-width:150px;}
 .adminRotationOvertimeSwitch{
@@ -1574,8 +1574,8 @@
 .adminRotationBackupMonthGroup > summary::after{content:'⌄';font-size:16px;line-height:1;opacity:.8;transform:rotate(0deg);transition:transform .18s ease;}
 .adminRotationBackupMonthGroup:not([open]) > summary::after{transform:rotate(-90deg);}
 .adminRotationBackupMonthGroup .tableWrap{margin:0 !important;border-top:1px solid rgba(255,255,255,.08) !important;border-radius:0 !important;}
-.adminRotationBackupsLabelCol{width:67px;}
-.adminRotationBackupsActionCol{width:70px;}
+.adminRotationBackupsLabelCol{width:34px;}
+.adminRotationBackupsActionCol{width:35px;}
 .adminAccountsRoleOverview{
   display:grid !important;
   grid-template-columns:repeat(3,minmax(0,1fr)) !important;

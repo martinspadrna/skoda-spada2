@@ -1480,45 +1480,11 @@ function isSameCalendarDay(a, b) {
     a.getDate() === b.getDate());
 }
 
-const RAK_CALENDAR_NOTES_KEY = APP_KEY + ':calendarNotes_v1';
-const RAK_CALENDAR_NOTE_DEFS = [
-  { id: 'mondayBurn', label: 'Pondělí – Brusy: spálení' },
-  { id: 'firstMorningRivet', label: 'První ranní v měsíci – Roznýtování laborka' }
-];
-
-function getCalendarNotePrefs() {
-  try {
-    const parsed = typeof parseLocalStorageJsonCached === 'function'
-      ? parseLocalStorageJsonCached(RAK_CALENDAR_NOTES_KEY, null)
-      : JSON.parse(localStorage.getItem(RAK_CALENDAR_NOTES_KEY) || 'null');
-    const stored = parsed && typeof parsed === 'object' ? parsed : {};
-    const prefs = {};
-    RAK_CALENDAR_NOTE_DEFS.forEach(def => { prefs[def.id] = stored[def.id] !== false; });
-    return prefs;
-  } catch (err) {
-    const prefs = {};
-    RAK_CALENDAR_NOTE_DEFS.forEach(def => { prefs[def.id] = true; });
-    return prefs;
-  }
-}
-
-function toggleCalendarNotePref(id) {
-  const current = getCalendarNotePrefs();
-  if (!Object.prototype.hasOwnProperty.call(current, id)) return current;
-  current[id] = !current[id];
-  try {
-    const payload = JSON.stringify(current);
-    if (typeof setLocalStorageIfChanged === 'function') setLocalStorageIfChanged(RAK_CALENDAR_NOTES_KEY, payload);
-    else localStorage.setItem(RAK_CALENDAR_NOTES_KEY, payload);
-  } catch (err) {}
-  return current;
-}
-
 function getDashboardCalendarWorkNotes(now) {
   const d = now instanceof Date ? now : new Date();
   if (!isDashboardMorningShiftTime(d)) return [];
 
-  const prefs = getCalendarNotePrefs();
+  const prefs = typeof getRakCalendarNotesSettings === 'function' ? getRakCalendarNotesSettings() : { mondayBurn: true, firstMorningRivet: true };
   const notes = [];
   if (prefs.mondayBurn && d.getDay() === 1) notes.push("Brusy- spálení");
 
