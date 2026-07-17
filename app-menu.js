@@ -382,6 +382,200 @@ function buildAdminRotationBackupSafetyHtml() {
   ].join('');
 }
 
+const RAK_ROTATION_SAVE_BACKUP_CATEGORY = 'rotation_save_backup';
+const RAK_ROTATION_SAVE_BACKUP_KEY_PREFIX = 'ROTATION_SAVE_BACKUP_';
+const RAK_ROTATION_SAVE_BACKUP_MAX = 8;
+
+function isRotationSaveBackupRow(row) {
+  return String(row && row.category || '').trim() === RAK_ROTATION_SAVE_BACKUP_CATEGORY
+    || String(row && row.machine_key || '').trim().indexOf(RAK_ROTATION_SAVE_BACKUP_KEY_PREFIX) === 0;
+}
+
+function makeRotationSaveBackupRow(rotationSnapshot, monthKey) {
+  const nowIso = new Date().toISOString();
+  const key = RAK_ROTATION_SAVE_BACKUP_KEY_PREFIX + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 8);
+  return {
+    machine_key: key,
+    machine_code: 'ROTBK',
+    machine_index: 'save',
+    label: 'Auto záloha rozpisu ' + String(monthKey || ''),
+    category: RAK_ROTATION_SAVE_BACKUP_CATEGORY,
+    cycle_time: '',
+    speed: '',
+    dress_time: '',
+    dress_count: '',
+    settings_json: {
+      type: RAK_ROTATION_SAVE_BACKUP_CATEGORY,
+      monthKey: String(monthKey || ''),
+      createdAt: nowIso,
+      createdBy: (typeof rakAdminGetActiveAccountId === 'function' ? rakAdminGetActiveAccountId() : '') || '',
+      rotation: rotationSnapshot
+    }
+  };
+}
+
+function getRotationSaveBackupRows() {
+  const rows = Array.isArray(app && app.machineSettingsRows) ? app.machineSettingsRows : [];
+  return rows.filter(isRotationSaveBackupRow).sort((a, b) => {
+    const aAt = String(a && a.settings_json && a.settings_json.createdAt || '');
+    const bAt = String(b && b.settings_json && b.settings_json.createdAt || '');
+    return bAt.localeCompare(aAt);
+  });
+}
+
+async function createRotationSaveBackup(rotationSnapshot, monthKey) {
+  if (!rotationSnapshot || !window.RotationSupabaseBridge || typeof window.RotationSupabaseBridge.saveMachineSettings !== 'function') return { ok: false };
+  const current = Array.isArray(app.machineSettingsRows) ? app.machineSettingsRows : [];
+  const keepBackups = getRotationSaveBackupRows().slice(0, RAK_ROTATION_SAVE_BACKUP_MAX - 1);
+  const newRow = makeRotationSaveBackupRow(rotationSnapshot, monthKey);
+  const rows = current.filter((row) => !isRotationSaveBackupRow(row)).concat(keepBackups).concat([newRow]);
+  const result = await window.RotationSupabaseBridge.saveMachineSettings(rows);
+  if (result && result.ok !== false) app.machineSettingsRows = rows;
+  return result;
+}
+
+async function restoreRotationSaveBackup(machineKey) {
+  const key = String(machineKey || '').trim();
+  if (!key) return { ok: false, reason: 'missing-key' };
+  const backup = getRotationSaveBackupRows().find((row) => String(row.machine_key || '') === key);
+  const rotationSnapshot = backup && backup.settings_json ? backup.settings_json.rotation : null;
+  if (!rotationSnapshot) return { ok: false, reason: 'missing-backup' };
+  app.rotation = typeof normalizeRotationData === 'function' ? normalizeRotationData(rotationSnapshot) : rotationSnapshot;
+  if (typeof saveRotationData === 'function') saveRotationData();
+  if (typeof renderRotace === 'function') renderRotace();
+  if (typeof renderStatsPanel === 'function') renderStatsPanel();
+  if (app.selectedMonth && typeof renderMonth === 'function') renderMonth(app.selectedMonth);
+  if (app.selectedName && typeof renderPerson === 'function') renderPerson(app.selectedName);
+  if (typeof updateDashboard === 'function') updateDashboard();
+  if (typeof saveRotationToSupabase === 'function') {
+    return await saveRotationToSupabase(app.rotation, { source: 'admin-rotation-save-backup-restore' });
+  }
+  return { ok: true };
+}
+
+function buildRotationSaveBackupsHtml() {
+  const backups = getRotationSaveBackupRows();
+  if (!backups.length) {
+    return '<div class="smallText uMt8">Zatím žádná automatická záloha. Vytvoří se sama po prvním uložení rozpisu.</div>';
+  }
+  const rows = backups.map((backup) => {
+    const key = String(backup.machine_key || '');
+    const settings = backup.settings_json || {};
+    const label = [
+      formatAdminRotationBackupDate(settings.createdAt),
+      settings.monthKey ? ('měsíc ' + settings.monthKey) : '',
+      settings.createdBy ? ('účet ' + settings.createdBy) : ''
+    ].filter(Boolean).join(' · ');
+    return [
+      '<tr>',
+      '  <td>' + escapeHtml(label || 'Automatická záloha') + '<div class="smallText">stav před posledním uložením</div></td>',
+      '  <td><button type="button" class="appMenuAction" data-admin-action="restore-rotation-save-backup" data-save-backup-key="' + escapeHtml(key) + '">Obnovit</button></td>',
+      '</tr>'
+    ].join('');
+  }).join('');
+  return [
+    '<div class="tableWrap appMenuTableWrap uMt8">',
+    '  <div class="smallText uMb10">Automatická záloha vzniká sama při každém uložení rozpisu (drží se posledních ' + String(RAK_ROTATION_SAVE_BACKUP_MAX) + '). Ruční zálohy výše řeší delší historii.</div>',
+    '  <table class="appMenuTable appMenuAdminTable appMenuAdminTableDense">',
+    '    <thead><tr><th>Automatická záloha</th><th>Akce</th></tr></thead>',
+    '    <tbody>' + rows + '</tbody>',
+    '  </table>',
+    '</div>'
+  ].join('');
+}
+
+const RAK_ADMIN_CHANGE_LOG_KEY = 'ADMIN_CHANGE_LOG';
+const RAK_ADMIN_CHANGE_LOG_CATEGORY = 'admin_change_log';
+const RAK_ADMIN_CHANGE_LOG_MAX = 200;
+
+function isRakChangeLogRow(row) {
+  return String(row && row.category || '').trim() === RAK_ADMIN_CHANGE_LOG_CATEGORY
+    || String(row && row.machine_key || '').trim() === RAK_ADMIN_CHANGE_LOG_KEY;
+}
+
+function getRakChangeLogEntries() {
+  const rows = Array.isArray(app && app.machineSettingsRows) ? app.machineSettingsRows : [];
+  const row = rows.find(isRakChangeLogRow);
+  const settings = row && row.settings_json && typeof row.settings_json === 'object' ? row.settings_json : {};
+  return Array.isArray(settings.entries) ? settings.entries : [];
+}
+
+function makeRakChangeLogRow(entries) {
+  return {
+    machine_key: RAK_ADMIN_CHANGE_LOG_KEY,
+    machine_code: 'ADMIN',
+    machine_index: 'change-log',
+    label: 'Historie změn',
+    category: RAK_ADMIN_CHANGE_LOG_CATEGORY,
+    cycle_time: '',
+    speed: '',
+    dress_time: '',
+    dress_count: '',
+    settings_json: {
+      type: RAK_ADMIN_CHANGE_LOG_CATEGORY,
+      entries: (Array.isArray(entries) ? entries : []).slice(0, RAK_ADMIN_CHANGE_LOG_MAX)
+    }
+  };
+}
+
+async function rakAdminLogChange(area, summary) {
+  try {
+    if (!window.RotationSupabaseBridge || typeof window.RotationSupabaseBridge.saveMachineSettings !== 'function') return { ok: false, reason: 'missing-bridge' };
+    const accountId = (typeof rakAdminGetActiveAccountId === 'function' ? rakAdminGetActiveAccountId() : '') || '';
+    const entry = {
+      id: Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 8),
+      area: String(area || '').trim(),
+      summary: String(summary || '').trim(),
+      accountId,
+      at: new Date().toISOString()
+    };
+    const current = Array.isArray(app.machineSettingsRows) ? app.machineSettingsRows : [];
+    const entries = [entry].concat(getRakChangeLogEntries()).slice(0, RAK_ADMIN_CHANGE_LOG_MAX);
+    const rows = current.filter((row) => !isRakChangeLogRow(row)).concat([makeRakChangeLogRow(entries)]);
+    const result = await window.RotationSupabaseBridge.saveMachineSettings(rows);
+    if (result && result.ok !== false) app.machineSettingsRows = rows;
+    return result;
+  } catch (err) {
+    return { ok: false, error: err };
+  }
+}
+
+function rakChangeLogDateLabel(value) {
+  const text = String(value || '').trim();
+  if (!text) return 'neznámé';
+  try {
+    const date = new Date(text);
+    if (!Number.isFinite(date.getTime())) return text;
+    return date.toLocaleString('cs-CZ', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+  } catch (err) {
+    return text;
+  }
+}
+
+function buildAdminChangeLogHtml() {
+  const entries = getRakChangeLogEntries();
+  if (!entries.length) {
+    return '<div class="smallText uMt8">Zatím žádné zaznamenané změny. Historie se plní při ukládání dovolené, přesčasů a rozpisu.</div>';
+  }
+  const rows = entries.slice(0, 100).map((entry) => [
+    '<tr>',
+    '  <td>' + escapeHtml(rakChangeLogDateLabel(entry && entry.at)) + '</td>',
+    '  <td>' + escapeHtml(String(entry && entry.accountId || '?')) + '</td>',
+    '  <td>' + escapeHtml(String(entry && entry.area || '')) + '</td>',
+    '  <td>' + escapeHtml(String(entry && entry.summary || '')) + '</td>',
+    '</tr>'
+  ].join('')).join('');
+  return [
+    '<div class="tableWrap appMenuTableWrap uMt8">',
+    '  <div class="smallText uMb10">Posledních ' + String(Math.min(entries.length, 100)) + ' změn z ' + String(entries.length) + ' zaznamenaných (max ' + String(RAK_ADMIN_CHANGE_LOG_MAX) + '). Bez možnosti obnovit jen tuhle jednu změnu – na to slouží zálohy.</div>',
+    '  <table class="appMenuTable appMenuAdminTable appMenuAdminTableDense">',
+    '    <thead><tr><th>Kdy</th><th>Účet</th><th>Oblast</th><th>Co</th></tr></thead>',
+    '    <tbody>' + rows + '</tbody>',
+    '  </table>',
+    '</div>'
+  ].join('');
+}
+
 function buildAdminRotationBackupsHtml() {
   const snapshot = app && app.adminRotationBackupsSnapshot ? app.adminRotationBackupsSnapshot : null;
   const backups = snapshot && Array.isArray(snapshot.backups) ? snapshot.backups : [];
@@ -3221,6 +3415,7 @@ function renderAdminMenuBody(body, section) {
       { action: 'open-rotation', label: 'Rozpisy' },
       { action: 'open-workers', label: 'Pracovníci' },
       { action: 'open-generator-settings', label: 'Pravidla generátoru' },
+      { action: 'open-change-log', label: 'Historie změn' },
       { action: 'open-backups', label: 'Zálohy rozpisů' },
       { action: 'open-export', label: 'Export / import' }
     ]),
@@ -3324,6 +3519,7 @@ function renderAdminMenuBody(body, section) {
     '    <button type="button" class="appMenuAction" data-admin-action="back-admin">Zpět</button>',
     '  </div>',
     buildAdminRotationPublicCheckHtml(),
+    (typeof buildAdminStatsAnomalyHtml === 'function' ? buildAdminStatsAnomalyHtml((typeof parseMonthKey === 'function' && parseMonthKey(monthKey) ? parseMonthKey(monthKey).year : new Date().getFullYear())) : ''),
     buildAdminRotationTableHtml(monthKey),
     '</div>'
   ].join('');
@@ -3371,6 +3567,21 @@ function renderAdminMenuBody(body, section) {
     '  <div class="appMenuActionRow">',
     '    <button type="button" class="appMenuAction" data-admin-action="load-workers">Načíst online</button>',
     '    <button type="button" class="appMenuAction isActive" data-admin-action="save-workers">Uložit pracovníky</button>',
+    '    <button type="button" class="appMenuAction" data-admin-action="back-admin">Zpět</button>',
+    '  </div>',
+    '</div>'
+  ].join('');
+
+  const changeLogHtml = [
+    '<div class="appMenuCard appMenuAdminCard adminChangeLogCard">',
+    '  <div class="appMenuCardTitle">Historie změn</div>',
+    '  <div class="appMenuText">',
+    '    <div>Kdo a kdy uložil dovolenou, přesčasy nebo rozpis.</div>',
+    '    <div class="smallText" id="adminOnlineSaveStatus">Zaznamenává se automaticky při ukládání, nic tady sám neupravuješ.</div>',
+    '  </div>',
+    typeof buildAdminChangeLogHtml === 'function' ? buildAdminChangeLogHtml() : '',
+    '  <div class="appMenuActionRow">',
+    '    <button type="button" class="appMenuAction" data-admin-action="load-change-log">Načíst online</button>',
     '    <button type="button" class="appMenuAction" data-admin-action="back-admin">Zpět</button>',
     '  </div>',
     '</div>'
@@ -3453,6 +3664,8 @@ function renderAdminMenuBody(body, section) {
     buildAdminRotationBackupStatusHtml(),
     buildAdminRotationBackupSafetyHtml(),
     buildAdminRotationBackupsHtml(),
+    '  <div class="appMenuSubTitle uMt12">Automatické zálohy</div>',
+    buildRotationSaveBackupsHtml(),
     '  <div class="appMenuActionRow">',
     '    <button type="button" class="appMenuAction" data-admin-action="load-rotation-backups">Načíst zálohy</button>',
     '    <button type="button" class="appMenuAction" data-admin-action="open-rotation">Zpět na rozpisy</button>',
@@ -3631,6 +3844,8 @@ function renderAdminMenuBody(body, section) {
     body.innerHTML = generatorSettingsHtml;
   } else if (mode === 'workers') {
     body.innerHTML = workersHtml;
+  } else if (mode === 'change-log') {
+    body.innerHTML = changeLogHtml;
   } else if (mode === 'admin-accounts') {
     body.innerHTML = adminAccountsHtml;
   } else if (mode === 'external-links') {
@@ -4588,6 +4803,15 @@ function bindAppMenuHandlers(body) {
         openAppMenu('admin-workers');
         return;
       }
+      if (adminAction === 'open-change-log') {
+        openAppMenu('admin-change-log');
+        return;
+      }
+      if (adminAction === 'load-change-log') {
+        await loadAdminMachineSettingsFromSupabase();
+        renderAdminMenuBody(body, 'change-log');
+        return;
+      }
       if (adminAction === 'open-monthly-workflow') {
         openAppMenu('admin-monthly-workflow');
         return;
@@ -4791,6 +5015,19 @@ function bindAppMenuHandlers(body) {
         if (nextStatus) nextStatus.textContent = 'Záloha obnovená online ✓';
         return;
       }
+      if (adminAction === 'restore-rotation-save-backup') {
+        const saveBackupKey = target.getAttribute('data-save-backup-key') || target.closest('[data-save-backup-key]')?.getAttribute('data-save-backup-key') || '';
+        if (!saveBackupKey) return;
+        if (!confirm('Obnovit tuhle automatickou zálohu? Aktuální rozpis se přepíše stavem před posledním uložením.')) return;
+        const statusEl = document.getElementById('adminOnlineSaveStatus');
+        if (statusEl) statusEl.textContent = 'Obnovuji automatickou zálohu…';
+        const result = await restoreRotationSaveBackup(saveBackupKey);
+        if (!result || result.ok === false) throw (result && result.error ? result.error : new Error('Obnova automatické zálohy selhala.'));
+        renderAdminMenuBody(body, 'backups');
+        const nextStatus = document.getElementById('adminOnlineSaveStatus');
+        if (nextStatus) nextStatus.textContent = 'Automatická záloha obnovená ✓';
+        return;
+      }
       if (adminAction === 'load-full-settings-backups') {
         if (!(typeof rakAdminCanManageAdmins === 'function' && rakAdminCanManageAdmins())) return;
         const statusEl = document.getElementById('adminOnlineSaveStatus');
@@ -4872,6 +5109,7 @@ function bindAppMenuHandlers(body) {
           const result = await window.RotationSupabaseBridge.saveMachineSettings(rows);
           if (result && result.ok === false) throw (result.error || new Error('Uložení přesčasů selhalo.'));
           app.machineSettingsRows = rows;
+          try { await rakAdminLogChange('Přesčasy', 'Uloženo ' + String((overtimeSettings.entries || []).length) + ' termínů'); } catch (err) {}
           try { if (typeof renderStatsPanel === 'function') renderStatsPanel(); } catch (err) {}
           try { if (typeof updateFoodTile === 'function') updateFoodTile(); } catch (err) {}
           try { if (typeof renderFoodSchedulePage === 'function') renderFoodSchedulePage(); } catch (err) {}
@@ -5096,6 +5334,7 @@ function bindAppMenuHandlers(body) {
           const result = await window.RotationSupabaseBridge.saveMachineSettings(rows);
           if (result && result.ok === false) throw (result.error || new Error('Uložení dovolené selhalo.'));
           app.machineSettingsRows = rows;
+          try { await rakAdminLogChange('Dovolená / odstávky', 'Uloženo ' + String((vacationSettings.periods || []).length) + ' období'); } catch (err) {}
           try { if (typeof updateDashboard === 'function') updateDashboard(); } catch (err) {}
           renderAdminMenuBody(body, 'vacation');
           const statusEl = document.getElementById('adminOnlineSaveStatus');
@@ -5274,7 +5513,7 @@ function openAppMenu(view) {
   page.classList.add('active');
   const body = page.querySelector('#appMenuBody');
   const v = view || 'menu';
-  const adminViews = new Set(['admin', 'admin-machines', 'admin-food', 'admin-vacation', 'admin-special-days', 'admin-rotation', 'admin-overtime', 'admin-generator-settings', 'admin-workers', 'admin-monthly-workflow', 'admin-handover', 'admin-manual', 'admin-settings-map', 'admin-accounts', 'admin-external-links', 'admin-app-contact', 'admin-payroll-settings', 'admin-backups', 'admin-settings-backups', 'admin-announcement', 'admin-usage', 'admin-export', 'admin-reports', 'admin-service']);
+  const adminViews = new Set(['admin', 'admin-machines', 'admin-food', 'admin-vacation', 'admin-special-days', 'admin-rotation', 'admin-overtime', 'admin-generator-settings', 'admin-workers', 'admin-change-log', 'admin-monthly-workflow', 'admin-handover', 'admin-manual', 'admin-settings-map', 'admin-accounts', 'admin-external-links', 'admin-app-contact', 'admin-payroll-settings', 'admin-backups', 'admin-settings-backups', 'admin-announcement', 'admin-usage', 'admin-export', 'admin-reports', 'admin-service']);
 
   const versionText = (typeof app !== 'undefined' && app.version) || (typeof APP_VERSION !== 'undefined' ? APP_VERSION : '');
   const contact = typeof getRakAppContactSettings === 'function'
@@ -5474,6 +5713,16 @@ function openAppMenu(view) {
         } catch (err) {
           console.warn('Admin workers preload failed', err);
           renderAdminMenuBody(body, 'workers');
+        }
+      })();
+    } else if (v === 'admin-change-log') {
+      void (async () => {
+        try {
+          await loadAdminMachineSettingsFromSupabase();
+          renderAdminMenuBody(body, 'change-log');
+        } catch (err) {
+          console.warn('Admin change log preload failed', err);
+          renderAdminMenuBody(body, 'change-log');
         }
       })();
     } else if (v === 'admin-handover') {

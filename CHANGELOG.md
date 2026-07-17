@@ -1,3 +1,11 @@
+## RaK 1.2 (1.293)
+
+- Zálohy: každé uložení rozpisu teď samo vytvoří automatickou zálohu stavu před změnou (drží se posledních 8), vedle stávajících ručních záloh. Obnova jde přímo ze sekce Zálohy rozpisů.
+- Statistiky: v administraci Rozpisů je nový přehled `Statistické odchylky`, který porovná roční počet odpracovaných dní jednotlivých lidí proti mediánu a označí výrazné výkyvy.
+- Historie změn: nová admin sekce zaznamenává, kdo a kdy uložil dovolenou, přesčasy nebo rozpis (posledních 200 změn, bez hesel a bez detailu obsahu).
+- TNKS01/TPKW01: pravidlo "nikdy dvakrát po sobě" a vyrovnávání nýtovačky zůstávají natvrdo v generátoru - jde o bezpečnostní pojistku hluboko v algoritmu, jejíž změna bez možnosti ověření na reálných datech by riskovala špatně vygenerovaný rozpis.
+- Release metadata sjednocena na `RaK 1.2 (1.293)`, technicka verze `1.2.293`, cache `v1.2-1.293`; loader modulu ma cache znacku `1.2.293`.
+
 ## RaK 1.2 (1.292)
 
 - Oprava dat: řádek nastavení Kantýny/jídelny (`FOOD_SCHEDULE_SETTINGS`) měl v databázi poškozenou kategorii `frezka` místo `food_schedule`, takže se zobrazoval jako fantomový stroj v Nastavení strojů / Frezky a pračka. Kategorie opravena, časy kantýny/jídelny i přesčasové neděle zůstaly beze změny.

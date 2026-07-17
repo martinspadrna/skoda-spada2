@@ -1338,6 +1338,64 @@ function adminRotationBuildPreSaveStatus(monthKey, month) {
   };
 }
 
+function adminStatsWorkDayCounts(year) {
+  if (typeof buildStatsForYear !== 'function') return [];
+  const stats = buildStatsForYear(year);
+  const names = Array.isArray(stats && stats.names) ? stats.names : [];
+  return names.map((name) => {
+    const person = stats.people[name];
+    return { name, workDays: person && person.workDays ? person.workDays.size : 0 };
+  });
+}
+
+function adminStatsAnomalyItemHtml(item) {
+  const state = item && item.state === 'ok' ? 'isOk' : 'isWarn';
+  return [
+    '<div class="adminStatsAnomalyItem ' + state + '">',
+    '  <span>' + escapeHtml(item && item.name || '') + '</span>',
+    '  <b>' + escapeHtml(item && item.value || '') + '</b>',
+    '  <small>' + escapeHtml(item && item.detail || '') + '</small>',
+    '</div>'
+  ].join('');
+}
+
+function buildAdminStatsAnomalyHtml(year) {
+  const safeYear = Number(year) || new Date().getFullYear();
+  const counts = adminStatsWorkDayCounts(safeYear);
+  if (counts.length < 3) {
+    return [
+      '<div class="adminStatsAnomaly" id="adminStatsAnomaly">',
+      '  <div class="appMenuSubTitle">Statistické odchylky ' + String(safeYear) + '</div>',
+      '  <div class="smallText">Zatím málo dat pro porovnání (potřeba aspoň 3 lidé s odpracovanými směnami v tomhle roce).</div>',
+      '</div>'
+    ].join('');
+  }
+  const values = counts.map((c) => c.workDays).sort((a, b) => a - b);
+  const mid = Math.floor(values.length / 2);
+  const median = values.length % 2 ? values[mid] : Math.round((values[mid - 1] + values[mid]) / 2);
+  const threshold = Math.max(5, Math.round(median * 0.25));
+  const outliers = counts
+    .filter((c) => Math.abs(c.workDays - median) > threshold)
+    .sort((a, b) => Math.abs(b.workDays - median) - Math.abs(a.workDays - median));
+  const items = outliers.length
+    ? outliers.map((c) => {
+        const diff = c.workDays - median;
+        return adminStatsAnomalyItemHtml({
+          name: c.name,
+          value: String(c.workDays) + '× směn',
+          detail: (diff > 0 ? ('o ' + String(diff) + ' víc') : ('o ' + String(-diff) + ' míň')) + ' než medián (' + String(median) + '×).'
+        });
+      }).join('')
+    : adminStatsAnomalyItemHtml({ state: 'ok', name: 'Bez odchylek', value: 'OK', detail: 'Nikdo se výrazně neliší od mediánu ' + String(median) + '× směn.' });
+  return [
+    '<div class="adminStatsAnomaly" id="adminStatsAnomaly">',
+    '  <div class="appMenuSubTitle">Statistické odchylky ' + String(safeYear) + '</div>',
+    '  <div class="smallText uMb10">Porovnání počtu odpracovaných dní za rok proti mediánu (' + String(median) + '×). Odchylka nad ' + String(threshold) + ' dní je označená.</div>',
+    '  <div class="adminStatsAnomalyGrid">' + items + '</div>',
+    '</div>'
+  ].join('');
+}
+
 function buildAdminRotationPreSaveChecklistHtml(monthKey) {
   return [
     '<div class="adminRotationPreSaveCheck" id="adminRotationPreSaveCheck" data-pre-save-month="' + escapeHtml(monthKey || '') + '">',
@@ -1595,6 +1653,10 @@ function adminMachineIsEditableMachineRow(row) {
     && cat !== 'fhb_target'
     && cat !== 'food_schedule'
     && !(typeof adminIsFoodScheduleRow === 'function' && adminIsFoodScheduleRow(row))
+    && cat !== 'rotation_save_backup'
+    && !(typeof isRotationSaveBackupRow === 'function' && isRotationSaveBackupRow(row))
+    && cat !== 'admin_change_log'
+    && !(typeof isRakChangeLogRow === 'function' && isRakChangeLogRow(row))
     && cat !== 'vacation_countdown_settings'
     && cat !== 'admin_accounts_settings'
     && cat !== 'admin_full_settings_backup'
@@ -1970,7 +2032,7 @@ function readAdminMachineSettingsFromDom() {
     const get = (field) => tr.querySelector('[data-machine-field="' + field + '"]')?.value ?? '';
     const label = String(get('label')).trim();
     const machine_code = String(get('machine_code')).trim();
-    if (machine_code.toUpperCase() === 'FOOD') return;
+    if (machine_code.toUpperCase() === 'FOOD' || machine_code.toUpperCase() === 'ROTBK') return;
     const machine_index = String(get('machine_index')).trim();
     const cycle_time = String(get('cycle_time')).trim();
     const dress_time = String(get('dress_time')).trim();
@@ -2133,6 +2195,7 @@ function readAdminRotationFromDom(monthKey) {
 
 async function saveAdminRotationFromDom(monthKey) {
   if (!monthKey) throw new Error('Chybí měsíc.');
+  const previousRotationSnapshot = app.rotation ? JSON.parse(JSON.stringify(app.rotation)) : null;
   const fallback = app.rotation && app.rotation.months ? app.rotation.months[monthKey] : null;
   const normalized = readAdminRotationFromDom(monthKey);
   if (!app.rotation.months) app.rotation.months = {};
@@ -2146,6 +2209,14 @@ async function saveAdminRotationFromDom(monthKey) {
   let saveResult = null;
   if (app.adminUnlocked) {
     saveResult = await saveRotationToSupabase(app.rotation, { source: 'admin-menu', monthKey });
+    if (saveResult && saveResult.ok !== false) {
+      if (typeof createRotationSaveBackup === 'function') {
+        try { await createRotationSaveBackup(previousRotationSnapshot, monthKey); } catch (err) {}
+      }
+      if (typeof rakAdminLogChange === 'function') {
+        try { await rakAdminLogChange('Rozpis', 'Uložen měsíc ' + String(monthKey || '')); } catch (err) {}
+      }
+    }
   }
   try {
     if (app.adminRotationPendingDrafts && monthKey) delete app.adminRotationPendingDrafts[monthKey];
