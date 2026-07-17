@@ -304,6 +304,7 @@ function buildAdminVacationCountdownSettingsHtml() {
       '  <summary>Rok ' + escapeHtml(year) + ' <span class="smallText">' + String(yearPeriods.length) + '×</span></summary>',
       '  <div class="tableWrap appMenuTableWrap">',
       '    <table class="appMenuTable appMenuAdminTable appMenuAdminTableDense adminVacationCountdownTable">',
+      '      <colgroup><col class="adminVacationNameCol"><col class="adminVacationStartCol"><col class="adminVacationEndCol"></colgroup>',
       '      <thead><tr><th>Název</th><th>Od</th><th>Do</th></tr></thead>',
       '      <tbody>' + rows.join('') + '</tbody>',
       '    </table>',

@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// RaK 1.2 (1.299) – smoke test přehledu připojení + Dashboard/appearance contract guard.
+// RaK 1.2 (1.300) – smoke test přehledu připojení + Dashboard/appearance contract guard.
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
@@ -226,12 +226,12 @@ const dashboardReleaseIsolationGuardV198 = Object.freeze({
 });
 
 const releaseMetadataContractV199 = Object.freeze({
-  displayVersion: '1.2 (1.299)',
-  appLabel: 'RaK 1.2 (1.299)',
-  packageVersion: '1.2.299',
-  cacheVersion: 'v1.2-1.299',
+  displayVersion: '1.2 (1.300)',
+  appLabel: 'RaK 1.2 (1.300)',
+  packageVersion: '1.2.300',
+  cacheVersion: 'v1.2-1.300',
   realtimeChannel: 'rak-public-live-v1-2-1-126',
-  changelogHeader: '## RaK 1.2 (1.299)',
+  changelogHeader: '## RaK 1.2 (1.300)',
   previousBuildFragments: Object.freeze(['1.2 (1.138)', '1.2.138', 'v1.2-1.138', '1.2 (1.137)', '1.2.137', 'v1.2-1.137', '1.2 (1.118)', '1.2.118', 'v1.2-1.118', 'rak-public-live-v1-2-1-118'])
 });
 
@@ -340,8 +340,8 @@ function assertDashboardReleaseIsolationGuardV198() {
 function assertReleaseMetadataContractV199() {
   const contract = releaseMetadataContractV199;
   assertIncludes(exportJs, 'RAK_RELEASE_METADATA_CONTRACT_V199', 'export.js musí obsahovat release metadata contract v1.99');
-  assertIncludes(exportJs, "displayVersion: '1.2 (1.299)'", 'Release contract v export.js musí držet display verzi 1.105');
-  assertIncludes(exportJs, "packageVersion: '1.2.299'", 'Release contract v export.js musí držet package verzi 1.2.114');
+  assertIncludes(exportJs, "displayVersion: '1.2 (1.300)'", 'Release contract v export.js musí držet display verzi 1.105');
+  assertIncludes(exportJs, "packageVersion: '1.2.300'", 'Release contract v export.js musí držet package verzi 1.2.114');
   assert(packageJson.version === contract.packageVersion, `package.json version drift: čekám ${contract.packageVersion}, mám ${packageJson.version}`);
   assertIncludes(coreJs, `const APP_VERSION = "${contract.displayVersion}";`, 'core.js APP_VERSION není sjednocený s 1.105');
   assertIncludes(serviceWorkerJs, `const CACHE_VERSION = '${contract.cacheVersion}';`, 'sw.js CACHE_VERSION není sjednocený s 1.105');
@@ -1322,6 +1322,12 @@ assertIncludes(appearanceThemeJs, '"id": "light-zigzag"', 'Musí existovat zákl
   assertNotIncludes(dashboardPolishCss, 'font-size:clamp(9px,2.4vw,11px) !important;', 'Popisek směna D nesmí mít vlastní menší velikost než k CZD');
   assertIncludes(dashboardPolishCss, 'border-left:1px solid rgba(174,255,174,.34)', 'Karta Dovolená musí mít svislý předěl před směnou D');
   assertIncludes(adminFoodJs, 'function buildAdminVacationCountdownSettingsHtml', 'Administrace musi mit samostatny formular dovolene/odstavek');
+  assertIncludes(adminFoodJs, 'class="adminVacationNameCol"', 'Sloupec Nazev u dovolene/odstavek musi mit vlastni uzsi sirku');
+  assertIncludes(adminFoodJs, 'class="adminVacationStartCol"', 'Sloupec Od u dovolene/odstavek musi mit vlastni uzsi sirku');
+  assertIncludes(adminFoodJs, 'class="adminVacationEndCol"', 'Sloupec Do u dovolene/odstavek musi mit vlastni uzsi sirku');
+  assertIncludes(stylesAdminPolishCss, '.adminVacationNameCol{width:106px;}', 'Sloupec Nazev musi byt o cca 50% uzsi');
+  assertIncludes(stylesAdminPolishCss, '.adminVacationStartCol{width:195px;}', 'Sloupec Od musi byt uzsi, ale nad nativnim minimem input[type=datetime-local]');
+  assertIncludes(stylesAdminPolishCss, '.adminVacationEndCol{width:195px;}', 'Sloupec Do musi byt uzsi, ale nad nativnim minimem input[type=datetime-local]');
   assertIncludes(adminFoodJs, 'function buildAdminVacationCountdownStatusHtml', 'Administrace musi mit souhrn stavu dovolene/odstavek');
   assertIncludes(adminFoodJs, 'function adminVacationRefreshStatus', 'Souhrn dovolene/odstavek se musi umet prepocitat podle rozepsanych radku');
   assertIncludes(adminFoodJs, 'adminVacationReadPeriodsFromRoot', 'Souhrn dovolene/odstavek musi vychazet z aktualnich DOM radku pred ulozenim');
@@ -1339,6 +1345,12 @@ assertIncludes(appearanceThemeJs, '"id": "light-zigzag"', 'Musí existovat zákl
   assertIncludes(coreJs, 'function getRakSpecialDayInfo', 'getSpecialWorkInfo musi umet nacist mimoradny volny den z admin nastaveni');
   assertIncludes(coreJs, 'const customSpecial = typeof getRakSpecialDayInfo', 'getSpecialWorkInfo musi pred pevnymi svatky kontrolovat admin mimoradne volne dny');
   assertIncludes(coreJs, 'function buildAdminSpecialDaysSettingsHtml', 'Administrace musi mit formular mimoradnych volnych dnu');
+  assertIncludes(coreJs, 'class="adminSpecialDaysDateCol"', 'Sloupec Datum u mimoradnych volnych dnu musi mit vlastni uzsi sirku');
+  assertIncludes(coreJs, 'class="adminSpecialDaysTypeCol"', 'Sloupec Typ u mimoradnych volnych dnu musi mit vlastni uzsi sirku');
+  assertIncludes(coreJs, 'class="adminSpecialDaysNameCol"', 'Sloupec Nazev u mimoradnych volnych dnu musi mit vlastni uzsi sirku');
+  assertIncludes(stylesAdminPolishCss, '.adminSpecialDaysDateCol{width:130px;}', 'Sloupec Datum musi byt uzsi, ale nad nativnim minimem input[type=date]');
+  assertIncludes(stylesAdminPolishCss, '.adminSpecialDaysTypeCol{width:110px;}', 'Sloupec Typ musi byt o cca 50% uzsi');
+  assertIncludes(stylesAdminPolishCss, '.adminSpecialDaysNameCol{width:149px;}', 'Sloupec Nazev musi byt o cca 30% uzsi');
   assertIncludes(coreJs, 'function buildAdminSpecialDaysStatusHtml', 'Administrace musi mit souhrn stavu mimoradnych volnych dnu');
   assertIncludes(coreJs, 'function adminSpecialDaysRefreshStatus', 'Souhrn mimoradnych volnych dnu se musi prepocitat podle rozepsanych radku');
   assertIncludes(coreJs, 'readRakSpecialDaysEntriesFromRoot', 'Souhrn mimoradnych volnych dnu musi vychazet z aktualnich DOM radku pred ulozenim');
@@ -1494,7 +1506,9 @@ function assertAdminAccountLoginContractV1141() {
   assertIncludes(ui, "source: 'before-restore'", 'Obnova nastaveni musi vytvorit automatickou zalohu aktualniho stavu');
   assertIncludes(ui, 'restoredBackupId: backup.id', 'Automaticka zaloha pred obnovou musi vedet, ke ktere obnove patri');
   assertIncludes(ui, 'preRestoreBackup', 'Obnova nastaveni musi vracet bod navratu pred obnovou');
-  assertIncludes(ui, 'Aktuální nastavení se před obnovou uloží jako nový bod návratu.', 'Bezpecnostni panel musi vysvetlit automatickou zalohu pred obnovou');
+  assertNotIncludes(ui, 'function buildAdminFullSettingsBackupSafetyHtml', 'Bezpecnost obnovy zaloh nastaveni byla na zadost odstranena z admin obrazovky');
+  assertIncludes(ui, '<details class="appMenuFoldSection adminRotationBackupStatus adminFullSettingsBackupStatus">', 'Stav zaloh nastaveni musi byt sbalitelny (details/summary), ne pevny box');
+  assertIncludes(stylesAdminPolishCss, '.adminFullSettingsBackupLabelCol{width:41px;}', 'Sloupec Zaloha nastaveni musi byt o 60% uzsi nez soucasnych 373px');
   assertIncludes(ui, 'function makeDeletedMachineSettingsRow', 'Rollback nastaveni musi umet skryt radky, ktere v zaloze nebyly');
   assertIncludes(ui, 'deletedCount: deletedRows.length', 'Obnova nastaveni musi vracet pocet skrytych radku mimo zalohu');
   assertIncludes(ui, "adminAction === 'create-full-settings-backup'", 'Hlavni admin musi umet vytvorit uplnou zalohu nastaveni');
@@ -1612,7 +1626,7 @@ function assertAdminHandoverGuideContractV1142() {
   assertIncludes(ui, 'function adminRotationBackupStatusItemHtml', 'Souhrn zaloh musi mit samostatne stavove polozky');
   assertIncludes(ui, '<details class="appMenuFoldSection adminRotationBackupStatus">', 'Stav zaloh rozpisu musi byt sbalitelny (details/summary), ne pevny box');
   assertNotIncludes(ui, 'function buildAdminRotationBackupSafetyHtml', 'Bezpecnost obnovy zaloh rozpisu byla na zadost odstranena (zustava jen u Zaloh nastaveni)');
-  assertIncludes(ui, 'Bezpečnost obnovy', 'Zalohy nastaveni musi spravci vysvetlit riziko obnovy');
+  assertNotIncludes(ui, 'adminFullSettingsBackupSafety', 'Bezpecnost obnovy zaloh nastaveni byla na zadost odstranena, trida uz nema existovat');
   assertIncludes(ui, 'adminRotationBackupMonthGroup', 'Zalohy rozpisu musi byt sbalitelne po mesicich');
   assertIncludes(ui, 'class="adminRotationBackupsLabelCol"', 'Sloupec Zaloha u zaloh rozpisu musi mit vlastni uzsi sirku');
   assertIncludes(ui, 'class="adminRotationBackupsActionCol"', 'Sloupec Akce u zaloh rozpisu musi mit vlastni uzsi sirku');
@@ -1760,7 +1774,7 @@ function assertAdminHandoverGuideContractV1142() {
   assertIncludes(stylesAdminPolishCss, '.adminPostSaveCheckAction', 'Kontrola po ulozeni musi mit kompaktni admin akce');
   assertIncludes(stylesAdminPolishCss, '.adminRotationBackupStatus', 'Souhrn zaloh musi mit vlastni admin-only styl');
   assertIncludes(stylesAdminPolishCss, '.adminRotationBackupStatusGrid', 'Souhrn zaloh musi mit prehlednou mrizku');
-  assertIncludes(stylesAdminPolishCss, '.adminRotationBackupSafetyGrid', 'Bezpecnost obnovy zalohy musi mit vlastni responsive admin styl');
+  assertNotIncludes(stylesAdminPolishCss, '.adminRotationBackupSafetyGrid', 'Bezpecnost obnovy zaloh byla odstranena (rozpisu i nastaveni), admin styl uz nema existovat');
   assertIncludes(stylesAdminPolishCss, '.adminHandoverRunbook', 'Predani spravy musi mit vlastni admin-only runbook styl');
   assertIncludes(stylesAdminPolishCss, '.adminHandoverActionRow', 'Predani spravy musi mit kompaktni radek akci');
   assertIncludes(stylesAdminPolishCss, '.adminMonthlyWorkflow', 'Mesicni postup musi mit vlastni admin-only styl');
@@ -1855,6 +1869,10 @@ function assertAdminAppContactSettingsContractV1145() {
   assertIncludes(ui, 'function getRakAppContactPhoneHref', 'Verejny kontakt musi umet vytvorit tel odkaz z admin telefonu');
   assertIncludes(ui, 'function getRakAppContactEmailHref', 'Verejny kontakt musi umet vytvorit mailto odkaz z admin e-mailu');
   assertIncludes(ui, 'function buildAdminAppContactSettingsHtml', 'Administrace musi mit formular kontaktu aplikace');
+  assertIncludes(ui, 'class="adminAppContactLabelCol"', 'Sloupec Polozka u kontaktu aplikace musi mit vlastni uzsi sirku');
+  assertIncludes(ui, 'class="adminAppContactValueCol"', 'Sloupec Hodnota u kontaktu aplikace musi mit vlastni uzsi sirku');
+  assertIncludes(stylesAdminPolishCss, '.adminAppContactLabelCol{width:160px;}', 'Sloupec Polozka musi byt o 50% uzsi');
+  assertIncludes(stylesAdminPolishCss, '.adminAppContactValueCol{width:160px;}', 'Sloupec Hodnota musi byt o 50% uzsi');
   assertNotIncludes(ui, 'function buildAdminAppContactStatusHtml', 'Stav kontaktu aplikace byl na zadost odstranen z admin obrazovky');
   assertNotIncludes(ui, 'function buildAdminAppContactPublicCheckHtml', 'Verejna kontrola kontaktu byla na zadost odstranena z admin obrazovky');
   assertIncludes(ui, 'function readAdminAppContactSettingsFromDom', 'Administrace musi umet nacist kontakt z formulare');
@@ -1894,9 +1912,10 @@ function assertAdminPayrollSettingsContractV1146() {
   assertIncludes(payrollJs, 'class="adminPayrollMonthCol"', 'Sloupec Mesic u rucnich vyjimek vyplaty musi mit vlastni uzsi sirku');
   assertIncludes(payrollJs, 'class="adminPayrollDateCol"', 'Sloupec Datum vyplaty u rucnich vyjimek musi mit vlastni uzsi sirku');
   assertIncludes(payrollJs, 'class="adminPayrollNoteCol"', 'Sloupec Poznamka u rucnich vyjimek musi mit vlastni uzsi sirku');
-  assertIncludes(stylesAdminPolishCss, '.adminPayrollMonthCol{width:107px;}', 'Sloupec Mesic musi byt o 50% uzsi');
-  assertIncludes(stylesAdminPolishCss, '.adminPayrollDateCol{width:107px;}', 'Sloupec Datum vyplaty musi byt o 50% uzsi');
-  assertIncludes(stylesAdminPolishCss, '.adminPayrollNoteCol{width:107px;}', 'Sloupec Poznamka musi byt o 50% uzsi');
+  assertIncludes(stylesAdminPolishCss, '.adminPayrollMonthCol{width:170px;}', 'Sloupec Mesic musi byt uzsi, ale nad nativnim minimem input[type=month] aby se nepřekryval');
+  assertIncludes(stylesAdminPolishCss, '.adminPayrollDateCol{width:150px;}', 'Sloupec Datum vyplaty musi byt uzsi, ale nad nativnim minimem input[type=date] aby se nepřekryval');
+  assertIncludes(stylesAdminPolishCss, '.adminPayrollNoteCol{width:320px;}', 'Sloupec Poznamka musi mit dost mista, kdyz Mesic/Datum jsou uzsi');
+  assertNotIncludes(stylesAdminPolishCss, '.adminPayrollOverridesTable{', 'Tabulka rucnich vyjimek nesmi mit vlastni width:auto override - to zpusobovalo prekryv nativnich date/month poli');
   assertIncludes(ui, "action: 'open-payroll-settings', label: 'Výplata'", 'Admin menu musi obsahovat sekci Vyplata');
   assertIncludes(ui, "adminAction === 'open-payroll-settings'", 'Admin menu musi umet otevrit nastaveni vyplaty');
   assertIncludes(ui, "adminAction === 'save-payroll-settings'", 'Admin menu musi umet ulozit nastaveni vyplaty');

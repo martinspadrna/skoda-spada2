@@ -202,17 +202,6 @@ async function handleFullSettingsBackupFileSelection(input, body) {
   }
 }
 
-function adminRotationBackupSafetyItemHtml(label, value, detail, state) {
-  const safeState = state || 'info';
-  return [
-    '<div class="adminRotationBackupSafetyItem is' + escapeHtml(safeState.charAt(0).toUpperCase() + safeState.slice(1)) + '">',
-    '  <span>' + escapeHtml(label || '') + '</span>',
-    '  <b>' + escapeHtml(value || '') + '</b>',
-    detail ? '  <small>' + escapeHtml(detail) + '</small>' : '',
-    '</div>'
-  ].join('');
-}
-
 function formatAdminRotationBackupDate(value) {
   if (!value) return '—';
   const date = new Date(value);
@@ -766,28 +755,13 @@ function buildAdminFullSettingsBackupStatusHtml() {
     { state: sourceCount ? 'info' : 'warn', title: 'Aktuální stav', value: String(sourceCount) + ' řádků', detail: 'Do nové zálohy se vezmou všechna aktuálně načtená nastavení.' }
   ];
   return [
-    '<div class="adminRotationBackupStatus adminFullSettingsBackupStatus">',
-    '  <div class="appMenuSubTitle">Stav záloh nastavení</div>',
+    '<details class="appMenuFoldSection adminRotationBackupStatus adminFullSettingsBackupStatus">',
+    '  <summary class="appMenuSubTitle">Stav záloh nastavení</summary>',
     '  <div class="smallText uMb10">Úplná záloha je pojistka pro hlavního admina, kdyby jiný admin rozbil provozní nastavení.</div>',
     '  <div class="adminRotationBackupStatusGrid">',
     items.map(adminRotationBackupStatusItemHtml).join(''),
     '  </div>',
-    '</div>'
-  ].join('');
-}
-
-function buildAdminFullSettingsBackupSafetyHtml() {
-  return [
-    '<div class="adminRotationBackupSafety adminFullSettingsBackupSafety">',
-    '  <div class="appMenuSubTitle">Bezpečnost obnovy</div>',
-    '  <div class="smallText uMb10">Obnova přepíše uložená nastavení hodnotami ze zálohy. Používej ji až po kontrole, že vybraná záloha je správný bod návratu.</div>',
-    '  <div class="adminRotationBackupSafetyGrid">',
-    adminRotationBackupSafetyItemHtml('Jen hlavní admin', '9811', 'Nižší admini zálohu nastavení nevytvoří ani neobnoví.', 'warn'),
-    adminRotationBackupSafetyItemHtml('Před obnovou', 'uloží se bokem', 'Aktuální nastavení se před obnovou uloží jako nový bod návratu.', 'info'),
-    adminRotationBackupSafetyItemHtml('Rozsah', 'všechna nastavení', 'Stroje, kantýna, přesčasy, dovolené, odkazy, kontakt, výplata i správci.', 'info'),
-    adminRotationBackupSafetyItemHtml('Po obnově', 'načíst a ověřit', 'Po obnově otevři dotčené sekce a zkontroluj běžnou aplikaci.', 'info'),
-    '  </div>',
-    '</div>'
+    '</details>'
   ].join('');
 }
 
@@ -3383,7 +3357,6 @@ function renderAdminMenuBody(body, section) {
     '    <div class="smallText" id="adminOnlineSaveStatus">Vytvořit, nahrát nebo obnovit může jen hlavní admin účet.</div>',
     '  </div>',
     buildAdminFullSettingsBackupStatusHtml(),
-    buildAdminFullSettingsBackupSafetyHtml(),
     buildAdminFullSettingsBackupsHtml(),
     '  <div class="appMenuActionRow">',
     '    <button type="button" class="appMenuAction" data-admin-action="load-full-settings-backups">Načíst online</button>',

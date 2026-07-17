@@ -1,3 +1,13 @@
+## RaK 1.2 (1.300)
+
+- Oprava: sloupce Měsíc/Datum výplaty u ručních výjimek se od minulé úpravy (1.299, 107px) na mobilu vzájemně překrývaly – natvrdo zúžené inputy `type="month"`/`type="date"` mají v prohlížeči nesmrštitelné minimum (~137/120 px), pod které je CSS `width` nedostane. Sloupce teď mají bezpečnou šířku nad tímto minimem (Měsíc 170px, Datum 150px, Poznámka 320px), tabulka se vrátila k běžnému chování (žádný `width:auto` override).
+- Dovolená / odstávky: sloupec Název zúžen (~50 %), sloupce Od/Do zúženy na bezpečné minimum pro `datetime-local` (~195px) – čistých 30 % nešlo dodržet, protože natvrdo zúžené pole by se stejně jako u Výplaty překrývalo.
+- Mimořádné volné dny: sloupec Datum zúžen na bezpečné minimum pro `type="date"` (~130px, blízko 50 %), sloupec Typ zúžen o 50 %, sloupec Název o 30 %.
+- Kontakt aplikace: sloupce Položka a Hodnota zúženy o 50 % každý (bez rizika překryvu, žádné datum/čas pole).
+- Zálohy nastavení: sloupec "Záloha nastavení" zúžen o 60 % (ze současných ~373px na ~150px); box "Bezpečnost obnovy" odstraněn; "Stav záloh nastavení" je teď sbalitelný (sbalený ve výchozím stavu).
+- Živě ověřeno v prohlížeči na mobilní i širší šířce obrazovky: žádné pole se nepřekrývá, žádné inputy nejsou oříznuté pod svým nativním minimem.
+- Release metadata sjednocena na `RaK 1.2 (1.300)`, technicka verze `1.2.300`, cache `v1.2-1.300`; loader modulu ma cache znacku `1.2.300`.
+
 ## RaK 1.2 (1.299)
 
 - Dovolená / odstávky a Mimořádné volné dny: odstraněny boxy "Veřejná kontrola" u obou sekcí; "Stav" u obou je teď sbalitelný (sbalený ve výchozím stavu).

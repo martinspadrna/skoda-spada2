@@ -917,13 +917,20 @@
 .adminSpecialDaysStatus:not([open]) > summary::after{transform:rotate(-90deg);}
 .adminVacationStatus[open] > summary,
 .adminSpecialDaysStatus[open] > summary{margin-bottom:7px;}
-.adminPayrollOverridesTable{
-  width:auto !important;
-  min-width:0 !important;
-}
-.adminPayrollMonthCol{width:107px;}
-.adminPayrollDateCol{width:107px;}
-.adminPayrollNoteCol{width:107px;}
+.adminPayrollMonthCol{width:170px;}
+.adminPayrollDateCol{width:150px;}
+.adminPayrollNoteCol{width:320px;}
+.adminVacationCountdownTable{min-width:496px !important;}
+.adminVacationNameCol{width:106px;}
+.adminVacationStartCol{width:195px;}
+.adminVacationEndCol{width:195px;}
+.adminSpecialDaysTable{min-width:389px !important;}
+.adminSpecialDaysDateCol{width:130px;}
+.adminSpecialDaysTypeCol{width:110px;}
+.adminSpecialDaysNameCol{width:149px;}
+.adminAppContactTable{min-width:320px !important;}
+.adminAppContactLabelCol{width:160px;}
+.adminAppContactValueCol{width:160px;}
 .adminAnnouncementPreview.isMuted{
   opacity:.72;
 }
@@ -1062,7 +1069,7 @@
 .adminRotationOvertimeDeleteCol{width:44px;}
 .adminGeneratorBaseNameCol{width:84px;}
 .adminGeneratorBaseMachineCol{width:auto;}
-.adminFullSettingsBackupLabelCol{width:224px;}
+.adminFullSettingsBackupLabelCol{width:41px;}
 .adminFullSettingsBackupActionCol{width:112px;}
 .adminRotationOvertimeDateInput{min-width:104px;}
 .adminRotationOvertimeNoteInput{min-width:150px;}
@@ -1540,56 +1547,6 @@
   overflow-wrap:anywhere !important;
 }
 .adminRotationBackupStatusItem small{
-  color:rgba(235,255,240,.72) !important;
-  font-size:11px !important;
-  font-weight:700 !important;
-  line-height:1.25 !important;
-}
-.adminRotationBackupSafety{
-  display:grid !important;
-  gap:8px !important;
-  margin:12px 0 !important;
-  padding:10px !important;
-  border:1px solid rgba(180,255,190,.24) !important;
-  border-radius:8px !important;
-  background:rgba(255,255,255,.04) !important;
-}
-.adminRotationBackupSafetyGrid{
-  display:grid !important;
-  grid-template-columns:repeat(3,minmax(0,1fr)) !important;
-  gap:8px !important;
-}
-.adminRotationBackupSafetyItem{
-  display:grid !important;
-  gap:5px !important;
-  align-content:start !important;
-  min-height:88px !important;
-  padding:10px !important;
-  border:1px solid rgba(175,210,255,.26) !important;
-  border-radius:8px !important;
-  background:rgba(255,255,255,.04) !important;
-}
-.adminRotationBackupSafetyItem.isWarn{
-  border-color:rgba(255,210,120,.44) !important;
-  background:rgba(255,185,80,.07) !important;
-}
-.adminRotationBackupSafetyItem.isInfo{
-  border-color:rgba(175,210,255,.26) !important;
-  background:rgba(70,145,255,.06) !important;
-}
-.adminRotationBackupSafetyItem span{
-  font-size:12px !important;
-  font-weight:900 !important;
-  color:rgba(222,255,228,.82) !important;
-  line-height:1.1 !important;
-}
-.adminRotationBackupSafetyItem b{
-  font-size:17px !important;
-  line-height:1.1 !important;
-  color:#b8d7ff !important;
-  overflow-wrap:anywhere !important;
-}
-.adminRotationBackupSafetyItem small{
   color:rgba(235,255,240,.72) !important;
   font-size:11px !important;
   font-weight:700 !important;
@@ -2321,9 +2278,6 @@
     grid-template-columns:1fr !important;
   }
   .adminRotationBackupStatusGrid{
-    grid-template-columns:1fr !important;
-  }
-  .adminRotationBackupSafetyGrid{
     grid-template-columns:1fr !important;
   }
   .adminRotationOvertimeStatusGrid{

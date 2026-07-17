@@ -708,6 +708,7 @@ function buildAdminAppContactSettingsHtml() {
   return [
     '<div class="tableWrap appMenuTableWrap uMt12">',
     '  <table class="appMenuTable appMenuAdminTable appMenuAdminTableDense adminAppContactTable">',
+    '    <colgroup><col class="adminAppContactLabelCol"><col class="adminAppContactValueCol"></colgroup>',
     '    <thead><tr><th>Položka</th><th>Hodnota</th></tr></thead>',
     '    <tbody>' + rows + '</tbody>',
     '  </table>',

@@ -1,7 +1,7 @@
-// RaK 1.2 (1.299) – core stav, verze a sdílené helpery aplikace.
+// RaK 1.2 (1.300) – core stav, verze a sdílené helpery aplikace.
 
 const APP_KEY = "rotace_kalkulacky_state_v123";
-const APP_VERSION = "1.2 (1.299)";
+const APP_VERSION = "1.2 (1.300)";
 window.APP_VERSION = APP_VERSION;
 const ROTATION_BUILD = "2026-06-03-" + APP_VERSION;
 window.ROTATION_BUILD = ROTATION_BUILD;
@@ -514,6 +514,7 @@ function buildAdminSpecialDaysSettingsHtml() {
       '  <summary>Rok ' + escapeHtml(year) + ' <span class="smallText">' + String(yearDays.length) + '×</span></summary>',
       '  <div class="tableWrap appMenuTableWrap">',
       '    <table class="appMenuTable appMenuAdminTable appMenuAdminTableDense adminSpecialDaysTable">',
+      '      <colgroup><col class="adminSpecialDaysDateCol"><col class="adminSpecialDaysTypeCol"><col class="adminSpecialDaysNameCol"></colgroup>',
       '      <thead><tr><th>Datum</th><th>Typ</th><th>Název</th></tr></thead>',
       '      <tbody>' + rows.join('') + '</tbody>',
       '    </table>',
