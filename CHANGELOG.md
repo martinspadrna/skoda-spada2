@@ -1,3 +1,8 @@
+## RaK 1.2 (1.317)
+
+- Administrace / Rozpisy: kopirovani dovolene pro WhatsApp pise duvod jako `(dovolená)` misto `(dovolené)`.
+- Release metadata sjednocena na `RaK 1.2 (1.317)`, technicka verze `1.2.317`, cache `v1.2-1.317`; loader modulu ma cache znacku `1.2.317`.
+
 ## RaK 1.2 (1.316)
 
 - Generator rozpisu po konecnem vyvazovani doplni prazdny stroj Tvrdoty dostupnym clovekem, pokud tim neporusi absence, znalost stroje ani navaznost TNKS01/TPKW01. Tim se opravuje pripad 8/26, kdy TBKR07 zustala 19.8. a 29.8. volna, i kdyz chybel jen omezeny pocet lidi a byl dostupny Novotny.

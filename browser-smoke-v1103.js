@@ -10,7 +10,7 @@ const { spawn } = require('child_process');
 const { pathToFileURL } = require('url');
 
 const ROOT_DIR = __dirname;
-const EXPECTED_APP_VERSION = '1.2 (1.316)';
+const EXPECTED_APP_VERSION = '1.2 (1.317)';
 const RAK_BROWSER_SMOKE_ENGINE = 'local-chromium-cdp';
 const RAK_BROWSER_SMOKE_LOAD_MODE = 'about-blank-inline-html';
 const CHROMIUM_BIN = process.env.CHROMIUM_BIN || process.env.CHROME_BIN || '/usr/bin/chromium';
@@ -660,9 +660,9 @@ async function runViewportSmoke(cdpPort, viewport, inlineHtml) {
   })()`);
   assert(vacationCopyTextState.ok, `${viewport.name}: formát kopírování dovolených se nespustil ${JSON.stringify(vacationCopyTextState)}`);
   assert(vacationCopyTextState.text.includes('Dovolená 8/26'), `${viewport.name}: kopie dovolených nemá nadpis měsíce ${JSON.stringify(vacationCopyTextState)}`);
-  assert(vacationCopyTextState.text.includes('Třasák (dovolené) - 5.8., 6.8.'), `${viewport.name}: kopie dovolených neseskupila Třasáka ${JSON.stringify(vacationCopyTextState)}`);
+  assert(vacationCopyTextState.text.includes('Třasák (dovolená) - 5.8., 6.8.'), `${viewport.name}: kopie dovolených neseskupila Třasáka ${JSON.stringify(vacationCopyTextState)}`);
   assert(vacationCopyTextState.text.includes('Kříž (lázně) - 1.8., 2.8.'), `${viewport.name}: kopie dovolených neseskupila lázně ${JSON.stringify(vacationCopyTextState)}`);
-  assert(vacationCopyTextState.text.includes('Kříž (dovolené) - 25.8.'), `${viewport.name}: kopie dovolených neoddělila důvody ${JSON.stringify(vacationCopyTextState)}`);
+  assert(vacationCopyTextState.text.includes('Kříž (dovolená) - 25.8.'), `${viewport.name}: kopie dovolených neoddělila důvody ${JSON.stringify(vacationCopyTextState)}`);
 
   const wizardRunState = await evalInPage(client, `(() => {
     const previousBody = document.getElementById('appMenuBody');

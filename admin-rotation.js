@@ -1130,7 +1130,7 @@ function adminRotationCopyAbsenceReasonLabel(code, label) {
   const rawLabel = String(label || '').trim();
   const upper = rawCode.toLocaleUpperCase('cs-CZ');
   const suffix = rawCode.replace(/^(?:D|NV|L|N|S|Š|§)\b\s*/i, '').trim();
-  if (/^D\b/i.test(rawCode) || rawLabel.toLocaleLowerCase('cs-CZ') === 'dovolená') return 'dovolené' + (suffix ? ' ' + suffix : '');
+  if (/^D\b/i.test(rawCode) || rawLabel.toLocaleLowerCase('cs-CZ') === 'dovolená') return 'dovolená' + (suffix ? ' ' + suffix : '');
   if (/^NV\b/i.test(rawCode)) return 'náhradní volno' + (suffix ? ' ' + suffix : '');
   if (/^L\b/i.test(rawCode) || rawLabel.toLocaleLowerCase('cs-CZ') === 'lázně') return 'lázně' + (suffix ? ' ' + suffix : '');
   if (/^N\b/i.test(rawCode)) return 'nemoc' + (suffix ? ' ' + suffix : '');
