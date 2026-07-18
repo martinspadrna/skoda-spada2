@@ -3745,6 +3745,43 @@ function adminRotationGeneratorFindSoftKindCellOnDay(month, rowIdx, person, want
   return null;
 }
 
+function adminRotationGeneratorCountSoftKindOnRow(row, wantedKind) {
+  const kind = String(wantedKind || '').trim();
+  const cells = Array.isArray(row && row.cells) ? row.cells : [];
+  let total = 0;
+  for (let idx = 0; idx < cells.length; idx += 1) {
+    if (!String(cells[idx] || '').trim()) continue;
+    if (adminRotationGeneratorSoftKind(SOFT_MACHINE_HEADERS[idx] || '') === kind) total += 1;
+  }
+  return total;
+}
+
+function adminRotationGeneratorFindSoftKindReliefCellOnDay(month, rowIdx, targetName, sourceMachine, wantedKind, targetNames, knownNames, requireFullLatheDay) {
+  const row = month && month.soft && Array.isArray(month.soft.rows) ? month.soft.rows[rowIdx] : null;
+  const cells = Array.isArray(row && row.cells) ? row.cells : [];
+  const target = adminRotationCanonicalName(targetName, knownNames);
+  const source = String(sourceMachine || '').trim();
+  const kind = String(wantedKind || '').trim();
+  const targets = new Set(Array.isArray(targetNames) ? targetNames : []);
+  if (!row || !target || !source || !kind) return null;
+  if (kind === 'lathe' && requireFullLatheDay && adminRotationGeneratorCountSoftKindOnRow(row, 'lathe') < 3) return null;
+  const matches = [];
+  for (let idx = 0; idx < cells.length; idx += 1) {
+    const candidate = adminRotationCanonicalName(cells[idx], knownNames);
+    const machine = SOFT_MACHINE_HEADERS[idx] || '';
+    if (!candidate || candidate === target) continue;
+    if (adminRotationGeneratorSoftKind(machine) !== kind) continue;
+    if (!adminRotationGeneratorPersonKnowsMachine(target, machine)) continue;
+    if (!adminRotationGeneratorPersonKnowsMachine(candidate, source)) continue;
+    matches.push({ sectionKey: 'soft', row, cells, idx, machine, name: candidate });
+  }
+  return matches.sort((a, b) => {
+    const targetDiff = (targets.has(a.name) ? 1 : 0) - (targets.has(b.name) ? 1 : 0);
+    if (targetDiff) return targetDiff;
+    return String(a.name || '').localeCompare(String(b.name || ''), 'cs');
+  })[0] || null;
+}
+
 function adminRotationGeneratorBalanceSoftKind(month, model) {
   const knownNames = model && Array.isArray(model.knownNames) ? model.knownNames : adminGetKnownNames();
   const generatorRules = getAdminRotationGeneratorRules();
@@ -3764,24 +3801,41 @@ function adminRotationGeneratorBalanceSoftKind(month, model) {
   const maxPasses = softRows.length * 4;
   const scoreMillHeavy = (name) => Number((counts[name] && counts[name].mill) || 0) - Number((counts[name] && counts[name].lathe) || 0);
   const scoreLatheHeavy = (name) => Number((counts[name] && counts[name].lathe) || 0) - Number((counts[name] && counts[name].mill) || 0);
+  const swapSoftCells = (firstCell, secondCell, firstName, secondName) => {
+    firstCell.cells[firstCell.idx] = secondName;
+    secondCell.cells[secondCell.idx] = firstName;
+    swaps += 1;
+    counts = adminRotationGeneratorCountSoftKinds(month, workingNames);
+  };
+  const relieveMillHeavyWithAnyLathe = (name, requireFullLatheDay) => {
+    for (let rowIdx = 0; rowIdx < softRows.length; rowIdx += 1) {
+      const millCell = adminRotationGeneratorFindSoftKindCellOnDay(month, rowIdx, name, 'mill');
+      if (!millCell || !millCell.cells) continue;
+      const latheCell = adminRotationGeneratorFindSoftKindReliefCellOnDay(month, rowIdx, name, millCell.machine, 'lathe', workingNames, knownNames, requireFullLatheDay);
+      if (!latheCell || !latheCell.cells) continue;
+      swapSoftCells(millCell, latheCell, name, latheCell.name);
+      return true;
+    }
+    return false;
+  };
 
   for (let pass = 0; pass < maxPasses; pass += 1) {
     const millHeavy = workingNames.slice().sort((a, b) => scoreMillHeavy(b) - scoreMillHeavy(a))[0];
     const latheHeavy = workingNames.slice().sort((a, b) => scoreLatheHeavy(b) - scoreLatheHeavy(a))[0];
-    if (!millHeavy || !latheHeavy || millHeavy === latheHeavy) break;
-    if (scoreMillHeavy(millHeavy) <= allowedSpread || scoreLatheHeavy(latheHeavy) <= allowedSpread) break;
+    if (!millHeavy || scoreMillHeavy(millHeavy) <= allowedSpread) break;
     let didSwap = false;
-    for (let rowIdx = 0; rowIdx < softRows.length; rowIdx += 1) {
-      const millCell = adminRotationGeneratorFindSoftKindCellOnDay(month, rowIdx, millHeavy, 'mill');
-      const latheCell = adminRotationGeneratorFindSoftKindCellOnDay(month, rowIdx, latheHeavy, 'lathe');
-      if (!millCell || !latheCell || !millCell.cells || !latheCell.cells) continue;
-      millCell.cells[millCell.idx] = latheHeavy;
-      latheCell.cells[latheCell.idx] = millHeavy;
-      swaps += 1;
-      counts = adminRotationGeneratorCountSoftKinds(month, workingNames);
-      didSwap = true;
-      break;
+    if (latheHeavy && latheHeavy !== millHeavy && scoreLatheHeavy(latheHeavy) > allowedSpread) {
+      for (let rowIdx = 0; rowIdx < softRows.length; rowIdx += 1) {
+        const millCell = adminRotationGeneratorFindSoftKindCellOnDay(month, rowIdx, millHeavy, 'mill');
+        const latheCell = adminRotationGeneratorFindSoftKindCellOnDay(month, rowIdx, latheHeavy, 'lathe');
+        if (!millCell || !latheCell || !millCell.cells || !latheCell.cells) continue;
+        swapSoftCells(millCell, latheCell, millHeavy, latheHeavy);
+        didSwap = true;
+        break;
+      }
     }
+    if (!didSwap) didSwap = relieveMillHeavyWithAnyLathe(millHeavy, true);
+    if (!didSwap) didSwap = relieveMillHeavyWithAnyLathe(millHeavy, false);
     if (!didSwap) break;
   }
   return { swaps, counts };
