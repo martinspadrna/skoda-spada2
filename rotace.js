@@ -909,7 +909,7 @@ function buildRotationExportAbsenceTable(absences, dateWeight, personWeight) {
   groups.sort((a, b) => (a.sort[0] - b.sort[0]) || (a.sort[1] - b.sort[1]) || (a.sort[2] - b.sort[2]) || (a.sort[3] - b.sort[3]));
   const maxItems = Math.max(1, ...groups.map(group => group.items.length));
   const columns = [{ label: 'Datum', width: dateWeight, align: 'center', fontWeight: '900 ' }];
-  const reasonWeight = Math.max(28, Math.round(personWeight * 0.45));
+  const reasonWeight = Math.max(0.075, Math.round(personWeight * 0.55 * 10000) / 10000);
   for (let idx = 0; idx < maxItems; idx += 1) {
     columns.push({ label: 'Jméno', width: personWeight, align: 'center', fontWeight: '750 ' });
     columns.push({ label: 'Důvod', width: reasonWeight, align: 'center', fontWeight: '750 ' });

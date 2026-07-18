@@ -1,3 +1,8 @@
+## RaK 1.2 (1.318)
+
+- Rotace / Rozpisy / stáhnout obrázek: opravené šířky sloupců v bloku Absence, aby sloupec `Důvod` nezabral celou tabulku a jména absencí byla v obrázku čitelná.
+- Release metadata sjednocena na `RaK 1.2 (1.318)`, technicka verze `1.2.318`, cache `v1.2-1.318`; loader modulu ma cache znacku `1.2.318`.
+
 ## RaK 1.2 (1.317)
 
 - Administrace / Rozpisy: kopirovani dovolene pro WhatsApp pise duvod jako `(dovolená)` misto `(dovolené)`.

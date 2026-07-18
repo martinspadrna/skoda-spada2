@@ -735,12 +735,12 @@ function buildSupabaseKeepaliveStatusHtml(options) {
 function buildAppHistoryHtml(versionText) {
   const sections = [
     {
-      range: 'v.1.2 1.297–1.317',
+      range: 'v.1.2 1.297–1.318',
       title: 'Pracovníci se stroji, opravy ukládání a generátor',
       lines: [
         'Pracovníci dostali přihlašovací čísla a zaškrtávací seznam strojů, které umí (MSK, MFK, TNK, TBK, TPKW01, TPKW02); generátor rozpisu nabízí lidi jen na jejich stroje a novému pracovníkovi se při uložení rovnou založí herní profil.',
         'Opraveno tiché selhávání ukládání ("invalid category"): Pracovníci, Upozornění v kalendáři, Historie změn i automatické zálohy rozpisů se dřív vůbec neuložily na server; výběr vzhledu zjednodušen na 6 témat a 6 pozadí bez odemykání.',
-        'Generátor rozpisu sjednocuje jména bez diakritiky na oficiální podobu, hlídá kritické chyby před uložením, dorovnává měsíční TNKS01/TPKW01 před roční statistikou, doplňuje volný tvrdý stroj dostupným člověkem i po vyvažování a umí předvyplnit absence z Google kalendáře; administrace umí zkopírovat dovolené pro mistra s důvodem „dovolená“, dashboardový odpočet po CZD přepíná na další událost, prázdná Historie změn teď vysvětluje starší výpadek ukládání a zálohové tabulky mají pevnější šířky sloupců.'
+        'Generátor rozpisu sjednocuje jména bez diakritiky na oficiální podobu, hlídá kritické chyby před uložením, dorovnává měsíční TNKS01/TPKW01 před roční statistikou, doplňuje volný tvrdý stroj dostupným člověkem i po vyvažování a umí předvyplnit absence z Google kalendáře; administrace umí zkopírovat dovolené pro mistra s důvodem „dovolená“, stažený obrázek rozpisu zobrazuje jména absencí čitelně, dashboardový odpočet po CZD přepíná na další událost, prázdná Historie změn teď vysvětluje starší výpadek ukládání a zálohové tabulky mají pevnější šířky sloupců.'
       ]
     },
     {

@@ -10,7 +10,7 @@ const { spawn } = require('child_process');
 const { pathToFileURL } = require('url');
 
 const ROOT_DIR = __dirname;
-const EXPECTED_APP_VERSION = '1.2 (1.317)';
+const EXPECTED_APP_VERSION = '1.2 (1.318)';
 const RAK_BROWSER_SMOKE_ENGINE = 'local-chromium-cdp';
 const RAK_BROWSER_SMOKE_LOAD_MODE = 'about-blank-inline-html';
 const CHROMIUM_BIN = process.env.CHROMIUM_BIN || process.env.CHROME_BIN || '/usr/bin/chromium';
@@ -449,6 +449,25 @@ async function runViewportSmoke(cdpPort, viewport, inlineHtml) {
     return { selected, width: canvas ? canvas.width : 0, height: canvas ? canvas.height : 0 };
   })()`);
   assert(exportState.selected && exportState.width > 800 && exportState.height > 800, `${viewport.name}: export Rotace nevytvořil platný canvas ${JSON.stringify(exportState)}`);
+
+  const exportAbsenceTableState = await evalInPage(client, `(() => {
+    const month = window.app && app.rotation && app.rotation.months ? app.rotation.months['8/26'] : null;
+    if (!month || typeof getRotationMonthExportAbsences !== 'function' || typeof buildRotationExportAbsenceTable !== 'function') return { ok: false, reason: 'missing helpers' };
+    const absences = getRotationMonthExportAbsences(month);
+    const table = buildRotationExportAbsenceTable(absences, 0.12, 0.18);
+    const columns = table && table.columns ? table.columns : [];
+    return {
+      ok: true,
+      count: absences.length,
+      labels: columns.slice(0, 5).map(col => col.label),
+      widths: columns.slice(0, 5).map(col => col.width),
+      reasonVsPerson: columns[2] && columns[1] ? Number(columns[2].width || 0) / Math.max(0.001, Number(columns[1].width || 0)) : 99
+    };
+  })()`);
+  assert(exportAbsenceTableState.ok, `${viewport.name}: exportní tabulka absencí se nesestavila ${JSON.stringify(exportAbsenceTableState)}`);
+  assert(exportAbsenceTableState.count > 0, `${viewport.name}: testovací srpen nemá absence pro export ${JSON.stringify(exportAbsenceTableState)}`);
+  assert(exportAbsenceTableState.labels.join('|').startsWith('Datum|Jméno|Důvod'), `${viewport.name}: exportní absence mají špatné sloupce ${JSON.stringify(exportAbsenceTableState)}`);
+  assert(exportAbsenceTableState.reasonVsPerson > 0.25 && exportAbsenceTableState.reasonVsPerson < 0.9, `${viewport.name}: sloupec Důvod má špatnou šířku proti Jménu ${JSON.stringify(exportAbsenceTableState)}`);
 
   const generatorState = await evalInPage(client, `(() => {
     const monthKey = '6/26';
