@@ -1,3 +1,9 @@
+## RaK 1.2 (1.309)
+
+- Kompletní audit a otestování celé aplikace: syntaxe všech 62 JS souborů, oba spustitelné smoke testy, konzistence manifestů (loader v app.js vs. sw.js cache vs. index.html vs. export vs. disk), čistý start s prázdnou cache (59/59 modulů načteno za ~1,1 s, 0 chyb v konzoli, vestavěný self-test 0 selhání), průchod všemi stránkami (Rozpisy vč. osobního rozpisu a měsíců, všechny Kalkulačky vč. reálného výpočtu brusky, Hry vč. otevření a zavření hry, Nastavení/Kontakt/O aplikaci/Pošli mi chybu), modály Kalendář/Kantýna/Jídelna, vykreslení všech 25 administračních obrazovek bez chyby a kontrola odezvy hlavního vlákna (bez zaseknutí).
+- Oprava: modul `admin-daymods.js` chyběl v kontrole `npm run check` (build ho nikdy nekontroloval) a spolu se `styles-daymods.css` chyběl i v exportním manifestu zdrojů – ZIP export aplikace byl neúplný. Obojí doplněno, manifesty jsou teď plně konzistentní.
+- Release metadata sjednocena na `RaK 1.2 (1.309)`, technicka verze `1.2.309`, cache `v1.2-1.309`; loader modulu ma cache znacku `1.2.309`.
+
 ## RaK 1.2 (1.308)
 
 - Láďův režim: velké odlehčení pro slabé telefony. (1) Překreslení Home se v refresh dávce spouští jen 1× + jedno pozdější potvrzení místo až 7 běhů; (2) startovací sekvence vynechává nadbytečné opakované plné refreshe (hlídač nevykreslené Home zůstává); (3) při online refreshi se stránky Rozpisy/Statistiky nepřestavují, když nejsou zobrazené – plně se vykreslí při otevření nebo při reálné změně dat; (4) herní realtime události (když si kdokoli jiný hraje hru) už nespouští refresh celé aplikace, pokud nejsou otevřené Hry, a ostatní realtime události se dávkují po 3,5 s (12 s na pozadí) místo 0,75 s. Vše ověřeno živě: Home po startu vykreslená, navigace Rozpisy↔Home funguje, měřeno 1 běh/dávka v Láďově režimu vs. 4+ v normálu.
