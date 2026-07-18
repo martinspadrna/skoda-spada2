@@ -219,8 +219,16 @@ function installPwaAndConnectivityHooks() {
           }
         }
         if (typeof forceHomeRefresh === 'function') forceHomeRefresh();
-        if (typeof renderRotace === 'function') renderRotace();
-        if (typeof renderStatsPanel === 'function') renderStatsPanel();
+        // Láďův režim: Rozpisy/Statistiky se plně přestaví při otevření stránky
+        // (showPage) i při reálné změně dat (syncRotationFromSupabase), takže když
+        // nejsou vidět, slabý telefon je nemusí přestavovat při každém refreshi.
+        const ladaLiteRefresh = !!(document.body && document.body.classList && document.body.classList.contains('ladaMode'));
+        const rotacePage = document.getElementById('rotace');
+        const rotaceVisible = !!(rotacePage && rotacePage.classList && rotacePage.classList.contains('active'));
+        if (!ladaLiteRefresh || rotaceVisible) {
+          if (typeof renderRotace === 'function') renderRotace();
+          if (typeof renderStatsPanel === 'function') renderStatsPanel();
+        }
         return reason || 'done';
       } catch (err) {
         console.warn('Live refresh hook failed', err);

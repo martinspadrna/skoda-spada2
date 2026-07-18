@@ -1,3 +1,9 @@
+## RaK 1.2 (1.308)
+
+- Láďův režim: velké odlehčení pro slabé telefony. (1) Překreslení Home se v refresh dávce spouští jen 1× + jedno pozdější potvrzení místo až 7 běhů; (2) startovací sekvence vynechává nadbytečné opakované plné refreshe (hlídač nevykreslené Home zůstává); (3) při online refreshi se stránky Rozpisy/Statistiky nepřestavují, když nejsou zobrazené – plně se vykreslí při otevření nebo při reálné změně dat; (4) herní realtime události (když si kdokoli jiný hraje hru) už nespouští refresh celé aplikace, pokud nejsou otevřené Hry, a ostatní realtime události se dávkují po 3,5 s (12 s na pozadí) místo 0,75 s. Vše ověřeno živě: Home po startu vykreslená, navigace Rozpisy↔Home funguje, měřeno 1 běh/dávka v Láďově režimu vs. 4+ v normálu.
+- Oprava: diagnostický release kontrakt v export.js držel zastaralou cache verzi `v1.2-1.297` (drift od buildu 297) – srovnáno na aktuální verzi.
+- Release metadata sjednocena na `RaK 1.2 (1.308)`, technicka verze `1.2.308`, cache `v1.2-1.308`; loader modulu ma cache znacku `1.2.308`.
+
 ## RaK 1.2 (1.307)
 
 - Oprava: stejná "invalid category" chyba jako u Pracovníků z buildu 1.306 postihovala i Historii změn (`admin_change_log`) a automatické Zálohy rozpisů (`rotation_save_backup`) – obě kategorie chyběly v seznamu speciálních administrativních nastavení v supabase-bridge.js, takže se jejich ukládání vždy tiše nezdařilo (chyba se polykala v try/catch). Historie změn tak byla odjakživa prázdná a automatická záloha rozpisu se nikdy skutečně neuložila na produkci. Doplněno do seznamu, ověřeno end-to-end mockovaným uložením.

@@ -808,12 +808,33 @@
     return event;
   }
 
+  const SUPABASE_REALTIME_GAME_TABLES = new Set(['game_accounts', 'game_invites', 'game_sessions', 'game_stats', 'gomoku_wins']);
+
+  function isRakLadaModeActiveForBridge() {
+    try {
+      return !!(typeof document !== 'undefined' && document.body && document.body.classList && document.body.classList.contains('ladaMode'));
+    } catch (err) {
+      return false;
+    }
+  }
+
   function requestRealtimeRefresh(payload) {
     const event = rememberRealtimeEvent(payload || {});
     const hidden = typeof document !== 'undefined' && document.visibilityState === 'hidden';
     state.performanceGuard.realtimeRefreshRequests += 1;
     state.performanceGuard.lastRealtimeRefreshRequestAt = Date.now();
     state.performanceGuard.lastRealtimeRefreshTable = event.table || '';
+    const ladaLite = isRakLadaModeActiveForBridge();
+    // Láďův režim: herní realtime eventy (cizí hráči hrají) nespouští refresh
+    // celé appky, pokud nejsou otevřené Hry - online piškvorky mají vlastní polling.
+    if (ladaLite && SUPABASE_REALTIME_GAME_TABLES.has(event.table)) {
+      const gamesPage = typeof document !== 'undefined' ? document.getElementById('games') : null;
+      const gamesVisible = !!(gamesPage && gamesPage.classList && gamesPage.classList.contains('active'));
+      if (!gamesVisible) {
+        state.performanceGuard.realtimeRefreshLadaGameSkips = Number(state.performanceGuard.realtimeRefreshLadaGameSkips || 0) + 1;
+        return;
+      }
+    }
     if (realtimeRefreshTimer) {
       state.performanceGuard.realtimeRefreshCoalesced += 1;
       clearTimeout(realtimeRefreshTimer);
@@ -822,7 +843,9 @@
       state.performanceGuard.realtimeRefreshHiddenDefers += 1;
       state.performanceGuard.lastRealtimeRefreshHiddenAt = Date.now();
     }
-    const delay = hidden ? SUPABASE_REALTIME_REFRESH_HIDDEN_DELAY_MS : SUPABASE_REALTIME_REFRESH_DELAY_MS;
+    const delay = ladaLite
+      ? (hidden ? 12000 : 3500)
+      : (hidden ? SUPABASE_REALTIME_REFRESH_HIDDEN_DELAY_MS : SUPABASE_REALTIME_REFRESH_DELAY_MS);
     realtimeRefreshTimer = setTimeout(async () => {
       realtimeRefreshTimer = null;
       const reason = event.table ? ('supabase-' + event.table) : 'supabase-realtime';

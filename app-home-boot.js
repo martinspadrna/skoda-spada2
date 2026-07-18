@@ -46,6 +46,15 @@ function runRakHomeBootRefresh() {
     tick();
   };
 
+  // Láďův režim: keepPingingHome sám opakuje jen dokud je Home nevykreslená,
+  // takže pevná kaskáda dalších plných refreshů je na slabém telefonu zbytečná zátěž.
+  const ladaLite = !!(document.body && document.body.classList && document.body.classList.contains("ladaMode"));
+  if (ladaLite) {
+    if (typeof requestAnimationFrame === "function") requestAnimationFrame(runHomeRefresh);
+    setTimeout(keepPingingHome, 60);
+    return;
+  }
+
   if (typeof requestAnimationFrame === "function") {
     requestAnimationFrame(runHomeRefresh);
     requestAnimationFrame(() => requestAnimationFrame(runHomeRefresh));
@@ -81,8 +90,11 @@ function installRakHomeBootSequence() {
   window.__rakHomeBootSequenceInstalled = true;
 
   runRakHomeBootRefresh();
-  setTimeout(runRakHomeBootRefresh, 60);
-  setTimeout(runRakHomeBootRefresh, 240);
+  const ladaLiteBoot = !!(document.body && document.body.classList && document.body.classList.contains("ladaMode"));
+  if (!ladaLiteBoot) {
+    setTimeout(runRakHomeBootRefresh, 60);
+    setTimeout(runRakHomeBootRefresh, 240);
+  }
   setTimeout(runRakLateHomeBootRefresh, 1100);
   window.addEventListener("load", runRakHomeBootRefresh, { once: true });
   window.addEventListener("pageshow", runRakHomeBootRefresh);

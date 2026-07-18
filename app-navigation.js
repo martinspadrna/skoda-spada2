@@ -856,6 +856,16 @@ function scheduleHomeRefresh(reason = 'home-refresh') {
     }
   };
 
+  // Láďův režim: každý běh je plné přestavění dashboardu, na slabém telefonu
+  // stačí jeden okamžitý paint + jedno pozdější potvrzení místo sedmi běhů.
+  const ladaLite = !!(document.body && document.body.classList && document.body.classList.contains('ladaMode'));
+  if (ladaLite) {
+    if (typeof requestAnimationFrame === 'function') requestAnimationFrame(() => run('raf-1'));
+    else setTimeout(() => run('timeout-0'), 0);
+    setTimeout(() => { run('timeout-900'); finish(); }, 900);
+    return true;
+  }
+
   if (typeof requestAnimationFrame === 'function') {
     requestAnimationFrame(() => {
       run('raf-1');
