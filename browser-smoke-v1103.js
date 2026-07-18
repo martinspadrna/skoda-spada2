@@ -10,7 +10,7 @@ const { spawn } = require('child_process');
 const { pathToFileURL } = require('url');
 
 const ROOT_DIR = __dirname;
-const EXPECTED_APP_VERSION = '1.2 (1.289)';
+const EXPECTED_APP_VERSION = '1.2 (1.312)';
 const RAK_BROWSER_SMOKE_ENGINE = 'local-chromium-cdp';
 const RAK_BROWSER_SMOKE_LOAD_MODE = 'about-blank-inline-html';
 const CHROMIUM_BIN = process.env.CHROMIUM_BIN || process.env.CHROME_BIN || '/usr/bin/chromium';
@@ -471,8 +471,10 @@ async function runViewportSmoke(cdpPort, viewport, inlineHtml) {
     (month.hard?.rows || []).forEach(row => { row.cells = Array(5).fill(''); });
     (month.soft?.rows || []).forEach(row => { row.cells = Array(5).fill(''); });
     const result = adminGenerateRotationMonthDraft(monthKey);
-    const row = app.rotation.months[monthKey].soft.rows[0];
-    const hardRow = app.rotation.months[monthKey].hard.rows[0];
+    const draft = typeof adminRotationGeneratorGetPendingDraft === 'function' ? adminRotationGeneratorGetPendingDraft(monthKey) : null;
+    const generatedMonth = draft || app.rotation.months[monthKey];
+    const row = generatedMonth.soft.rows[0];
+    const hardRow = generatedMonth.hard.rows[0];
     const soft = row ? row.cells || [] : [];
     const names = [...(hardRow?.cells || []), ...soft].filter(Boolean);
     return {
@@ -528,6 +530,66 @@ async function runViewportSmoke(cdpPort, viewport, inlineHtml) {
   assert(absenceStateAfterAdd.rowCount >= 2, `${viewport.name}: + Přidat jméno nepřidalo druhý řádek ${JSON.stringify(absenceStateAfterAdd)}`);
   assert(absenceStateAfterAdd.rows[0] && absenceStateAfterAdd.rows[0].person === 'Kříž' && absenceStateAfterAdd.rows[0].code === 'D', `${viewport.name}: + Přidat jméno smazalo vyplněnou absenci ${JSON.stringify(absenceStateAfterAdd)}`);
 
+  const calendarAbsenceImportState = await evalInPage(client, `(async () => {
+    const previousBody = document.getElementById('appMenuBody');
+    if (previousBody) previousBody.remove();
+    const body = document.createElement('div');
+    body.id = 'appMenuBody';
+    document.body.appendChild(body);
+    if (typeof adminRotationGeneratorSetWizardState !== 'function' || typeof adminRotationGeneratorRenderWizard !== 'function' || typeof adminRotationGeneratorLoadCalendarAbsences !== 'function') {
+      return { ok: false, reason: 'missing calendar import functions' };
+    }
+    const originalFetch = window.fetch;
+    try {
+      adminRotationGeneratorSetWizardState({
+        step: 'absences',
+        monthKey: '7/26',
+        days: ['17.7. N', '18.7. R', '19.7. N'],
+        absencesByDay: [
+          { date: '17.7. N', rows: [] },
+          { date: '18.7. R', rows: [] },
+          { date: '19.7. N', rows: [] }
+        ]
+      });
+      adminRotationGeneratorRenderWizard('absences');
+      window.fetch = async (url) => ({
+        ok: String(url || '').includes('/api/rotation-absence-calendar') || String(url || '').includes('calendar.google.com'),
+        status: 200,
+        text: async () => [
+          'BEGIN:VCALENDAR',
+          'BEGIN:VEVENT',
+          'SUMMARY:Třasák D',
+          'DTSTART;VALUE=DATE:20260717',
+          'DTEND;VALUE=DATE:20260719',
+          'END:VEVENT',
+          'BEGIN:VEVENT',
+          'SUMMARY:Strizek NV',
+          'DTSTART;VALUE=DATE:20260718',
+          'DTEND;VALUE=DATE:20260719',
+          'END:VEVENT',
+          'BEGIN:VEVENT',
+          'SUMMARY:Směna D',
+          'DTSTART;VALUE=DATE:20260717',
+          'DTEND;VALUE=DATE:20260718',
+          'END:VEVENT',
+          'END:VCALENDAR'
+        ].join('\\n')
+      });
+      const result = await adminRotationGeneratorLoadCalendarAbsences();
+      const rowsByDay = (window.__rakRotationGeneratorWizard?.absencesByDay || []).map((day) => (day.rows || []).filter((row) => row.person || row.code));
+      const statusText = document.getElementById('adminOnlineSaveStatus')?.textContent || '';
+      return { ok: true, result, rowsByDay, statusText };
+    } finally {
+      window.fetch = originalFetch;
+    }
+  })()`);
+  assert(calendarAbsenceImportState.ok, `${viewport.name}: import absencí z kalendáře se nespustil ${JSON.stringify(calendarAbsenceImportState)}`);
+  assert(calendarAbsenceImportState.result && calendarAbsenceImportState.result.importedCount === 3, `${viewport.name}: import z ICS má mít 3 absence ${JSON.stringify(calendarAbsenceImportState)}`);
+  assert(calendarAbsenceImportState.rowsByDay[0].some((row) => row.person === 'Třasák' && row.code === 'D'), `${viewport.name}: vícedenní dovolená nezačíná 17.7. ${JSON.stringify(calendarAbsenceImportState)}`);
+  assert(calendarAbsenceImportState.rowsByDay[1].some((row) => row.person === 'Třasák' && row.code === 'D'), `${viewport.name}: vícedenní dovolená nepokračuje 18.7. ${JSON.stringify(calendarAbsenceImportState)}`);
+  assert(calendarAbsenceImportState.rowsByDay[1].some((row) => row.person === 'Střížek' && row.code === 'NV'), `${viewport.name}: import nezkanonizoval Strizek na Střížek ${JSON.stringify(calendarAbsenceImportState)}`);
+  assert(!calendarAbsenceImportState.rowsByDay.flat().some((row) => row.person === 'Směna'), `${viewport.name}: import nesmí brát směnové události jako absence ${JSON.stringify(calendarAbsenceImportState)}`);
+
   const wizardRunState = await evalInPage(client, `(() => {
     const previousBody = document.getElementById('appMenuBody');
     if (previousBody) previousBody.remove();
@@ -553,7 +615,7 @@ async function runViewportSmoke(cdpPort, viewport, inlineHtml) {
     if (!runBtn) return { ok: false, reason: 'missing run button', days };
     adminHandleRotationGeneratorWizardAction('generator-run', runBtn);
     const state = window.__rakRotationGeneratorWizard || {};
-    const month = app.rotation?.months?.[monthKey] || null;
+    const month = (typeof adminRotationGeneratorGetPendingDraft === 'function' ? adminRotationGeneratorGetPendingDraft(monthKey) : null) || app.rotation?.months?.[monthKey] || null;
     const filled = month ? [...(month.hard?.rows || []), ...(month.soft?.rows || [])].flatMap(row => row.cells || []).filter(Boolean).length : 0;
     const machineCountHitCount = document.querySelectorAll('.adminRotationGeneratorMachineSummaryTable .adminRotationMachineCountHit').length;
     const summaryText = document.querySelector('.adminRotationGeneratorMachineSummaryTable')?.textContent || '';
@@ -750,7 +812,10 @@ async function main() {
         fs.rmSync(userDataDir, { recursive: true, force: true, maxRetries: 3, retryDelay: 120 });
         break;
       } catch (err) {
-        if (attempt === 3) throw err;
+        if (attempt === 3) {
+          console.warn(JSON.stringify({ ok: true, cleanupWarning: err && err.message || String(err), userDataDir }));
+          break;
+        }
         await new Promise(resolve => setTimeout(resolve, 160));
       }
     }

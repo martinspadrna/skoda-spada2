@@ -1,3 +1,17 @@
+## RaK 1.2 (1.312)
+
+- Administrace / Rozpisy / Generátor: v kroku Absence přibylo tlačítko `Načíst dovolené z kalendáře`, které z Google ICS doplní známé absence podle jména a kódu (`D`, `NV`, `L`, `N`, `§` atd.) a ignoruje běžné směnové události.
+- Přidaný Vercel API endpoint `/api/rotation-absence-calendar`, aby se Google kalendář načítal přes stejnou doménu aplikace a nenarážel v prohlížeči na CORS.
+- Import absencí z kalendáře zachová ručně rozepsané řádky, deduplikuje stejnou osobu se stejným důvodem a all-day události bere podle data směny, tedy noční z 17.7. patří k řádku začínajícímu 17.7.
+- Release metadata sjednocena na `RaK 1.2 (1.312)`, technicka verze `1.2.312`, cache `v1.2-1.312`; loader modulu ma cache znacku `1.2.312`.
+
+## RaK 1.2 (1.311)
+
+- Generátor rozpisu: jména v rozpisu i absencích se při uložení kanonizují přes seznam pracovníků bez ohledu na diakritiku, takže `Strizek/Strižek` se uloží jako `Střížek` a `Kriz/Křiž` jako `Kříž`.
+- Generátor rozpisu: dorovnání TNKS01/TPKW01 nově bere měsíční vyrovnání jako hlavní pravidlo pro všechny oprávněné pracovníky; roční statistika slouží až jako jemný tie-break, když je měsíc už přibližně srovnaný.
+- Rozpisy: před uložením běží společná kontrola kritických pravidel (duplicita člověka v jednom dni, absence proti nasazení, oprávnění stroje a TNKS01/TPKW01 po sobě). Špatný rozpis se nemá uložit online potichu.
+- Release metadata sjednocena na `RaK 1.2 (1.311)`, technicka verze `1.2.311`, cache `v1.2-1.311`; loader modulu ma cache znacku `1.2.311`.
+
 ## RaK 1.2 (1.310)
 
 - O aplikaci: doplněn aktuální souhrn 1.297–1.310 o opravy ukládání Historie změn, automatických záloh rozpisů, výkonového režimu a dotažení admin tabulek.

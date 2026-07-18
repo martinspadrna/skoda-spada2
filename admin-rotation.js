@@ -124,6 +124,7 @@ const ADMIN_ROTATION_OVERTIME_SHIFT_FILTER_KEY = 'rak_admin_overtime_shift_filte
 const ADMIN_ROTATION_OVERTIME_DEFAULT_TEAM = 'D';
 const ADMIN_ROTATION_GENERATOR_SETTINGS_KEY = 'ROTATION_GENERATOR_SETTINGS';
 const ADMIN_ROTATION_GENERATOR_SETTINGS_CATEGORY = 'rotation_generator_settings';
+const ADMIN_ROTATION_GENERATOR_ABSENCE_ICS_URL = '/api/rotation-absence-calendar';
 
 function adminRotationOvertimeIsoToCzechDate(value) {
   const raw = String(value || '').trim();
@@ -997,6 +998,10 @@ async function saveAdminRotationToSupabase(monthKey, rawText) {
   }
   const fallback = app.rotation && app.rotation.months ? app.rotation.months[monthKey] : null;
   const normalized = normalizeMonthForImport(parsed, fallback);
+  const ruleCheck = adminRotationValidateMonthRules(normalized, monthKey, { source: 'save' });
+  if (!ruleCheck.ok) {
+    throw new Error('Rozpis nejde uložit: ' + adminRotationFormatRuleIssues(ruleCheck.issues.filter((issue) => issue.severity === 'error')));
+  }
   if (!app.rotation.months) app.rotation.months = {};
   app.rotation.months[monthKey] = normalized;
   app.rotation = normalizeRotationData(app.rotation);
@@ -1015,7 +1020,7 @@ async function saveAdminRotationToSupabase(monthKey, rawText) {
         : 'Uložení online se nepodařilo.';
     }
   }
-  return { normalized, saveResult };
+  return { normalized, saveResult, ruleCheck };
 }
 
 function adminRotationRowTemplate(section, row, rowIndex, machineCount, allowBlankTail) {
@@ -1128,6 +1133,23 @@ function adminGetKnownNames() {
     return Array.from(KNOWN_STAT_NAMES).filter(Boolean).sort((a, b) => String(a).localeCompare(String(b), 'cs'));
   }
   return [];
+}
+
+function adminRotationNameLookupKey(value) {
+  return String(value || '')
+    .trim()
+    .toLocaleLowerCase('cs-CZ')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/\s+/g, ' ');
+}
+
+function adminRotationCanonicalPeopleText(value, knownNames) {
+  const raw = String(value || '').trim();
+  if (!raw) return '';
+  const names = adminSplitPeopleList(raw);
+  if (!names.length) return adminRotationCanonicalName(raw, knownNames);
+  return names.map((name) => adminRotationCanonicalName(name, knownNames)).filter(Boolean).join(', ');
 }
 
 function adminSplitPeopleList(text) {
@@ -2104,9 +2126,10 @@ function readAdminRotationFromDom(monthKey) {
   const readSection = (section, machineCount) => {
     const rows = [];
     const seen = new Set();
+    const knownNames = adminGetKnownNames();
     root.querySelectorAll('tr[data-rotation-section="' + section + '"]').forEach((tr) => {
       const date = String(tr.querySelector('[data-rot-field="date"]')?.value || '').trim();
-      const cells = Array.from({ length: machineCount }, (_, i) => String(tr.querySelector('[data-rot-field="cell-' + i + '"]')?.value || '').trim());
+      const cells = Array.from({ length: machineCount }, (_, i) => adminRotationCanonicalName(tr.querySelector('[data-rot-field="cell-' + i + '"]')?.value || '', knownNames));
       if (!date && cells.every(v => !v)) return;
       const row = { date, cells };
       const key = makeRotationRowKey(row);
@@ -2126,9 +2149,10 @@ function readAdminRotationFromDom(monthKey) {
   const notes = [];
   const seenNotes = new Set();
   root.querySelectorAll('tr[data-note-row-index]').forEach((tr) => {
+    const knownNames = adminGetKnownNames();
     const get = (field) => String(tr.querySelector('[data-note-field="' + field + '"]')?.value || '').trim();
     const date = get('date');
-    const person = get('person');
+    const person = adminRotationCanonicalPeopleText(get('person'), knownNames);
     const code = get('code');
     const parsed = typeof parseDateToken === 'function' ? parseDateToken(date) : null;
     const shift = parsed && parsed.shift ? parsed.shift : adminRotationFindShiftForAbsenceDate(month, date);
@@ -2160,6 +2184,10 @@ async function saveAdminRotationFromDom(monthKey) {
   const previousRotationSnapshot = app.rotation ? JSON.parse(JSON.stringify(app.rotation)) : null;
   const fallback = app.rotation && app.rotation.months ? app.rotation.months[monthKey] : null;
   const normalized = readAdminRotationFromDom(monthKey);
+  const ruleCheck = adminRotationValidateMonthRules(normalized, monthKey, { source: 'save' });
+  if (!ruleCheck.ok) {
+    throw new Error('Rozpis nejde uložit: ' + adminRotationFormatRuleIssues(ruleCheck.issues.filter((issue) => issue.severity === 'error')));
+  }
   if (!app.rotation.months) app.rotation.months = {};
   app.rotation.months[monthKey] = normalized;
   app.rotation = normalizeRotationData(app.rotation);
@@ -2183,7 +2211,7 @@ async function saveAdminRotationFromDom(monthKey) {
   try {
     if (app.adminRotationPendingDrafts && monthKey) delete app.adminRotationPendingDrafts[monthKey];
   } catch (err) {}
-  return { normalized, saveResult };
+  return { normalized, saveResult, ruleCheck };
 }
 
 
@@ -2237,7 +2265,10 @@ function adminRotationCanonicalName(name, knownNames) {
   const lowered = raw.toLocaleLowerCase('cs-CZ');
   const known = Array.isArray(knownNames) ? knownNames : adminGetKnownNames();
   const match = known.find((item) => String(item || '').trim().toLocaleLowerCase('cs-CZ') === lowered);
-  return match || raw;
+  if (match) return match;
+  const folded = adminRotationNameLookupKey(raw);
+  const foldedMatches = known.filter((item) => adminRotationNameLookupKey(item) === folded);
+  return foldedMatches.length === 1 ? foldedMatches[0] : raw;
 }
 
 function adminRotationIsRealName(name, knownNames) {
@@ -3117,6 +3148,203 @@ function adminRotationGeneratorCanUseHardMachine(month, rowIdx, machineName, per
   return !adminRotationGeneratorWouldBreakConsecutiveTnks(month, rowIdx, person, knownNames, monthKey);
 }
 
+function adminRotationGeneratorPressCellsForRow(month, rowIdx, knownNames, monthKey) {
+  const names = Array.isArray(knownNames) ? knownNames : adminGetKnownNames();
+  const hardRow = month && month.hard && Array.isArray(month.hard.rows) ? month.hard.rows[rowIdx] : null;
+  const cells = Array.isArray(hardRow && hardRow.cells) ? hardRow.cells : [];
+  const out = [];
+  HARD_MACHINE_HEADERS.forEach((machineName, idx) => {
+    const machine = String(machineName || '').trim().toUpperCase();
+    const countsAsTnks = machine === 'TNKS01' || (machine === 'TPKW01' && adminRotationGeneratorRowShouldSplitPress(month, rowIdx, monthKey));
+    if (!countsAsTnks) return;
+    const name = adminRotationCanonicalName(cells[idx], names);
+    if (name && names.includes(name)) out.push({ rowIdx, row: hardRow, cells, idx, machine, name });
+  });
+  return out;
+}
+
+function adminRotationGeneratorFindConsecutiveTnksIssues(month, monthKey, knownNames) {
+  const names = Array.isArray(knownNames) ? knownNames : adminGetKnownNames();
+  const hardRows = Array.isArray(month && month.hard && month.hard.rows) ? month.hard.rows : [];
+  const issues = [];
+  let previous = null;
+  for (let rowIdx = 0; rowIdx < hardRows.length; rowIdx += 1) {
+    const current = adminRotationGeneratorPressCellsForRow(month, rowIdx, names, monthKey);
+    if (!current.length) continue;
+    if (previous && previous.cells && previous.cells.length) {
+      current.forEach((cell) => {
+        const prev = previous.cells.find((item) => item.name === cell.name);
+        if (prev) issues.push({ rowIdx, previousRowIdx: previous.rowIdx, previous: prev, current: cell });
+      });
+    }
+    previous = { rowIdx, cells: current };
+  }
+  return issues;
+}
+
+function adminRotationGeneratorFindSwapCellsOnDay(month, rowIdx, person, knownNames) {
+  const wanted = adminRotationCanonicalName(person, knownNames);
+  const out = [];
+  const scan = (sectionKey, headers) => {
+    const row = month && month[sectionKey] && Array.isArray(month[sectionKey].rows) ? month[sectionKey].rows[rowIdx] : null;
+    const cells = Array.isArray(row && row.cells) ? row.cells : [];
+    cells.forEach((cell, idx) => {
+      const name = adminRotationCanonicalName(cell, knownNames);
+      if (!name || name === wanted || !knownNames.includes(name)) return;
+      const machine = headers[idx] || '';
+      const isPress = sectionKey === 'hard' && (machine === 'TNKS01' || machine === 'TPKW01');
+      if (isPress) return;
+      out.push({ sectionKey, row, cells, idx, machine, name });
+    });
+  };
+  scan('soft', SOFT_MACHINE_HEADERS);
+  scan('hard', HARD_MACHINE_HEADERS);
+  return out;
+}
+
+function adminRotationGeneratorRepairConsecutiveTnks(month, model, monthKey) {
+  const knownNames = model && Array.isArray(model.knownNames) ? model.knownNames : adminGetKnownNames();
+  if (!month || !knownNames.length) return { repairs: 0, remaining: 0 };
+  let repairs = 0;
+  const maxPasses = Math.max(1, (Array.isArray(month.hard && month.hard.rows) ? month.hard.rows.length : 0) * 3);
+  for (let pass = 0; pass < maxPasses; pass += 1) {
+    const issues = adminRotationGeneratorFindConsecutiveTnksIssues(month, monthKey, knownNames);
+    if (!issues.length) return { repairs, remaining: 0 };
+    const issue = issues[0];
+    const current = issue.current;
+    if (!current || !current.cells) break;
+    const counts = adminRotationGeneratorCountHardMachine(month, 'TNKS01', knownNames, monthKey);
+    const candidates = adminRotationGeneratorFindSwapCellsOnDay(month, current.rowIdx, current.name, knownNames)
+      .filter((cell) => adminRotationGeneratorPersonKnowsMachine(cell.name, current.machine))
+      .filter((cell) => adminRotationGeneratorPersonKnowsMachine(current.name, cell.machine))
+      .filter((cell) => adminRotationGeneratorCanUseHardMachine(month, current.rowIdx, current.machine, cell.name, knownNames, monthKey))
+      .sort((a, b) => Number(counts[a.name] || 0) - Number(counts[b.name] || 0) || a.name.localeCompare(b.name, 'cs'));
+    const swap = candidates[0];
+    if (!swap || !swap.cells) break;
+    swap.cells[swap.idx] = current.name;
+    current.cells[current.idx] = swap.name;
+    repairs += 1;
+  }
+  return { repairs, remaining: adminRotationGeneratorFindConsecutiveTnksIssues(month, monthKey, knownNames).length };
+}
+
+function adminRotationValidateMonthRules(month, monthKey, options) {
+  const opts = options || {};
+  const knownNames = adminGetKnownNames();
+  const issues = [];
+  const hardRows = Array.isArray(month && month.hard && month.hard.rows) ? month.hard.rows : [];
+  const softRows = Array.isArray(month && month.soft && month.soft.rows) ? month.soft.rows : [];
+  const maxRows = Math.max(hardRows.length, softRows.length);
+  const addIssue = (severity, type, message, detail) => {
+    issues.push({ severity, type, message, detail: detail || '' });
+  };
+  const noteNamesForDate = (dateLabel) => {
+    const out = [];
+    (Array.isArray(month && month.notes) ? month.notes : []).forEach((note) => {
+      if (adminRotationDateBaseKey(note && note.date) !== adminRotationDateBaseKey(dateLabel)) return;
+      adminSplitPeopleList(note && note.person ? note.person : '').forEach((person) => {
+        const canonical = adminRotationCanonicalName(person, knownNames);
+        if (canonical) out.push({ raw: person, canonical });
+      });
+    });
+    return out;
+  };
+
+  for (let rowIdx = 0; rowIdx < maxRows; rowIdx += 1) {
+    const hardRow = hardRows[rowIdx] || null;
+    const softRow = softRows[rowIdx] || null;
+    const dateLabel = (hardRow && hardRow.date) || (softRow && softRow.date) || '';
+    if (!dateLabel) continue;
+    const assigned = new Map();
+    const register = (sectionKey, machineName, rawName) => {
+      const name = adminRotationCanonicalName(rawName, knownNames);
+      if (!name) return;
+      if (!knownNames.includes(name)) {
+        const near = knownNames.find((known) => adminRotationNameLookupKey(known) === adminRotationNameLookupKey(rawName));
+        addIssue('warn', 'unknown-name', String(dateLabel) + ': neznámé jméno ' + String(rawName || name) + (near ? ', myslel jsi ' + near + '?' : ''), '');
+        return;
+      }
+      if (!assigned.has(name)) assigned.set(name, []);
+      assigned.get(name).push({ sectionKey, machineName });
+      if (!adminRotationGeneratorPersonKnowsMachine(name, machineName)) {
+        addIssue('error', 'skill', String(dateLabel) + ': ' + name + ' neumí ' + machineName + '.', '');
+      }
+    };
+    (Array.isArray(hardRow && hardRow.cells) ? hardRow.cells : []).forEach((cell, idx) => register('hard', HARD_MACHINE_HEADERS[idx] || '', cell));
+    (Array.isArray(softRow && softRow.cells) ? softRow.cells : []).forEach((cell, idx) => register('soft', SOFT_MACHINE_HEADERS[idx] || '', cell));
+    assigned.forEach((places, name) => {
+      if (places.length > 1) {
+        addIssue('error', 'duplicate-day', String(dateLabel) + ': ' + name + ' je ve stejný den víckrát.', places.map((place) => place.machineName).join(', '));
+      }
+    });
+    noteNamesForDate(dateLabel).forEach((noteName) => {
+      if (!knownNames.includes(noteName.canonical)) {
+        addIssue('warn', 'unknown-absence-name', String(dateLabel) + ': absence má neznámé jméno ' + noteName.raw + '.', '');
+      }
+      if (assigned.has(noteName.canonical)) {
+        addIssue('error', 'absence-conflict', String(dateLabel) + ': ' + noteName.canonical + ' má absenci a zároveň je v rozpisu.', '');
+      }
+    });
+  }
+
+  adminRotationGeneratorFindConsecutiveTnksIssues(month, monthKey, knownNames).forEach((issue) => {
+    const prevDate = hardRows[issue.previousRowIdx] && hardRows[issue.previousRowIdx].date ? hardRows[issue.previousRowIdx].date : '';
+    const currentDate = hardRows[issue.rowIdx] && hardRows[issue.rowIdx].date ? hardRows[issue.rowIdx].date : '';
+    addIssue('error', 'consecutive-tnks', String(prevDate) + ' -> ' + String(currentDate) + ': ' + issue.current.name + ' je na TNKS01/TPKW01 dvě směny po sobě.', '');
+  });
+
+  const eligiblePressNames = knownNames.filter((name) => adminRotationGeneratorPersonKnowsMachine(name, 'TNKS01'))
+    .filter((name) => {
+      for (let rowIdx = 0; rowIdx < maxRows; rowIdx += 1) {
+        const row = hardRows[rowIdx] || softRows[rowIdx] || null;
+        const dateLabel = row && row.date ? row.date : '';
+        if (!dateLabel) continue;
+        const dayNotes = adminRotationGeneratorDateNotes(month, dateLabel);
+        if (adminRotationGeneratorIsDayBlocked(dayNotes)) continue;
+        const absences = adminRotationNamesForAbsenceDate(month.notes, dateLabel, knownNames);
+        if (!absences.has(name)) return true;
+      }
+      return false;
+    });
+  if (eligiblePressNames.length > 1) {
+    const pressCounts = adminRotationGeneratorCountHardMachine(month, 'TNKS01', eligiblePressNames, monthKey);
+    const values = eligiblePressNames.map((name) => Number(pressCounts[name] || 0));
+    const max = Math.max(...values);
+    const min = Math.min(...values);
+    if (max - min > 1.001) {
+      const high = eligiblePressNames.filter((name) => Math.abs(Number(pressCounts[name] || 0) - max) < 0.001).join(', ');
+      const low = eligiblePressNames.filter((name) => Math.abs(Number(pressCounts[name] || 0) - min) < 0.001).join(', ');
+      addIssue(opts.source === 'generator' ? 'error' : 'warn', 'monthly-tnks-balance', 'TNKS01/TPKW01 není měsíčně vyrovnaná: rozdíl je ' + String((Math.round((max - min) * 10) / 10)).replace('.', ',') + '.', 'Nejvíc: ' + high + '; nejmíň: ' + low);
+    }
+  }
+
+  const generatorRules = getAdminRotationGeneratorRules();
+  const softCore = (Array.isArray(generatorRules.softCore) ? generatorRules.softCore : []).map((name) => adminRotationCanonicalName(name, knownNames)).filter((name) => knownNames.includes(name));
+  if (softCore.length) {
+    const hardCount = Object.create(null);
+    softCore.forEach((name) => { hardCount[name] = 0; });
+    hardRows.forEach((row) => {
+      (Array.isArray(row && row.cells) ? row.cells : []).forEach((cell) => {
+        const name = adminRotationCanonicalName(cell, knownNames);
+        if (Object.prototype.hasOwnProperty.call(hardCount, name)) hardCount[name] += 1;
+      });
+    });
+    softCore.forEach((name) => {
+      if (hardCount[name] <= 0) {
+        addIssue('warn', 'soft-core-hard-missing', name + ' není v tomto měsíci ani jednou na tvrdotě.', '');
+      }
+    });
+  }
+
+  return { ok: !issues.some((issue) => issue.severity === 'error'), issues };
+}
+
+function adminRotationFormatRuleIssues(issues) {
+  const list = Array.isArray(issues) ? issues : [];
+  if (!list.length) return '';
+  return list.slice(0, 4).map((issue) => String(issue && issue.message || '')).filter(Boolean).join(' · ');
+}
+
 
 function adminRotationGeneratorFindPersonCellOnDay(month, rowIdx, person, preferredSection) {
   const wanted = String(person || '').trim();
@@ -3299,10 +3527,8 @@ function adminRotationGeneratorBalanceHardMachine(month, machineName, model, mon
   const generatorRules = getAdminRotationGeneratorRules();
   const hardPreferred = generatorRules.hardPreferred.filter((name) => knownNames.includes(name));
   const isPressBalance = /^(?:TNKS01|TPKW01)$/i.test(String(machineName || ''));
-  const softCoreNoTnksBalance = generatorRules.softCoreNoTnksBalance || [];
   const workingNames = adminRotationGeneratorCollectWorkingNames(month, knownNames)
     .filter((name) => knownNames.includes(name))
-    .filter((name) => !(isPressBalance && softCoreNoTnksBalance.includes(name)))
     .filter((name) => adminRotationGeneratorPersonKnowsMachine(name, machineName));
   const machineIdx = adminRotationGeneratorMachineIndex(HARD_MACHINE_HEADERS, machineName);
   const tnksIdx = adminRotationGeneratorMachineIndex(HARD_MACHINE_HEADERS, 'TNKS01');
@@ -3315,7 +3541,7 @@ function adminRotationGeneratorBalanceHardMachine(month, machineName, model, mon
   let counts = adminRotationGeneratorCountHardMachine(month, machineName, workingNames, monthKey);
   let swaps = 0;
   const maxPasses = hardRows.length * 4;
-  const allowedDiff = isPressBalance ? 0.5 : 1;
+  const allowedDiff = 1;
 
   const currentCount = (name) => Number(counts[name] || 0);
   const yearCount = (name) => Number(yearCounts[name] || 0);
@@ -3659,6 +3885,12 @@ function adminGenerateRotationMonthDraft(monthKey, preparedMonth) {
   const softKindBalance = adminRotationGeneratorBalanceSoftKind(month, model);
   const soloMillRebalance = adminRotationGeneratorBalanceSoloMill(month, model);
   const kminekNovotnyMoToBalance = adminRotationGeneratorBalanceKminekNovotnyMoTo(month, model);
+  const tnksConsecutiveRepair = adminRotationGeneratorRepairConsecutiveTnks(month, model, monthKey);
+  const ruleCheck = adminRotationValidateMonthRules(month, monthKey, { source: 'generator' });
+  const criticalIssues = ruleCheck.issues.filter((issue) => issue && issue.severity === 'error');
+  if (criticalIssues.length) {
+    throw new Error('Návrh porušuje pravidla: ' + criticalIssues.slice(0, 3).map((issue) => issue.message).join(' · '));
+  }
   const normalized = normalizeMonthForImport(month, fallback);
   adminRotationGeneratorSetPendingDraft(monthKey, normalized);
   return {
@@ -3672,6 +3904,7 @@ function adminGenerateRotationMonthDraft(monthKey, preparedMonth) {
     skippedDays,
     protectedEmptyCells,
     tnksBalanceSwaps: tnksBalance && Number(tnksBalance.swaps || 0),
+    tnksConsecutiveRepairs: tnksConsecutiveRepair && Number(tnksConsecutiveRepair.repairs || 0),
     soloMillBalanceSwaps: (soloMillBalance && Number(soloMillBalance.swaps || 0)) + (soloMillRebalance && Number(soloMillRebalance.swaps || 0)),
     softKindBalanceSwaps: softKindBalance && Number(softKindBalance.swaps || 0),
     kminekNovotnyMoToBalanceSwaps: kminekNovotnyMoToBalance && Number(kminekNovotnyMoToBalance.swaps || 0),
@@ -3683,6 +3916,8 @@ window.RAK_ROTATION_GENERATOR_CONTRACT_V1106 = RAK_ROTATION_GENERATOR_CONTRACT_V
 window.RAK_ROTATION_GENERATOR_RULES_V1107 = RAK_ROTATION_GENERATOR_RULES_V1107;
 window.adminGenerateRotationMonthDraft = adminGenerateRotationMonthDraft;
 window.adminRotationMonthHasFilledCells = adminRotationMonthHasFilledCells;
+window.adminRotationValidateMonthRules = adminRotationValidateMonthRules;
+window.adminRotationFormatRuleIssues = adminRotationFormatRuleIssues;
 
 
 const RAK_ROTATION_GENERATOR_ABSENCE_STATE_CONTRACT_V1109 = Object.freeze({
@@ -4095,6 +4330,183 @@ function adminRotationGeneratorCollectAbsencesFromDom() {
   return absencesByDay;
 }
 
+function adminRotationGeneratorIcsUnfold(text) {
+  return String(text || '').replace(/\r?\n[ \t]/g, '');
+}
+
+function adminRotationGeneratorIcsProp(block, name) {
+  const wanted = String(name || '').toUpperCase();
+  const lines = String(block || '').split(/\r?\n/);
+  for (const line of lines) {
+    const split = String(line || '').indexOf(':');
+    if (split < 0) continue;
+    const key = line.slice(0, split).split(';')[0].toUpperCase();
+    if (key === wanted) return { rawKey: line.slice(0, split), value: line.slice(split + 1) };
+  }
+  return { rawKey: '', value: '' };
+}
+
+function adminRotationGeneratorIcsDecodeText(value) {
+  return String(value || '')
+    .replace(/\\n/gi, ' ')
+    .replace(/\\,/g, ',')
+    .replace(/\\;/g, ';')
+    .replace(/\\\\/g, '\\')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function adminRotationGeneratorIcsDatePart(value) {
+  const raw = String(value || '').trim();
+  const match = raw.match(/^(\d{4})(\d{2})(\d{2})/);
+  if (!match) return '';
+  return match[1] + '-' + match[2] + '-' + match[3];
+}
+
+function adminRotationGeneratorIsoToUtcDate(iso) {
+  const match = String(iso || '').match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (!match) return null;
+  return new Date(Date.UTC(Number(match[1]), Number(match[2]) - 1, Number(match[3])));
+}
+
+function adminRotationGeneratorUtcDateToIso(date) {
+  if (!(date instanceof Date) || !Number.isFinite(date.getTime())) return '';
+  return date.toISOString().slice(0, 10);
+}
+
+function adminRotationGeneratorIcsDateRange(startProp, endProp) {
+  const startIso = adminRotationGeneratorIcsDatePart(startProp && startProp.value);
+  if (!startIso) return [];
+  const endIso = adminRotationGeneratorIcsDatePart(endProp && endProp.value);
+  const isAllDay = /VALUE=DATE/i.test(String(startProp && startProp.rawKey || '')) || /^\d{8}$/.test(String(startProp && startProp.value || '').trim());
+  const startDate = adminRotationGeneratorIsoToUtcDate(startIso);
+  if (!startDate) return [];
+  const endDate = endIso ? adminRotationGeneratorIsoToUtcDate(endIso) : null;
+  if (!endDate || endDate <= startDate) return [startIso];
+  const limit = new Date(endDate.getTime());
+  if (isAllDay) limit.setUTCDate(limit.getUTCDate() - 1);
+  if (limit < startDate) return [startIso];
+  const result = [];
+  const cursor = new Date(startDate.getTime());
+  while (cursor <= limit && result.length < 370) {
+    result.push(adminRotationGeneratorUtcDateToIso(cursor));
+    cursor.setUTCDate(cursor.getUTCDate() + 1);
+  }
+  return result;
+}
+
+function adminRotationGeneratorDateLabelToIso(dateLabel, monthKey) {
+  const parsedDate = typeof parseDateToken === 'function' ? parseDateToken(String(dateLabel || '').trim()) : null;
+  const parsedMonth = typeof parseMonthKey === 'function' ? parseMonthKey(monthKey) : null;
+  if (!parsedDate || !parsedMonth) return '';
+  const year = Number(parsedMonth.year);
+  const month = Number(parsedDate.month || parsedMonth.month);
+  const day = Number(parsedDate.day);
+  if (!Number.isFinite(year) || !Number.isFinite(month) || !Number.isFinite(day)) return '';
+  return adminRotationGeneratorUtcDateToIso(new Date(Date.UTC(year, month - 1, day)));
+}
+
+function adminRotationGeneratorParseCalendarAbsenceSummary(summary, knownNames) {
+  const raw = adminRotationGeneratorIcsDecodeText(summary);
+  if (!raw) return null;
+  const match = raw.match(/^([^\s,;:]+)\s+(.+)$/);
+  if (!match) return null;
+  const known = Array.isArray(knownNames) ? knownNames : adminGetKnownNames();
+  const person = adminRotationCanonicalName(match[1], known);
+  if (!known.includes(person)) return null;
+  const code = String(match[2] || '').trim();
+  const foldedCode = adminRotationNameLookupKey(code);
+  const upperCode = code.toLocaleUpperCase('cs-CZ');
+  const hasAbsenceCode = /\b(?:D|NV|L|N|S)\b/i.test(code)
+    || upperCode.indexOf('§') >= 0
+    || upperCode.indexOf('Š') >= 0
+    || /(?:dovol|nahrad|nemoc|neschop|lazn|lazne|lazen|paragraf|skolen|senior)/i.test(foldedCode);
+  if (!hasAbsenceCode) return null;
+  return { person, code };
+}
+
+function adminRotationGeneratorParseIcsAbsences(text, monthKey, days) {
+  const knownNames = adminGetKnownNames();
+  const dayIsoToIndex = new Map();
+  (Array.isArray(days) ? days : []).forEach((dateLabel, idx) => {
+    const iso = adminRotationGeneratorDateLabelToIso(dateLabel, monthKey);
+    if (iso && !dayIsoToIndex.has(iso)) dayIsoToIndex.set(iso, idx);
+  });
+  const result = (Array.isArray(days) ? days : []).map((date) => ({ date, rows: [] }));
+  const seen = new Set();
+  const source = adminRotationGeneratorIcsUnfold(text);
+  const events = source.match(/BEGIN:VEVENT[\s\S]*?END:VEVENT/g) || [];
+  events.forEach((eventBlock) => {
+    const parsed = adminRotationGeneratorParseCalendarAbsenceSummary(adminRotationGeneratorIcsProp(eventBlock, 'SUMMARY').value, knownNames);
+    if (!parsed) return;
+    const dates = adminRotationGeneratorIcsDateRange(adminRotationGeneratorIcsProp(eventBlock, 'DTSTART'), adminRotationGeneratorIcsProp(eventBlock, 'DTEND'));
+    dates.forEach((iso) => {
+      const dayIdx = dayIsoToIndex.get(iso);
+      if (!Number.isFinite(dayIdx) || !result[dayIdx]) return;
+      const key = String(dayIdx) + '|' + adminRotationNameLookupKey(parsed.person) + '|' + adminRotationNameLookupKey(parsed.code);
+      if (seen.has(key)) return;
+      seen.add(key);
+      result[dayIdx].rows.push({ person: parsed.person, code: parsed.code });
+    });
+  });
+  return result;
+}
+
+function adminRotationGeneratorMergeAbsences(existing, imported) {
+  const days = adminRotationGeneratorGetWizardDaysForCollection();
+  const base = adminRotationGeneratorAlignAbsencesToDays(days, existing);
+  const source = adminRotationGeneratorAlignAbsencesToDays(days, imported);
+  return base.map((day, dayIdx) => {
+    const rows = [];
+    const seen = new Set();
+    const addRow = (row) => {
+      const person = adminRotationCanonicalName(row && row.person || '', adminGetKnownNames());
+      const code = String(row && row.code || '').trim();
+      if (!person && !code) {
+        rows.push({ person: '', code: '' });
+        return;
+      }
+      if (!person || !code) {
+        rows.push({ person, code });
+        return;
+      }
+      const key = adminRotationNameLookupKey(person) + '|' + adminRotationNameLookupKey(code);
+      if (seen.has(key)) return;
+      seen.add(key);
+      rows.push({ person, code });
+    };
+    (Array.isArray(day.rows) ? day.rows : []).forEach(addRow);
+    (Array.isArray(source[dayIdx] && source[dayIdx].rows) ? source[dayIdx].rows : []).forEach(addRow);
+    return { date: day.date, rows };
+  });
+}
+
+async function adminRotationGeneratorLoadCalendarAbsences() {
+  const state = adminRotationGeneratorGetWizardState();
+  state.days = adminRotationGeneratorResolveWizardDays(state);
+  state.absencesByDay = adminRotationGeneratorCollectAbsencesFromDom();
+  const status = document.getElementById('adminOnlineSaveStatus');
+  if (status) status.textContent = 'Načítám dovolené z Google kalendáře...';
+  try {
+    const response = await fetch(ADMIN_ROTATION_GENERATOR_ABSENCE_ICS_URL, { cache: 'no-store' });
+    if (!response || !response.ok) throw new Error('HTTP ' + String(response && response.status || ''));
+    const text = await response.text();
+    const imported = adminRotationGeneratorParseIcsAbsences(text, state.monthKey, state.days);
+    const importedCount = imported.reduce((sum, day) => sum + (Array.isArray(day.rows) ? day.rows.length : 0), 0);
+    state.absencesByDay = adminRotationGeneratorMergeAbsences(state.absencesByDay, imported);
+    adminRotationGeneratorRenderWizard('absences');
+    const nextStatus = document.getElementById('adminOnlineSaveStatus');
+    if (nextStatus) nextStatus.textContent = importedCount
+      ? ('Načteno z kalendáře: ' + String(importedCount) + ' absencí. Ručně zadané řádky zůstaly zachované.')
+      : 'V kalendáři jsem pro vybraný měsíc nenašel žádné známé absence.';
+    return { ok: true, importedCount };
+  } catch (err) {
+    const failStatus = document.getElementById('adminOnlineSaveStatus');
+    if (failStatus) failStatus.textContent = 'Kalendář se nepodařilo načíst. Zkontroluj nasazení /api/rotation-absence-calendar nebo dostupnost Google kalendáře.';
+    return { ok: false, error: err && err.message ? err.message : String(err || 'neznámá chyba') };
+  }
+}
+
 function adminRotationGeneratorRenderWizard(step) {
   const body = document.getElementById('appMenuBody');
   if (!body) return;
@@ -4215,6 +4627,9 @@ function adminRotationGeneratorRenderAbsencesStep(state) {
     buildAdminAbsenceCodeDatalistHtml(),
     '  <div class="appMenuSubTitle">Absence před generováním</div>',
     '  <div class="smallText">U každého dne můžeš přes + přidat víc lidí. Nevyplněné řádky se ignorují.</div>',
+    '  <div class="appMenuActionRow">',
+    '    <button type="button" class="appMenuAction" data-admin-action="generator-load-calendar-absences">Načíst dovolené z kalendáře</button>',
+    '  </div>',
     '  <div class="adminRotationGeneratorAbsenceList">' + (blocks || '<div class="smallText">Nejsou vybrané žádné pracovní dny.</div>') + '</div>',
     '  <div class="appMenuActionRow">',
     '    <button type="button" class="appMenuAction" data-admin-action="generator-back-days">Zpět na dny</button>',
@@ -4445,7 +4860,7 @@ function adminRotationGeneratorEnsurePreparedMonthFromWizard() {
     const day = absencesByDay[dayIdx] || {};
     const rows = Array.isArray(day.rows) ? day.rows : [];
     rows.forEach((row) => {
-      const person = String(row.person || '').trim();
+      const person = adminRotationCanonicalPeopleText(row.person || '', adminGetKnownNames());
       const code = String(row.code || '').trim();
       if (!person && !code) return;
       const parsed = typeof parseDateToken === 'function' ? parseDateToken(date) : null;
@@ -4599,6 +5014,10 @@ function adminHandleRotationGeneratorWizardAction(action, target) {
   }
   if (action === 'generator-back-absences') {
     adminRotationGeneratorRenderWizard('absences');
+    return true;
+  }
+  if (action === 'generator-load-calendar-absences') {
+    adminRotationGeneratorLoadCalendarAbsences();
     return true;
   }
   if (action === 'generator-download-excel') {

@@ -4995,16 +4995,21 @@ function bindAppMenuHandlers(body) {
       }
       if (adminAction === 'save-rotation') {
         const result = await saveAdminRotationFromDom(monthKey);
-        const statusEl = document.getElementById('adminOnlineSaveStatus');
         const saveResult = result && result.saveResult ? result.saveResult : null;
-        if (statusEl) {
-          statusEl.textContent = saveResult && saveResult.ok === true
-            ? (saveResult.queued
-                ? 'Rozpis uložený lokálně ✓ · po připojení se synchronizuje'
-                : ('Rozpis uložený online ✓ · měsíců: ' + String(saveResult.months || 0) + ' · řádků: ' + String(saveResult.entries || 0)))
-            : 'Rozpis se nepodařilo uložit online.';
-        }
+        const ruleWarnings = result && result.ruleCheck && Array.isArray(result.ruleCheck.issues)
+          ? result.ruleCheck.issues.filter((issue) => issue && issue.severity === 'warn')
+          : [];
+        const baseText = saveResult && saveResult.ok === true
+          ? (saveResult.queued
+              ? 'Rozpis uložený lokálně ✓ · po připojení se synchronizuje'
+              : ('Rozpis uložený online ✓ · měsíců: ' + String(saveResult.months || 0) + ' · řádků: ' + String(saveResult.entries || 0)))
+          : 'Rozpis se nepodařilo uložit online.';
+        const statusText = ruleWarnings.length && typeof adminRotationFormatRuleIssues === 'function'
+          ? baseText + ' · Kontrola: ' + adminRotationFormatRuleIssues(ruleWarnings)
+          : baseText;
         renderAdminMenuBody(body, currentView);
+        const statusEl = document.getElementById('adminOnlineSaveStatus');
+        if (statusEl) statusEl.textContent = statusText;
         return;
       }
       if (adminAction === 'load-food-schedule') {
