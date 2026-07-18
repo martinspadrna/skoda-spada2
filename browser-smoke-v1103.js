@@ -10,7 +10,7 @@ const { spawn } = require('child_process');
 const { pathToFileURL } = require('url');
 
 const ROOT_DIR = __dirname;
-const EXPECTED_APP_VERSION = '1.2 (1.312)';
+const EXPECTED_APP_VERSION = '1.2 (1.313)';
 const RAK_BROWSER_SMOKE_ENGINE = 'local-chromium-cdp';
 const RAK_BROWSER_SMOKE_LOAD_MODE = 'about-blank-inline-html';
 const CHROMIUM_BIN = process.env.CHROMIUM_BIN || process.env.CHROME_BIN || '/usr/bin/chromium';
@@ -414,6 +414,16 @@ async function runViewportSmoke(cdpPort, viewport, inlineHtml) {
   assert(bootState.bottomNavCount >= 5, `${viewport.name}: chybí spodní navigace`);
   assert(bootState.homeCards > 0, `${viewport.name}: Dashboard nemá karty`);
   assert(bootState.bodyBeforePosition === 'fixed', `${viewport.name}: pevné pozadí není fixed`);
+
+  const vacationShiftCountdownState = await evalInPage(client, `(() => {
+    if (typeof getVacationCountdownTeamShiftCount !== 'function') return { ok: false, reason: 'missing countdown function' };
+    const beforeNightEnd = getVacationCountdownTeamShiftCount(new Date(2026, 6, 18, 18, 1), new Date(2026, 6, 19, 14, 0), 'D');
+    const afterNightEnd = getVacationCountdownTeamShiftCount(new Date(2026, 6, 19, 6, 1), new Date(2026, 6, 19, 14, 0), 'D');
+    return { ok: true, beforeNightEnd, afterNightEnd };
+  })()`);
+  assert(vacationShiftCountdownState.ok, `${viewport.name}: test odpočtu směn do CZD se nespustil ${JSON.stringify(vacationShiftCountdownState)}`);
+  assert(vacationShiftCountdownState.beforeNightEnd === 1, `${viewport.name}: probíhající směna D se musí počítat až do konce ${JSON.stringify(vacationShiftCountdownState)}`);
+  assert(vacationShiftCountdownState.afterNightEnd === 0, `${viewport.name}: po konci směny D už do CZD nemá zbývat směna ${JSON.stringify(vacationShiftCountdownState)}`);
 
   await clickAndWait(client, 'rotace', '#rotace.page.active');
   const rotationState = await evalInPage(client, `(() => ({

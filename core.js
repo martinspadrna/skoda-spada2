@@ -1,7 +1,7 @@
-// RaK 1.2 (1.312) – core stav, verze a sdílené helpery aplikace.
+// RaK 1.2 (1.313) – core stav, verze a sdílené helpery aplikace.
 
 const APP_KEY = "rotace_kalkulacky_state_v123";
-const APP_VERSION = "1.2 (1.312)";
+const APP_VERSION = "1.2 (1.313)";
 window.APP_VERSION = APP_VERSION;
 const ROTATION_BUILD = "2026-06-03-" + APP_VERSION;
 window.ROTATION_BUILD = ROTATION_BUILD;
@@ -1047,6 +1047,19 @@ function countVacationCountdownRotationScheduledShifts(source, target, team) {
   return count;
 }
 
+function getVacationCountdownActiveTeamShiftStart(now, target, team) {
+  if (typeof getTeamShiftState !== 'function') return null;
+  const source = now instanceof Date ? new Date(now) : new Date(now || new Date());
+  const end = target instanceof Date ? new Date(target) : parseVacationCountdownDateTime(target);
+  const targetTeam = String(team || 'D').trim().toUpperCase() || 'D';
+  if (Number.isNaN(source.getTime()) || !end || Number.isNaN(end.getTime()) || end <= source) return null;
+  const state = getTeamShiftState(source, targetTeam);
+  if (!state || !state.active || !(state.start instanceof Date) || !(state.end instanceof Date)) return null;
+  if (Number.isNaN(state.start.getTime()) || Number.isNaN(state.end.getTime())) return null;
+  if (state.end <= source || state.start >= end) return null;
+  return state.start;
+}
+
 function getVacationCountdownTeamShiftCount(now, targetStart, team) {
   if (typeof getTeamShiftState !== 'function') return null;
   const source = now instanceof Date ? new Date(now) : new Date(now || new Date());
@@ -1055,6 +1068,12 @@ function getVacationCountdownTeamShiftCount(now, targetStart, team) {
   if (Number.isNaN(source.getTime()) || !target || Number.isNaN(target.getTime())) return null;
   if (target.getTime() <= source.getTime()) return 0;
   const seen = new Set();
+  const activeStart = getVacationCountdownActiveTeamShiftStart(source, target, targetTeam);
+  let activeCount = 0;
+  if (activeStart) {
+    seen.add(String(activeStart.getTime()));
+    activeCount = 1;
+  }
   let cursor = new Date(source);
   let count = 0;
   for (let guard = 0; guard < 260; guard += 1) {
@@ -1075,7 +1094,7 @@ function getVacationCountdownTeamShiftCount(now, targetStart, team) {
       : candidate.start.getTime() + 12 * 60 * 60 * 1000;
     cursor = new Date(Math.max(endTime, cursor.getTime() + 60000) + 60000);
   }
-  return count + countVacationCountdownRotationScheduledShifts(source, target, targetTeam);
+  return activeCount + count + countVacationCountdownRotationScheduledShifts(source, target, targetTeam);
 }
 
 function getVacationCountdown(now) {

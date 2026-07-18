@@ -1,3 +1,8 @@
+## RaK 1.2 (1.313)
+
+- Dashboard / Dovolená: odpočet `směn do CZD/dovolené` nově drží aktuálně probíhající směnu D započítanou až do jejího konce. Po startu noční v 18:00 tedy v 18:01 nespadne na `0 směn`, když je směna D ještě v práci.
+- Release metadata sjednocena na `RaK 1.2 (1.313)`, technicka verze `1.2.313`, cache `v1.2-1.313`; loader modulu ma cache znacku `1.2.313`.
+
 ## RaK 1.2 (1.312)
 
 - Administrace / Rozpisy / Generátor: v kroku Absence přibylo tlačítko `Načíst dovolené z kalendáře`, které z Google ICS doplní známé absence podle jména a kódu (`D`, `NV`, `L`, `N`, `§` atd.) a ignoruje běžné směnové události.
