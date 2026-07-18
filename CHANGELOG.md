@@ -1,3 +1,11 @@
+## RaK 1.2 (1.310)
+
+- O aplikaci: doplněn aktuální souhrn 1.297–1.310 o opravy ukládání Historie změn, automatických záloh rozpisů, výkonového režimu a dotažení admin tabulek.
+- Administrace / Historie změn: prázdný stav už nevypadá jako chyba; vysvětluje, že starší záznamy před opravou ukládání nejde zpětně dopočítat a nové se začnou plnit až při dalším uložení dovolené, přesčasů nebo rozpisu.
+- Zálohy rozpisů a Zálohy nastavení: sloupce Záloha/Akce mají kromě zúženého `colgroup` i konkrétní fixed layout pod danou admin obrazovkou a vlastní kompaktní buňky akcí, takže šířky konečně nepřebije obecný styl tabulek ani obsah tlačítek.
+- Smoke guard: `app-usage-smoke-v963.js` hlídá nový text v O aplikaci i konkrétní tabulkové selektory záloh.
+- Release metadata sjednocena na `RaK 1.2 (1.310)`, technicka verze `1.2.310`, cache `v1.2-1.310`; loader modulu ma cache znacku `1.2.310`.
+
 ## RaK 1.2 (1.309)
 
 - Kompletní audit a otestování celé aplikace: syntaxe všech 62 JS souborů, oba spustitelné smoke testy, konzistence manifestů (loader v app.js vs. sw.js cache vs. index.html vs. export vs. disk), čistý start s prázdnou cache (59/59 modulů načteno za ~1,1 s, 0 chyb v konzoli, vestavěný self-test 0 selhání), průchod všemi stránkami (Rozpisy vč. osobního rozpisu a měsíců, všechny Kalkulačky vč. reálného výpočtu brusky, Hry vč. otevření a zavření hry, Nastavení/Kontakt/O aplikaci/Pošli mi chybu), modály Kalendář/Kantýna/Jídelna, vykreslení všech 25 administračních obrazovek bez chyby a kontrola odezvy hlavního vlákna (bez zaseknutí).

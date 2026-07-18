@@ -449,7 +449,7 @@ function rakChangeLogDateLabel(value) {
 function buildAdminChangeLogHtml() {
   const entries = getRakChangeLogEntries();
   if (!entries.length) {
-    return '<div class="smallText uMt8">Zatím žádné zaznamenané změny. Historie se plní při ukládání dovolené, přesčasů a rozpisu.</div>';
+    return '<div class="smallText uMt8">Zatím žádné zaznamenané změny. Starší úpravy před opravou ukládání historie nejde zpětně dopočítat; nové záznamy se začnou plnit při dalším uložení dovolené, přesčasů nebo rozpisu.</div>';
   }
   const rows = entries.slice(0, 100).map((entry) => [
     '<tr>',
@@ -498,8 +498,8 @@ function buildAdminRotationBackupsHtml() {
     ].filter(Boolean).join(' · ');
     return [
       '<tr>',
-      '  <td>' + escapeHtml(label || 'Záloha') + '<div class="smallText">' + escapeHtml(source) + '</div></td>',
-      '  <td><button type="button" class="appMenuAction" data-admin-action="restore-rotation-backup" data-backup-id="' + escapeHtml(id) + '">Obnovit</button></td>',
+      '  <td class="adminRotationBackupLabelCell">' + escapeHtml(label || 'Záloha') + '<div class="smallText">' + escapeHtml(source) + '</div></td>',
+      '  <td class="adminRotationBackupActionCell"><button type="button" class="appMenuAction" data-admin-action="restore-rotation-backup" data-backup-id="' + escapeHtml(id) + '">Obnovit</button></td>',
       '</tr>'
     ].join('');
   };
@@ -775,8 +775,8 @@ function buildAdminFullSettingsBackupsHtml() {
   }
   const rows = backups.map((backup) => [
     '<tr>',
-    '  <td>' + escapeHtml(adminFullSettingsBackupDateLabel(backup.createdAt)) + '<div class="smallText">' + escapeHtml(String(backup.sourceLabel || 'ruční') + ' · ' + String(backup.rowCount) + ' řádků' + (backup.appVersion ? (' · ' + backup.appVersion) : '') + (backup.createdBy ? (' · účet ' + backup.createdBy) : '') + (backup.restoredBackupId ? (' · obnova ' + backup.restoredBackupId.slice(0, 16)) : '')) + '</div></td>',
-    '  <td><button type="button" class="appMenuAction" data-admin-action="download-full-settings-backup" data-settings-backup-id="' + escapeHtml(backup.id) + '">Stáhnout</button><button type="button" class="appMenuAction" data-admin-action="restore-full-settings-backup" data-settings-backup-id="' + escapeHtml(backup.id) + '">Obnovit</button></td>',
+    '  <td class="adminFullSettingsBackupLabelCell">' + escapeHtml(adminFullSettingsBackupDateLabel(backup.createdAt)) + '<div class="smallText">' + escapeHtml(String(backup.sourceLabel || 'ruční') + ' · ' + String(backup.rowCount) + ' řádků' + (backup.appVersion ? (' · ' + backup.appVersion) : '') + (backup.createdBy ? (' · účet ' + backup.createdBy) : '') + (backup.restoredBackupId ? (' · obnova ' + backup.restoredBackupId.slice(0, 16)) : '')) + '</div></td>',
+    '  <td class="adminFullSettingsBackupActionCell"><button type="button" class="appMenuAction" data-admin-action="download-full-settings-backup" data-settings-backup-id="' + escapeHtml(backup.id) + '">Stáhnout</button><button type="button" class="appMenuAction" data-admin-action="restore-full-settings-backup" data-settings-backup-id="' + escapeHtml(backup.id) + '">Obnovit</button></td>',
     '</tr>'
   ].join('')).join('');
   return [

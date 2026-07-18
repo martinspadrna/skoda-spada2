@@ -735,6 +735,15 @@ function buildSupabaseKeepaliveStatusHtml(options) {
 function buildAppHistoryHtml(versionText) {
   const sections = [
     {
+      range: 'v.1.2 1.297–1.310',
+      title: 'Pracovníci se stroji, opravy ukládání a výkon',
+      lines: [
+        'Pracovníci dostali přihlašovací čísla a zaškrtávací seznam strojů, které umí (MSK, MFK, TNK, TBK, TPKW01, TPKW02); generátor rozpisu nabízí lidi jen na jejich stroje a novému pracovníkovi se při uložení rovnou založí herní profil.',
+        'Opraveno tiché selhávání ukládání ("invalid category"): Pracovníci, Upozornění v kalendáři, Historie změn i automatické zálohy rozpisů se dřív vůbec neuložily na server; výběr vzhledu zjednodušen na 6 témat a 6 pozadí bez odemykání.',
+        'Láďův režim výrazně odlehčen pro slabé telefony (méně překreslování, dávkované online aktualizace), admin obrazovky zjednodušeny (užší sloupce, sbalitelné stavy), prázdná Historie změn teď vysvětluje starší výpadek ukládání a zálohové tabulky mají pevnější šířky sloupců.'
+      ]
+    },
+    {
       range: 'v.1.2 1.290–1.296',
       title: 'Vlastní správa lidí, historie a stabilita',
       lines: [

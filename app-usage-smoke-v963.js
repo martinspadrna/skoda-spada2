@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// RaK 1.2 (1.309) – smoke test přehledu připojení + Dashboard/appearance contract guard.
+// RaK 1.2 (1.310) – smoke test přehledu připojení + Dashboard/appearance contract guard.
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
@@ -226,12 +226,12 @@ const dashboardReleaseIsolationGuardV198 = Object.freeze({
 });
 
 const releaseMetadataContractV199 = Object.freeze({
-  displayVersion: '1.2 (1.309)',
-  appLabel: 'RaK 1.2 (1.309)',
-  packageVersion: '1.2.309',
-  cacheVersion: 'v1.2-1.309',
+  displayVersion: '1.2 (1.310)',
+  appLabel: 'RaK 1.2 (1.310)',
+  packageVersion: '1.2.310',
+  cacheVersion: 'v1.2-1.310',
   realtimeChannel: 'rak-public-live-v1-2-1-126',
-  changelogHeader: '## RaK 1.2 (1.309)',
+  changelogHeader: '## RaK 1.2 (1.310)',
   previousBuildFragments: Object.freeze(['1.2 (1.138)', '1.2.138', 'v1.2-1.138', '1.2 (1.137)', '1.2.137', 'v1.2-1.137', '1.2 (1.118)', '1.2.118', 'v1.2-1.118', 'rak-public-live-v1-2-1-118'])
 });
 
@@ -340,8 +340,8 @@ function assertDashboardReleaseIsolationGuardV198() {
 function assertReleaseMetadataContractV199() {
   const contract = releaseMetadataContractV199;
   assertIncludes(exportJs, 'RAK_RELEASE_METADATA_CONTRACT_V199', 'export.js musí obsahovat release metadata contract v1.99');
-  assertIncludes(exportJs, "displayVersion: '1.2 (1.309)'", 'Release contract v export.js musí držet display verzi 1.105');
-  assertIncludes(exportJs, "packageVersion: '1.2.309'", 'Release contract v export.js musí držet package verzi 1.2.114');
+  assertIncludes(exportJs, "displayVersion: '1.2 (1.310)'", 'Release contract v export.js musí držet display verzi 1.105');
+  assertIncludes(exportJs, "packageVersion: '1.2.310'", 'Release contract v export.js musí držet package verzi 1.2.114');
   assert(packageJson.version === contract.packageVersion, `package.json version drift: čekám ${contract.packageVersion}, mám ${packageJson.version}`);
   assertIncludes(coreJs, `const APP_VERSION = "${contract.displayVersion}";`, 'core.js APP_VERSION není sjednocený s 1.105');
   assertIncludes(serviceWorkerJs, `const CACHE_VERSION = '${contract.cacheVersion}';`, 'sw.js CACHE_VERSION není sjednocený s 1.105');
@@ -1329,6 +1329,7 @@ assertIncludes(appearanceThemeJs, '"id": "light-zigzag"', 'Musí existovat zákl
   assertIncludes(appUiJs, 'Předání správy a kontrolní souhrny', 'O aplikaci musi mit aktualni kratky souhrn verzi 1.200-1.233');
   assertIncludes(appUiJs, 'Nastavení přímo z administrace', 'O aplikaci musi mit aktualni kratky souhrn verzi 1.179-1.199');
   assertIncludes(appUiJs, 'Admin sekce postupně dostaly stavové souhrny', 'O aplikaci musi vysvetlit nove admin souhrny pro predani');
+  assertIncludes(appUiJs, 'prázdná Historie změn teď vysvětluje starší výpadek ukládání', 'O aplikaci musi vysvetlit dodelani historie zmen a zalohovych tabulek');
 }
 
 function assertRotationOvertimeDefaults2025ContractV1129() {
@@ -1435,8 +1436,10 @@ function assertAdminAccountLoginContractV1141() {
   assertIncludes(ui, 'preRestoreBackup', 'Obnova nastaveni musi vracet bod navratu pred obnovou');
   assertNotIncludes(ui, 'function buildAdminFullSettingsBackupSafetyHtml', 'Bezpecnost obnovy zaloh nastaveni byla na zadost odstranena z admin obrazovky');
   assertIncludes(ui, '<details class="appMenuFoldSection adminRotationBackupStatus adminFullSettingsBackupStatus">', 'Stav zaloh nastaveni musi byt sbalitelny (details/summary), ne pevny box');
-  assertIncludes(stylesAdminPolishCss, '.adminFullSettingsBackupLabelCol{width:11px;}', 'Sloupec Zaloha nastaveni musi byt o dalsich 50% uzsi nez predchozich 21px');
-  assertIncludes(stylesAdminPolishCss, '.adminFullSettingsBackupActionCol{width:9px;}', 'Sloupec Akce zaloh nastaveni musi byt o dalsich 50% uzsi nez predchozich 17px');
+  assertIncludes(stylesAdminPolishCss, '.adminFullSettingsBackupLabelCol{width:6px;}', 'Sloupec Zaloha nastaveni musi byt o dalsich 50% uzsi nez predchozich 11px');
+  assertIncludes(stylesAdminPolishCss, '.adminFullSettingsBackupActionCol{width:5px;}', 'Sloupec Akce zaloh nastaveni musi byt o dalsich 50% uzsi nez predchozich 9px');
+  assertIncludes(stylesAdminPolishCss, '#appMenuBody[data-admin-view="settings-backups"] .adminFullSettingsBackupsTable', 'Zalohy nastaveni musi mit konkretni fixed layout, ne jen obecne col sirky');
+  assertIncludes(stylesAdminPolishCss, '#appMenuBody[data-admin-view="settings-backups"] .adminFullSettingsBackupActionCell', 'Akce zaloh nastaveni musi mit vlastni kompaktni bunku');
   assertIncludes(ui, 'function makeDeletedMachineSettingsRow', 'Rollback nastaveni musi umet skryt radky, ktere v zaloze nebyly');
   assertIncludes(ui, 'deletedCount: deletedRows.length', 'Obnova nastaveni musi vracet pocet skrytych radku mimo zalohu');
   assertIncludes(ui, "adminAction === 'create-full-settings-backup'", 'Hlavni admin musi umet vytvorit uplnou zalohu nastaveni');
@@ -1558,8 +1561,11 @@ function assertAdminHandoverGuideContractV1142() {
   assertIncludes(ui, 'adminRotationBackupMonthGroup', 'Zalohy rozpisu musi byt sbalitelne po mesicich');
   assertIncludes(ui, 'class="adminRotationBackupsLabelCol"', 'Sloupec Zaloha u zaloh rozpisu musi mit vlastni uzsi sirku');
   assertIncludes(ui, 'class="adminRotationBackupsActionCol"', 'Sloupec Akce u zaloh rozpisu musi mit vlastni uzsi sirku');
-  assertIncludes(stylesAdminPolishCss, '.adminRotationBackupsLabelCol{width:17px;}', 'Sloupec Zaloha musi byt o dalsich 50% uzsi nez predchozich 34px');
-  assertIncludes(stylesAdminPolishCss, '.adminRotationBackupsActionCol{width:18px;}', 'Sloupec Akce musi byt o dalsich 50% uzsi nez predchozich 35px');
+  assertIncludes(stylesAdminPolishCss, '.adminRotationBackupsLabelCol{width:14px;}', 'Sloupec Zaloha musi byt o 20% uzsi nez predchozich 17px');
+  assertIncludes(stylesAdminPolishCss, '.adminRotationBackupsActionCol{width:7px;}', 'Sloupec Akce musi byt o 60% uzsi nez predchozich 18px');
+  assertIncludes(ui, 'class="adminRotationBackupLabelCell"', 'Zalohy rozpisu musi mit vlastni label bunku kvuli skutecnemu zmenseni sloupce');
+  assertIncludes(ui, 'class="adminRotationBackupActionCell"', 'Zalohy rozpisu musi mit vlastni action bunku kvuli skutecnemu zmenseni sloupce');
+  assertIncludes(stylesAdminPolishCss, '#appMenuBody[data-admin-view="backups"] .adminRotationBackupsTable', 'Zalohy rozpisu musi mit konkretni fixed layout, ne jen obecne col sirky');
   assertIncludes(ui, 'function buildAdminManualHtml', 'Admin musi mit samostatnou prirucku spravce');
   assertIncludes(ui, 'function adminManualSectionHtml', 'Prirucka spravce musi mit rozbalovaci postupy');
   assertIncludes(ui, 'function buildAdminSettingsMapHtml', 'Admin musi mit mapu kde co upravit');

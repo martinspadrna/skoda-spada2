@@ -1076,8 +1076,8 @@
 .adminRotationOvertimeDeleteCol{width:44px;}
 .adminGeneratorBaseNameCol{width:84px;}
 .adminGeneratorBaseMachineCol{width:auto;}
-.adminFullSettingsBackupLabelCol{width:11px;}
-.adminFullSettingsBackupActionCol{width:9px;}
+.adminFullSettingsBackupLabelCol{width:6px;}
+.adminFullSettingsBackupActionCol{width:5px;}
 .adminRotationOvertimeDateInput{min-width:104px;}
 .adminRotationOvertimeNoteInput{min-width:150px;}
 .adminRotationOvertimeSwitch{
@@ -1581,8 +1581,54 @@
 .adminRotationBackupMonthGroup > summary::after{content:'⌄';font-size:16px;line-height:1;opacity:.8;transform:rotate(0deg);transition:transform .18s ease;}
 .adminRotationBackupMonthGroup:not([open]) > summary::after{transform:rotate(-90deg);}
 .adminRotationBackupMonthGroup .tableWrap{margin:0 !important;border-top:1px solid rgba(255,255,255,.08) !important;border-radius:0 !important;}
-.adminRotationBackupsLabelCol{width:17px;}
-.adminRotationBackupsActionCol{width:18px;}
+.adminRotationBackupsLabelCol{width:14px;}
+.adminRotationBackupsActionCol{width:7px;}
+#appMenuBody[data-admin-view="backups"] .adminRotationBackupsTable{
+  table-layout:fixed !important;
+  width:min(100%,300px) !important;
+  min-width:0 !important;
+  max-width:300px !important;
+  margin-right:auto !important;
+}
+#appMenuBody[data-admin-view="backups"] .adminRotationBackupsLabelCol{width:82% !important;}
+#appMenuBody[data-admin-view="backups"] .adminRotationBackupsActionCol{width:18% !important;}
+#appMenuBody[data-admin-view="backups"] .adminRotationBackupsTable th,
+#appMenuBody[data-admin-view="backups"] .adminRotationBackupsTable td,
+#appMenuBody[data-admin-view="settings-backups"] .adminFullSettingsBackupsTable th,
+#appMenuBody[data-admin-view="settings-backups"] .adminFullSettingsBackupsTable td{
+  min-width:0 !important;
+  max-width:none !important;
+  overflow-wrap:anywhere !important;
+}
+#appMenuBody[data-admin-view="backups"] .adminRotationBackupActionCell,
+#appMenuBody[data-admin-view="settings-backups"] .adminFullSettingsBackupActionCell{
+  padding-left:4px !important;
+  padding-right:4px !important;
+}
+#appMenuBody[data-admin-view="backups"] .adminRotationBackupActionCell .appMenuAction,
+#appMenuBody[data-admin-view="settings-backups"] .adminFullSettingsBackupActionCell .appMenuAction{
+  width:100% !important;
+  min-width:0 !important;
+  max-width:100% !important;
+  min-height:30px !important;
+  padding:5px 4px !important;
+  font-size:11px !important;
+  line-height:1.05 !important;
+  white-space:normal !important;
+}
+#appMenuBody[data-admin-view="settings-backups"] .adminFullSettingsBackupsTable{
+  table-layout:fixed !important;
+  width:min(100%,260px) !important;
+  min-width:0 !important;
+  max-width:260px !important;
+  margin-right:auto !important;
+}
+#appMenuBody[data-admin-view="settings-backups"] .adminFullSettingsBackupLabelCol{width:62% !important;}
+#appMenuBody[data-admin-view="settings-backups"] .adminFullSettingsBackupActionCol{width:38% !important;}
+#appMenuBody[data-admin-view="settings-backups"] .adminFullSettingsBackupActionCell{
+  display:grid !important;
+  gap:5px !important;
+}
 .adminAccountsRoleOverview{
   display:grid !important;
   grid-template-columns:repeat(3,minmax(0,1fr)) !important;
