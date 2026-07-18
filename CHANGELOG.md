@@ -1,11 +1,12 @@
-## RaK 1.2 (1.321)
+## RaK 1.2 (1.322)
 
+- Generátor / Pravidla generátoru: vyrovnání `soustruhy / frézky` se nově dá počítat přes celou měkotu, takže neřeší jen lidi z tvrdoty; má zabránit stavům typu 9× soustruh a 0× frézka proti lidem opakovaně samotným na frézách.
 - Administrace / Pravidla generátoru: přidané jemné nastavitelné volby pro režim `2 soustruhy + 1 fréza` (výchozí: Starý spíš mimo soustruhy) a pro vyrovnání samostatných frézek (výchozí: zapnuto, rozdíl max 1).
 - Administrace / Pravidla generátoru: doplněné nastavitelné vyrovnání počtu směn na měkotě pro skupinu Blažek/Starý/Kříž/Pech.
 - Administrace / Pravidla generátoru: doplněné nastavitelné vyrovnání soustruhy/frézky u lidí z tvrdoty, včetně povoleného maximálního rozdílu.
 - Generátor při dorovnání soustruhy/frézky už nečeká jen na jiného člověka z tvrdoty přetíženého na soustruhu; člověka z tvrdoty přetíženého na frézách umí prohodit i s vhodným člověkem z měkoty, přednostně ve dnech se 3 obsazenými soustruhy.
 - Generátor při 2 soustruzích + 1 fréze bere vypsaná jména jako měkkou preferenci mimo soustruhy, ne jako zákaz; když není lepší varianta, pořád může člověka použít.
-- Release metadata sjednocena na `RaK 1.2 (1.321)`, technicka verze `1.2.321`, cache `v1.2-1.321`; loader modulu ma cache znacku `1.2.321`.
+- Release metadata sjednocena na `RaK 1.2 (1.322)`, technicka verze `1.2.322`, cache `v1.2-1.322`; loader modulu ma cache znacku `1.2.322`.
 
 ## RaK 1.2 (1.318)
 
