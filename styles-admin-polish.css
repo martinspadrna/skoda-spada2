@@ -1076,8 +1076,8 @@
 .adminRotationOvertimeDeleteCol{width:44px;}
 .adminGeneratorBaseNameCol{width:84px;}
 .adminGeneratorBaseMachineCol{width:auto;}
-.adminFullSettingsBackupLabelCol{width:21px;}
-.adminFullSettingsBackupActionCol{width:17px;}
+.adminFullSettingsBackupLabelCol{width:11px;}
+.adminFullSettingsBackupActionCol{width:9px;}
 .adminRotationOvertimeDateInput{min-width:104px;}
 .adminRotationOvertimeNoteInput{min-width:150px;}
 .adminRotationOvertimeSwitch{
@@ -1581,8 +1581,8 @@
 .adminRotationBackupMonthGroup > summary::after{content:'⌄';font-size:16px;line-height:1;opacity:.8;transform:rotate(0deg);transition:transform .18s ease;}
 .adminRotationBackupMonthGroup:not([open]) > summary::after{transform:rotate(-90deg);}
 .adminRotationBackupMonthGroup .tableWrap{margin:0 !important;border-top:1px solid rgba(255,255,255,.08) !important;border-radius:0 !important;}
-.adminRotationBackupsLabelCol{width:34px;}
-.adminRotationBackupsActionCol{width:35px;}
+.adminRotationBackupsLabelCol{width:17px;}
+.adminRotationBackupsActionCol{width:18px;}
 .adminAccountsRoleOverview{
   display:grid !important;
   grid-template-columns:repeat(3,minmax(0,1fr)) !important;

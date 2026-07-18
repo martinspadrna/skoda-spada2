@@ -1709,6 +1709,8 @@ function adminMachineIsEditableMachineRow(row) {
     && !(typeof isRakAppContactSettingsRow === 'function' && isRakAppContactSettingsRow(row))
     && !(typeof isRakPayrollSettingsRow === 'function' && isRakPayrollSettingsRow(row))
     && !(typeof isRakSpecialDaysSettingsRow === 'function' && isRakSpecialDaysSettingsRow(row))
+    && !(typeof isRakWorkerRosterSettingsRow === 'function' && isRakWorkerRosterSettingsRow(row))
+    && !(typeof isRakCalendarNotesSettingsRow === 'function' && isRakCalendarNotesSettingsRow(row))
     && !adminIsRotationGeneratorSettingsRow(row);
 }
 

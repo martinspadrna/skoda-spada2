@@ -1,3 +1,10 @@
+## RaK 1.2 (1.307)
+
+- Oprava: stejná "invalid category" chyba jako u Pracovníků z buildu 1.306 postihovala i Historii změn (`admin_change_log`) a automatické Zálohy rozpisů (`rotation_save_backup`) – obě kategorie chyběly v seznamu speciálních administrativních nastavení v supabase-bridge.js, takže se jejich ukládání vždy tiše nezdařilo (chyba se polykala v try/catch). Historie změn tak byla odjakživa prázdná a automatická záloha rozpisu se nikdy skutečně neuložila na produkci. Doplněno do seznamu, ověřeno end-to-end mockovaným uložením.
+- Oprava: v Administraci → Nastavení strojů se po předchozí opravě (1.306) nově objevovaly falešné řádky "APP" / "Pracovníci" a "APP" / "Upozornění v kalendáři" mezi skutečnými frézkami – jde o vedlejší efekt maskování kategorie při ukládání (worker_roster_settings/calendar_notes_settings se posílají na server jako `frezka`). Filtr `adminMachineIsEditableMachineRow` v admin-rotation.js teď tyhle řádky správně vyřazuje ze seznamu strojů, stejně jako to už dělá pro ostatní administrativní nastavení.
+- Další zúžení sloupců o 50 % (živě ověřeno bez oříznutí obsahu a tlačítek): Zálohy rozpisů Záloha/Akce (34→17px, 35→18px), Zálohy nastavení Záloha nastavení/Akce (21→11px, 17→9px).
+- Release metadata sjednocena na `RaK 1.2 (1.307)`, technicka verze `1.2.307`, cache `v1.2-1.307`; loader modulu ma cache znacku `1.2.307`.
+
 ## RaK 1.2 (1.306)
 
 - Oprava: ukládání Pracovníků (přihlašovací čísla, dovednosti strojů) v Administraci hlásilo "invalid category" a uložení selhalo. Kategorie `worker_roster_settings` (a `calendar_notes_settings` pro Upozornění v kalendáři) chyběla v seznamu speciálních administrativních nastavení v supabase-bridge.js, takže se před odesláním na server neskryla na povolenou hodnotu – server ji odmítal. Doplněno podle stejného vzoru jako u ostatních administrativních nastavení (výplata, kontakt, zálohy...), ověřeno end-to-end mockovaným uložením (kategorie se teď správně přepíše, reálná hodnota zůstává dohledatelná).

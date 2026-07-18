@@ -2015,7 +2015,11 @@
       || category === 'worker_roster_settings'
       || key === 'WORKER_ROSTER_SETTINGS'
       || category === 'calendar_notes_settings'
-      || key === 'CALENDAR_NOTES_SETTINGS';
+      || key === 'CALENDAR_NOTES_SETTINGS'
+      || category === 'admin_change_log'
+      || key === 'ADMIN_CHANGE_LOG'
+      || category === 'rotation_save_backup'
+      || key.indexOf('ROTATION_SAVE_BACKUP_') === 0;
   }
 
   function makeMachineSettingsRpcPayload(payload) {
