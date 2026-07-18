@@ -1,3 +1,11 @@
+## RaK 1.2 (1.320)
+
+- Administrace / Pravidla generátoru: přidané jemné nastavitelné volby pro režim `2 soustruhy + 1 fréza` (výchozí: Starý spíš mimo soustruhy) a pro vyrovnání samostatných frézek (výchozí: zapnuto, rozdíl max 1).
+- Administrace / Pravidla generátoru: doplněné nastavitelné vyrovnání počtu směn na měkotě pro skupinu Blažek/Starý/Kříž/Pech.
+- Administrace / Pravidla generátoru: doplněné nastavitelné vyrovnání soustruhy/frézky u lidí z tvrdoty, včetně povoleného maximálního rozdílu.
+- Generátor při 2 soustruzích + 1 fréze bere vypsaná jména jako měkkou preferenci mimo soustruhy, ne jako zákaz; když není lepší varianta, pořád může člověka použít.
+- Release metadata sjednocena na `RaK 1.2 (1.320)`, technicka verze `1.2.320`, cache `v1.2-1.320`; loader modulu ma cache znacku `1.2.320`.
+
 ## RaK 1.2 (1.318)
 
 - Rotace / Rozpisy / stáhnout obrázek: opravené šířky sloupců v bloku Absence, aby sloupec `Důvod` nezabral celou tabulku a jména absencí byla v obrázku čitelná.

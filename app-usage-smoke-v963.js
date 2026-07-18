@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// RaK 1.2 (1.318) – smoke test přehledu připojení + Dashboard/appearance contract guard.
+// RaK 1.2 (1.320) – smoke test přehledu připojení + Dashboard/appearance contract guard.
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
@@ -227,12 +227,12 @@ const dashboardReleaseIsolationGuardV198 = Object.freeze({
 });
 
 const releaseMetadataContractV199 = Object.freeze({
-  displayVersion: '1.2 (1.318)',
-  appLabel: 'RaK 1.2 (1.318)',
-  packageVersion: '1.2.318',
-  cacheVersion: 'v1.2-1.318',
+  displayVersion: '1.2 (1.320)',
+  appLabel: 'RaK 1.2 (1.320)',
+  packageVersion: '1.2.320',
+  cacheVersion: 'v1.2-1.320',
   realtimeChannel: 'rak-public-live-v1-2-1-126',
-  changelogHeader: '## RaK 1.2 (1.318)',
+  changelogHeader: '## RaK 1.2 (1.320)',
   previousBuildFragments: Object.freeze(['1.2 (1.138)', '1.2.138', 'v1.2-1.138', '1.2 (1.137)', '1.2.137', 'v1.2-1.137', '1.2 (1.118)', '1.2.118', 'v1.2-1.118', 'rak-public-live-v1-2-1-118'])
 });
 
@@ -341,8 +341,8 @@ function assertDashboardReleaseIsolationGuardV198() {
 function assertReleaseMetadataContractV199() {
   const contract = releaseMetadataContractV199;
   assertIncludes(exportJs, 'RAK_RELEASE_METADATA_CONTRACT_V199', 'export.js musí obsahovat release metadata contract v1.99');
-  assertIncludes(exportJs, "displayVersion: '1.2 (1.318)'", 'Release contract v export.js musí držet display verzi 1.105');
-  assertIncludes(exportJs, "packageVersion: '1.2.318'", 'Release contract v export.js musí držet package verzi 1.2.114');
+  assertIncludes(exportJs, "displayVersion: '1.2 (1.320)'", 'Release contract v export.js musí držet display verzi 1.105');
+  assertIncludes(exportJs, "packageVersion: '1.2.320'", 'Release contract v export.js musí držet package verzi 1.2.114');
   assert(packageJson.version === contract.packageVersion, `package.json version drift: čekám ${contract.packageVersion}, mám ${packageJson.version}`);
   assertIncludes(coreJs, `const APP_VERSION = "${contract.displayVersion}";`, 'core.js APP_VERSION není sjednocený s 1.105');
   assertIncludes(serviceWorkerJs, `const CACHE_VERSION = '${contract.cacheVersion}';`, 'sw.js CACHE_VERSION není sjednocený s 1.105');
@@ -1753,6 +1753,20 @@ function assertAdminGeneratorSettingsContractV1143() {
   assertIncludes(ui, 'function buildAdminRotationGeneratorSettingsHtml', 'Administrace musi mit formular pravidel generatoru');
   assertIncludes(ui, 'function readAdminRotationGeneratorSettingsFromDom', 'Administrace musi umet nacist pravidla generatoru z formulare');
   assertIncludes(ui, 'function mergeAdminRotationGeneratorSettingsRows', 'Pravidla generatoru se musi ukladat do machine_settings bez mazani ostatnich nastaveni');
+  assertIncludes(ui, 'avoidLatheWhenTwoLathesOneMillEnabled', 'Pravidla generatoru musi umet zapnout/vypnout vyhybani soustruhum pri 2+1');
+  assertIncludes(ui, 'avoidLatheWhenTwoLathesOneMillNames', 'Pravidla generatoru musi mit upravitelny seznam lidi mimo soustruhy pri 2+1');
+  assertIncludes(ui, 'adminGeneratorAvoidLatheWhenTwoLathesOneMillNames', 'Admin formular musi mit pole pro jmena mimo soustruhy pri 2+1');
+  assertIncludes(ui, 'soloMillBalanceEnabled', 'Pravidla generatoru musi umet zapnout/vypnout vyrovnani samostatnych frezek');
+  assertIncludes(ui, 'soloMillMaxSpread', 'Pravidla generatoru musi mit upravitelny maximalni rozdil samostatnych frezek');
+  assertIncludes(ui, 'softTotalBalanceEnabled', 'Pravidla generatoru musi umet zapnout/vypnout vyrovnani celkove mekoty vybrane skupiny');
+  assertIncludes(ui, 'softTotalBalanceNames', 'Pravidla generatoru musi mit upravitelny seznam lidi pro vyrovnani mekoty');
+  assertIncludes(ui, 'softTotalMaxSpread', 'Pravidla generatoru musi mit upravitelny maximalni rozdil mekoty');
+  assertIncludes(ui, 'hardPeopleSoftKindBalanceEnabled', 'Pravidla generatoru musi umet zapnout/vypnout vyrovnani soustruhy/frezky u lidi z tvrdoty');
+  assertIncludes(ui, 'hardPeopleSoftKindBalanceNames', 'Pravidla generatoru musi mit seznam lidi pro vyrovnani soustruhy/frezky');
+  assertIncludes(ui, 'hardPeopleSoftKindMaxSpread', 'Pravidla generatoru musi mit maximalni rozdil soustruhy/frezky');
+  assertIncludes(ui, 'function adminRotationGeneratorBalanceSoftTotals', 'Generator musi umet po vygenerovani dorovnat pocet smen na mekote');
+  assertIncludes(ui, 'softTotalBalanceSwaps', 'Vysledek generatoru musi vracet pocet prohozu vyrovnani mekoty');
+  assertIncludes(ui, 'adminRotationGeneratorAvoidLatheNamesForPlan', 'Generator musi pri 2 soustruzich + 1 freze umet zohlednit seznam lidi mimo soustruhy');
   assertIncludes(ui, "action: 'open-generator-settings', label: 'Pravidla generátoru'", 'Admin menu musi obsahovat sekci Pravidla generatoru');
   assertIncludes(ui, "adminAction === 'open-generator-settings'", 'Admin menu musi umet otevrit pravidla generatoru');
   assertIncludes(ui, "adminAction === 'save-generator-settings'", 'Admin menu musi umet ulozit pravidla generatoru');

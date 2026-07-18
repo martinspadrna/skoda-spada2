@@ -262,6 +262,16 @@ function adminRotationNormalizeSoftBaseLathe(value, softCore) {
   return map;
 }
 
+function adminRotationGeneratorBooleanValue(value, fallback) {
+  if (typeof value === 'boolean') return value;
+  if (typeof value === 'number') return value !== 0;
+  const text = String(value ?? '').trim().toLowerCase();
+  if (!text) return !!fallback;
+  if (['false', '0', 'ne', 'no', 'off', 'vypnuto'].includes(text)) return false;
+  if (['true', '1', 'ano', 'yes', 'on', 'zapnuto'].includes(text)) return true;
+  return !!fallback;
+}
+
 function adminRotationNormalizeGeneratorSettings(settings) {
   const base = RAK_ROTATION_GENERATOR_RULES_V1107 || {};
   const raw = settings && typeof settings === 'object' ? settings : {};
@@ -282,6 +292,22 @@ function adminRotationNormalizeGeneratorSettings(settings) {
     : Array.from(base.hardCycle || []);
   const softHardBlockLength = Math.max(1, Math.min(12, Number(raw.softHardBlockLength || base.softHardBlockLength || 3) || 3));
   const softBaseLathe = Object.assign({}, base.softBaseLathe || {}, adminRotationNormalizeSoftBaseLathe(raw.softBaseLathe || {}, softCore));
+  const avoidLatheWhenTwoLathesOneMillEnabled = adminRotationGeneratorBooleanValue(raw.avoidLatheWhenTwoLathesOneMillEnabled, base.avoidLatheWhenTwoLathesOneMillEnabled !== false);
+  const avoidLatheWhenTwoLathesOneMillNames = adminRotationSplitGeneratorList(raw.avoidLatheWhenTwoLathesOneMillNames).length
+    ? adminRotationSplitGeneratorList(raw.avoidLatheWhenTwoLathesOneMillNames)
+    : Array.from(base.avoidLatheWhenTwoLathesOneMillNames || ['Starý']);
+  const soloMillBalanceEnabled = adminRotationGeneratorBooleanValue(raw.soloMillBalanceEnabled, base.soloMillBalanceEnabled !== false);
+  const soloMillMaxSpread = Math.max(0, Math.min(6, Number(raw.soloMillMaxSpread ?? base.soloMillMaxSpread ?? 1) || 1));
+  const softTotalBalanceEnabled = adminRotationGeneratorBooleanValue(raw.softTotalBalanceEnabled, base.softTotalBalanceEnabled !== false);
+  const softTotalBalanceNames = adminRotationSplitGeneratorList(raw.softTotalBalanceNames).length
+    ? adminRotationSplitGeneratorList(raw.softTotalBalanceNames)
+    : Array.from(base.softTotalBalanceNames || ['Blažek', 'Starý', 'Kříž', 'Pech']);
+  const softTotalMaxSpread = Math.max(0, Math.min(6, Number(raw.softTotalMaxSpread ?? base.softTotalMaxSpread ?? 1) || 1));
+  const hardPeopleSoftKindBalanceEnabled = adminRotationGeneratorBooleanValue(raw.hardPeopleSoftKindBalanceEnabled, base.hardPeopleSoftKindBalanceEnabled !== false);
+  const hardPeopleSoftKindBalanceNames = adminRotationSplitGeneratorList(raw.hardPeopleSoftKindBalanceNames).length
+    ? adminRotationSplitGeneratorList(raw.hardPeopleSoftKindBalanceNames)
+    : Array.from(base.hardPeopleSoftKindBalanceNames || base.hardPreferred || []);
+  const hardPeopleSoftKindMaxSpread = Math.max(0, Math.min(6, Number(raw.hardPeopleSoftKindMaxSpread ?? base.hardPeopleSoftKindMaxSpread ?? 1) || 1));
   return {
     type: ADMIN_ROTATION_GENERATOR_SETTINGS_CATEGORY,
     softPreferred,
@@ -290,7 +316,17 @@ function adminRotationNormalizeGeneratorSettings(settings) {
     softHardCycle,
     softHardBlockLength,
     softBaseLathe,
-    hardCycle
+    hardCycle,
+    avoidLatheWhenTwoLathesOneMillEnabled,
+    avoidLatheWhenTwoLathesOneMillNames,
+    soloMillBalanceEnabled,
+    soloMillMaxSpread,
+    softTotalBalanceEnabled,
+    softTotalBalanceNames,
+    softTotalMaxSpread,
+    hardPeopleSoftKindBalanceEnabled,
+    hardPeopleSoftKindBalanceNames,
+    hardPeopleSoftKindMaxSpread
   };
 }
 
@@ -311,7 +347,17 @@ function getAdminRotationGeneratorRules() {
     softCore: settings.softCore,
     softBaseLathe: settings.softBaseLathe,
     softCoreNoTnksBalance: settings.softCore,
-    hardCycle: settings.hardCycle
+    hardCycle: settings.hardCycle,
+    avoidLatheWhenTwoLathesOneMillEnabled: settings.avoidLatheWhenTwoLathesOneMillEnabled,
+    avoidLatheWhenTwoLathesOneMillNames: settings.avoidLatheWhenTwoLathesOneMillNames,
+    soloMillBalanceEnabled: settings.soloMillBalanceEnabled,
+    soloMillMaxSpread: settings.soloMillMaxSpread,
+    softTotalBalanceEnabled: settings.softTotalBalanceEnabled,
+    softTotalBalanceNames: settings.softTotalBalanceNames,
+    softTotalMaxSpread: settings.softTotalMaxSpread,
+    hardPeopleSoftKindBalanceEnabled: settings.hardPeopleSoftKindBalanceEnabled,
+    hardPeopleSoftKindBalanceNames: settings.hardPeopleSoftKindBalanceNames,
+    hardPeopleSoftKindMaxSpread: settings.hardPeopleSoftKindMaxSpread
   });
 }
 
@@ -414,6 +460,16 @@ function readAdminRotationGeneratorDraftFromDom(root) {
     softHardCycle: adminRotationGeneratorRawList(get('adminGeneratorSoftHardCycle')).map((item) => String(item || '').toUpperCase()),
     softHardBlockLength: Number(get('adminGeneratorSoftHardBlockLength') || 3),
     hardCycle: adminRotationGeneratorRawList(get('adminGeneratorHardCycle')).map((item) => String(item || '').toUpperCase()),
+    avoidLatheWhenTwoLathesOneMillEnabled: !!((scope.querySelector ? scope.querySelector('#adminGeneratorAvoidLatheWhenTwoLathesOneMillEnabled') : document.getElementById('adminGeneratorAvoidLatheWhenTwoLathesOneMillEnabled'))?.checked),
+    avoidLatheWhenTwoLathesOneMillNames: adminRotationGeneratorRawList(get('adminGeneratorAvoidLatheWhenTwoLathesOneMillNames')),
+    soloMillBalanceEnabled: !!((scope.querySelector ? scope.querySelector('#adminGeneratorSoloMillBalanceEnabled') : document.getElementById('adminGeneratorSoloMillBalanceEnabled'))?.checked),
+    soloMillMaxSpread: Number(get('adminGeneratorSoloMillMaxSpread') || 1),
+    softTotalBalanceEnabled: !!((scope.querySelector ? scope.querySelector('#adminGeneratorSoftTotalBalanceEnabled') : document.getElementById('adminGeneratorSoftTotalBalanceEnabled'))?.checked),
+    softTotalBalanceNames: adminRotationGeneratorRawList(get('adminGeneratorSoftTotalBalanceNames')),
+    softTotalMaxSpread: Number(get('adminGeneratorSoftTotalMaxSpread') || 1),
+    hardPeopleSoftKindBalanceEnabled: !!((scope.querySelector ? scope.querySelector('#adminGeneratorHardPeopleSoftKindBalanceEnabled') : document.getElementById('adminGeneratorHardPeopleSoftKindBalanceEnabled'))?.checked),
+    hardPeopleSoftKindBalanceNames: adminRotationGeneratorRawList(get('adminGeneratorHardPeopleSoftKindBalanceNames')),
+    hardPeopleSoftKindMaxSpread: Number(get('adminGeneratorHardPeopleSoftKindMaxSpread') || 1),
     softBaseLathe,
     softBaseRows,
     hasStoredRow: adminRotationHasGeneratorSettingsRow()
@@ -429,6 +485,16 @@ function buildAdminRotationGeneratorStatusHtml(source) {
   const softCore = adminRotationGeneratorRawList(settings.softCore);
   const softHardCycle = adminRotationGeneratorRawList(settings.softHardCycle).map((item) => String(item || '').toUpperCase());
   const hardCycle = adminRotationGeneratorRawList(settings.hardCycle).map((item) => String(item || '').toUpperCase());
+  const avoidLatheEnabled = adminRotationGeneratorBooleanValue(settings.avoidLatheWhenTwoLathesOneMillEnabled, true);
+  const avoidLatheNames = adminRotationGeneratorRawList(settings.avoidLatheWhenTwoLathesOneMillNames);
+  const soloMillEnabled = adminRotationGeneratorBooleanValue(settings.soloMillBalanceEnabled, true);
+  const soloMillSpread = Math.max(0, Math.min(6, Number(settings.soloMillMaxSpread ?? 1) || 1));
+  const softTotalEnabled = adminRotationGeneratorBooleanValue(settings.softTotalBalanceEnabled, true);
+  const softTotalNames = adminRotationGeneratorRawList(settings.softTotalBalanceNames);
+  const softTotalSpread = Math.max(0, Math.min(6, Number(settings.softTotalMaxSpread ?? 1) || 1));
+  const hardKindEnabled = adminRotationGeneratorBooleanValue(settings.hardPeopleSoftKindBalanceEnabled, true);
+  const hardKindNames = adminRotationGeneratorRawList(settings.hardPeopleSoftKindBalanceNames);
+  const hardKindSpread = Math.max(0, Math.min(6, Number(settings.hardPeopleSoftKindMaxSpread ?? 1) || 1));
   const softBaseRows = Array.isArray(settings.softBaseRows)
     ? settings.softBaseRows
     : softCore.map((person) => ({ person, machine: String(settings.softBaseLathe && settings.softBaseLathe[person] || '').toUpperCase() }));
@@ -477,6 +543,7 @@ function buildAdminRotationGeneratorStatusHtml(source) {
     adminRotationGeneratorStatusItemHtml('Zdroj pravidel', sourceValue, sourceDetail, hasStoredRow ? 'isOk' : 'isWarn'),
     adminRotationGeneratorStatusItemHtml('Lide', String(uniquePeople.size) + ' jmen', peopleDetail, duplicatePeople.length ? 'isWarn' : 'isOk'),
     adminRotationGeneratorStatusItemHtml('Stroje', String(block) + ' dny blok', machineDetail, machineIssues ? 'isWarn' : 'isOk'),
+    adminRotationGeneratorStatusItemHtml('Jemna pravidla', [avoidLatheEnabled ? 'soustruhy' : '', soloMillEnabled ? 'frezky' : '', softTotalEnabled ? 'mekota' : '', hardKindEnabled ? 'typy' : ''].filter(Boolean).join(' + ') || 'vypnuto', 'Soustruhy: ' + (avoidLatheEnabled ? (avoidLatheNames.join(', ') || 'nezadano') : 'vypnuto') + '; samostatne frezky: ' + (soloMillEnabled ? 'rozdil max ' + String(soloMillSpread) : 'vypnuto') + '; mekota: ' + (softTotalEnabled ? (softTotalNames.join(', ') || 'nezadano') + ', rozdil max ' + String(softTotalSpread) : 'vypnuto') + '; typy: ' + (hardKindEnabled ? (hardKindNames.join(', ') || 'nezadano') + ', rozdil max ' + String(hardKindSpread) : 'vypnuto'), (!avoidLatheEnabled || !soloMillEnabled || !softTotalEnabled || !hardKindEnabled) ? 'isWarn' : 'isOk'),
     adminRotationGeneratorStatusItemHtml('Kontrola', issueCount ? String(issueCount) + ' k reseni' : 'OK', controlDetail, issueCount ? 'isWarn' : 'isOk'),
     '  </div>',
     '</div>'
@@ -517,6 +584,9 @@ function buildAdminRotationGeneratorRuleSummaryHtml() {
   const hardCycle = adminRotationGeneratorListValue(rules.hardCycle || []);
   const softCore = adminRotationGeneratorListValue(rules.softCore || []);
   const softHardCycle = adminRotationGeneratorListValue(rules.softHardCycle || []);
+  const avoidLatheNames = adminRotationGeneratorListValue(rules.avoidLatheWhenTwoLathesOneMillNames || []);
+  const softTotalNames = adminRotationGeneratorListValue(rules.softTotalBalanceNames || []);
+  const hardKindNames = adminRotationGeneratorListValue(rules.hardPeopleSoftKindBalanceNames || []);
   return [
     '<div class="adminGeneratorRulesSummary">',
     '  <div class="appMenuSubTitle">Podmínky generování</div>',
@@ -526,6 +596,10 @@ function buildAdminRotationGeneratorRuleSummaryHtml() {
     adminRotationGeneratorRuleCardHtml('Uložení návrhu', 'jen po kontrole', 'Vygenerovaný návrh se nejdřív otevře v editoru. Online se uloží až tlačítkem Uložit rozpis.'),
     adminRotationGeneratorRuleCardHtml('Tvrdotový cyklus', hardCycle.replace(/\n/g, ' → '), 'Pořadí strojů pro návaznou tvrdotu lze upravit níže.'),
     adminRotationGeneratorRuleCardHtml('Trojice z měkoty', softCore, 'Chodí na ' + softHardCycle.replace(/\n/g, ' → ') + ' po blocích ' + String(rules.softHardBlockLength || 3) + ' pracovních dnů.'),
+    adminRotationGeneratorRuleCardHtml('2 soustruhy + 1 fréza', rules.avoidLatheWhenTwoLathesOneMillEnabled === false ? 'vypnuto' : (avoidLatheNames || 'zapnuto'), 'Vypsaná jména mají být při tomto režimu spíš mimo soustruhy, pokud existuje rozumná alternativa.'),
+    adminRotationGeneratorRuleCardHtml('Samostatné frézky', rules.soloMillBalanceEnabled === false ? 'vypnuto' : 'rozdíl max ' + String(rules.soloMillMaxSpread ?? 1), 'Když je na frézkách jen MFKF10, generátor se snaží samostatné frézky rozdělit měsíčně rovnoměrně.'),
+    adminRotationGeneratorRuleCardHtml('Měkota skupiny', rules.softTotalBalanceEnabled === false ? 'vypnuto' : (softTotalNames || 'zapnuto'), 'Vypsaná jména mají mít podobný počet směn na měkotě; výchozí rozdíl max ' + String(rules.softTotalMaxSpread ?? 1) + '.'),
+    adminRotationGeneratorRuleCardHtml('Soustruhy / frézky', rules.hardPeopleSoftKindBalanceEnabled === false ? 'vypnuto' : (hardKindNames || 'zapnuto'), 'U vypsaných lidí se na měkotě dorovnává poměr soustruhů a frézek; výchozí rozdíl max ' + String(rules.hardPeopleSoftKindMaxSpread ?? 1) + '.'),
     adminRotationGeneratorRuleCardHtml('TNKS01 / TPKW01 po sobě', 'zakázáno', latestRules.consecutiveTnksRule || 'Stejný pracovník nemá být na nýtovačce dvě pracovní směny po sobě.'),
     adminRotationGeneratorRuleCardHtml('Vyrovnání nýtovačky', 'měsíc má přednost', latestRules.tnksMonthlyFirstRule || balanceRules.pressBalanceRule || 'TNKS01 a TPKW01 se vyrovnávají podle společných počtů.'),
     '  </div>',
@@ -560,6 +634,23 @@ function buildAdminRotationGeneratorSettingsHtml() {
     '  <input id="adminGeneratorSoftHardBlockLength" class="appMenuInput" data-generator-settings-field type="number" min="1" max="12" step="1" value="' + escapeHtml(String(settings.softHardBlockLength || 3)) + '">',
     '  <label class="appMenuFieldLabel" for="adminGeneratorHardCycle">Tvrdotový cyklus strojů</label>',
     '  <textarea id="adminGeneratorHardCycle" class="appMenuTextarea" data-generator-settings-field rows="5">' + escapeHtml(adminRotationGeneratorListValue(settings.hardCycle)) + '</textarea>',
+    '  <div class="appMenuSubTitle">Jemná pravidla</div>',
+    '  <label class="adminRotationOvertimeSwitch"><input id="adminGeneratorAvoidLatheWhenTwoLathesOneMillEnabled" type="checkbox" data-generator-settings-field ' + (settings.avoidLatheWhenTwoLathesOneMillEnabled !== false ? 'checked' : '') + '><span>Vyhýbat se soustruhům při 2 soustruhy + 1 fréza</span></label>',
+    '  <label class="appMenuFieldLabel" for="adminGeneratorAvoidLatheWhenTwoLathesOneMillNames">Jména, která mají být spíš mimo soustruhy v režimu 2+1</label>',
+    '  <textarea id="adminGeneratorAvoidLatheWhenTwoLathesOneMillNames" class="appMenuTextarea" data-generator-settings-field rows="2">' + escapeHtml(adminRotationGeneratorListValue(settings.avoidLatheWhenTwoLathesOneMillNames)) + '</textarea>',
+    '  <label class="adminRotationOvertimeSwitch"><input id="adminGeneratorSoloMillBalanceEnabled" type="checkbox" data-generator-settings-field ' + (settings.soloMillBalanceEnabled !== false ? 'checked' : '') + '><span>Vyrovnávat samostatné frézky</span></label>',
+    '  <label class="appMenuFieldLabel" for="adminGeneratorSoloMillMaxSpread">Maximální rozdíl samostatných frézek v měsíci</label>',
+    '  <input id="adminGeneratorSoloMillMaxSpread" class="appMenuInput" data-generator-settings-field type="number" min="0" max="6" step="1" value="' + escapeHtml(String(settings.soloMillMaxSpread ?? 1)) + '">',
+    '  <label class="adminRotationOvertimeSwitch"><input id="adminGeneratorSoftTotalBalanceEnabled" type="checkbox" data-generator-settings-field ' + (settings.softTotalBalanceEnabled !== false ? 'checked' : '') + '><span>Vyrovnávat počet směn na měkotě u vybraných lidí</span></label>',
+    '  <label class="appMenuFieldLabel" for="adminGeneratorSoftTotalBalanceNames">Jména pro vyrovnání měkoty</label>',
+    '  <textarea id="adminGeneratorSoftTotalBalanceNames" class="appMenuTextarea" data-generator-settings-field rows="2">' + escapeHtml(adminRotationGeneratorListValue(settings.softTotalBalanceNames)) + '</textarea>',
+    '  <label class="appMenuFieldLabel" for="adminGeneratorSoftTotalMaxSpread">Maximální rozdíl směn na měkotě v měsíci</label>',
+    '  <input id="adminGeneratorSoftTotalMaxSpread" class="appMenuInput" data-generator-settings-field type="number" min="0" max="6" step="1" value="' + escapeHtml(String(settings.softTotalMaxSpread ?? 1)) + '">',
+    '  <label class="adminRotationOvertimeSwitch"><input id="adminGeneratorHardPeopleSoftKindBalanceEnabled" type="checkbox" data-generator-settings-field ' + (settings.hardPeopleSoftKindBalanceEnabled !== false ? 'checked' : '') + '><span>Vyrovnávat soustruhy a frézky u lidí z tvrdoty</span></label>',
+    '  <label class="appMenuFieldLabel" for="adminGeneratorHardPeopleSoftKindBalanceNames">Jména pro vyrovnání soustruhy / frézky</label>',
+    '  <textarea id="adminGeneratorHardPeopleSoftKindBalanceNames" class="appMenuTextarea" data-generator-settings-field rows="2">' + escapeHtml(adminRotationGeneratorListValue(settings.hardPeopleSoftKindBalanceNames)) + '</textarea>',
+    '  <label class="appMenuFieldLabel" for="adminGeneratorHardPeopleSoftKindMaxSpread">Maximální rozdíl soustruhy vs frézky v měsíci</label>',
+    '  <input id="adminGeneratorHardPeopleSoftKindMaxSpread" class="appMenuInput" data-generator-settings-field type="number" min="0" max="6" step="1" value="' + escapeHtml(String(settings.hardPeopleSoftKindMaxSpread ?? 1)) + '">',
     '  <div class="appMenuSubTitle">Základní soustruhy měkoty</div>',
     '  <div class="smallText">Jména musí odpovídat seznamu výše. Stroj použij například MSKC01, MSKC03 nebo MSKC04.</div>',
     '  <div class="tableWrap appMenuTableWrap uMt12">',
@@ -588,6 +679,16 @@ function readAdminRotationGeneratorSettingsFromDom() {
     softHardCycle: adminRotationSplitGeneratorList(getText('adminGeneratorSoftHardCycle')),
     softHardBlockLength: Number(document.getElementById('adminGeneratorSoftHardBlockLength')?.value || 3),
     hardCycle: adminRotationSplitGeneratorList(getText('adminGeneratorHardCycle')),
+    avoidLatheWhenTwoLathesOneMillEnabled: !!document.getElementById('adminGeneratorAvoidLatheWhenTwoLathesOneMillEnabled')?.checked,
+    avoidLatheWhenTwoLathesOneMillNames: adminRotationSplitGeneratorList(getText('adminGeneratorAvoidLatheWhenTwoLathesOneMillNames')),
+    soloMillBalanceEnabled: !!document.getElementById('adminGeneratorSoloMillBalanceEnabled')?.checked,
+    soloMillMaxSpread: Number(document.getElementById('adminGeneratorSoloMillMaxSpread')?.value || 1),
+    softTotalBalanceEnabled: !!document.getElementById('adminGeneratorSoftTotalBalanceEnabled')?.checked,
+    softTotalBalanceNames: adminRotationSplitGeneratorList(getText('adminGeneratorSoftTotalBalanceNames')),
+    softTotalMaxSpread: Number(document.getElementById('adminGeneratorSoftTotalMaxSpread')?.value || 1),
+    hardPeopleSoftKindBalanceEnabled: !!document.getElementById('adminGeneratorHardPeopleSoftKindBalanceEnabled')?.checked,
+    hardPeopleSoftKindBalanceNames: adminRotationSplitGeneratorList(getText('adminGeneratorHardPeopleSoftKindBalanceNames')),
+    hardPeopleSoftKindMaxSpread: Number(document.getElementById('adminGeneratorHardPeopleSoftKindMaxSpread')?.value || 1),
     softBaseLathe
   });
 }
@@ -2339,6 +2440,16 @@ const RAK_ROTATION_GENERATOR_RULES_V1107 = Object.freeze({
   softHardBlockLength: 3,
   softCore: Object.freeze(['Synek', 'Třasák', 'Střížek']),
   softBaseLathe: Object.freeze({ Synek: 'MSKC04', 'Střížek': 'MSKC03', 'Třasák': 'MSKC01' }),
+  avoidLatheWhenTwoLathesOneMillEnabled: true,
+  avoidLatheWhenTwoLathesOneMillNames: Object.freeze(['Starý']),
+  soloMillBalanceEnabled: true,
+  soloMillMaxSpread: 1,
+  softTotalBalanceEnabled: true,
+  softTotalBalanceNames: Object.freeze(['Blažek', 'Starý', 'Kříž', 'Pech']),
+  softTotalMaxSpread: 1,
+  hardPeopleSoftKindBalanceEnabled: true,
+  hardPeopleSoftKindBalanceNames: Object.freeze(['Blažek', 'Kmínek', 'Kříž', 'Pech', 'Starý']),
+  hardPeopleSoftKindMaxSpread: 1,
   machineCountSplitRule: 'Mimo běžnou neděli se TNKS01 a TPKW01 v kontrolním přehledu počítají jako 0,5 + 0,5 pro oba stroje.',
   softCoreNoTnksBalance: Object.freeze(['Synek', 'Třasák', 'Střížek']),
   softCoreContinuationRule: 'Synek/Třasák/Střížek drží vlastní návazný cyklus TNKS01 → TPKW01 → TPKW02 napříč měsíci; TNKS01 dorovnání jim do toho nesahá.',
@@ -2665,11 +2776,13 @@ function adminRotationGeneratorPickName(candidates, usedNames, counters, options
     const hardBalance = opts.machineName === 'TNKS01' || opts.machineName === 'TPKW02'
       ? Math.abs(Number((counters.hardMachine[name] && counters.hardMachine[name].TNKS01) || 0) - Number((counters.hardMachine[name] && counters.hardMachine[name].TPKW02) || 0)) * 34
       : 0;
-    const kindBalance = opts.softKind === 'mill'
+    const kindBalanceNames = Array.isArray(opts.softKindBalanceNames) ? opts.softKindBalanceNames : [];
+    const useKindBalance = opts.softKindBalanceEnabled !== false && (!kindBalanceNames.length || kindBalanceNames.includes(name));
+    const kindBalance = !useKindBalance ? 0 : (opts.softKind === 'mill'
       ? Math.max(0, Number((counters.softKind[name] && counters.softKind[name].mill) || 0) - Number((counters.softKind[name] && counters.softKind[name].lathe) || 0)) * 42
       : (opts.softKind === 'lathe'
         ? Math.max(0, Number((counters.softKind[name] && counters.softKind[name].lathe) || 0) - Number((counters.softKind[name] && counters.softKind[name].mill) || 0)) * 24
-        : 0);
+        : 0));
     const jitter = (adminRotationHashString([opts.sectionKey || '', opts.machineName || '', opts.rowIdx || 0, name].join('|')) % 19) / 100;
     const score = total * 44 + section * 18 + machine * 95 - Math.log1p(Math.max(0, historical)) * 9 + preferred + required + avoid + hardBalance + kindBalance + jitter;
     if (score < bestScore) {
@@ -2739,6 +2852,27 @@ function adminRotationGeneratorSoftSlotPlan(softCount) {
 
 function adminRotationGeneratorSoftKind(machineName) {
   return /^MFKF/i.test(String(machineName || '')) ? 'mill' : 'lathe';
+}
+
+function adminRotationGeneratorIsTwoLatheOneMillPlan(softSlots) {
+  const slots = Array.isArray(softSlots) ? softSlots : [];
+  let lathe = 0;
+  let mill = 0;
+  slots.forEach((idx) => {
+    const kind = adminRotationGeneratorSoftKind(SOFT_MACHINE_HEADERS[idx] || '');
+    if (kind === 'mill') mill += 1;
+    else lathe += 1;
+  });
+  return lathe === 2 && mill === 1;
+}
+
+function adminRotationGeneratorAvoidLatheNamesForPlan(generatorRules, softSlots, knownNames) {
+  if (!generatorRules || generatorRules.avoidLatheWhenTwoLathesOneMillEnabled === false) return [];
+  if (!adminRotationGeneratorIsTwoLatheOneMillPlan(softSlots)) return [];
+  const names = Array.isArray(knownNames) ? knownNames : adminGetKnownNames();
+  return adminRotationSplitGeneratorList(generatorRules.avoidLatheWhenTwoLathesOneMillNames || [])
+    .map((name) => adminRotationCanonicalName(name, names))
+    .filter((name) => name && names.includes(name));
 }
 
 
@@ -3087,6 +3221,10 @@ function adminRotationGeneratorBuildDay(month, model, counters, rowIdx, dateLabe
 
   const softSlots = adminRotationGeneratorSoftSlotPlan(Math.min(softTargetCount, available.filter((name) => !usedNames.has(name)).length));
   const hasSoftSlot = (machineName) => softSlots.includes(adminRotationGeneratorMachineIndex(SOFT_MACHINE_HEADERS, machineName));
+  const latheAvoidNames = adminRotationGeneratorAvoidLatheNamesForPlan(generatorRules, softSlots, knownNames);
+  const softKindBalanceNames = adminRotationGeneratorRawList(generatorRules.hardPeopleSoftKindBalanceNames)
+    .map((name) => adminRotationCanonicalName(name, knownNames))
+    .filter((name) => name && knownNames.includes(name));
 
   // 4) Základ Měkoty: Třasák/MSKC01, Střížek/MSKC03, Synek/MSKC04, pokud jsou dostupní a nejsou zrovna na Tvrdotě.
   ['MSKC01', 'MSKC03', 'MSKC04'].forEach((machineName) => {
@@ -3112,15 +3250,26 @@ function adminRotationGeneratorBuildDay(month, model, counters, rowIdx, dateLabe
     const remainingNow = available.filter((name) => !usedNames.has(name));
     const baseLathe = kind === 'lathe' ? adminRotationGeneratorBaseLathePerson(machineName, knownNames, available, usedNames) : '';
     const flexSoft = ['Špadrna', 'Novotný'].map((name) => adminRotationCanonicalName(name, knownNames)).filter((name) => remainingNow.includes(name));
+    const avoidLathe = kind === 'lathe' ? latheAvoidNames.filter((name) => remainingNow.includes(name)) : [];
+    const nonAvoid = (name) => !avoidLathe.includes(name);
+    const latheBase = baseLathe && nonAvoid(baseLathe) ? [baseLathe] : [];
     const preferred = kind === 'mill'
       ? displacedToSoft.concat(flexSoft, remainingNow.filter((name) => !softPreferred.includes(name)), remainingNow.filter((name) => softPreferred.includes(name)))
-      : (baseLathe ? [baseLathe] : []).concat(remainingNow.filter((name) => softPreferred.includes(name)), flexSoft, remainingNow.filter((name) => !softPreferred.includes(name)));
+      : latheBase.concat(
+        remainingNow.filter((name) => softPreferred.includes(name) && nonAvoid(name)),
+        flexSoft.filter(nonAvoid),
+        remainingNow.filter((name) => !softPreferred.includes(name) && nonAvoid(name)),
+        avoidLathe
+      );
     const name = adminRotationGeneratorPickName(Array.from(new Set(preferred)), usedNames, counters, {
       sectionKey: 'soft',
       machineName,
       rowIdx,
       softKind: kind,
+      softKindBalanceEnabled: generatorRules.hardPeopleSoftKindBalanceEnabled !== false,
+      softKindBalanceNames,
       preferred: kind === 'lathe' ? softPreferred : hardPreferred,
+      avoid: avoidLathe,
       historical: adminRotationGeneratorHistoricalMachineScore(model, 'soft', machineIdx, preferred[0] || '')
     });
     if (name) assignSoftCell(machineIdx, name, 'soft-fill');
@@ -3518,6 +3667,9 @@ function adminRotationGeneratorFindSoloMillSwapCell(month, rowIdx, lowName) {
 
 function adminRotationGeneratorBalanceSoloMill(month, model) {
   const knownNames = model && Array.isArray(model.knownNames) ? model.knownNames : adminGetKnownNames();
+  const generatorRules = getAdminRotationGeneratorRules();
+  if (generatorRules.soloMillBalanceEnabled === false) return { swaps: 0, counts: Object.create(null), disabled: true };
+  const allowedSpread = Math.max(0, Math.min(6, Number(generatorRules.soloMillMaxSpread ?? 1) || 1));
   const workingNames = adminRotationGeneratorCollectWorkingNames(month, knownNames).filter((name) => knownNames.includes(name));
   const mfkf06Idx = adminRotationGeneratorMachineIndex(SOFT_MACHINE_HEADERS, 'MFKF06');
   const mfkf10Idx = adminRotationGeneratorMachineIndex(SOFT_MACHINE_HEADERS, 'MFKF10');
@@ -3530,11 +3682,11 @@ function adminRotationGeneratorBalanceSoloMill(month, model) {
     const highNames = workingNames.slice().sort((a, b) => Number(counts[b] || 0) - Number(counts[a] || 0));
     const lowNames = workingNames.slice().sort((a, b) => Number(counts[a] || 0) - Number(counts[b] || 0));
     const highName = highNames[0];
-    if (!highName || Number(counts[highName] || 0) <= 1) break;
+    if (!highName || Number(counts[highName] || 0) <= allowedSpread) break;
     let didSwap = false;
     for (const lowName of lowNames) {
       if (!lowName || lowName === highName) continue;
-      if (Number(counts[highName] || 0) - Number(counts[lowName] || 0) <= 1) break;
+      if (Number(counts[highName] || 0) - Number(counts[lowName] || 0) <= allowedSpread) break;
       for (let rowIdx = 0; rowIdx < softRows.length; rowIdx += 1) {
         const softRow = softRows[rowIdx];
         const cells = Array.isArray(softRow && softRow.cells) ? softRow.cells : [];
@@ -3595,7 +3747,16 @@ function adminRotationGeneratorFindSoftKindCellOnDay(month, rowIdx, person, want
 
 function adminRotationGeneratorBalanceSoftKind(month, model) {
   const knownNames = model && Array.isArray(model.knownNames) ? model.knownNames : adminGetKnownNames();
-  const workingNames = adminRotationGeneratorCollectWorkingNames(month, knownNames).filter((name) => knownNames.includes(name));
+  const generatorRules = getAdminRotationGeneratorRules();
+  if (generatorRules.hardPeopleSoftKindBalanceEnabled === false) return { swaps: 0, counts: Object.create(null), disabled: true };
+  const configuredNames = adminRotationGeneratorRawList(generatorRules.hardPeopleSoftKindBalanceNames)
+    .map((name) => adminRotationCanonicalName(name, knownNames))
+    .filter((name) => name && knownNames.includes(name));
+  const targetNames = configuredNames.length ? configuredNames : (Array.isArray(generatorRules.hardPreferred) ? generatorRules.hardPreferred : []);
+  const allowedSpread = Math.max(0, Math.min(6, Number(generatorRules.hardPeopleSoftKindMaxSpread ?? 1) || 1));
+  const workingNames = adminRotationGeneratorCollectWorkingNames(month, knownNames)
+    .filter((name) => knownNames.includes(name))
+    .filter((name) => targetNames.includes(name));
   const softRows = Array.isArray(month && month.soft && month.soft.rows) ? month.soft.rows : [];
   if (!workingNames.length || !softRows.length) return { swaps: 0, counts: Object.create(null) };
   let counts = adminRotationGeneratorCountSoftKinds(month, workingNames);
@@ -3608,7 +3769,7 @@ function adminRotationGeneratorBalanceSoftKind(month, model) {
     const millHeavy = workingNames.slice().sort((a, b) => scoreMillHeavy(b) - scoreMillHeavy(a))[0];
     const latheHeavy = workingNames.slice().sort((a, b) => scoreLatheHeavy(b) - scoreLatheHeavy(a))[0];
     if (!millHeavy || !latheHeavy || millHeavy === latheHeavy) break;
-    if (scoreMillHeavy(millHeavy) <= 1 || scoreLatheHeavy(latheHeavy) <= 1) break;
+    if (scoreMillHeavy(millHeavy) <= allowedSpread || scoreLatheHeavy(latheHeavy) <= allowedSpread) break;
     let didSwap = false;
     for (let rowIdx = 0; rowIdx < softRows.length; rowIdx += 1) {
       const millCell = adminRotationGeneratorFindSoftKindCellOnDay(month, rowIdx, millHeavy, 'mill');
@@ -3620,6 +3781,69 @@ function adminRotationGeneratorBalanceSoftKind(month, model) {
       counts = adminRotationGeneratorCountSoftKinds(month, workingNames);
       didSwap = true;
       break;
+    }
+    if (!didSwap) break;
+  }
+  return { swaps, counts };
+}
+
+function adminRotationGeneratorCountSoftTotals(month, names) {
+  const result = Object.create(null);
+  const list = Array.isArray(names) ? names : adminGetKnownNames();
+  list.forEach((name) => { result[name] = 0; });
+  const rows = Array.isArray(month && month.soft && month.soft.rows) ? month.soft.rows : [];
+  rows.forEach((row) => {
+    (Array.isArray(row && row.cells) ? row.cells : []).forEach((cell) => {
+      const name = adminRotationCanonicalName(cell, list);
+      if (name && Object.prototype.hasOwnProperty.call(result, name)) result[name] += 1;
+    });
+  });
+  return result;
+}
+
+function adminRotationGeneratorBalanceSoftTotals(month, model, monthKey) {
+  const knownNames = model && Array.isArray(model.knownNames) ? model.knownNames : adminGetKnownNames();
+  const generatorRules = getAdminRotationGeneratorRules();
+  if (generatorRules.softTotalBalanceEnabled === false) return { swaps: 0, counts: Object.create(null), disabled: true };
+  const workingNames = adminRotationGeneratorRawList(generatorRules.softTotalBalanceNames)
+    .map((name) => adminRotationCanonicalName(name, knownNames))
+    .filter((name) => name && knownNames.includes(name));
+  const softRows = Array.isArray(month && month.soft && month.soft.rows) ? month.soft.rows : [];
+  if (!workingNames.length || !softRows.length) return { swaps: 0, counts: Object.create(null) };
+  const allowedSpread = Math.max(0, Math.min(6, Number(generatorRules.softTotalMaxSpread ?? 1) || 1));
+  let counts = adminRotationGeneratorCountSoftTotals(month, workingNames);
+  let swaps = 0;
+  const maxPasses = softRows.length * 4;
+  const currentCount = (name) => Number(counts[name] || 0);
+  const sortedHigh = () => workingNames.slice().sort((a, b) => currentCount(b) - currentCount(a) || a.localeCompare(b, 'cs'));
+  const sortedLow = () => workingNames.slice().sort((a, b) => currentCount(a) - currentCount(b) || a.localeCompare(b, 'cs'));
+
+  for (let pass = 0; pass < maxPasses; pass += 1) {
+    const highName = sortedHigh()[0];
+    const lowNames = sortedLow();
+    const lowName = lowNames[0];
+    if (!highName || !lowName || highName === lowName) break;
+    if (currentCount(highName) - currentCount(lowName) <= allowedSpread) break;
+    let didSwap = false;
+    for (const targetLowName of lowNames) {
+      if (!targetLowName || targetLowName === highName) continue;
+      if (currentCount(highName) - currentCount(targetLowName) <= allowedSpread) break;
+      for (let rowIdx = 0; rowIdx < softRows.length; rowIdx += 1) {
+        const highCell = adminRotationGeneratorFindPersonCellOnDay(month, rowIdx, highName, 'soft');
+        const lowCell = adminRotationGeneratorFindPersonCellOnDay(month, rowIdx, targetLowName, 'hard');
+        if (!highCell || !lowCell || !highCell.cells || !lowCell.cells) continue;
+        if (highCell.sectionKey !== 'soft' || lowCell.sectionKey !== 'hard') continue;
+        if (!adminRotationGeneratorPersonKnowsMachine(highName, lowCell.machine)) continue;
+        if (!adminRotationGeneratorPersonKnowsMachine(targetLowName, highCell.machine)) continue;
+        if (!adminRotationGeneratorCanUseHardMachine(month, rowIdx, lowCell.machine, highName, knownNames, monthKey)) continue;
+        highCell.cells[highCell.idx] = targetLowName;
+        lowCell.cells[lowCell.idx] = highName;
+        swaps += 1;
+        counts = adminRotationGeneratorCountSoftTotals(month, workingNames);
+        didSwap = true;
+        break;
+      }
+      if (didSwap) break;
     }
     if (!didSwap) break;
   }
@@ -4055,6 +4279,7 @@ function adminGenerateRotationMonthDraft(monthKey, preparedMonth) {
   month.soft.title = month.soft.title || 'Rotace měkota';
   const tnksBalance = adminRotationGeneratorBalanceHardMachine(month, 'TNKS01', model, monthKey);
   const soloMillBalance = adminRotationGeneratorBalanceSoloMill(month, model);
+  const softTotalBalance = adminRotationGeneratorBalanceSoftTotals(month, model, monthKey);
   const softKindBalance = adminRotationGeneratorBalanceSoftKind(month, model);
   const soloMillRebalance = adminRotationGeneratorBalanceSoloMill(month, model);
   const kminekNovotnyMoToBalance = adminRotationGeneratorBalanceKminekNovotnyMoTo(month, model);
@@ -4084,6 +4309,7 @@ function adminGenerateRotationMonthDraft(monthKey, preparedMonth) {
     tnksBalanceSwaps: (tnksBalance && Number(tnksBalance.swaps || 0)) + (tnksPostRepairBalance && Number(tnksPostRepairBalance.swaps || 0)),
     tnksConsecutiveRepairs: tnksConsecutiveRepair && Number(tnksConsecutiveRepair.repairs || 0),
     soloMillBalanceSwaps: (soloMillBalance && Number(soloMillBalance.swaps || 0)) + (soloMillRebalance && Number(soloMillRebalance.swaps || 0)),
+    softTotalBalanceSwaps: softTotalBalance && Number(softTotalBalance.swaps || 0),
     softKindBalanceSwaps: softKindBalance && Number(softKindBalance.swaps || 0),
     kminekNovotnyMoToBalanceSwaps: kminekNovotnyMoToBalance && Number(kminekNovotnyMoToBalance.swaps || 0),
     ruleVersion: '1.146'
@@ -4156,7 +4382,8 @@ const RAK_ROTATION_GENERATOR_RULES_V1116 = Object.freeze({
   machineSummaryRule: 'Kontrolní přehled musí být otočený jako jména v řádcích a stroje ve sloupcích, se souhrny TO a MO pro rychlou kontrolu.',
   pressBalanceRule: 'Nýtovačka se vyrovnává podle společného počtu TNKS01/TPKW01 s pravidlem 0,5 + 0,5, takže stav 1,5 proti 0 je potřeba dál prohazovat.',
   softKindBalanceRule: 'Měkota se po vygenerování dorovnává i podle typu práce: kdo má moc frézek a žádný soustruh se prohazuje s tím, kdo má moc soustruhů a žádné frézky.',
-  resultFields: Object.freeze(['tnksBalanceSwaps', 'soloMillBalanceSwaps', 'softKindBalanceSwaps'])
+  softTotalBalanceRule: 'Vybraná skupina lidí z Tvrdoty se po vygenerování dorovnává i podle celkového počtu směn na Měkotě.',
+  resultFields: Object.freeze(['tnksBalanceSwaps', 'soloMillBalanceSwaps', 'softTotalBalanceSwaps', 'softKindBalanceSwaps'])
 });
 
 const RAK_ROTATION_SAVE_BUTTON_CONTRACT_V1118 = Object.freeze({
