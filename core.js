@@ -1,7 +1,7 @@
-// RaK 1.2 (1.313) – core stav, verze a sdílené helpery aplikace.
+// RaK 1.2 (1.315) – core stav, verze a sdílené helpery aplikace.
 
 const APP_KEY = "rotace_kalkulacky_state_v123";
-const APP_VERSION = "1.2 (1.313)";
+const APP_VERSION = "1.2 (1.315)";
 window.APP_VERSION = APP_VERSION;
 const ROTATION_BUILD = "2026-06-03-" + APP_VERSION;
 window.ROTATION_BUILD = ROTATION_BUILD;
@@ -931,6 +931,16 @@ function getVacationPeriodForDate(now) {
   return getVacationCountdownPeriods().find((period) => period && period.start && period.end && time >= period.start.getTime() && time < period.end.getTime()) || null;
 }
 
+function getVacationCountdownTargetPeriod(now) {
+  const source = now instanceof Date ? new Date(now) : new Date(now || new Date());
+  const time = source.getTime();
+  if (Number.isNaN(time)) return null;
+  const periods = getVacationCountdownPeriods();
+  const active = periods.find((period) => period && period.start && period.end && time >= period.start.getTime() && time < period.end.getTime()) || null;
+  if (active) return active;
+  return periods.find((period) => period && period.end && period.end.getTime() > time) || null;
+}
+
 function getVacationCountdownAdminSettingsSnapshot() {
   return getVacationCountdownSettings();
 }
@@ -1101,9 +1111,8 @@ function getVacationCountdown(now) {
   const sourceDate = new Date(now || new Date());
   const today = new Date(sourceDate);
   today.setHours(0, 0, 0, 0);
-  const periods = getVacationCountdownPeriods();
   const active = getVacationPeriodForDate(sourceDate);
-  const upcoming = active || periods.find(period => period.start.getTime() >= today.getTime()) || null;
+  const upcoming = getVacationCountdownTargetPeriod(sourceDate);
   if (!upcoming) return { text: '—', meta: '' };
 
   const start = new Date(upcoming.start);

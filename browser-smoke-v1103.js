@@ -10,7 +10,7 @@ const { spawn } = require('child_process');
 const { pathToFileURL } = require('url');
 
 const ROOT_DIR = __dirname;
-const EXPECTED_APP_VERSION = '1.2 (1.313)';
+const EXPECTED_APP_VERSION = '1.2 (1.315)';
 const RAK_BROWSER_SMOKE_ENGINE = 'local-chromium-cdp';
 const RAK_BROWSER_SMOKE_LOAD_MODE = 'about-blank-inline-html';
 const CHROMIUM_BIN = process.env.CHROMIUM_BIN || process.env.CHROME_BIN || '/usr/bin/chromium';
@@ -425,6 +425,14 @@ async function runViewportSmoke(cdpPort, viewport, inlineHtml) {
   assert(vacationShiftCountdownState.beforeNightEnd === 1, `${viewport.name}: probíhající směna D se musí počítat až do konce ${JSON.stringify(vacationShiftCountdownState)}`);
   assert(vacationShiftCountdownState.afterNightEnd === 0, `${viewport.name}: po konci směny D už do CZD nemá zbývat směna ${JSON.stringify(vacationShiftCountdownState)}`);
 
+  const vacationNextEventState = await evalInPage(client, `(() => {
+    if (typeof getVacationCountdown !== 'function') return { ok: false, reason: 'missing countdown function' };
+    const afterCzd = getVacationCountdown(new Date(2026, 7, 2, 18, 1));
+    return { ok: true, text: afterCzd && afterCzd.text || '', meta: afterCzd && afterCzd.meta || '', shiftText: afterCzd && afterCzd.shiftText || '' };
+  })()`);
+  assert(vacationNextEventState.ok, `${viewport.name}: test přepnutí odpočtu po CZD se nespustil ${JSON.stringify(vacationNextEventState)}`);
+  assert(/Váno|VĂˇno/i.test(vacationNextEventState.meta), `${viewport.name}: po skončení CZD musí odpočet mířit na Vánoce ${JSON.stringify(vacationNextEventState)}`);
+
   await clickAndWait(client, 'rotace', '#rotace.page.active');
   const rotationState = await evalInPage(client, `(() => ({
     nameTiles: document.querySelectorAll('.rotaceNameTile, #nameButtons .tile, #rotaceNamesPanel button, #rotaceNamesPanel .bbtn').length,
@@ -599,6 +607,26 @@ async function runViewportSmoke(cdpPort, viewport, inlineHtml) {
   assert(calendarAbsenceImportState.rowsByDay[1].some((row) => row.person === 'Třasák' && row.code === 'D'), `${viewport.name}: vícedenní dovolená nepokračuje 18.7. ${JSON.stringify(calendarAbsenceImportState)}`);
   assert(calendarAbsenceImportState.rowsByDay[1].some((row) => row.person === 'Střížek' && row.code === 'NV'), `${viewport.name}: import nezkanonizoval Strizek na Střížek ${JSON.stringify(calendarAbsenceImportState)}`);
   assert(!calendarAbsenceImportState.rowsByDay.flat().some((row) => row.person === 'Směna'), `${viewport.name}: import nesmí brát směnové události jako absence ${JSON.stringify(calendarAbsenceImportState)}`);
+
+  const vacationCopyTextState = await evalInPage(client, `(() => {
+    if (typeof buildAdminRotationVacationCopyText !== 'function') return { ok: false, reason: 'missing copy formatter' };
+    const month = {
+      notes: [
+        { date: '5.8. R', person: 'Trasak', code: 'D' },
+        { date: '6.8. N', person: 'Třasák', code: 'D' },
+        { date: '1.8. R', person: 'Kříž', code: 'L' },
+        { date: '2.8. N', person: 'Kříž', code: 'L' },
+        { date: '25.8. R', person: 'Kříž', code: 'D' }
+      ]
+    };
+    const text = buildAdminRotationVacationCopyText('8/26', month);
+    return { ok: true, text };
+  })()`);
+  assert(vacationCopyTextState.ok, `${viewport.name}: formát kopírování dovolených se nespustil ${JSON.stringify(vacationCopyTextState)}`);
+  assert(vacationCopyTextState.text.includes('Dovolená 8/26'), `${viewport.name}: kopie dovolených nemá nadpis měsíce ${JSON.stringify(vacationCopyTextState)}`);
+  assert(vacationCopyTextState.text.includes('Třasák (dovolené) - 5.8., 6.8.'), `${viewport.name}: kopie dovolených neseskupila Třasáka ${JSON.stringify(vacationCopyTextState)}`);
+  assert(vacationCopyTextState.text.includes('Kříž (lázně) - 1.8., 2.8.'), `${viewport.name}: kopie dovolených neseskupila lázně ${JSON.stringify(vacationCopyTextState)}`);
+  assert(vacationCopyTextState.text.includes('Kříž (dovolené) - 25.8.'), `${viewport.name}: kopie dovolených neoddělila důvody ${JSON.stringify(vacationCopyTextState)}`);
 
   const wizardRunState = await evalInPage(client, `(() => {
     const previousBody = document.getElementById('appMenuBody');

@@ -1,3 +1,14 @@
+## RaK 1.2 (1.315)
+
+- Administrace / Rozpisy: přidané tlačítko `Kopírovat dovolené`, které z aktuálního měsíce zkopíruje absence do schránky ve formátu pro WhatsApp, seskupené podle jmen a důvodů.
+- Kopírovaný text bere i rozepsané, zatím neuložené změny v editoru rozpisu a sjednocuje jména bez diakritiky na oficiální podobu.
+- Release metadata sjednocena na `RaK 1.2 (1.315)`, technicka verze `1.2.315`, cache `v1.2-1.315`; loader modulu ma cache znacku `1.2.315`.
+
+## RaK 1.2 (1.314)
+
+- Dashboard / Dovolená: po skončení aktuálního nastaveného období (např. CZD) se odpočet automaticky přepne na nejbližší další nastavenou událost, typicky Vánoce.
+- Release metadata sjednocena na `RaK 1.2 (1.314)`, technicka verze `1.2.314`, cache `v1.2-1.314`; loader modulu ma cache znacku `1.2.314`.
+
 ## RaK 1.2 (1.313)
 
 - Dashboard / Dovolená: odpočet `směn do CZD/dovolené` nově drží aktuálně probíhající směnu D započítanou až do jejího konce. Po startu noční v 18:00 tedy v 18:01 nespadne na `0 směn`, když je směna D ještě v práci.

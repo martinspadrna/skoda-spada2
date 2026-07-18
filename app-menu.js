@@ -4990,6 +4990,13 @@ function bindAppMenuHandlers(body) {
         if (typeof adminAddAbsenceRowToEditor === 'function') adminAddAbsenceRowToEditor();
         return;
       }
+      if (adminAction === 'copy-rotation-vacations') {
+        if (typeof copyAdminRotationVacationsToClipboard !== 'function') throw new Error('Kopírování dovolených není dostupné.');
+        const result = await copyAdminRotationVacationsToClipboard(monthKey);
+        const statusEl = document.getElementById('adminRotationDraftStatus') || document.getElementById('adminOnlineSaveStatus');
+        if (statusEl) statusEl.textContent = 'Dovolené zkopírované do schránky · řádků: ' + String(result && result.lineCount || 0) + '.';
+        return;
+      }
       if (adminAction && adminAction.indexOf('generator-') === 0) {
         if (typeof adminHandleRotationGeneratorWizardAction === 'function' && adminHandleRotationGeneratorWizardAction(adminAction, target, body)) return;
       }

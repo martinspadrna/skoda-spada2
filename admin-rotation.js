@@ -1125,6 +1125,109 @@ function adminRotationSortNotes(notesRows, month) {
   });
 }
 
+function adminRotationCopyAbsenceReasonLabel(code, label) {
+  const rawCode = String(code || '').trim();
+  const rawLabel = String(label || '').trim();
+  const upper = rawCode.toLocaleUpperCase('cs-CZ');
+  const suffix = rawCode.replace(/^(?:D|NV|L|N|S|Š|§)\b\s*/i, '').trim();
+  if (/^D\b/i.test(rawCode) || rawLabel.toLocaleLowerCase('cs-CZ') === 'dovolená') return 'dovolené' + (suffix ? ' ' + suffix : '');
+  if (/^NV\b/i.test(rawCode)) return 'náhradní volno' + (suffix ? ' ' + suffix : '');
+  if (/^L\b/i.test(rawCode) || rawLabel.toLocaleLowerCase('cs-CZ') === 'lázně') return 'lázně' + (suffix ? ' ' + suffix : '');
+  if (/^N\b/i.test(rawCode)) return 'nemoc' + (suffix ? ' ' + suffix : '');
+  if (upper.indexOf('§') === 0 || rawLabel.toLocaleLowerCase('cs-CZ') === 'paragraf') return 'paragraf' + (suffix ? ' ' + suffix : '');
+  if (upper.indexOf('Š') === 0 || rawLabel.toLocaleLowerCase('cs-CZ') === 'školení') return 'školení' + (suffix ? ' ' + suffix : '');
+  return (rawLabel || rawCode || 'absence').toLocaleLowerCase('cs-CZ');
+}
+
+function adminRotationCopyAbsenceDateLabel(date) {
+  const parsed = typeof parseDateToken === 'function' ? parseDateToken(String(date || '')) : null;
+  if (parsed && Number.isFinite(Number(parsed.day)) && Number.isFinite(Number(parsed.month))) {
+    return String(Number(parsed.day)) + '.' + String(Number(parsed.month)) + '.';
+  }
+  const base = adminRotationDateBaseKey(date);
+  return base || String(date || '').trim();
+}
+
+function buildAdminRotationVacationCopyText(monthKey, monthSource) {
+  const month = monthSource || (app.rotation && app.rotation.months ? app.rotation.months[monthKey] : null);
+  const notes = Array.isArray(month && month.notes) ? adminRotationSortNotes(month.notes, month) : [];
+  const knownNames = adminGetKnownNames();
+  const knownOrder = new Map(knownNames.map((name, idx) => [name, idx]));
+  const groups = new Map();
+  notes.forEach((note) => {
+    const normalized = typeof normalizeNoteEntry === 'function' ? normalizeNoteEntry(note) : null;
+    if (!normalized || !normalized.isAbsence) return;
+    const people = Array.isArray(normalized.people) && normalized.people.length ? normalized.people : [normalized.person];
+    const dateLabel = adminRotationCopyAbsenceDateLabel(normalized.date || (note && note.date) || '');
+    if (!dateLabel) return;
+    const reason = adminRotationCopyAbsenceReasonLabel(normalized.code || (note && note.code) || '', normalized.label || '');
+    people.forEach((rawPerson) => {
+      const person = adminRotationCanonicalName(rawPerson, knownNames);
+      if (!person || !reason) return;
+      const key = person + '\u0001' + reason;
+      if (!groups.has(key)) groups.set(key, { person, reason, dates: [], seen: new Set() });
+      const group = groups.get(key);
+      const dateKey = adminRotationDateBaseKey(dateLabel) || dateLabel;
+      if (group.seen.has(dateKey)) return;
+      group.seen.add(dateKey);
+      group.dates.push(dateLabel);
+    });
+  });
+  const title = 'Dovolená ' + String(monthKey || '').trim();
+  const rows = Array.from(groups.values()).sort((a, b) => {
+    const ai = knownOrder.has(a.person) ? knownOrder.get(a.person) : 9999;
+    const bi = knownOrder.has(b.person) ? knownOrder.get(b.person) : 9999;
+    return (ai - bi)
+      || String(a.person).localeCompare(String(b.person), 'cs')
+      || String(a.reason).localeCompare(String(b.reason), 'cs');
+  }).map((group) => {
+    group.dates.sort((a, b) => {
+      const ap = typeof parseDateToken === 'function' ? parseDateToken(a) : null;
+      const bp = typeof parseDateToken === 'function' ? parseDateToken(b) : null;
+      const av = ap ? Number(ap.month) * 100 + Number(ap.day) : 99999;
+      const bv = bp ? Number(bp.month) * 100 + Number(bp.day) : 99999;
+      return av - bv || String(a).localeCompare(String(b), 'cs');
+    });
+    return group.person + ' (' + group.reason + ') - ' + group.dates.join(', ');
+  });
+  return [title].concat(rows.length ? rows : ['Žádné dovolené.']).join('\n');
+}
+
+async function adminRotationCopyTextToClipboard(text) {
+  const value = String(text || '');
+  if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
+    await navigator.clipboard.writeText(value);
+    return true;
+  }
+  const textarea = document.createElement('textarea');
+  textarea.value = value;
+  textarea.setAttribute('readonly', 'readonly');
+  textarea.style.position = 'fixed';
+  textarea.style.left = '-9999px';
+  textarea.style.top = '0';
+  document.body.appendChild(textarea);
+  textarea.focus();
+  textarea.select();
+  try {
+    return document.execCommand && document.execCommand('copy');
+  } finally {
+    textarea.remove();
+  }
+}
+
+async function copyAdminRotationVacationsToClipboard(monthKey) {
+  const key = String(monthKey || getAdminSelectedMonthKey() || '').trim();
+  if (!key) throw new Error('Nejdřív vyber měsíc.');
+  const body = document.getElementById('appMenuBody');
+  const month = body && body.querySelector('#adminRotationEditor') && typeof readAdminRotationFromDom === 'function'
+    ? readAdminRotationFromDom(key)
+    : (app.rotation && app.rotation.months ? app.rotation.months[key] : null);
+  if (!month) throw new Error('Pro vybraný měsíc nejsou dostupná data.');
+  const text = buildAdminRotationVacationCopyText(key, month);
+  await adminRotationCopyTextToClipboard(text);
+  return { ok: true, text, lineCount: text.split(/\r?\n/).length };
+}
+
 function adminGetKnownNames() {
   if (typeof getKnownStatNames === 'function') {
     return Array.from(getKnownStatNames()).filter(Boolean).sort((a, b) => String(a).localeCompare(String(b), 'cs'));
@@ -1959,6 +2062,7 @@ function buildAdminRotationTableHtml(monthKey) {
     '    <div class="adminRotationSaveActions">',
     '      <button type="button" class="appMenuAction adminRotationSelectedRemoveBtn" data-admin-selected-remove hidden>Odebrat vybrané</button>',
     '      <button type="button" class="appMenuAction rakOtOverviewBtn" data-daymod-overtime-overview>Přehled přesčasů</button>',
+    '      <button type="button" class="appMenuAction" data-admin-action="copy-rotation-vacations">Kopírovat dovolené</button>',
     '    </div>',
     '    <span id="adminRotationDraftStatus" class="adminRotationDraftStatus">Rozepsané změny se uloží horním tlačítkem Uložit rozpis.</span>',
     '  </div>',
