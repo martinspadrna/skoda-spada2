@@ -10,7 +10,7 @@ const { spawn } = require('child_process');
 const { pathToFileURL } = require('url');
 
 const ROOT_DIR = __dirname;
-const EXPECTED_APP_VERSION = '1.2 (1.315)';
+const EXPECTED_APP_VERSION = '1.2 (1.316)';
 const RAK_BROWSER_SMOKE_ENGINE = 'local-chromium-cdp';
 const RAK_BROWSER_SMOKE_LOAD_MODE = 'about-blank-inline-html';
 const CHROMIUM_BIN = process.env.CHROMIUM_BIN || process.env.CHROME_BIN || '/usr/bin/chromium';
@@ -507,11 +507,47 @@ async function runViewportSmoke(cdpPort, viewport, inlineHtml) {
     };
   })()`);
   assert(generatorAbsenceRuleState.ok, `${viewport.name}: generátor pravidel absencí se nespustil ${JSON.stringify(generatorAbsenceRuleState)}`);
-  assert(generatorAbsenceRuleState.ruleVersion === '1.145', `${viewport.name}: generátor nemá pravidla 1.145 ${JSON.stringify(generatorAbsenceRuleState)}`);
+  assert(generatorAbsenceRuleState.ruleVersion === '1.146', `${viewport.name}: generátor nemá pravidla 1.146 ${JSON.stringify(generatorAbsenceRuleState)}`);
   assert(generatorAbsenceRuleState.mfkf06 === '', `${viewport.name}: při jednom člověku na frézkách musí být MFKF06 prázdná ${JSON.stringify(generatorAbsenceRuleState)}`);
   assert(generatorAbsenceRuleState.mskc01 === '', `${viewport.name}: při dvou absencích musí být MSKC01 prázdná ${JSON.stringify(generatorAbsenceRuleState)}`);
   assert(generatorAbsenceRuleState.mfkf10, `${viewport.name}: při dvou absencích musí být člověk na MFKF10 ${JSON.stringify(generatorAbsenceRuleState)}`);
   assert(!generatorAbsenceRuleState.duplicate, `${viewport.name}: generátor absencí vytvořil duplicitu ${JSON.stringify(generatorAbsenceRuleState)}`);
+
+  const generatorHardRepairState = await evalInPage(client, `(() => {
+    const monthKey = '8/26';
+    const month = window.app && app.rotation && app.rotation.months ? app.rotation.months[monthKey] : null;
+    if (!month || typeof adminGenerateRotationMonthDraft !== 'function') return { ok: false, reason: 'missing month/generator' };
+    const original = JSON.parse(JSON.stringify(month));
+    try {
+      month.notes = [{ date: '19.8. R', person: 'Kmínek', code: 'D' }, { date: '19.8. R', person: 'Špadrna', code: 'D' }];
+      (month.hard?.rows || []).forEach(row => { row.cells = Array(5).fill(''); });
+      (month.soft?.rows || []).forEach(row => { row.cells = Array(5).fill(''); });
+      const result = adminGenerateRotationMonthDraft(monthKey);
+      const draft = typeof adminRotationGeneratorGetPendingDraft === 'function' ? adminRotationGeneratorGetPendingDraft(monthKey) : null;
+      const generatedMonth = draft || app.rotation.months[monthKey];
+      const rowIdx = (generatedMonth.hard?.rows || []).findIndex(row => row.date === '19.8. R');
+      const hard = rowIdx >= 0 ? (generatedMonth.hard.rows[rowIdx].cells || []) : [];
+      const soft = rowIdx >= 0 ? ((generatedMonth.soft?.rows || [])[rowIdx]?.cells || []) : [];
+      const names = hard.concat(soft).filter(Boolean);
+      return {
+        ok: rowIdx >= 0,
+        ruleVersion: result && result.ruleVersion,
+        emptyHardCellRepairs: result && result.emptyHardCellRepairs,
+        tbkr07: hard[1] || '',
+        hard,
+        soft,
+        filled: names.length,
+        duplicate: new Set(names).size !== names.length
+      };
+    } finally {
+      app.rotation.months[monthKey] = original;
+    }
+  })()`);
+  assert(generatorHardRepairState.ok, `${viewport.name}: test doplnění tvrdoty se nespustil ${JSON.stringify(generatorHardRepairState)}`);
+  assert(generatorHardRepairState.ruleVersion === '1.146', `${viewport.name}: doplnění tvrdoty neběží na pravidlech 1.146 ${JSON.stringify(generatorHardRepairState)}`);
+  assert(generatorHardRepairState.tbkr07, `${viewport.name}: TBKR07 zůstala prázdná při dvou absencích ${JSON.stringify(generatorHardRepairState)}`);
+  assert(generatorHardRepairState.filled >= 8, `${viewport.name}: při dvou absencích má být obsazeno osm lidí ${JSON.stringify(generatorHardRepairState)}`);
+  assert(!generatorHardRepairState.duplicate, `${viewport.name}: doplnění tvrdoty vytvořilo duplicitu ${JSON.stringify(generatorHardRepairState)}`);
 
   const absenceStateAfterAdd = await evalInPage(client, `(() => {
     const previousBody = document.getElementById('appMenuBody');

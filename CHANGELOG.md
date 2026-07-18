@@ -1,3 +1,9 @@
+## RaK 1.2 (1.316)
+
+- Generator rozpisu po konecnem vyvazovani doplni prazdny stroj Tvrdoty dostupnym clovekem, pokud tim neporusi absence, znalost stroje ani navaznost TNKS01/TPKW01. Tim se opravuje pripad 8/26, kdy TBKR07 zustala 19.8. a 29.8. volna, i kdyz chybel jen omezeny pocet lidi a byl dostupny Novotny.
+- Browser smoke pridal kontrolu pro 8/26 se dvema absencemi, aby TBKR07 pri stejne situaci uz nezustala prazdna.
+- Release metadata sjednocena na `RaK 1.2 (1.316)`, technicka verze `1.2.316`, cache `v1.2-1.316`; loader modulu ma cache znacku `1.2.316`.
+
 ## RaK 1.2 (1.315)
 
 - Administrace / Rozpisy: přidané tlačítko `Kopírovat dovolené`, které z aktuálního měsíce zkopíruje absence do schránky ve formátu pro WhatsApp, seskupené podle jmen a důvodů.

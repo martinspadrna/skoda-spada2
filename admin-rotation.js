@@ -3896,6 +3896,75 @@ function adminRotationGeneratorBalanceKminekNovotnyMoTo(month, model) {
   return { swaps, totals };
 }
 
+function adminRotationGeneratorRepairEmptyHardCells(month, model, monthKey) {
+  const knownNames = model && Array.isArray(model.knownNames) ? model.knownNames : adminGetKnownNames();
+  const hardRows = Array.isArray(month && month.hard && month.hard.rows) ? month.hard.rows : [];
+  const softRows = Array.isArray(month && month.soft && month.soft.rows) ? month.soft.rows : [];
+  const generatorRules = getAdminRotationGeneratorRules();
+  const hardPreferred = generatorRules.hardPreferred.filter((name) => knownNames.includes(name));
+  const softPreferred = generatorRules.softPreferred.filter((name) => knownNames.includes(name));
+  const hardTotals = Object.create(null);
+  knownNames.forEach((name) => { hardTotals[name] = 0; });
+  hardRows.forEach((row) => {
+    (Array.isArray(row && row.cells) ? row.cells : []).forEach((cell) => {
+      const name = adminRotationCanonicalName(cell, knownNames);
+      if (Object.prototype.hasOwnProperty.call(hardTotals, name)) hardTotals[name] += 1;
+    });
+  });
+
+  let repairs = 0;
+  hardRows.forEach((hardRow, rowIdx) => {
+    const softRow = softRows[rowIdx] || null;
+    const dateLabel = (hardRow && hardRow.date) || (softRow && softRow.date) || '';
+    if (!dateLabel || adminRotationGeneratorIsDayBlocked(adminRotationGeneratorDateNotes(month, dateLabel))) return;
+    const hardCells = Array.isArray(hardRow && hardRow.cells) ? hardRow.cells : [];
+    if (!hardCells.length) return;
+    const absenceNames = adminRotationNamesForAbsenceDate(month.notes, dateLabel, knownNames);
+    const available = knownNames.filter((name) => !absenceNames.has(name));
+    const hardTargetCount = Math.min(HARD_MACHINE_HEADERS.length, available.length);
+    let hardFilled = hardCells.filter((cell) => adminRotationCanonicalName(cell, knownNames)).length;
+    if (hardFilled >= hardTargetCount) return;
+
+    const usedNames = new Set();
+    hardCells.forEach((cell) => {
+      const name = adminRotationCanonicalName(cell, knownNames);
+      if (name) usedNames.add(name);
+    });
+    (Array.isArray(softRow && softRow.cells) ? softRow.cells : []).forEach((cell) => {
+      const name = adminRotationCanonicalName(cell, knownNames);
+      if (name) usedNames.add(name);
+    });
+
+    HARD_MACHINE_HEADERS.forEach((machineName, machineIdx) => {
+      if (hardFilled >= hardTargetCount || String(hardCells[machineIdx] || '').trim()) return;
+      const machineCounts = adminRotationGeneratorCountHardMachine(month, machineName, knownNames, monthKey);
+      const candidates = available
+        .filter((name) => !usedNames.has(name))
+        .filter((name) => adminRotationGeneratorPersonKnowsMachine(name, machineName))
+        .filter((name) => adminRotationGeneratorCanUseHardMachine(month, rowIdx, machineName, name, knownNames, monthKey))
+        .sort((a, b) => {
+          const machineDiff = Number(machineCounts[a] || 0) - Number(machineCounts[b] || 0);
+          if (machineDiff) return machineDiff;
+          const hardDiff = Number(hardTotals[a] || 0) - Number(hardTotals[b] || 0);
+          if (hardDiff) return hardDiff;
+          const hardPrefDiff = (hardPreferred.includes(b) ? 1 : 0) - (hardPreferred.includes(a) ? 1 : 0);
+          if (hardPrefDiff) return hardPrefDiff;
+          const softPenalty = (softPreferred.includes(a) ? 1 : 0) - (softPreferred.includes(b) ? 1 : 0);
+          if (softPenalty) return softPenalty;
+          return a.localeCompare(b, 'cs');
+        });
+      const name = candidates[0] || '';
+      if (!name) return;
+      hardCells[machineIdx] = name;
+      usedNames.add(name);
+      hardTotals[name] = Number(hardTotals[name] || 0) + 1;
+      hardFilled += 1;
+      repairs += 1;
+    });
+  });
+  return { repairs };
+}
+
 function adminRotationGeneratorCanReadEditorDraftFromDom() {
   const body = document.getElementById('appMenuBody');
   return !!(body && body.querySelector('#adminRotationEditor tr[data-rotation-section]'));
@@ -3989,6 +4058,10 @@ function adminGenerateRotationMonthDraft(monthKey, preparedMonth) {
   const softKindBalance = adminRotationGeneratorBalanceSoftKind(month, model);
   const soloMillRebalance = adminRotationGeneratorBalanceSoloMill(month, model);
   const kminekNovotnyMoToBalance = adminRotationGeneratorBalanceKminekNovotnyMoTo(month, model);
+  const emptyHardRepair = adminRotationGeneratorRepairEmptyHardCells(month, model, monthKey);
+  const tnksPostRepairBalance = emptyHardRepair && Number(emptyHardRepair.repairs || 0)
+    ? adminRotationGeneratorBalanceHardMachine(month, 'TNKS01', model, monthKey)
+    : { swaps: 0 };
   const tnksConsecutiveRepair = adminRotationGeneratorRepairConsecutiveTnks(month, model, monthKey);
   const ruleCheck = adminRotationValidateMonthRules(month, monthKey, { source: 'generator' });
   const criticalIssues = ruleCheck.issues.filter((issue) => issue && issue.severity === 'error');
@@ -4007,12 +4080,13 @@ function adminGenerateRotationMonthDraft(monthKey, preparedMonth) {
     blockedByAbsence,
     skippedDays,
     protectedEmptyCells,
-    tnksBalanceSwaps: tnksBalance && Number(tnksBalance.swaps || 0),
+    emptyHardCellRepairs: emptyHardRepair && Number(emptyHardRepair.repairs || 0),
+    tnksBalanceSwaps: (tnksBalance && Number(tnksBalance.swaps || 0)) + (tnksPostRepairBalance && Number(tnksPostRepairBalance.swaps || 0)),
     tnksConsecutiveRepairs: tnksConsecutiveRepair && Number(tnksConsecutiveRepair.repairs || 0),
     soloMillBalanceSwaps: (soloMillBalance && Number(soloMillBalance.swaps || 0)) + (soloMillRebalance && Number(soloMillRebalance.swaps || 0)),
     softKindBalanceSwaps: softKindBalance && Number(softKindBalance.swaps || 0),
     kminekNovotnyMoToBalanceSwaps: kminekNovotnyMoToBalance && Number(kminekNovotnyMoToBalance.swaps || 0),
-    ruleVersion: '1.145'
+    ruleVersion: '1.146'
   };
 }
 
