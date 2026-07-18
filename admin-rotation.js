@@ -309,6 +309,7 @@ function adminRotationNormalizeGeneratorSettings(settings) {
     : Array.from(base.hardPeopleSoftKindBalanceNames || base.hardPreferred || []);
   const hardPeopleSoftKindMaxSpread = Math.max(0, Math.min(6, Number(raw.hardPeopleSoftKindMaxSpread ?? base.hardPeopleSoftKindMaxSpread ?? 1) || 1));
   const softKindGlobalBalanceEnabled = adminRotationGeneratorBooleanValue(raw.softKindGlobalBalanceEnabled, base.softKindGlobalBalanceEnabled !== false);
+  const softKindMixedMinimumShifts = Math.max(1, Math.min(12, Number(raw.softKindMixedMinimumShifts ?? base.softKindMixedMinimumShifts ?? 3) || 3));
   return {
     type: ADMIN_ROTATION_GENERATOR_SETTINGS_CATEGORY,
     softPreferred,
@@ -328,7 +329,8 @@ function adminRotationNormalizeGeneratorSettings(settings) {
     hardPeopleSoftKindBalanceEnabled,
     hardPeopleSoftKindBalanceNames,
     hardPeopleSoftKindMaxSpread,
-    softKindGlobalBalanceEnabled
+    softKindGlobalBalanceEnabled,
+    softKindMixedMinimumShifts
   };
 }
 
@@ -360,7 +362,8 @@ function getAdminRotationGeneratorRules() {
     hardPeopleSoftKindBalanceEnabled: settings.hardPeopleSoftKindBalanceEnabled,
     hardPeopleSoftKindBalanceNames: settings.hardPeopleSoftKindBalanceNames,
     hardPeopleSoftKindMaxSpread: settings.hardPeopleSoftKindMaxSpread,
-    softKindGlobalBalanceEnabled: settings.softKindGlobalBalanceEnabled
+    softKindGlobalBalanceEnabled: settings.softKindGlobalBalanceEnabled,
+    softKindMixedMinimumShifts: settings.softKindMixedMinimumShifts
   });
 }
 
@@ -474,6 +477,7 @@ function readAdminRotationGeneratorDraftFromDom(root) {
     hardPeopleSoftKindBalanceNames: adminRotationGeneratorRawList(get('adminGeneratorHardPeopleSoftKindBalanceNames')),
     hardPeopleSoftKindMaxSpread: Number(get('adminGeneratorHardPeopleSoftKindMaxSpread') || 1),
     softKindGlobalBalanceEnabled: !!((scope.querySelector ? scope.querySelector('#adminGeneratorSoftKindGlobalBalanceEnabled') : document.getElementById('adminGeneratorSoftKindGlobalBalanceEnabled'))?.checked),
+    softKindMixedMinimumShifts: Number(get('adminGeneratorSoftKindMixedMinimumShifts') || 3),
     softBaseLathe,
     softBaseRows,
     hasStoredRow: adminRotationHasGeneratorSettingsRow()
@@ -500,6 +504,7 @@ function buildAdminRotationGeneratorStatusHtml(source) {
   const hardKindNames = adminRotationGeneratorRawList(settings.hardPeopleSoftKindBalanceNames);
   const hardKindSpread = Math.max(0, Math.min(6, Number(settings.hardPeopleSoftKindMaxSpread ?? 1) || 1));
   const softKindGlobalEnabled = adminRotationGeneratorBooleanValue(settings.softKindGlobalBalanceEnabled, true);
+  const softKindMixedMin = Math.max(1, Math.min(12, Number(settings.softKindMixedMinimumShifts ?? 3) || 3));
   const softBaseRows = Array.isArray(settings.softBaseRows)
     ? settings.softBaseRows
     : softCore.map((person) => ({ person, machine: String(settings.softBaseLathe && settings.softBaseLathe[person] || '').toUpperCase() }));
@@ -548,7 +553,7 @@ function buildAdminRotationGeneratorStatusHtml(source) {
     adminRotationGeneratorStatusItemHtml('Zdroj pravidel', sourceValue, sourceDetail, hasStoredRow ? 'isOk' : 'isWarn'),
     adminRotationGeneratorStatusItemHtml('Lide', String(uniquePeople.size) + ' jmen', peopleDetail, duplicatePeople.length ? 'isWarn' : 'isOk'),
     adminRotationGeneratorStatusItemHtml('Stroje', String(block) + ' dny blok', machineDetail, machineIssues ? 'isWarn' : 'isOk'),
-    adminRotationGeneratorStatusItemHtml('Jemna pravidla', [avoidLatheEnabled ? 'soustruhy' : '', soloMillEnabled ? 'frezky' : '', softTotalEnabled ? 'mekota' : '', hardKindEnabled ? 'typy' : ''].filter(Boolean).join(' + ') || 'vypnuto', 'Soustruhy: ' + (avoidLatheEnabled ? (avoidLatheNames.join(', ') || 'nezadano') : 'vypnuto') + '; samostatne frezky: ' + (soloMillEnabled ? 'rozdil max ' + String(soloMillSpread) : 'vypnuto') + '; mekota: ' + (softTotalEnabled ? (softTotalNames.join(', ') || 'nezadano') + ', rozdil max ' + String(softTotalSpread) : 'vypnuto') + '; typy: ' + (hardKindEnabled ? (softKindGlobalEnabled ? 'cela mekota' : (hardKindNames.join(', ') || 'nezadano')) + ', rozdil max ' + String(hardKindSpread) : 'vypnuto'), (!avoidLatheEnabled || !soloMillEnabled || !softTotalEnabled || !hardKindEnabled) ? 'isWarn' : 'isOk'),
+    adminRotationGeneratorStatusItemHtml('Jemna pravidla', [avoidLatheEnabled ? 'soustruhy' : '', soloMillEnabled ? 'frezky' : '', softTotalEnabled ? 'mekota' : '', hardKindEnabled ? 'typy' : ''].filter(Boolean).join(' + ') || 'vypnuto', 'Soustruhy: ' + (avoidLatheEnabled ? (avoidLatheNames.join(', ') || 'nezadano') : 'vypnuto') + '; samostatne frezky: ' + (soloMillEnabled ? 'rozdil max ' + String(soloMillSpread) : 'vypnuto') + '; mekota: ' + (softTotalEnabled ? (softTotalNames.join(', ') || 'nezadano') + ', rozdil max ' + String(softTotalSpread) : 'vypnuto') + '; typy: ' + (hardKindEnabled ? (softKindGlobalEnabled ? 'cela mekota' : (hardKindNames.join(', ') || 'nezadano')) + ', rozdil max ' + String(hardKindSpread) + ', mix od ' + String(softKindMixedMin) + ' smen' : 'vypnuto'), (!avoidLatheEnabled || !soloMillEnabled || !softTotalEnabled || !hardKindEnabled) ? 'isWarn' : 'isOk'),
     adminRotationGeneratorStatusItemHtml('Kontrola', issueCount ? String(issueCount) + ' k reseni' : 'OK', controlDetail, issueCount ? 'isWarn' : 'isOk'),
     '  </div>',
     '</div>'
@@ -604,7 +609,7 @@ function buildAdminRotationGeneratorRuleSummaryHtml() {
     adminRotationGeneratorRuleCardHtml('2 soustruhy + 1 fréza', rules.avoidLatheWhenTwoLathesOneMillEnabled === false ? 'vypnuto' : (avoidLatheNames || 'zapnuto'), 'Vypsaná jména mají být při tomto režimu spíš mimo soustruhy, pokud existuje rozumná alternativa.'),
     adminRotationGeneratorRuleCardHtml('Samostatné frézky', rules.soloMillBalanceEnabled === false ? 'vypnuto' : 'rozdíl max ' + String(rules.soloMillMaxSpread ?? 1), 'Když je na frézkách jen MFKF10, generátor se snaží samostatné frézky rozdělit měsíčně rovnoměrně.'),
     adminRotationGeneratorRuleCardHtml('Měkota skupiny', rules.softTotalBalanceEnabled === false ? 'vypnuto' : (softTotalNames || 'zapnuto'), 'Vypsaná jména mají mít podobný počet směn na měkotě; výchozí rozdíl max ' + String(rules.softTotalMaxSpread ?? 1) + '.'),
-    adminRotationGeneratorRuleCardHtml('Soustruhy / frézky', rules.hardPeopleSoftKindBalanceEnabled === false ? 'vypnuto' : (rules.softKindGlobalBalanceEnabled === false ? (hardKindNames || 'zapnuto') : 'celá měkota'), 'Na měkotě se dorovnává poměr soustruhů a frézek; výchozí rozdíl max ' + String(rules.hardPeopleSoftKindMaxSpread ?? 1) + '.'),
+    adminRotationGeneratorRuleCardHtml('Soustruhy / frézky', rules.hardPeopleSoftKindBalanceEnabled === false ? 'vypnuto' : (rules.softKindGlobalBalanceEnabled === false ? (hardKindNames || 'zapnuto') : 'celá měkota'), 'Na měkotě se dorovnává poměr soustruhů a frézek; rozdíl max ' + String(rules.hardPeopleSoftKindMaxSpread ?? 1) + ', mix od ' + String(rules.softKindMixedMinimumShifts ?? 3) + ' směn.'),
     adminRotationGeneratorRuleCardHtml('TNKS01 / TPKW01 po sobě', 'zakázáno', latestRules.consecutiveTnksRule || 'Stejný pracovník nemá být na nýtovačce dvě pracovní směny po sobě.'),
     adminRotationGeneratorRuleCardHtml('Vyrovnání nýtovačky', 'měsíc má přednost', latestRules.tnksMonthlyFirstRule || balanceRules.pressBalanceRule || 'TNKS01 a TPKW01 se vyrovnávají podle společných počtů.'),
     '  </div>',
@@ -657,6 +662,8 @@ function buildAdminRotationGeneratorSettingsHtml() {
     '  <textarea id="adminGeneratorHardPeopleSoftKindBalanceNames" class="appMenuTextarea" data-generator-settings-field rows="2">' + escapeHtml(adminRotationGeneratorListValue(settings.hardPeopleSoftKindBalanceNames)) + '</textarea>',
     '  <label class="appMenuFieldLabel" for="adminGeneratorHardPeopleSoftKindMaxSpread">Maximální rozdíl soustruhy vs frézky v měsíci</label>',
     '  <input id="adminGeneratorHardPeopleSoftKindMaxSpread" class="appMenuInput" data-generator-settings-field type="number" min="0" max="6" step="1" value="' + escapeHtml(String(settings.hardPeopleSoftKindMaxSpread ?? 1)) + '">',
+    '  <label class="appMenuFieldLabel" for="adminGeneratorSoftKindMixedMinimumShifts">Od kolika směn na měkotě musí mít člověk oba typy práce</label>',
+    '  <input id="adminGeneratorSoftKindMixedMinimumShifts" class="appMenuInput" data-generator-settings-field type="number" min="1" max="12" step="1" value="' + escapeHtml(String(settings.softKindMixedMinimumShifts ?? 3)) + '">',
     '  <div class="appMenuSubTitle">Základní soustruhy měkoty</div>',
     '  <div class="smallText">Jména musí odpovídat seznamu výše. Stroj použij například MSKC01, MSKC03 nebo MSKC04.</div>',
     '  <div class="tableWrap appMenuTableWrap uMt12">',
@@ -696,6 +703,7 @@ function readAdminRotationGeneratorSettingsFromDom() {
     hardPeopleSoftKindBalanceNames: adminRotationSplitGeneratorList(getText('adminGeneratorHardPeopleSoftKindBalanceNames')),
     hardPeopleSoftKindMaxSpread: Number(document.getElementById('adminGeneratorHardPeopleSoftKindMaxSpread')?.value || 1),
     softKindGlobalBalanceEnabled: !!document.getElementById('adminGeneratorSoftKindGlobalBalanceEnabled')?.checked,
+    softKindMixedMinimumShifts: Number(document.getElementById('adminGeneratorSoftKindMixedMinimumShifts')?.value || 3),
     softBaseLathe
   });
 }
@@ -2458,6 +2466,7 @@ const RAK_ROTATION_GENERATOR_RULES_V1107 = Object.freeze({
   hardPeopleSoftKindBalanceNames: Object.freeze(['Blažek', 'Kmínek', 'Kříž', 'Pech', 'Starý']),
   hardPeopleSoftKindMaxSpread: 1,
   softKindGlobalBalanceEnabled: true,
+  softKindMixedMinimumShifts: 3,
   machineCountSplitRule: 'Mimo běžnou neděli se TNKS01 a TPKW01 v kontrolním přehledu počítají jako 0,5 + 0,5 pro oba stroje.',
   softCoreNoTnksBalance: Object.freeze(['Synek', 'Třasák', 'Střížek']),
   softCoreContinuationRule: 'Synek/Třasák/Střížek drží vlastní návazný cyklus TNKS01 → TPKW01 → TPKW02 napříč měsíci; TNKS01 dorovnání jim do toho nesahá.',
@@ -3817,45 +3826,71 @@ function adminRotationGeneratorBalanceSoftKind(month, model) {
   let counts = adminRotationGeneratorCountSoftKinds(month, workingNames);
   let swaps = 0;
   const maxPasses = softRows.length * 4;
-  const scoreMillHeavy = (name) => Number((counts[name] && counts[name].mill) || 0) - Number((counts[name] && counts[name].lathe) || 0);
-  const scoreLatheHeavy = (name) => Number((counts[name] && counts[name].lathe) || 0) - Number((counts[name] && counts[name].mill) || 0);
+  const mixedMinimum = Math.max(1, Math.min(12, Number(generatorRules.softKindMixedMinimumShifts ?? 3) || 3));
+  const kindCount = (name, kind) => Number((counts[name] && counts[name][kind]) || 0);
+  const otherKind = (kind) => kind === 'mill' ? 'lathe' : 'mill';
+  const kindTotal = (name) => kindCount(name, 'mill') + kindCount(name, 'lathe');
+  const scoreKindHeavy = (name, kind) => kindCount(name, kind) - kindCount(name, otherKind(kind));
+  const isSingleKindProblem = (name, kind) => kindCount(name, kind) > 0 && kindCount(name, otherKind(kind)) === 0 && kindTotal(name) >= mixedMinimum;
+  const sortedKindHeavy = (kind) => workingNames.slice().sort((a, b) => {
+    const singleDiff = (isSingleKindProblem(b, kind) ? 1 : 0) - (isSingleKindProblem(a, kind) ? 1 : 0);
+    if (singleDiff) return singleDiff;
+    const scoreDiff = scoreKindHeavy(b, kind) - scoreKindHeavy(a, kind);
+    if (scoreDiff) return scoreDiff;
+    const totalDiff = kindTotal(b) - kindTotal(a);
+    if (totalDiff) return totalDiff;
+    return a.localeCompare(b, 'cs');
+  });
   const swapSoftCells = (firstCell, secondCell, firstName, secondName) => {
     firstCell.cells[firstCell.idx] = secondName;
     secondCell.cells[secondCell.idx] = firstName;
     swaps += 1;
     counts = adminRotationGeneratorCountSoftKinds(month, workingNames);
   };
-  const relieveMillHeavyWithAnyLathe = (name, requireFullLatheDay) => {
+  const relieveKindHeavyWithAnyOpposite = (name, sourceKind, requireFullLatheDay) => {
+    const wantedKind = otherKind(sourceKind);
     for (let rowIdx = 0; rowIdx < softRows.length; rowIdx += 1) {
-      const millCell = adminRotationGeneratorFindSoftKindCellOnDay(month, rowIdx, name, 'mill');
-      if (!millCell || !millCell.cells) continue;
-      const latheCell = adminRotationGeneratorFindSoftKindReliefCellOnDay(month, rowIdx, name, millCell.machine, 'lathe', workingNames, knownNames, requireFullLatheDay);
-      if (!latheCell || !latheCell.cells) continue;
-      swapSoftCells(millCell, latheCell, name, latheCell.name);
+      const sourceCell = adminRotationGeneratorFindSoftKindCellOnDay(month, rowIdx, name, sourceKind);
+      if (!sourceCell || !sourceCell.cells) continue;
+      const reliefCell = adminRotationGeneratorFindSoftKindReliefCellOnDay(month, rowIdx, name, sourceCell.machine, wantedKind, workingNames, knownNames, requireFullLatheDay);
+      if (!reliefCell || !reliefCell.cells) continue;
+      swapSoftCells(sourceCell, reliefCell, name, reliefCell.name);
+      return true;
+    }
+    return false;
+  };
+  const directSwapKindHeavy = (name, sourceKind, oppositeName) => {
+    const wantedKind = otherKind(sourceKind);
+    if (!oppositeName || oppositeName === name) return false;
+    for (let rowIdx = 0; rowIdx < softRows.length; rowIdx += 1) {
+      const sourceCell = adminRotationGeneratorFindSoftKindCellOnDay(month, rowIdx, name, sourceKind);
+      const reliefCell = adminRotationGeneratorFindSoftKindCellOnDay(month, rowIdx, oppositeName, wantedKind);
+      if (!sourceCell || !reliefCell || !sourceCell.cells || !reliefCell.cells) continue;
+      if (!adminRotationGeneratorPersonKnowsMachine(name, reliefCell.machine)) continue;
+      if (!adminRotationGeneratorPersonKnowsMachine(oppositeName, sourceCell.machine)) continue;
+      swapSoftCells(sourceCell, reliefCell, name, oppositeName);
       return true;
     }
     return false;
   };
 
   for (let pass = 0; pass < maxPasses; pass += 1) {
-    const millHeavy = workingNames.slice().sort((a, b) => scoreMillHeavy(b) - scoreMillHeavy(a))[0];
-    const latheHeavy = workingNames.slice().sort((a, b) => scoreLatheHeavy(b) - scoreLatheHeavy(a))[0];
-    if (!millHeavy || scoreMillHeavy(millHeavy) <= allowedSpread) break;
+    const millHeavy = sortedKindHeavy('mill')[0];
+    const latheHeavy = sortedKindHeavy('lathe')[0];
+    const heavyOptions = [
+      { name: millHeavy, kind: 'mill', score: millHeavy ? scoreKindHeavy(millHeavy, 'mill') : 0, single: millHeavy ? isSingleKindProblem(millHeavy, 'mill') : false },
+      { name: latheHeavy, kind: 'lathe', score: latheHeavy ? scoreKindHeavy(latheHeavy, 'lathe') : 0, single: latheHeavy ? isSingleKindProblem(latheHeavy, 'lathe') : false }
+    ].filter((item) => item.name && (item.single || item.score > allowedSpread))
+      .sort((a, b) => (b.single ? 1 : 0) - (a.single ? 1 : 0) || b.score - a.score || kindTotal(b.name) - kindTotal(a.name));
+    const current = heavyOptions[0];
+    if (!current) break;
+    const oppositeHeavy = sortedKindHeavy(otherKind(current.kind))[0];
     let didSwap = false;
-    if (latheHeavy && latheHeavy !== millHeavy && scoreLatheHeavy(latheHeavy) > allowedSpread) {
-      for (let rowIdx = 0; rowIdx < softRows.length; rowIdx += 1) {
-        const millCell = adminRotationGeneratorFindSoftKindCellOnDay(month, rowIdx, millHeavy, 'mill');
-        const latheCell = adminRotationGeneratorFindSoftKindCellOnDay(month, rowIdx, latheHeavy, 'lathe');
-        if (!millCell || !latheCell || !millCell.cells || !latheCell.cells) continue;
-        if (!adminRotationGeneratorPersonKnowsMachine(millHeavy, latheCell.machine)) continue;
-        if (!adminRotationGeneratorPersonKnowsMachine(latheHeavy, millCell.machine)) continue;
-        swapSoftCells(millCell, latheCell, millHeavy, latheHeavy);
-        didSwap = true;
-        break;
-      }
+    if (oppositeHeavy && oppositeHeavy !== current.name && (isSingleKindProblem(oppositeHeavy, otherKind(current.kind)) || scoreKindHeavy(oppositeHeavy, otherKind(current.kind)) > allowedSpread)) {
+      didSwap = directSwapKindHeavy(current.name, current.kind, oppositeHeavy);
     }
-    if (!didSwap) didSwap = relieveMillHeavyWithAnyLathe(millHeavy, true);
-    if (!didSwap) didSwap = relieveMillHeavyWithAnyLathe(millHeavy, false);
+    if (!didSwap) didSwap = relieveKindHeavyWithAnyOpposite(current.name, current.kind, true);
+    if (!didSwap) didSwap = relieveKindHeavyWithAnyOpposite(current.name, current.kind, false);
     if (!didSwap) break;
   }
   return { swaps, counts };
@@ -4362,6 +4397,7 @@ function adminGenerateRotationMonthDraft(monthKey, preparedMonth) {
     ? adminRotationGeneratorBalanceHardMachine(month, 'TNKS01', model, monthKey)
     : { swaps: 0 };
   const tnksConsecutiveRepair = adminRotationGeneratorRepairConsecutiveTnks(month, model, monthKey);
+  const finalSoftKindBalance = adminRotationGeneratorBalanceSoftKind(month, model);
   const ruleCheck = adminRotationValidateMonthRules(month, monthKey, { source: 'generator' });
   const criticalIssues = ruleCheck.issues.filter((issue) => issue && issue.severity === 'error');
   if (criticalIssues.length) {
@@ -4384,7 +4420,7 @@ function adminGenerateRotationMonthDraft(monthKey, preparedMonth) {
     tnksConsecutiveRepairs: tnksConsecutiveRepair && Number(tnksConsecutiveRepair.repairs || 0),
     soloMillBalanceSwaps: (soloMillBalance && Number(soloMillBalance.swaps || 0)) + (soloMillRebalance && Number(soloMillRebalance.swaps || 0)),
     softTotalBalanceSwaps: softTotalBalance && Number(softTotalBalance.swaps || 0),
-    softKindBalanceSwaps: softKindBalance && Number(softKindBalance.swaps || 0),
+    softKindBalanceSwaps: (softKindBalance && Number(softKindBalance.swaps || 0)) + (finalSoftKindBalance && Number(finalSoftKindBalance.swaps || 0)),
     kminekNovotnyMoToBalanceSwaps: kminekNovotnyMoToBalance && Number(kminekNovotnyMoToBalance.swaps || 0),
     ruleVersion: '1.146'
   };

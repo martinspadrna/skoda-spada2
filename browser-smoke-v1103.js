@@ -10,7 +10,7 @@ const { spawn } = require('child_process');
 const { pathToFileURL } = require('url');
 
 const ROOT_DIR = __dirname;
-const EXPECTED_APP_VERSION = '1.2 (1.322)';
+const EXPECTED_APP_VERSION = '1.2 (1.323)';
 const RAK_BROWSER_SMOKE_ENGINE = 'local-chromium-cdp';
 const RAK_BROWSER_SMOKE_LOAD_MODE = 'about-blank-inline-html';
 const CHROMIUM_BIN = process.env.CHROMIUM_BIN || process.env.CHROME_BIN || '/usr/bin/chromium';
@@ -583,7 +583,8 @@ async function runViewportSmoke(cdpPort, viewport, inlineHtml) {
       hardKindEnabled: rules.hardPeopleSoftKindBalanceEnabled !== false,
       hardKindNames: rules.hardPeopleSoftKindBalanceNames || [],
       hardKindMaxSpread: rules.hardPeopleSoftKindMaxSpread,
-      softKindGlobalEnabled: rules.softKindGlobalBalanceEnabled !== false
+      softKindGlobalEnabled: rules.softKindGlobalBalanceEnabled !== false,
+      softKindMixedMinimumShifts: rules.softKindMixedMinimumShifts
     };
   })()`);
   assert(generatorTuningRulesState.ok, `${viewport.name}: pravidla jemného doladění generátoru nejsou dostupná ${JSON.stringify(generatorTuningRulesState)}`);
@@ -592,6 +593,7 @@ async function runViewportSmoke(cdpPort, viewport, inlineHtml) {
   assert(generatorTuningRulesState.softTotalEnabled && generatorTuningRulesState.softTotalNames.includes('Blažek') && Number(generatorTuningRulesState.softTotalMaxSpread) === 1, `${viewport.name}: výchozí vyrovnání měkoty chybí ${JSON.stringify(generatorTuningRulesState)}`);
   assert(generatorTuningRulesState.hardKindEnabled && generatorTuningRulesState.hardKindNames.includes('Kmínek') && Number(generatorTuningRulesState.hardKindMaxSpread) === 1, `${viewport.name}: výchozí vyrovnání soustruhy/frézky chybí ${JSON.stringify(generatorTuningRulesState)}`);
   assert(generatorTuningRulesState.softKindGlobalEnabled, `${viewport.name}: výchozí vyrovnání soustruhy/frézky přes celou měkotu chybí ${JSON.stringify(generatorTuningRulesState)}`);
+  assert(Number(generatorTuningRulesState.softKindMixedMinimumShifts) === 3, `${viewport.name}: výchozí mix soustruhy/frézky od 3 směn chybí ${JSON.stringify(generatorTuningRulesState)}`);
 
   const absenceStateAfterAdd = await evalInPage(client, `(() => {
     const previousBody = document.getElementById('appMenuBody');
