@@ -1585,9 +1585,9 @@
 .adminRotationBackupsActionCol{width:7px;}
 #appMenuBody[data-admin-view="backups"] .adminRotationBackupsTable{
   table-layout:fixed !important;
-  width:min(100%,300px) !important;
+  width:min(100%,345px) !important;
   min-width:0 !important;
-  max-width:300px !important;
+  max-width:345px !important;
   margin-right:auto !important;
 }
 #appMenuBody[data-admin-view="backups"] .adminRotationBackupsLabelCol{width:64% !important;}
@@ -1618,9 +1618,9 @@
 }
 #appMenuBody[data-admin-view="settings-backups"] .adminFullSettingsBackupsTable{
   table-layout:fixed !important;
-  width:min(100%,325px) !important;
+  width:min(100%,341px) !important;
   min-width:0 !important;
-  max-width:325px !important;
+  max-width:341px !important;
   margin-right:auto !important;
 }
 #appMenuBody[data-admin-view="settings-backups"] .adminFullSettingsBackupLabelCol{width:62% !important;}
