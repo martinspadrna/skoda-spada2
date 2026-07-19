@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// RaK 1.2 (1.323) – smoke test přehledu připojení + Dashboard/appearance contract guard.
+// RaK 1.2 (1.324) – smoke test přehledu připojení + Dashboard/appearance contract guard.
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
@@ -227,12 +227,12 @@ const dashboardReleaseIsolationGuardV198 = Object.freeze({
 });
 
 const releaseMetadataContractV199 = Object.freeze({
-  displayVersion: '1.2 (1.323)',
-  appLabel: 'RaK 1.2 (1.323)',
-  packageVersion: '1.2.323',
-  cacheVersion: 'v1.2-1.323',
+  displayVersion: '1.2 (1.324)',
+  appLabel: 'RaK 1.2 (1.324)',
+  packageVersion: '1.2.324',
+  cacheVersion: 'v1.2-1.324',
   realtimeChannel: 'rak-public-live-v1-2-1-126',
-  changelogHeader: '## RaK 1.2 (1.323)',
+  changelogHeader: '## RaK 1.2 (1.324)',
   previousBuildFragments: Object.freeze(['1.2 (1.138)', '1.2.138', 'v1.2-1.138', '1.2 (1.137)', '1.2.137', 'v1.2-1.137', '1.2 (1.118)', '1.2.118', 'v1.2-1.118', 'rak-public-live-v1-2-1-118'])
 });
 
@@ -341,8 +341,8 @@ function assertDashboardReleaseIsolationGuardV198() {
 function assertReleaseMetadataContractV199() {
   const contract = releaseMetadataContractV199;
   assertIncludes(exportJs, 'RAK_RELEASE_METADATA_CONTRACT_V199', 'export.js musí obsahovat release metadata contract v1.99');
-  assertIncludes(exportJs, "displayVersion: '1.2 (1.323)'", 'Release contract v export.js musí držet display verzi 1.105');
-  assertIncludes(exportJs, "packageVersion: '1.2.323'", 'Release contract v export.js musí držet package verzi 1.2.114');
+  assertIncludes(exportJs, "displayVersion: '1.2 (1.324)'", 'Release contract v export.js musí držet display verzi 1.105');
+  assertIncludes(exportJs, "packageVersion: '1.2.324'", 'Release contract v export.js musí držet package verzi 1.2.114');
   assert(packageJson.version === contract.packageVersion, `package.json version drift: čekám ${contract.packageVersion}, mám ${packageJson.version}`);
   assertIncludes(coreJs, `const APP_VERSION = "${contract.displayVersion}";`, 'core.js APP_VERSION není sjednocený s 1.105');
   assertIncludes(serviceWorkerJs, `const CACHE_VERSION = '${contract.cacheVersion}';`, 'sw.js CACHE_VERSION není sjednocený s 1.105');
@@ -1456,6 +1456,7 @@ function assertAdminAccountLoginContractV1141() {
   assertIncludes(stylesAdminPolishCss, '.adminFullSettingsBackupLabelCol{width:6px;}', 'Sloupec Zaloha nastaveni musi byt o dalsich 50% uzsi nez predchozich 11px');
   assertIncludes(stylesAdminPolishCss, '.adminFullSettingsBackupActionCol{width:5px;}', 'Sloupec Akce zaloh nastaveni musi byt o dalsich 50% uzsi nez predchozich 9px');
   assertIncludes(stylesAdminPolishCss, '#appMenuBody[data-admin-view="settings-backups"] .adminFullSettingsBackupsTable', 'Zalohy nastaveni musi mit konkretni fixed layout, ne jen obecne col sirky');
+  assertIncludes(stylesAdminPolishCss, 'width:min(100%,325px) !important;', 'Zalohy nastaveni musi mit konkretni tabulku zvetsenou o 25% z 260px na 325px');
   assertIncludes(stylesAdminPolishCss, '#appMenuBody[data-admin-view="settings-backups"] .adminFullSettingsBackupActionCell', 'Akce zaloh nastaveni musi mit vlastni kompaktni bunku');
   assertIncludes(ui, 'function makeDeletedMachineSettingsRow', 'Rollback nastaveni musi umet skryt radky, ktere v zaloze nebyly');
   assertIncludes(ui, 'deletedCount: deletedRows.length', 'Obnova nastaveni musi vracet pocet skrytych radku mimo zalohu');
@@ -1580,6 +1581,8 @@ function assertAdminHandoverGuideContractV1142() {
   assertIncludes(ui, 'class="adminRotationBackupsActionCol"', 'Sloupec Akce u zaloh rozpisu musi mit vlastni uzsi sirku');
   assertIncludes(stylesAdminPolishCss, '.adminRotationBackupsLabelCol{width:14px;}', 'Sloupec Zaloha musi byt o 20% uzsi nez predchozich 17px');
   assertIncludes(stylesAdminPolishCss, '.adminRotationBackupsActionCol{width:7px;}', 'Sloupec Akce musi byt o 60% uzsi nez predchozich 18px');
+  assertIncludes(stylesAdminPolishCss, '#appMenuBody[data-admin-view="backups"] .adminRotationBackupsLabelCol{width:64% !important;}', 'Efektivni sloupec Zaloha u zaloh rozpisu musi byt uzsi po rozsireni akci');
+  assertIncludes(stylesAdminPolishCss, '#appMenuBody[data-admin-view="backups"] .adminRotationBackupsActionCol{width:36% !important;}', 'Efektivni sloupec Akce u zaloh rozpisu musi byt zdvojnasobeny z 18% na 36%');
   assertIncludes(ui, 'class="adminRotationBackupLabelCell"', 'Zalohy rozpisu musi mit vlastni label bunku kvuli skutecnemu zmenseni sloupce');
   assertIncludes(ui, 'class="adminRotationBackupActionCell"', 'Zalohy rozpisu musi mit vlastni action bunku kvuli skutecnemu zmenseni sloupce');
   assertIncludes(stylesAdminPolishCss, '#appMenuBody[data-admin-view="backups"] .adminRotationBackupsTable', 'Zalohy rozpisu musi mit konkretni fixed layout, ne jen obecne col sirky');

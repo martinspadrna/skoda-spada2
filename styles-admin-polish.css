@@ -1590,8 +1590,8 @@
   max-width:300px !important;
   margin-right:auto !important;
 }
-#appMenuBody[data-admin-view="backups"] .adminRotationBackupsLabelCol{width:82% !important;}
-#appMenuBody[data-admin-view="backups"] .adminRotationBackupsActionCol{width:18% !important;}
+#appMenuBody[data-admin-view="backups"] .adminRotationBackupsLabelCol{width:64% !important;}
+#appMenuBody[data-admin-view="backups"] .adminRotationBackupsActionCol{width:36% !important;}
 #appMenuBody[data-admin-view="backups"] .adminRotationBackupsTable th,
 #appMenuBody[data-admin-view="backups"] .adminRotationBackupsTable td,
 #appMenuBody[data-admin-view="settings-backups"] .adminFullSettingsBackupsTable th,
@@ -1618,9 +1618,9 @@
 }
 #appMenuBody[data-admin-view="settings-backups"] .adminFullSettingsBackupsTable{
   table-layout:fixed !important;
-  width:min(100%,260px) !important;
+  width:min(100%,325px) !important;
   min-width:0 !important;
-  max-width:260px !important;
+  max-width:325px !important;
   margin-right:auto !important;
 }
 #appMenuBody[data-admin-view="settings-backups"] .adminFullSettingsBackupLabelCol{width:62% !important;}

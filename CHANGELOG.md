@@ -1,5 +1,7 @@
-## RaK 1.2 (1.323)
+## RaK 1.2 (1.324)
 
+- Administrace / Zálohy rozpisů: efektivní sloupec `Akce` rozšířen z 18 % na 36 %, sloupec `Záloha` upraven na 64 %, aby se tlačítko obnovy nemačkalo do úzkého prostoru.
+- Administrace / Zálohy nastavení: konkrétní šířka tabulky zvětšena o 25 % z 260 px na 325 px, takže oba sloupce dostaly víc místa bez změny jejich poměru.
 - Generátor / Pravidla generátoru: přidaná hranice `mix od 3 směn`, aby člověk s více směnami na měkotě nezůstal jen na frézkách nebo jen na soustruhách, pokud existuje platný prohoz.
 - Generátor po pozdějších opravách rozpisu spouští finální dorovnání poměru soustruhy/frézky ještě jednou.
 - Generátor / Pravidla generátoru: vyrovnání `soustruhy / frézky` se nově dá počítat přes celou měkotu, takže neřeší jen lidi z tvrdoty; má zabránit stavům typu 9× soustruh a 0× frézka proti lidem opakovaně samotným na frézách.
@@ -8,7 +10,7 @@
 - Administrace / Pravidla generátoru: doplněné nastavitelné vyrovnání soustruhy/frézky u lidí z tvrdoty, včetně povoleného maximálního rozdílu.
 - Generátor při dorovnání soustruhy/frézky už nečeká jen na jiného člověka z tvrdoty přetíženého na soustruhu; člověka z tvrdoty přetíženého na frézách umí prohodit i s vhodným člověkem z měkoty, přednostně ve dnech se 3 obsazenými soustruhy.
 - Generátor při 2 soustruzích + 1 fréze bere vypsaná jména jako měkkou preferenci mimo soustruhy, ne jako zákaz; když není lepší varianta, pořád může člověka použít.
-- Release metadata sjednocena na `RaK 1.2 (1.323)`, technicka verze `1.2.323`, cache `v1.2-1.323`; loader modulu ma cache znacku `1.2.323`.
+- Release metadata sjednocena na `RaK 1.2 (1.324)`, technicka verze `1.2.324`, cache `v1.2-1.324`; loader modulu ma cache znacku `1.2.324`.
 
 ## RaK 1.2 (1.318)
 
