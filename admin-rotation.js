@@ -2745,10 +2745,10 @@ function adminRotationGeneratorCreateCounters(model) {
     hardCycleCursor: Object.create(null),
     softCoreMachineCursor: Number(softCoreState.machineCursor || 0) || 0,
     softCorePersonCursor: Number(softCoreState.personCursor || 0) || 0,
-    // Novy mesic drzi navazny stroj z historie, ale nerozdelava napul stary blok jmen.
-    // Kdyz minuly mesic skoncil TNKS01 a zbytek byli vsichni na Mekote, zacina dalsi TPKW01.
-    softCoreFilledInMachine: 0,
-    softCoreAssignedInMachineBlock: new Set(),
+    // Novy mesic drzi navazny stroj i rozdelany blok z historie.
+    // Kdyz minuly mesic na TPKW02 byli Strizek a Synek, dalsi dostupny ma jit Trasak, ne znovu stejni dva.
+    softCoreFilledInMachine: Number(softCoreState.filledInMachine || 0) || 0,
+    softCoreAssignedInMachineBlock: new Set(Array.isArray(softCoreState.assignedInMachineBlock) ? softCoreState.assignedInMachineBlock : []),
     softCoreGapPending: false,
     softCoreHardCount: Object.create(null)
   };
@@ -3136,6 +3136,22 @@ function adminRotationGeneratorPickSoftCoreForHard(month, knownNames, rowIdx, ma
   return ordered[0] || '';
 }
 
+function adminRotationGeneratorHoldUnavailableSoftCoreRemainder(month, knownNames, rowIdx, available, usedNames, counters, monthKey) {
+  const info = adminRotationGeneratorSoftCoreStateInfo(counters, knownNames);
+  const machineName = String(info.machine || '').toUpperCase();
+  const machineIdx = adminRotationGeneratorMachineIndex(HARD_MACHINE_HEADERS, machineName);
+  if (!info.core.length || machineIdx < 0 || !(info.assigned instanceof Set) || !info.assigned.size) return false;
+  const remaining = info.core.filter((name) => !info.assigned.has(name));
+  if (!remaining.length) return false;
+  const canUseRemainderToday = remaining.some((name) => available.includes(name) && !usedNames.has(name)
+    && adminRotationGeneratorCanUseHardMachine(month, rowIdx, machineName, name, knownNames, monthKey));
+  if (canUseRemainderToday) return false;
+  // Delsi dovolena jednoho cloveka nema roztocit zbyvajici dva porad dokola na Tvrdote.
+  // Den se bere jako mezera trojice; rozdelany blok zustava otevreny pro prvni dalsi dostupnou smenu.
+  counters.softCoreGapPending = false;
+  return true;
+}
+
 function adminRotationGeneratorBaseLathePerson(machineName, knownNames, available, usedNames) {
   const generatorRules = getAdminRotationGeneratorRules();
   const map = generatorRules.softBaseLathe || {};
@@ -3218,9 +3234,9 @@ function adminRotationGeneratorBuildDay(month, model, counters, rowIdx, dateLabe
 
   // 2) Pak přesuň jednoho ze základu Měkoty na tvrdotní stroj v 3denním bloku.
   // Když někdo z nich později chybí, pořadí se smí prohodit, aby se tomu nevyhnul.
-  const softCoreBlock = adminRotationGeneratorSoftCoreStateInfo(counters, knownNames);
-  const cycleMachine = softCoreBlock.machine;
-  const cycleIdx = adminRotationGeneratorMachineIndex(HARD_MACHINE_HEADERS, cycleMachine);
+  let softCoreBlock = adminRotationGeneratorSoftCoreStateInfo(counters, knownNames);
+  let cycleMachine = softCoreBlock.machine;
+  let cycleIdx = adminRotationGeneratorMachineIndex(HARD_MACHINE_HEADERS, cycleMachine);
   let exchangeSoft = '';
   if (counters.softCoreGapPending) {
     counters.softCoreGapPending = false;
@@ -3228,6 +3244,7 @@ function adminRotationGeneratorBuildDay(month, model, counters, rowIdx, dateLabe
     exchangeSoft = cycleIdx >= 0 && hardTargetCount > 0
       ? adminRotationGeneratorPickSoftCoreForHard(month, knownNames, rowIdx, cycleIdx, available, usedNames, counters, monthKey)
       : '';
+    if (!exchangeSoft) adminRotationGeneratorHoldUnavailableSoftCoreRemainder(month, knownNames, rowIdx, available, usedNames, counters, monthKey);
   }
   const displacedToSoft = [];
   if (exchangeSoft && cycleIdx >= 0 && available.includes(exchangeSoft) && !usedNames.has(exchangeSoft)) {
@@ -5672,7 +5689,7 @@ const RAK_ROTATION_GENERATOR_RULES_V1135 = Object.freeze({
   tnksMonthlyFirstRule: 'TNKS01/nýtovačka se v generátoru vyrovnává primárně v rámci měsíce; roční počty jsou jen jemný tie-break.',
   excludedFromTnksBalance: Object.freeze(['Střížek', 'Synek', 'Třasák']),
   softCoreContinuationRule: 'Synek/Třasák/Střížek drží pevný návazný cyklus TNKS01 → TPKW01 → TPKW02 mezi měsíci a TNKS01 dorovnání jim do něj nesahá.',
-  softCoreGapRule: 'Mezera po dokončeném bloku TNKS01/TPKW01/TPKW02 slouží jen k zarovnání konce měsíce, aby nezačala neúplná trojice; návazný stroj z minulého měsíce se zachová.',
+  softCoreGapRule: 'Mezera po dokončeném bloku slouží jen k zarovnání konce měsíce. Rozdělaný blok z minulého měsíce se respektuje; když chybějící člověk pořád není dostupný, generátor udělá mezeru a blok podrží pro jeho návrat.',
   consecutiveTnksRule: 'Stejný pracovník nesmí být na TNKS01 dvě pracovní směny po sobě; ve dnech s rotací TNKS01/TPKW01 se jako TNKS práce počítá i TPKW01, krátká / nerotující neděle se nepůlí.',
   singleSaveRule: 'Editor rozpisu má jen jedno hlavní tlačítko Uložit rozpis v horní akční liště.'
 });

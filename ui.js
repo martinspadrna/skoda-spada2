@@ -735,7 +735,7 @@ function buildSupabaseKeepaliveStatusHtml(options) {
 function buildAppHistoryHtml(versionText) {
   const sections = [
     {
-      range: 'v.1.2 1.297–1.327',
+      range: 'v.1.2 1.297–1.328',
       title: 'Pracovníci se stroji, opravy ukládání a generátor',
       lines: [
         'Pracovníci dostali přihlašovací čísla a zaškrtávací seznam strojů, které umí (MSK, MFK, TNK, TBK, TPKW01, TPKW02); generátor rozpisu nabízí lidi jen na jejich stroje a novému pracovníkovi se při uložení rovnou založí herní profil.',

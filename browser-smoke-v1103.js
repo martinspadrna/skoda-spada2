@@ -10,7 +10,7 @@ const { spawn } = require('child_process');
 const { pathToFileURL } = require('url');
 
 const ROOT_DIR = __dirname;
-const EXPECTED_APP_VERSION = '1.2 (1.327)';
+const EXPECTED_APP_VERSION = '1.2 (1.328)';
 const RAK_BROWSER_SMOKE_ENGINE = 'local-chromium-cdp';
 const RAK_BROWSER_SMOKE_LOAD_MODE = 'about-blank-inline-html';
 const CHROMIUM_BIN = process.env.CHROMIUM_BIN || process.env.CHROME_BIN || '/usr/bin/chromium';
@@ -545,7 +545,7 @@ async function runViewportSmoke(cdpPort, viewport, inlineHtml) {
         last.dates.push(item.date);
       }
     });
-    const shortMiddleBlocks = groups.slice(0, -1).filter((group) => new Set(group.people).size < blockLength);
+    const shortMiddleBlocks = groups.slice(1, -1).filter((group) => new Set(group.people).size < blockLength);
     const unnecessaryGaps = [];
     for (let idx = 0; idx < groups.length - 1; idx += 1) {
       const group = groups[idx];
@@ -566,8 +566,53 @@ async function runViewportSmoke(cdpPort, viewport, inlineHtml) {
   assert(augustGeneratorState.ok, `${viewport.name}: srpnovy generator se nespustil ${JSON.stringify(augustGeneratorState)}`);
   assert(augustGeneratorState.days >= 10 && augustGeneratorState.filledCells >= 100, `${viewport.name}: srpnovy generator nevyplnil dost dat ${JSON.stringify(augustGeneratorState)}`);
   assert(augustGeneratorState.duplicateDates.length === 0, `${viewport.name}: srpnovy generator vytvoril duplicitu v jednom dni ${JSON.stringify(augustGeneratorState.duplicateDates)}`);
-  assert(augustGeneratorState.shortMiddleBlocks.length === 0, `${viewport.name}: trojice z mekoty preskocila stroj pred dokoncenim bloku ${JSON.stringify(augustGeneratorState.shortMiddleBlocks)}`);
+  assert(augustGeneratorState.shortMiddleBlocks.length === 0, `${viewport.name}: trojice z mekoty preskocila stroj pred dokoncenim vnitrniho bloku ${JSON.stringify(augustGeneratorState.shortMiddleBlocks)}`);
   assert(augustGeneratorState.unnecessaryGaps.length === 0, `${viewport.name}: trojice z mekoty ma zbytecnou mezeru mezi bloky ${JSON.stringify(augustGeneratorState.unnecessaryGaps)}`);
+
+  const softCoreContinuationState = await evalInPage(client, `(() => {
+    const original = JSON.parse(JSON.stringify(app.rotation?.months || {}));
+    const originalDrafts = JSON.parse(JSON.stringify(app.adminRotationPendingDrafts || {}));
+    try {
+      const hardHeaders = typeof HARD_MACHINE_HEADERS !== 'undefined' ? HARD_MACHINE_HEADERS : ['TNKS01', 'TBKR07', 'TPKW01', 'TPKW02', 'TBKR01'];
+      const softHeaders = typeof SOFT_MACHINE_HEADERS !== 'undefined' ? SOFT_MACHINE_HEADERS : ['MSKC01', 'MSKC03', 'MSKC04', 'MFKF06', 'MFKF10'];
+      const blankHard = (date) => ({ date, cells: Array(hardHeaders.length).fill('') });
+      const blankSoft = (date) => ({ date, cells: Array(softHeaders.length).fill('') });
+      app.rotation.months = {};
+      const julyHard = [blankHard('24.7. R'), blankHard('25.7. R'), blankHard('26.7. R'), blankHard('27.7. R'), blankHard('28.7. R')];
+      julyHard[0].cells[2] = 'Třasák';
+      julyHard[1].cells[2] = 'Střížek';
+      julyHard[2].cells[2] = 'Synek';
+      julyHard[3].cells[3] = 'Střížek';
+      julyHard[4].cells[3] = 'Synek';
+      app.rotation.months['7/26'] = {
+        hard: { title: 'Rotace tvrdota', machines: hardHeaders.slice(), rows: julyHard },
+        soft: { title: 'Rotace měkota', machines: softHeaders.slice(), rows: ['24.7. R', '25.7. R', '26.7. R', '27.7. R', '28.7. R'].map(blankSoft) },
+        notes: []
+      };
+      const dates = ['5.8. N', '6.8. N', '10.8. R', '11.8. R', '14.8. N', '15.8. N'];
+      app.rotation.months['8/26'] = {
+        hard: { title: 'Rotace tvrdota', machines: hardHeaders.slice(), rows: dates.map(blankHard) },
+        soft: { title: 'Rotace měkota', machines: softHeaders.slice(), rows: dates.map(blankSoft) },
+        notes: ['5.8. N', '6.8. N', '10.8. R'].map((date) => ({ date, person: 'Třasák', code: 'D' }))
+      };
+      adminGenerateRotationMonthDraft('8/26');
+      const generated = typeof adminRotationGeneratorGetPendingDraft === 'function' ? adminRotationGeneratorGetPendingDraft('8/26') : app.rotation.months['8/26'];
+      const hits = [];
+      (generated.hard.rows || []).forEach((row, rowIdx) => {
+        ['Synek', 'Třasák', 'Střížek'].forEach((person) => {
+          const idx = (row.cells || []).findIndex((name) => String(name || '').trim() === person);
+          if (idx >= 0 && ['TNKS01', 'TPKW01', 'TPKW02'].includes(String(hardHeaders[idx] || '').toUpperCase())) hits.push({ rowIdx, date: row.date, person, machine: hardHeaders[idx] });
+        });
+      });
+      return { ok: true, hits };
+    } finally {
+      app.rotation.months = original;
+      app.adminRotationPendingDrafts = originalDrafts;
+    }
+  })()`);
+  assert(softCoreContinuationState.ok, `${viewport.name}: synteticka kontrola navaznosti trojice se nespustila ${JSON.stringify(softCoreContinuationState)}`);
+  assert(softCoreContinuationState.hits[0] && softCoreContinuationState.hits[0].person === 'Třasák' && softCoreContinuationState.hits[0].machine === 'TPKW02' && softCoreContinuationState.hits[0].date === '11.8. R', `${viewport.name}: generator neudelal mezeru pro delsi dovolenou a nedokoncil TPKW02 Trasakem po navratu ${JSON.stringify(softCoreContinuationState.hits)}`);
+  assert(!softCoreContinuationState.hits.some((hit) => ['5.8. N', '6.8. N', '10.8. R'].includes(hit.date)), `${viewport.name}: trojice z mekoty sla na Tvrdotu ve dnech, kdy chybel clovek z rozdelaneho bloku ${JSON.stringify(softCoreContinuationState.hits)}`);
 
   const generatorAbsenceRuleState = await evalInPage(client, `(() => {
     const monthKey = '7/26';
