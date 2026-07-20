@@ -2795,10 +2795,21 @@ function adminRotationGeneratorPickName(candidates, usedNames, counters, options
       : 0;
     const kindBalanceNames = Array.isArray(opts.softKindBalanceNames) ? opts.softKindBalanceNames : [];
     const useKindBalance = opts.softKindBalanceEnabled !== false && (!kindBalanceNames.length || kindBalanceNames.includes(name));
+    const currentSoftKindMill = Number((counters.softKind[name] && counters.softKind[name].mill) || 0);
+    const currentSoftKindLathe = Number((counters.softKind[name] && counters.softKind[name].lathe) || 0);
+    const projectedSoftKindMill = currentSoftKindMill + (opts.softKind === 'mill' ? 1 : 0);
+    const projectedSoftKindLathe = currentSoftKindLathe + (opts.softKind === 'lathe' ? 1 : 0);
+    const projectedSoftKindTotal = projectedSoftKindMill + projectedSoftKindLathe;
+    const mixedMinimum = Math.max(1, Math.min(12, Number(opts.softKindMixedMinimumShifts ?? 3) || 3));
+    const oneSidedKindPenalty = projectedSoftKindTotal >= mixedMinimum && (!projectedSoftKindMill || !projectedSoftKindLathe) ? 900 : 0;
+    const missingKindReward = (opts.softKind === 'mill' && currentSoftKindLathe > 0 && !currentSoftKindMill)
+      || (opts.softKind === 'lathe' && currentSoftKindMill > 0 && !currentSoftKindLathe)
+      ? -180
+      : 0;
     const kindBalance = !useKindBalance ? 0 : (opts.softKind === 'mill'
-      ? Math.max(0, Number((counters.softKind[name] && counters.softKind[name].mill) || 0) - Number((counters.softKind[name] && counters.softKind[name].lathe) || 0)) * 42
+      ? Math.max(0, currentSoftKindMill - currentSoftKindLathe) * 120 + oneSidedKindPenalty + missingKindReward
       : (opts.softKind === 'lathe'
-        ? Math.max(0, Number((counters.softKind[name] && counters.softKind[name].lathe) || 0) - Number((counters.softKind[name] && counters.softKind[name].mill) || 0)) * 24
+        ? Math.max(0, currentSoftKindLathe - currentSoftKindMill) * 120 + oneSidedKindPenalty + missingKindReward
         : 0));
     const jitter = (adminRotationHashString([opts.sectionKey || '', opts.machineName || '', opts.rowIdx || 0, name].join('|')) % 19) / 100;
     const score = total * 44 + section * 18 + machine * 95 - Math.log1p(Math.max(0, historical)) * 9 + preferred + required + avoid + hardBalance + kindBalance + jitter;
@@ -3287,6 +3298,7 @@ function adminRotationGeneratorBuildDay(month, model, counters, rowIdx, dateLabe
       softKind: kind,
       softKindBalanceEnabled: generatorRules.hardPeopleSoftKindBalanceEnabled !== false,
       softKindBalanceNames,
+      softKindMixedMinimumShifts: generatorRules.softKindMixedMinimumShifts,
       preferred: kind === 'lathe' ? softPreferred : hardPreferred,
       avoid: avoidLathe,
       historical: adminRotationGeneratorHistoricalMachineScore(model, 'soft', machineIdx, preferred[0] || '')
