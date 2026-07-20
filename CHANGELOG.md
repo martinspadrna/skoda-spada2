@@ -1,5 +1,8 @@
-## RaK 1.2 (1.326)
+## RaK 1.2 (1.327)
 
+- Generator / Trojice z mekoty: novy mesic drzi navazny stroj z predchozi historie, ale nerozdelava napul stary blok jmen; kdyz minuly mesic skoncil TNKS01 a pak byla trojice na Mekote, dalsi mesic zacina dalsim strojem.
+- Generator / Trojice z mekoty: mezera po bloku se pouzije jen jako zarovnani konce mesice, aby se nerozjela neuplna trojice, ne jako automaticka pauza uprostred mesice kvuli prubeznym poctum.
+- Browser smoke: pridana realna kontrola pregenerovani srpna 8/26, ktera hlida bloky Synek/Trasak/Strizek po trech lidech a zbytecne mezery mezi bloky.
 - Generator / Pravidla generatoru: pri skladani dne se uz vyrazne penalizuje dalsi prirazeni na stejny typ mekoty, pokud by clovek od nastavene hranice zustal jen na frezkach nebo jen na soustruhach.
 - Administrace / Zálohy nastavení: tabulka záloh rozšířena ještě o 5 % z 325 px na 341 px.
 - Administrace / Zálohy rozpisů: tabulka záloh rozšířena o 15 % z 300 px na 345 px.
@@ -13,7 +16,7 @@
 - Administrace / Pravidla generátoru: doplněné nastavitelné vyrovnání soustruhy/frézky u lidí z tvrdoty, včetně povoleného maximálního rozdílu.
 - Generátor při dorovnání soustruhy/frézky už nečeká jen na jiného člověka z tvrdoty přetíženého na soustruhu; člověka z tvrdoty přetíženého na frézách umí prohodit i s vhodným člověkem z měkoty, přednostně ve dnech se 3 obsazenými soustruhy.
 - Generátor při 2 soustruzích + 1 fréze bere vypsaná jména jako měkkou preferenci mimo soustruhy, ne jako zákaz; když není lepší varianta, pořád může člověka použít.
-- Release metadata sjednocena na `RaK 1.2 (1.326)`, technicka verze `1.2.326`, cache `v1.2-1.326`; loader modulu ma cache znacku `1.2.326`.
+- Release metadata sjednocena na `RaK 1.2 (1.327)`, technicka verze `1.2.327`, cache `v1.2-1.327`; loader modulu ma cache znacku `1.2.327`.
 
 ## RaK 1.2 (1.318)
 

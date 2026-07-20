@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// RaK 1.2 (1.326) – smoke test přehledu připojení + Dashboard/appearance contract guard.
+// RaK 1.2 (1.327) – smoke test přehledu připojení + Dashboard/appearance contract guard.
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
@@ -227,12 +227,12 @@ const dashboardReleaseIsolationGuardV198 = Object.freeze({
 });
 
 const releaseMetadataContractV199 = Object.freeze({
-  displayVersion: '1.2 (1.326)',
-  appLabel: 'RaK 1.2 (1.326)',
-  packageVersion: '1.2.326',
-  cacheVersion: 'v1.2-1.326',
+  displayVersion: '1.2 (1.327)',
+  appLabel: 'RaK 1.2 (1.327)',
+  packageVersion: '1.2.327',
+  cacheVersion: 'v1.2-1.327',
   realtimeChannel: 'rak-public-live-v1-2-1-126',
-  changelogHeader: '## RaK 1.2 (1.326)',
+  changelogHeader: '## RaK 1.2 (1.327)',
   previousBuildFragments: Object.freeze(['1.2 (1.138)', '1.2.138', 'v1.2-1.138', '1.2 (1.137)', '1.2.137', 'v1.2-1.137', '1.2 (1.118)', '1.2.118', 'v1.2-1.118', 'rak-public-live-v1-2-1-118'])
 });
 
@@ -341,8 +341,8 @@ function assertDashboardReleaseIsolationGuardV198() {
 function assertReleaseMetadataContractV199() {
   const contract = releaseMetadataContractV199;
   assertIncludes(exportJs, 'RAK_RELEASE_METADATA_CONTRACT_V199', 'export.js musí obsahovat release metadata contract v1.99');
-  assertIncludes(exportJs, "displayVersion: '1.2 (1.326)'", 'Release contract v export.js musí držet display verzi 1.105');
-  assertIncludes(exportJs, "packageVersion: '1.2.326'", 'Release contract v export.js musí držet package verzi 1.2.114');
+  assertIncludes(exportJs, "displayVersion: '1.2 (1.327)'", 'Release contract v export.js musí držet display verzi 1.105');
+  assertIncludes(exportJs, "packageVersion: '1.2.327'", 'Release contract v export.js musí držet package verzi 1.2.114');
   assert(packageJson.version === contract.packageVersion, `package.json version drift: čekám ${contract.packageVersion}, mám ${packageJson.version}`);
   assertIncludes(coreJs, `const APP_VERSION = "${contract.displayVersion}";`, 'core.js APP_VERSION není sjednocený s 1.105');
   assertIncludes(serviceWorkerJs, `const CACHE_VERSION = '${contract.cacheVersion}';`, 'sw.js CACHE_VERSION není sjednocený s 1.105');
@@ -1778,6 +1778,12 @@ function assertAdminGeneratorSettingsContractV1143() {
   assertIncludes(ui, 'projectedSoftKindTotal', 'Generator musi trestat jednostranny soustruh/frezka stav uz pri vyberu jmena');
   assertIncludes(ui, 'oneSidedKindPenalty', 'Generator musi mit silnou penalizaci pro cloveka jen na jednom typu mekoty od nastaveneho minima smen');
   assertIncludes(ui, 'softKindMixedMinimumShifts: generatorRules.softKindMixedMinimumShifts', 'Vyber jmena musi znat nastavene minimum pro mix soustruh/frezka');
+  assertIncludes(ui, 'Novy mesic drzi navazny stroj z historie', 'Trojice z mekoty musi do dalsiho mesice prenaset stroj, ale ne rozdelany blok jmen');
+  assertIncludes(ui, 'adminRotationGeneratorRemainingSoftCoreWorkDays', 'Mezera trojice z mekoty se smi pocitat podle zbytku mesice');
+  assertIncludes(ui, 'nezačala neúplná trojice', 'Admin pravidlo musi popisovat mezeru jen jako zarovnani konce mesice');
+  assertIncludes(browserSmokeJs, 'augustGeneratorState', 'Browser smoke musi realne pregenerovat srpen 8/26 a hlidat bloky trojice z mekoty');
+  assertIncludes(browserSmokeJs, 'shortMiddleBlocks', 'Browser smoke musi hlidat, ze trojice nepreskoci na dalsi stroj pred dokoncenim bloku');
+  assertIncludes(browserSmokeJs, 'unnecessaryGaps', 'Browser smoke musi hlidat zbytecne mezery mezi hotovymi bloky trojice');
   assertIncludes(ui, 'function adminRotationGeneratorBalanceSoftTotals', 'Generator musi umet po vygenerovani dorovnat pocet smen na mekote');
   assertIncludes(ui, 'softTotalBalanceSwaps', 'Vysledek generatoru musi vracet pocet prohozu vyrovnani mekoty');
   assertIncludes(ui, 'adminRotationGeneratorAvoidLatheNamesForPlan', 'Generator musi pri 2 soustruzich + 1 freze umet zohlednit seznam lidi mimo soustruhy');

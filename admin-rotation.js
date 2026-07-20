@@ -2745,8 +2745,10 @@ function adminRotationGeneratorCreateCounters(model) {
     hardCycleCursor: Object.create(null),
     softCoreMachineCursor: Number(softCoreState.machineCursor || 0) || 0,
     softCorePersonCursor: Number(softCoreState.personCursor || 0) || 0,
-    softCoreFilledInMachine: Number(softCoreState.filledInMachine || 0) || 0,
-    softCoreAssignedInMachineBlock: new Set(Array.isArray(softCoreState.assignedInMachineBlock) ? softCoreState.assignedInMachineBlock : []),
+    // Novy mesic drzi navazny stroj z historie, ale nerozdelava napul stary blok jmen.
+    // Kdyz minuly mesic skoncil TNKS01 a zbytek byli vsichni na Mekote, zacina dalsi TPKW01.
+    softCoreFilledInMachine: 0,
+    softCoreAssignedInMachineBlock: new Set(),
     softCoreGapPending: false,
     softCoreHardCount: Object.create(null)
   };
@@ -3063,18 +3065,35 @@ function adminRotationGeneratorSoftCoreFutureAvailability(month, knownNames, row
   return score;
 }
 
-function adminRotationGeneratorShouldGapSoftCore(counters, knownNames) {
+function adminRotationGeneratorRemainingSoftCoreWorkDays(month, knownNames, rowIdx) {
+  const hardRows = Array.isArray(month && month.hard && month.hard.rows) ? month.hard.rows : [];
+  const softRows = Array.isArray(month && month.soft && month.soft.rows) ? month.soft.rows : [];
+  const maxRows = Math.max(hardRows.length, softRows.length);
   const core = adminRotationGeneratorGetSoftCoreNames(knownNames);
-  if (!core.length) return false;
-  const counts = core.map((name) => Number(counters && counters.softCoreHardCount ? counters.softCoreHardCount[name] || 0 : 0));
-  const max = Math.max(...counts);
-  const min = Math.min(...counts);
-  // Mezera je jen pojistka: když se kvůli návaznosti měsíce dostane někdo o jeden blok napřed,
-  // další pracovní den zůstane trojice na Měkotě a cyklus pokračuje až potom.
-  return max >= 2 && max - min >= 1;
+  let count = 0;
+  for (let idx = Number(rowIdx || 0) + 1; idx < maxRows; idx += 1) {
+    const row = hardRows[idx] || softRows[idx] || null;
+    const dateLabel = row && row.date ? row.date : '';
+    if (!dateLabel) continue;
+    const dayNotes = adminRotationGeneratorDateNotes(month, dateLabel);
+    if (adminRotationGeneratorIsDayBlocked(dayNotes)) continue;
+    const absenceNames = adminRotationNamesForAbsenceDate(month.notes, dateLabel, knownNames);
+    if (core.some((name) => !absenceNames.has(name))) count += 1;
+  }
+  return count;
 }
 
-function adminRotationGeneratorAdvanceSoftCoreCycle(counters, knownNames, name, machineName) {
+function adminRotationGeneratorShouldGapSoftCore(counters, knownNames, month, rowIdx) {
+  const info = adminRotationGeneratorSoftCoreStateInfo(counters, knownNames);
+  if (!info.core.length || info.blockLength <= 1) return false;
+  const remaining = adminRotationGeneratorRemainingSoftCoreWorkDays(month, knownNames, rowIdx);
+  const remainder = remaining % info.blockLength;
+  // Mezera je jen zarovnani konce mesice: po dokoncenem bloku ji vloz, pokud by zbytek mesice
+  // jinak rozjel necelou trojici na dalsim stroji. Uprostred mesice kvuli prubeznym poctum nestoji.
+  return remaining >= info.blockLength && remainder > 0;
+}
+
+function adminRotationGeneratorAdvanceSoftCoreCycle(counters, knownNames, name, machineName, month, rowIdx) {
   if (!counters) return;
   const info = adminRotationGeneratorSoftCoreStateInfo(counters, knownNames);
   if (!info.core.includes(name)) return;
@@ -3089,7 +3108,7 @@ function adminRotationGeneratorAdvanceSoftCoreCycle(counters, knownNames, name, 
     counters.softCoreMachineCursor = (Number(counters.softCoreMachineCursor || 0) + 1) % Math.max(1, info.cycle.length);
     counters.softCoreFilledInMachine = 0;
     counters.softCoreAssignedInMachineBlock = new Set();
-    counters.softCoreGapPending = adminRotationGeneratorShouldGapSoftCore(counters, knownNames);
+    counters.softCoreGapPending = adminRotationGeneratorShouldGapSoftCore(counters, knownNames, month, rowIdx);
   }
 }
 
@@ -3168,7 +3187,7 @@ function adminRotationGeneratorBuildDay(month, model, counters, rowIdx, dateLabe
     usedNames.add(name);
     adminRotationGeneratorMarkAssignment(counters, 'hard', machineName, name);
     if (reason === 'hard-cycle') adminRotationGeneratorAdvanceHardCycle(counters, name);
-    if (reason === 'soft-core-hard-block') adminRotationGeneratorAdvanceSoftCoreCycle(counters, knownNames, name, machineName);
+    if (reason === 'soft-core-hard-block') adminRotationGeneratorAdvanceSoftCoreCycle(counters, knownNames, name, machineName, month, rowIdx);
     return true;
   };
 
@@ -5653,7 +5672,7 @@ const RAK_ROTATION_GENERATOR_RULES_V1135 = Object.freeze({
   tnksMonthlyFirstRule: 'TNKS01/nýtovačka se v generátoru vyrovnává primárně v rámci měsíce; roční počty jsou jen jemný tie-break.',
   excludedFromTnksBalance: Object.freeze(['Střížek', 'Synek', 'Třasák']),
   softCoreContinuationRule: 'Synek/Třasák/Střížek drží pevný návazný cyklus TNKS01 → TPKW01 → TPKW02 mezi měsíci a TNKS01 dorovnání jim do něj nesahá.',
-  softCoreGapRule: 'Když by návaznost udělala v měsíci přílišný náskok, může generátor vložit pracovní den mezery na Měkotě mezi bloky strojů.',
+  softCoreGapRule: 'Mezera po dokončeném bloku TNKS01/TPKW01/TPKW02 slouží jen k zarovnání konce měsíce, aby nezačala neúplná trojice; návazný stroj z minulého měsíce se zachová.',
   consecutiveTnksRule: 'Stejný pracovník nesmí být na TNKS01 dvě pracovní směny po sobě; ve dnech s rotací TNKS01/TPKW01 se jako TNKS práce počítá i TPKW01, krátká / nerotující neděle se nepůlí.',
   singleSaveRule: 'Editor rozpisu má jen jedno hlavní tlačítko Uložit rozpis v horní akční liště.'
 });

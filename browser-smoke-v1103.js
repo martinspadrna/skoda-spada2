@@ -10,7 +10,7 @@ const { spawn } = require('child_process');
 const { pathToFileURL } = require('url');
 
 const ROOT_DIR = __dirname;
-const EXPECTED_APP_VERSION = '1.2 (1.326)';
+const EXPECTED_APP_VERSION = '1.2 (1.327)';
 const RAK_BROWSER_SMOKE_ENGINE = 'local-chromium-cdp';
 const RAK_BROWSER_SMOKE_LOAD_MODE = 'about-blank-inline-html';
 const CHROMIUM_BIN = process.env.CHROMIUM_BIN || process.env.CHROME_BIN || '/usr/bin/chromium';
@@ -499,6 +499,76 @@ async function runViewportSmoke(cdpPort, viewport, inlineHtml) {
   assert(generatorState.historyTemplates >= 120, `${viewport.name}: generátor rozpisu nevychází z dost historických řádků ${JSON.stringify(generatorState)}`);
   assert(generatorState.duplicateDays === 0, `${viewport.name}: generátor rozpisu vytvořil duplicitní jméno v jednom dni ${JSON.stringify(generatorState)}`);
 
+  const augustGeneratorState = await evalInPage(client, `(() => {
+    const monthKey = '8/26';
+    if (typeof adminGenerateRotationMonthDraft !== 'function') return { ok: false, reason: 'missing generator' };
+    const result = adminGenerateRotationMonthDraft(monthKey);
+    const month = (typeof adminRotationGeneratorGetPendingDraft === 'function' ? adminRotationGeneratorGetPendingDraft(monthKey) : null) || app.rotation?.months?.[monthKey] || null;
+    if (!month) return { ok: false, reason: 'missing month' };
+    const hardHeaders = typeof HARD_MACHINE_HEADERS !== 'undefined' ? HARD_MACHINE_HEADERS : ['TNKS01', 'TBKR07', 'TPKW01', 'TPKW02', 'TBKR01'];
+    const core = ['Synek', 'Třasák', 'Střížek'];
+    const cycle = ['TNKS01', 'TPKW01', 'TPKW02'];
+    const blockLength = 3;
+    const hardRows = Array.isArray(month.hard?.rows) ? month.hard.rows : [];
+    const softRows = Array.isArray(month.soft?.rows) ? month.soft.rows : [];
+    const maxRows = Math.max(hardRows.length, softRows.length);
+    const sequence = [];
+    const duplicateDates = [];
+    const coreAvailable = (rowIdx) => {
+      const row = hardRows[rowIdx] || softRows[rowIdx] || null;
+      const date = row?.date || '';
+      if (!date) return false;
+      const dayNotes = typeof adminRotationGeneratorDateNotes === 'function' ? adminRotationGeneratorDateNotes(month, date) : [];
+      if (typeof adminRotationGeneratorIsDayBlocked === 'function' && adminRotationGeneratorIsDayBlocked(dayNotes)) return false;
+      const absences = typeof adminRotationNamesForAbsenceDate === 'function' ? adminRotationNamesForAbsenceDate(month.notes, date, core) : new Set();
+      return core.some((name) => !absences.has(name));
+    };
+    for (let rowIdx = 0; rowIdx < maxRows; rowIdx += 1) {
+      const hard = hardRows[rowIdx] || { cells: [] };
+      const soft = softRows[rowIdx] || { cells: [] };
+      const names = (hard.cells || []).concat(soft.cells || []).map((name) => String(name || '').trim()).filter(Boolean);
+      if (new Set(names).size !== names.length) duplicateDates.push(hard.date || soft.date || String(rowIdx));
+      core.forEach((person) => {
+        const idx = (hard.cells || []).findIndex((name) => String(name || '').trim() === person);
+        const machine = idx >= 0 ? String(hardHeaders[idx] || '').toUpperCase() : '';
+        if (cycle.includes(machine)) sequence.push({ rowIdx, date: hard.date || soft.date || '', person, machine });
+      });
+    }
+    const groups = [];
+    sequence.forEach((item) => {
+      const last = groups[groups.length - 1];
+      if (!last || last.machine !== item.machine) {
+        groups.push({ machine: item.machine, startIdx: item.rowIdx, endIdx: item.rowIdx, people: [item.person], dates: [item.date] });
+      } else {
+        last.endIdx = item.rowIdx;
+        last.people.push(item.person);
+        last.dates.push(item.date);
+      }
+    });
+    const shortMiddleBlocks = groups.slice(0, -1).filter((group) => new Set(group.people).size < blockLength);
+    const unnecessaryGaps = [];
+    for (let idx = 0; idx < groups.length - 1; idx += 1) {
+      const group = groups[idx];
+      if (new Set(group.people).size < blockLength) continue;
+      let gap = 0;
+      for (let rowIdx = group.endIdx + 1; rowIdx < groups[idx + 1].startIdx; rowIdx += 1) {
+        if (coreAvailable(rowIdx)) gap += 1;
+      }
+      if (!gap) continue;
+      let remaining = 0;
+      for (let rowIdx = group.endIdx + 1; rowIdx < maxRows; rowIdx += 1) {
+        if (coreAvailable(rowIdx)) remaining += 1;
+      }
+      if (remaining % blockLength === 0) unnecessaryGaps.push({ after: group.machine, endDate: group.dates[group.dates.length - 1], gap, remaining });
+    }
+    return { ok: true, days: result ? result.days : 0, filledCells: result ? result.filledCells : 0, duplicateDates, sequence, groups, shortMiddleBlocks, unnecessaryGaps };
+  })()`);
+  assert(augustGeneratorState.ok, `${viewport.name}: srpnovy generator se nespustil ${JSON.stringify(augustGeneratorState)}`);
+  assert(augustGeneratorState.days >= 10 && augustGeneratorState.filledCells >= 100, `${viewport.name}: srpnovy generator nevyplnil dost dat ${JSON.stringify(augustGeneratorState)}`);
+  assert(augustGeneratorState.duplicateDates.length === 0, `${viewport.name}: srpnovy generator vytvoril duplicitu v jednom dni ${JSON.stringify(augustGeneratorState.duplicateDates)}`);
+  assert(augustGeneratorState.shortMiddleBlocks.length === 0, `${viewport.name}: trojice z mekoty preskocila stroj pred dokoncenim bloku ${JSON.stringify(augustGeneratorState.shortMiddleBlocks)}`);
+  assert(augustGeneratorState.unnecessaryGaps.length === 0, `${viewport.name}: trojice z mekoty ma zbytecnou mezeru mezi bloky ${JSON.stringify(augustGeneratorState.unnecessaryGaps)}`);
+
   const generatorAbsenceRuleState = await evalInPage(client, `(() => {
     const monthKey = '7/26';
     const month = window.app && app.rotation && app.rotation.months ? app.rotation.months[monthKey] : null;
@@ -869,6 +939,7 @@ async function runViewportSmoke(cdpPort, viewport, inlineHtml) {
     homeCards: bootState.homeCards,
     rotationExport: exportState,
     rotationGenerator: generatorState,
+    augustGenerator: augustGeneratorState,
     rotationGeneratorWizard: wizardRunState,
     brusChoiceHeight: { min: brusState.minHeight, max: brusState.maxHeight },
     gamesTiles: gamesState.tiles,
