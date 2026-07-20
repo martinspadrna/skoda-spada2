@@ -3467,7 +3467,7 @@ function renderAdminMenuBody(body, section) {
     '  <div class="appMenuCardTitle">Export / import</div>',
     '  <div class="appMenuText">',
     '    <div>Import funguje ve dvou krocích: vybereš Excel, appka načte jen měsíční listy typu 01.2025 a potom si vybereš celý rok nebo konkrétní měsíc. Pomocné listy se ignorují.</div>',
-    '    <div class="smallText" id="rakExcelImportStatus">ZIP export stáhne kompletní build aplikace. XLSX rozpis stáhne jen vybraný měsíc v kopírovacím layoutu.</div>',
+    '    <div class="smallText" id="rakExcelImportStatus">XLSX rozpis stáhne jen vybraný měsíc v kopírovacím layoutu. Export celé appky je přesunutý do Kontrola a servis.</div>',
     '  </div>',
     '  <div class="appMenuSettingsList">',
     '    <div class="appMenuSubTitle">XLSX rozpis pro kopírování</div>',
@@ -3490,7 +3490,6 @@ function renderAdminMenuBody(body, section) {
     '  </div>',
     '  <div class="appMenuActionRow">',
     '    <button type="button" class="appMenuAction isActive" id="rakExcelImportCommitBtn" data-admin-action="excel-import" disabled>Načíst do rozpisů</button>',
-    '    <button type="button" class="appMenuAction" data-admin-action="export">Export ZIP (stáhnout app)</button>',
     '    <button type="button" class="appMenuAction" data-admin-action="back-admin">Zpět</button>',
     '  </div>',
     '</div>'

@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// RaK 1.2 (1.328) – smoke test přehledu připojení + Dashboard/appearance contract guard.
+// RaK 1.2 (1.329) – smoke test přehledu připojení + Dashboard/appearance contract guard.
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
@@ -23,6 +23,7 @@ const gamesArcadeJs = read('games-arcade.js');
 const gamesProfileJs = read('games-profile.js');
 const adminUnlockJs = read('app-admin-unlock.js');
 const adminRotationJs = read('admin-rotation.js');
+const adminServiceJs = read('admin-service-usage.js');
 const appearanceThemeJs = read('appearance-theme.js');
 const ui = read('ui.js') + '\n' + read('app-runtime-guards.js') + '\n' + read('app-health-audits.js') + '\n' + read('app-postload-audits.js') + '\n' + read('app-pwa-connectivity.js') + '\n' + read('games-engine.js') + '\n' + read('games-profile.js') + '\n' + appearanceThemeJs + '\n' + read('admin-service-usage.js') + '\n' + read('admin-rotation.js') + '\n' + read('app-navigation.js') + '\n' + read('app-bottom-nav.js') + '\n' + read('app-menu.js') + '\n' + read('app-actions.js') + '\n' + read('app-boot-selftest.js') + '\n' + read('app-rotation-sync.js') + '\n' + read('app-excel-import.js') + '\n' + read('app-rotation-controls.js') + '\n' + read('app-admin-unlock.js') + '\n' + read('app-home-boot.js') + '\n' + read('app-init.js');
 const sql = read('assets/docs/sql/supabase_app_usage_v963.sql');
@@ -227,12 +228,12 @@ const dashboardReleaseIsolationGuardV198 = Object.freeze({
 });
 
 const releaseMetadataContractV199 = Object.freeze({
-  displayVersion: '1.2 (1.328)',
-  appLabel: 'RaK 1.2 (1.328)',
-  packageVersion: '1.2.328',
-  cacheVersion: 'v1.2-1.328',
+  displayVersion: '1.2 (1.329)',
+  appLabel: 'RaK 1.2 (1.329)',
+  packageVersion: '1.2.329',
+  cacheVersion: 'v1.2-1.329',
   realtimeChannel: 'rak-public-live-v1-2-1-126',
-  changelogHeader: '## RaK 1.2 (1.328)',
+  changelogHeader: '## RaK 1.2 (1.329)',
   previousBuildFragments: Object.freeze(['1.2 (1.138)', '1.2.138', 'v1.2-1.138', '1.2 (1.137)', '1.2.137', 'v1.2-1.137', '1.2 (1.118)', '1.2.118', 'v1.2-1.118', 'rak-public-live-v1-2-1-118'])
 });
 
@@ -341,8 +342,8 @@ function assertDashboardReleaseIsolationGuardV198() {
 function assertReleaseMetadataContractV199() {
   const contract = releaseMetadataContractV199;
   assertIncludes(exportJs, 'RAK_RELEASE_METADATA_CONTRACT_V199', 'export.js musí obsahovat release metadata contract v1.99');
-  assertIncludes(exportJs, "displayVersion: '1.2 (1.328)'", 'Release contract v export.js musí držet display verzi 1.105');
-  assertIncludes(exportJs, "packageVersion: '1.2.328'", 'Release contract v export.js musí držet package verzi 1.2.114');
+  assertIncludes(exportJs, "displayVersion: '1.2 (1.329)'", 'Release contract v export.js musí držet display verzi 1.105');
+  assertIncludes(exportJs, "packageVersion: '1.2.329'", 'Release contract v export.js musí držet package verzi 1.2.114');
   assert(packageJson.version === contract.packageVersion, `package.json version drift: čekám ${contract.packageVersion}, mám ${packageJson.version}`);
   assertIncludes(coreJs, `const APP_VERSION = "${contract.displayVersion}";`, 'core.js APP_VERSION není sjednocený s 1.105');
   assertIncludes(serviceWorkerJs, `const CACHE_VERSION = '${contract.cacheVersion}';`, 'sw.js CACHE_VERSION není sjednocený s 1.105');
@@ -1056,7 +1057,8 @@ function assertRotationGeneratorExcelCopyContractV1138() {
   assertIncludes(ui, '#rakRotationExcelExportMonth, #rakExcelImportScope, #rakExcelImportDetectedMonth', 'Export / import musi prepocitat souhrn pri zmene vyberu');
   assertNotIncludes(stylesAdminPolishCss, '.adminExportImportStatus', 'Stav exportu/importu byl na zadost odstranen, admin styl uz nema existovat');
   assertNotIncludes(stylesAdminPolishCss, '.adminExportImportSafetyGrid', 'Bezpecnost importu byla odstranena, admin styl uz nema existovat');
-  assertIncludes(ui, 'Export ZIP (stáhnout app)', 'Tlacitko exportu ZIP musi jasne rikat, ze jde o stazeni cele aplikace');
+  assertIncludes(ui, 'Export celé appky je přesunutý do Kontrola a servis.', 'Export/import musi rikat, ze ZIP cele appky patri do kontroly a servisu');
+  assertNotIncludes(read('app-menu.js'), 'data-admin-action="export">Export ZIP (stáhnout app)</button>', 'Export/import uz nesmi nabizet ZIP cele aplikace mezi rozpisy');
   assertNotIncludes(ui, 'adminRotationGeneratorBuildMonthOptions(selected)', 'Export / import nesmí přebírat omezený výběr měsíce z generátoru');
   assertIncludes(ui, '<optgroup label="Rok ', 'Výběr XLSX exportu musí skupinovat měsíce podle roku');
   assertIncludes(ui, 'function adminRotationGeneratorBuildExcelAbsenceSlots', 'Excel export musí dynamicky určit počet dvojic Jméno/Kód pro absence');
@@ -1949,6 +1951,7 @@ function assertAdminServiceStatusContractV1159() {
   assertIncludes(ui, "adminAction === 'service-load-status'", 'Admin servis musi umet nacist online stav');
   assertIncludes(ui, "adminAction === 'service-sync-now'", 'Admin servis musi umet vynutit synchronizaci');
   assertIncludes(ui, "adminAction === 'service-update-check'", 'Admin servis musi umet zkontrolovat aktualizaci');
+  assertIncludes(adminServiceJs, 'data-admin-action="export">Export ZIP (stáhnout app)</button>', 'Admin servis musi obsahovat export ZIP cele aplikace');
   assertIncludes(stylesAdminPolishCss, '.adminServiceStatusGrid', 'Souhrn servisu musi mit vlastni responsive admin styl');
   assertIncludes(ui, "'admin-service'", 'Servis musi byt mezi chranenymi admin view');
 }

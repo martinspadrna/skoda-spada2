@@ -1,5 +1,6 @@
-## RaK 1.2 (1.328)
+## RaK 1.2 (1.329)
 
+- Administrace / Export import: ZIP export cele aplikace presunuty z rozpisoveho Export/import do Kontrola a servis; Export/import zustava jen pro XLSX rozpisy.
 - Generator / Trojice z mekoty: rozdelany blok z predchoziho mesice se bere v potaz; kdyz chybejici clovek z bloku porad neni dostupny ani po prohozeni poradi trojice, generator udela mezeru, aby se zbyli dva netocili porad dokola na Tvrdote.
 - Generator / Trojice z mekoty: novy mesic drzi navazny stroj i rozdelany blok z predchozi historie; po dokonceni bloku dalsi smena pokracuje dalsim strojem.
 - Generator / Trojice z mekoty: mezera po bloku se pouzije jen jako zarovnani konce mesice, aby se nerozjela neuplna trojice, ne jako automaticka pauza uprostred mesice kvuli prubeznym poctum.
@@ -17,7 +18,7 @@
 - Administrace / Pravidla generátoru: doplněné nastavitelné vyrovnání soustruhy/frézky u lidí z tvrdoty, včetně povoleného maximálního rozdílu.
 - Generátor při dorovnání soustruhy/frézky už nečeká jen na jiného člověka z tvrdoty přetíženého na soustruhu; člověka z tvrdoty přetíženého na frézách umí prohodit i s vhodným člověkem z měkoty, přednostně ve dnech se 3 obsazenými soustruhy.
 - Generátor při 2 soustruzích + 1 fréze bere vypsaná jména jako měkkou preferenci mimo soustruhy, ne jako zákaz; když není lepší varianta, pořád může člověka použít.
-- Release metadata sjednocena na `RaK 1.2 (1.328)`, technicka verze `1.2.328`, cache `v1.2-1.328`; loader modulu ma cache znacku `1.2.328`.
+- Release metadata sjednocena na `RaK 1.2 (1.329)`, technicka verze `1.2.329`, cache `v1.2-1.329`; loader modulu ma cache znacku `1.2.329`.
 
 ## RaK 1.2 (1.318)
 
