@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// RaK 1.2 (1.329) – smoke test přehledu připojení + Dashboard/appearance contract guard.
+// RaK 1.2 (1.330) – smoke test přehledu připojení + Dashboard/appearance contract guard.
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
@@ -228,12 +228,12 @@ const dashboardReleaseIsolationGuardV198 = Object.freeze({
 });
 
 const releaseMetadataContractV199 = Object.freeze({
-  displayVersion: '1.2 (1.329)',
-  appLabel: 'RaK 1.2 (1.329)',
-  packageVersion: '1.2.329',
-  cacheVersion: 'v1.2-1.329',
+  displayVersion: '1.2 (1.330)',
+  appLabel: 'RaK 1.2 (1.330)',
+  packageVersion: '1.2.330',
+  cacheVersion: 'v1.2-1.330',
   realtimeChannel: 'rak-public-live-v1-2-1-126',
-  changelogHeader: '## RaK 1.2 (1.329)',
+  changelogHeader: '## RaK 1.2 (1.330)',
   previousBuildFragments: Object.freeze(['1.2 (1.138)', '1.2.138', 'v1.2-1.138', '1.2 (1.137)', '1.2.137', 'v1.2-1.137', '1.2 (1.118)', '1.2.118', 'v1.2-1.118', 'rak-public-live-v1-2-1-118'])
 });
 
@@ -342,8 +342,8 @@ function assertDashboardReleaseIsolationGuardV198() {
 function assertReleaseMetadataContractV199() {
   const contract = releaseMetadataContractV199;
   assertIncludes(exportJs, 'RAK_RELEASE_METADATA_CONTRACT_V199', 'export.js musí obsahovat release metadata contract v1.99');
-  assertIncludes(exportJs, "displayVersion: '1.2 (1.329)'", 'Release contract v export.js musí držet display verzi 1.105');
-  assertIncludes(exportJs, "packageVersion: '1.2.329'", 'Release contract v export.js musí držet package verzi 1.2.114');
+  assertIncludes(exportJs, "displayVersion: '1.2 (1.330)'", 'Release contract v export.js musí držet display verzi 1.105');
+  assertIncludes(exportJs, "packageVersion: '1.2.330'", 'Release contract v export.js musí držet package verzi 1.2.114');
   assert(packageJson.version === contract.packageVersion, `package.json version drift: čekám ${contract.packageVersion}, mám ${packageJson.version}`);
   assertIncludes(coreJs, `const APP_VERSION = "${contract.displayVersion}";`, 'core.js APP_VERSION není sjednocený s 1.105');
   assertIncludes(serviceWorkerJs, `const CACHE_VERSION = '${contract.cacheVersion}';`, 'sw.js CACHE_VERSION není sjednocený s 1.105');
@@ -871,7 +871,7 @@ function assertRotationGeneratorRulesContractV1107() {
   assertIncludes(ui, 'if (softTargetCount === 3 && lathePeopleCount === 2 && mskc01Idx >= 0)', 'Při dvou absencích musí zůstat MSKC01 neobsazená');
   assertIncludes(ui, 'readAdminRotationFromDom(monthKey)', 'Generátor musí před výpočtem číst rozepsané absence z DOMu');
   assertIncludes(ui, 'adminRotationGeneratorIsDayBlocked', 'Generátor musí umět vynechat den označený jako svátek/odstávka');
-  assertIncludes(ui, "ruleVersion: '1.146'", 'Výsledek generátoru musí vracet aktuální verzi pravidel 1.146');
+  assertIncludes(ui, "ruleVersion: '1.147'", 'Výsledek generátoru musí vracet aktuální verzi pravidel 1.147');
 assertIncludes(ui, 'generator-download-excel', 'Výsledek generátoru musí nabízet stažení návrhu do Excelu');
 assertIncludes(ui, 'admin-download-rotation-excel', 'Administrace / Export import musí nabízet stejný XLSX export rozpisu');
 assertIncludes(ui, 'rakRotationExcelExportMonth', 'Export / import musí mít vlastní výběr měsíce pro XLSX export rozpisu');
@@ -977,7 +977,7 @@ function assertRotationGeneratorRulesContractV1114() {
   assertIncludes(ui, 'function adminRotationGeneratorCountSoloMill', 'Generátor musí umět spočítat samostatné MFKF10 s prázdnou MFKF06');
   assertIncludes(ui, "const soloMillBalance = adminRotationGeneratorBalanceSoloMill(month, model);", 'Po sestavení měsíce musí běžet vyrovnání samostatných frézek');
   assertIncludes(ui, 'soloMillBalanceSwaps', 'Výsledek generátoru musí vracet počet prohozů samostatných frézek');
-  assertIncludes(ui, "ruleVersion: '1.146'", 'Výsledek generátoru musí vracet aktuální verzi pravidel 1.146');
+  assertIncludes(ui, "ruleVersion: '1.147'", 'Výsledek generátoru musí vracet aktuální verzi pravidel 1.147');
 }
 
 
@@ -1068,7 +1068,7 @@ function assertRotationGeneratorExcelCopyContractV1138() {
   assertIncludes(ui, 'const width = 8 + absenceSlots * 2', 'Excel layout musí mít A:F + G mezera + H absence datum + dynamické dvojice');
   assertIncludes(ui, "softHeader[0] = 'Rotace  měkota'", 'Měkota musí zůstat jako samostatný blok pod Tvrdotou v A:F');
   assertIncludes(ui, "ws['!cols'] = adminRotationGeneratorBuildExcelCols(aoa);", 'Stažený XLSX musí použít nové kopírovací šířky sloupců');
-  assertIncludes(ui, "ruleVersion: '1.146'", 'Výsledek generátoru musí vracet aktuální verzi pravidel 1.146');
+  assertIncludes(ui, "ruleVersion: '1.147'", 'Výsledek generátoru musí vracet aktuální verzi pravidel 1.147');
 }
 
 
@@ -1790,6 +1790,10 @@ function assertAdminGeneratorSettingsContractV1143() {
   assertIncludes(browserSmokeJs, 'generator neudelal mezeru pro delsi dovolenou', 'Browser smoke musi overit, ze generator udela mezeru, kdyz chybi clovek z rozdelaneho bloku');
   assertIncludes(ui, 'adminRotationGeneratorHoldUnavailableSoftCoreRemainder', 'Generator musi umet podrzet rozdelany blok a udelat mezeru, kdyz chybejici clovek stale neni dostupny');
   assertIncludes(ui, 'function adminRotationGeneratorBalanceSoftTotals', 'Generator musi umet po vygenerovani dorovnat pocet smen na mekote');
+  assertIncludes(ui, 'function adminRotationGeneratorFindBridgeSoftSwapForEmptyHard', 'Generator musi umet doplnit prazdnou tvrdotu prohozenim cloveka z mekoty, kdyz dostupny zbytek neumi dany tvrdotni stroj');
+  assertIncludes(ui, "'available-unused'", 'Validace generatoru musi zachytit dostupneho cloveka, ktery v danem dni uplne vypadl z rozpisu');
+  assertIncludes(ui, "'soft-core-hard-machine'", 'Validace generatoru musi hlidat, ze Synek/Trasak/Strizek nechodi na jine tvrdotni stroje nez TNKS01/TPKW01/TPKW02');
+  assertIncludes(ui, '!softHardCycle.includes(machine)', 'Generator musi zakazat trojici z mekoty tvrdotni stroje mimo jejich cyklus');
   assertIncludes(ui, 'softTotalBalanceSwaps', 'Vysledek generatoru musi vracet pocet prohozu vyrovnani mekoty');
   assertIncludes(ui, 'adminRotationGeneratorAvoidLatheNamesForPlan', 'Generator musi pri 2 soustruzich + 1 freze umet zohlednit seznam lidi mimo soustruhy');
   assertIncludes(ui, "action: 'open-generator-settings', label: 'Pravidla generátoru'", 'Admin menu musi obsahovat sekci Pravidla generatoru');

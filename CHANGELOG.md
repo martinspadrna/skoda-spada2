@@ -1,5 +1,8 @@
-## RaK 1.2 (1.329)
+## RaK 1.2 (1.330)
 
+- Generátor / Trojice z měkoty: Synek, Třasák a Střížek mají na tvrdotě pevně povolené jen TNKS01, TPKW01 a TPKW02; TBKR07/TBKR01 už jim nevezme ani nouzové doplnění.
+- Generátor / Doplnění děr: když po absencích zůstane prázdné tvrdotní místo a dostupný zbytek neumí daný tvrdotní stroj, generátor prohodí vhodného člověka z měkoty na tvrdotu a zbytek vrátí na jeho měkotní základ, např. Třasák na MSKC01.
+- Generátor / Kontrola návrhu: dostupný člověk, který v daný den úplně vypadne z rozpisu, je nově chyba návrhu.
 - Administrace / Export import: ZIP export cele aplikace presunuty z rozpisoveho Export/import do Kontrola a servis; Export/import zustava jen pro XLSX rozpisy.
 - Generator / Trojice z mekoty: rozdelany blok z predchoziho mesice se bere v potaz; kdyz chybejici clovek z bloku porad neni dostupny ani po prohozeni poradi trojice, generator udela mezeru, aby se zbyli dva netocili porad dokola na Tvrdote.
 - Generator / Trojice z mekoty: novy mesic drzi navazny stroj i rozdelany blok z predchozi historie; po dokonceni bloku dalsi smena pokracuje dalsim strojem.
@@ -18,7 +21,7 @@
 - Administrace / Pravidla generátoru: doplněné nastavitelné vyrovnání soustruhy/frézky u lidí z tvrdoty, včetně povoleného maximálního rozdílu.
 - Generátor při dorovnání soustruhy/frézky už nečeká jen na jiného člověka z tvrdoty přetíženého na soustruhu; člověka z tvrdoty přetíženého na frézách umí prohodit i s vhodným člověkem z měkoty, přednostně ve dnech se 3 obsazenými soustruhy.
 - Generátor při 2 soustruzích + 1 fréze bere vypsaná jména jako měkkou preferenci mimo soustruhy, ne jako zákaz; když není lepší varianta, pořád může člověka použít.
-- Release metadata sjednocena na `RaK 1.2 (1.329)`, technicka verze `1.2.329`, cache `v1.2-1.329`; loader modulu ma cache znacku `1.2.329`.
+- Release metadata sjednocena na `RaK 1.2 (1.330)`, technicka verze `1.2.330`, cache `v1.2-1.330`; loader modulu ma cache znacku `1.2.330`.
 
 ## RaK 1.2 (1.318)
 
