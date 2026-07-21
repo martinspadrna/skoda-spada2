@@ -22,7 +22,16 @@
       ]
     },
     {
-      "source": "/(.*)\\.(js|css|png|jpg|jpeg|webp|svg|ico)",
+      "source": "/(.*)\\.(js|css)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=0, must-revalidate"
+        }
+      ]
+    },
+    {
+      "source": "/(.*)\\.(png|jpg|jpeg|webp|svg|ico)",
       "headers": [
         {
           "key": "Cache-Control",

@@ -1,3 +1,10 @@
+## RaK 1.2 (1.333)
+
+- Aktualizace aplikace: JavaScript a CSS se na serveru znovu ověřují místo roční neměnné cache; `app.js` má navíc verzi přímo v URL, takže telefon po vydání nespustí starý generátor.
+- Generátor / skutečná návaznost: regresní scénář kopíruje uložený konec července 2026 a hlídá, že srpnový blok trojice začne během Třasákovy dovolené a nečeká na jeho návrat.
+- Generátor / TNKS01: Synek, Třasák a Střížek zůstávají vyřazení z obecného měsíčního dorovnání; jejich pořadí určuje pouze vlastní cyklus a dostupnost.
+- Release metadata sjednocena na `RaK 1.2 (1.333)`, technicka verze `1.2.333`, cache `v1.2-1.333`; loader modulu ma cache znacku `1.2.333`.
+
 ## RaK 1.2 (1.332)
 
 - Generátor / Dovolená v trojici: když rozdělaný blok nemůže dokončit chybějící Synek, Třasák nebo Střížek ani po prohození pořadí, jeho krok se bere jako neobsazený a následující pracovní den začne trojice další stroj.

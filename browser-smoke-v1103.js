@@ -10,7 +10,7 @@ const { spawn } = require('child_process');
 const { pathToFileURL } = require('url');
 
 const ROOT_DIR = __dirname;
-const EXPECTED_APP_VERSION = '1.2 (1.332)';
+const EXPECTED_APP_VERSION = '1.2 (1.333)';
 const RAK_BROWSER_SMOKE_ENGINE = 'local-chromium-cdp';
 const RAK_BROWSER_SMOKE_LOAD_MODE = 'about-blank-inline-html';
 const CHROMIUM_BIN = process.env.CHROMIUM_BIN || process.env.CHROME_BIN || '/usr/bin/chromium';
@@ -616,6 +616,63 @@ async function runViewportSmoke(cdpPort, viewport, inlineHtml) {
   assert(softCoreContinuationState.hits[1] && softCoreContinuationState.hits[1].person === 'Synek' && softCoreContinuationState.hits[1].machine === 'TNKS01' && softCoreContinuationState.hits[1].date === '10.8. R', `${viewport.name}: TNKS01 blok nepokracoval druhym dostupnym clovekem ${JSON.stringify(softCoreContinuationState.hits)}`);
   assert(softCoreContinuationState.hits[2] && softCoreContinuationState.hits[2].person === 'Třasák' && softCoreContinuationState.hits[2].machine === 'TNKS01' && softCoreContinuationState.hits[2].date === '11.8. R', `${viewport.name}: Trasak po navratu nedokoncil novy TNKS01 blok ${JSON.stringify(softCoreContinuationState.hits)}`);
   assert(!softCoreContinuationState.hits.some((hit) => hit.date === '5.8. N'), `${viewport.name}: novy blok zacal uz ve stejny den jako preskoceny treti krok ${JSON.stringify(softCoreContinuationState.hits)}`);
+
+  const softCoreSavedJulyState = await evalInPage(client, `(() => {
+    const original = JSON.parse(JSON.stringify(app.rotation?.months || {}));
+    const originalDrafts = JSON.parse(JSON.stringify(app.adminRotationPendingDrafts || {}));
+    try {
+      const hardHeaders = typeof HARD_MACHINE_HEADERS !== 'undefined' ? HARD_MACHINE_HEADERS : ['TNKS01', 'TBKR07', 'TPKW01', 'TPKW02', 'TBKR01'];
+      const softHeaders = typeof SOFT_MACHINE_HEADERS !== 'undefined' ? SOFT_MACHINE_HEADERS : ['MSKC01', 'MSKC03', 'MSKC04', 'MFKF06', 'MFKF10'];
+      const blankHard = (date) => ({ date, cells: Array(hardHeaders.length).fill('') });
+      const blankSoft = (date) => ({ date, cells: Array(softHeaders.length).fill('') });
+      app.rotation.months = {};
+      const julyDates = ['3.7. R', '4.7. R', '8.7. N', '9.7. N', '13.7. R', '14.7. R', '17.7. N', '18.7. N'];
+      const julyHard = julyDates.map(blankHard);
+      julyHard[0].cells[2] = 'Třasák';
+      julyHard[1].cells[2] = 'Střížek';
+      julyHard[4].cells[3] = 'Střížek';
+      julyHard[5].cells[3] = 'Synek';
+      app.rotation.months['7/26'] = {
+        hard: { title: 'Rotace tvrdota', machines: hardHeaders.slice(), rows: julyHard },
+        soft: { title: 'Rotace měkota', machines: softHeaders.slice(), rows: julyDates.map(blankSoft) },
+        notes: [
+          { date: '3.7. R', person: 'Synek', code: 'N' },
+          { date: '4.7. R', person: 'Synek', code: 'N' },
+          { date: '8.7. N', person: 'Synek', code: 'N' },
+          { date: '8.7. N', person: 'Třasák', code: 'D' },
+          { date: '9.7. N', person: 'Synek', code: 'N' },
+          { date: '9.7. N', person: 'Třasák', code: 'D' },
+          { date: '13.7. R', person: 'Třasák', code: 'D' },
+          { date: '14.7. R', person: 'Třasák', code: 'D' },
+          { date: '17.7. N', person: 'Třasák', code: 'D' },
+          { date: '18.7. N', person: 'Třasák', code: 'D' }
+        ]
+      };
+      const augustDates = ['5.8. N', '6.8. N', '10.8. R', '11.8. R', '14.8. N'];
+      app.rotation.months['8/26'] = {
+        hard: { title: 'Rotace tvrdota', machines: hardHeaders.slice(), rows: augustDates.map(blankHard) },
+        soft: { title: 'Rotace měkota', machines: softHeaders.slice(), rows: augustDates.map(blankSoft) },
+        notes: ['5.8. N', '6.8. N', '10.8. R'].map((date) => ({ date, person: 'Třasák', code: 'D' }))
+      };
+      const result = adminGenerateRotationMonthDraft('8/26');
+      const generated = typeof adminRotationGeneratorGetPendingDraft === 'function' ? adminRotationGeneratorGetPendingDraft('8/26') : app.rotation.months['8/26'];
+      const hits = [];
+      (generated.hard.rows || []).forEach((row) => {
+        (row.cells || []).forEach((person, idx) => {
+          if (['Synek', 'Třasák', 'Střížek'].includes(String(person || '').trim())) hits.push({ date: row.date, person, machine: hardHeaders[idx] });
+        });
+      });
+      return { ok: true, hits, skippedSlots: Number(result && result.softCoreSkippedSlots || 0) };
+    } finally {
+      app.rotation.months = original;
+      app.adminRotationPendingDrafts = originalDrafts;
+    }
+  })()`);
+  assert(softCoreSavedJulyState.ok, `${viewport.name}: kontrola skutecneho konce cervence se nespustila ${JSON.stringify(softCoreSavedJulyState)}`);
+  assert(softCoreSavedJulyState.hits[0] && softCoreSavedJulyState.hits[0].date === '5.8. N' && softCoreSavedJulyState.hits[0].machine === 'TNKS01', `${viewport.name}: srpnovy blok po ulozenem cervenci nezacal hned 5.8. ${JSON.stringify(softCoreSavedJulyState)}`);
+  assert(softCoreSavedJulyState.hits[1] && softCoreSavedJulyState.hits[1].date === '6.8. N' && softCoreSavedJulyState.hits[1].machine === 'TNKS01', `${viewport.name}: srpnovy TNKS01 blok nepokracoval 6.8. ${JSON.stringify(softCoreSavedJulyState)}`);
+  assert(!softCoreSavedJulyState.hits.some((hit) => hit.date === '10.8. R'), `${viewport.name}: chybejici treti krok TNKS01 mel zustat 10.8. prazdny ${JSON.stringify(softCoreSavedJulyState)}`);
+  assert(softCoreSavedJulyState.hits.some((hit) => hit.date === '11.8. R' && hit.machine === 'TPKW01'), `${viewport.name}: po preskoceni 10.8. nezacal 11.8. novy TPKW01 blok ${JSON.stringify(softCoreSavedJulyState)}`);
 
   const softCoreOneDayAbsenceState = await evalInPage(client, `(() => {
     const original = JSON.parse(JSON.stringify(app.rotation?.months || {}));
