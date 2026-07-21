@@ -10,7 +10,7 @@ const { spawn } = require('child_process');
 const { pathToFileURL } = require('url');
 
 const ROOT_DIR = __dirname;
-const EXPECTED_APP_VERSION = '1.2 (1.331)';
+const EXPECTED_APP_VERSION = '1.2 (1.332)';
 const RAK_BROWSER_SMOKE_ENGINE = 'local-chromium-cdp';
 const RAK_BROWSER_SMOKE_LOAD_MODE = 'about-blank-inline-html';
 const CHROMIUM_BIN = process.env.CHROMIUM_BIN || process.env.CHROME_BIN || '/usr/bin/chromium';
@@ -595,7 +595,7 @@ async function runViewportSmoke(cdpPort, viewport, inlineHtml) {
         soft: { title: 'Rotace měkota', machines: softHeaders.slice(), rows: dates.map(blankSoft) },
         notes: ['5.8. N', '6.8. N', '10.8. R'].map((date) => ({ date, person: 'Třasák', code: 'D' }))
       };
-      adminGenerateRotationMonthDraft('8/26');
+      const result = adminGenerateRotationMonthDraft('8/26');
       const generated = typeof adminRotationGeneratorGetPendingDraft === 'function' ? adminRotationGeneratorGetPendingDraft('8/26') : app.rotation.months['8/26'];
       const hits = [];
       (generated.hard.rows || []).forEach((row, rowIdx) => {
@@ -604,15 +604,60 @@ async function runViewportSmoke(cdpPort, viewport, inlineHtml) {
           if (idx >= 0 && ['TNKS01', 'TPKW01', 'TPKW02'].includes(String(hardHeaders[idx] || '').toUpperCase())) hits.push({ rowIdx, date: row.date, person, machine: hardHeaders[idx] });
         });
       });
-      return { ok: true, hits };
+      return { ok: true, hits, skippedSlots: Number(result && result.softCoreSkippedSlots || 0) };
     } finally {
       app.rotation.months = original;
       app.adminRotationPendingDrafts = originalDrafts;
     }
   })()`);
   assert(softCoreContinuationState.ok, `${viewport.name}: synteticka kontrola navaznosti trojice se nespustila ${JSON.stringify(softCoreContinuationState)}`);
-  assert(softCoreContinuationState.hits[0] && softCoreContinuationState.hits[0].person === 'Třasák' && softCoreContinuationState.hits[0].machine === 'TPKW02' && softCoreContinuationState.hits[0].date === '11.8. R', `${viewport.name}: generator neudelal mezeru pro delsi dovolenou a nedokoncil TPKW02 Trasakem po navratu ${JSON.stringify(softCoreContinuationState.hits)}`);
-  assert(!softCoreContinuationState.hits.some((hit) => ['5.8. N', '6.8. N', '10.8. R'].includes(hit.date)), `${viewport.name}: trojice z mekoty sla na Tvrdotu ve dnech, kdy chybel clovek z rozdelaneho bloku ${JSON.stringify(softCoreContinuationState.hits)}`);
+  assert(softCoreContinuationState.skippedSlots === 1, `${viewport.name}: generator nepreskocil chybejici treti krok rozdelaneho bloku ${JSON.stringify(softCoreContinuationState)}`);
+  assert(softCoreContinuationState.hits[0] && softCoreContinuationState.hits[0].person === 'Střížek' && softCoreContinuationState.hits[0].machine === 'TNKS01' && softCoreContinuationState.hits[0].date === '6.8. N', `${viewport.name}: novy blok nezacal den po preskoceni chybejiciho Trasaka ${JSON.stringify(softCoreContinuationState.hits)}`);
+  assert(softCoreContinuationState.hits[1] && softCoreContinuationState.hits[1].person === 'Synek' && softCoreContinuationState.hits[1].machine === 'TNKS01' && softCoreContinuationState.hits[1].date === '10.8. R', `${viewport.name}: TNKS01 blok nepokracoval druhym dostupnym clovekem ${JSON.stringify(softCoreContinuationState.hits)}`);
+  assert(softCoreContinuationState.hits[2] && softCoreContinuationState.hits[2].person === 'Třasák' && softCoreContinuationState.hits[2].machine === 'TNKS01' && softCoreContinuationState.hits[2].date === '11.8. R', `${viewport.name}: Trasak po navratu nedokoncil novy TNKS01 blok ${JSON.stringify(softCoreContinuationState.hits)}`);
+  assert(!softCoreContinuationState.hits.some((hit) => hit.date === '5.8. N'), `${viewport.name}: novy blok zacal uz ve stejny den jako preskoceny treti krok ${JSON.stringify(softCoreContinuationState.hits)}`);
+
+  const softCoreOneDayAbsenceState = await evalInPage(client, `(() => {
+    const original = JSON.parse(JSON.stringify(app.rotation?.months || {}));
+    const originalDrafts = JSON.parse(JSON.stringify(app.adminRotationPendingDrafts || {}));
+    try {
+      const hardHeaders = typeof HARD_MACHINE_HEADERS !== 'undefined' ? HARD_MACHINE_HEADERS : ['TNKS01', 'TBKR07', 'TPKW01', 'TPKW02', 'TBKR01'];
+      const softHeaders = typeof SOFT_MACHINE_HEADERS !== 'undefined' ? SOFT_MACHINE_HEADERS : ['MSKC01', 'MSKC03', 'MSKC04', 'MFKF06', 'MFKF10'];
+      const blankHard = (date) => ({ date, cells: Array(hardHeaders.length).fill('') });
+      const blankSoft = (date) => ({ date, cells: Array(softHeaders.length).fill('') });
+      app.rotation.months = {};
+      const julyDates = ['24.7. R', '25.7. R', '26.7. R'];
+      const julyHard = julyDates.map(blankHard);
+      julyHard[0].cells[3] = 'Synek';
+      julyHard[1].cells[3] = 'Třasák';
+      julyHard[2].cells[3] = 'Střížek';
+      app.rotation.months['7/26'] = {
+        hard: { title: 'Rotace tvrdota', machines: hardHeaders.slice(), rows: julyHard },
+        soft: { title: 'Rotace měkota', machines: softHeaders.slice(), rows: julyDates.map(blankSoft) },
+        notes: []
+      };
+      const dates = ['5.8. N', '6.8. N', '10.8. R'];
+      app.rotation.months['8/26'] = {
+        hard: { title: 'Rotace tvrdota', machines: hardHeaders.slice(), rows: dates.map(blankHard) },
+        soft: { title: 'Rotace měkota', machines: softHeaders.slice(), rows: dates.map(blankSoft) },
+        notes: [{ date: '5.8. N', person: 'Synek', code: 'D' }]
+      };
+      const result = adminGenerateRotationMonthDraft('8/26');
+      const generated = typeof adminRotationGeneratorGetPendingDraft === 'function' ? adminRotationGeneratorGetPendingDraft('8/26') : app.rotation.months['8/26'];
+      const hits = (generated.hard.rows || []).map((row) => {
+        const idx = (row.cells || []).findIndex((name) => ['Synek', 'Třasák', 'Střížek'].includes(String(name || '').trim()));
+        return idx >= 0 ? { date: row.date, person: row.cells[idx], machine: hardHeaders[idx] } : null;
+      }).filter(Boolean);
+      return { ok: true, hits, skippedSlots: Number(result && result.softCoreSkippedSlots || 0) };
+    } finally {
+      app.rotation.months = original;
+      app.adminRotationPendingDrafts = originalDrafts;
+    }
+  })()`);
+  assert(softCoreOneDayAbsenceState.ok, `${viewport.name}: test jednodeni absence trojice se nespustil ${JSON.stringify(softCoreOneDayAbsenceState)}`);
+  assert(softCoreOneDayAbsenceState.skippedSlots === 0, `${viewport.name}: jednodeni absence se nema preskocit, kdyz pomuze prohozeni poradi ${JSON.stringify(softCoreOneDayAbsenceState)}`);
+  assert(softCoreOneDayAbsenceState.hits.length === 3 && softCoreOneDayAbsenceState.hits.every((hit) => hit.machine === 'TNKS01'), `${viewport.name}: jednodeni absence rozbila tridenni TNKS01 blok ${JSON.stringify(softCoreOneDayAbsenceState.hits)}`);
+  assert(new Set(softCoreOneDayAbsenceState.hits.map((hit) => hit.person)).size === 3, `${viewport.name}: po jednodeni absenci se v bloku nevystridali vsichni tri ${JSON.stringify(softCoreOneDayAbsenceState.hits)}`);
 
   const generatorAbsenceRuleState = await evalInPage(client, `(() => {
     const monthKey = '7/26';
@@ -641,7 +686,7 @@ async function runViewportSmoke(cdpPort, viewport, inlineHtml) {
     };
   })()`);
   assert(generatorAbsenceRuleState.ok, `${viewport.name}: generátor pravidel absencí se nespustil ${JSON.stringify(generatorAbsenceRuleState)}`);
-  assert(generatorAbsenceRuleState.ruleVersion === '1.148', `${viewport.name}: generátor nemá pravidla 1.148 ${JSON.stringify(generatorAbsenceRuleState)}`);
+  assert(generatorAbsenceRuleState.ruleVersion === '1.149', `${viewport.name}: generátor nemá pravidla 1.149 ${JSON.stringify(generatorAbsenceRuleState)}`);
   assert(generatorAbsenceRuleState.mfkf06 === '', `${viewport.name}: při jednom člověku na frézkách musí být MFKF06 prázdná ${JSON.stringify(generatorAbsenceRuleState)}`);
   assert(generatorAbsenceRuleState.mskc01 === '', `${viewport.name}: při dvou absencích musí být MSKC01 prázdná ${JSON.stringify(generatorAbsenceRuleState)}`);
   assert(generatorAbsenceRuleState.mfkf10, `${viewport.name}: při dvou absencích musí být člověk na MFKF10 ${JSON.stringify(generatorAbsenceRuleState)}`);
@@ -702,7 +747,7 @@ async function runViewportSmoke(cdpPort, viewport, inlineHtml) {
     }
   })()`);
   assert(generatorHardRepairState.ok, `${viewport.name}: test doplnění tvrdoty se nespustil ${JSON.stringify(generatorHardRepairState)}`);
-  assert(generatorHardRepairState.ruleVersion === '1.148', `${viewport.name}: doplnění tvrdoty neběží na pravidlech 1.148 ${JSON.stringify(generatorHardRepairState)}`);
+  assert(generatorHardRepairState.ruleVersion === '1.149', `${viewport.name}: doplnění tvrdoty neběží na pravidlech 1.149 ${JSON.stringify(generatorHardRepairState)}`);
   assert(generatorHardRepairState.tbkr07 && generatorHardRepairState.tbkr07 !== 'Třasák', `${viewport.name}: TBKR07 musí doplnit někdo s TBK, ne Třasák ${JSON.stringify(generatorHardRepairState)}`);
   assert(['TNKS01', 'TPKW01', 'TPKW02'].includes(generatorHardRepairState.trasakHardMachine) || !!generatorHardRepairState.trasakSoftMachine, `${viewport.name}: dostupný Třasák má být buď na povolené tvrdotě TNKS01/TPKW01/TPKW02, nebo na měkotě ${JSON.stringify(generatorHardRepairState)}`);
   assert(generatorHardRepairState.filled >= 8, `${viewport.name}: při dvou absencích má být obsazeno osm lidí ${JSON.stringify(generatorHardRepairState)}`);

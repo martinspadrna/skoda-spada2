@@ -1,3 +1,10 @@
+## RaK 1.2 (1.332)
+
+- Generátor / Dovolená v trojici: když rozdělaný blok nemůže dokončit chybějící Synek, Třasák nebo Střížek ani po prohození pořadí, jeho krok se bere jako neobsazený a následující pracovní den začne trojice další stroj.
+- Generátor / Návaznost: přeskočený krok se nezapočítá jako odpracovaná tvrdota, ale uložené absence umožní stejné rozhodnutí správně dopočítat i při generování dalšího měsíce.
+- Browser smoke: scénář Třasákovy dovolené 5., 6. a 10. srpna ověřuje přeskočení starého TPKW02 bloku a nový TNKS01 blok Střížek 6.8. → Synek 10.8. → Třasák 11.8.
+- Release metadata sjednocena na `RaK 1.2 (1.332)`, technicka verze `1.2.332`, cache `v1.2-1.332`; loader modulu ma cache znacku `1.2.332`.
+
 ## RaK 1.2 (1.331)
 
 - Generátor / Priorita trojice: Synek, Třasák a Střížek se na TNKS01, TPKW01 a TPKW02 přesouvají výhradně blokovým cyklem; měsíční dorovnání TNKS01, opravy prázdných míst ani další následné úpravy už nemohou vytvořit osamocené zařazení mimo blok.
