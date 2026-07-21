@@ -10,7 +10,7 @@ const { spawn } = require('child_process');
 const { pathToFileURL } = require('url');
 
 const ROOT_DIR = __dirname;
-const EXPECTED_APP_VERSION = '1.2 (1.330)';
+const EXPECTED_APP_VERSION = '1.2 (1.331)';
 const RAK_BROWSER_SMOKE_ENGINE = 'local-chromium-cdp';
 const RAK_BROWSER_SMOKE_LOAD_MODE = 'about-blank-inline-html';
 const CHROMIUM_BIN = process.env.CHROMIUM_BIN || process.env.CHROME_BIN || '/usr/bin/chromium';
@@ -641,7 +641,7 @@ async function runViewportSmoke(cdpPort, viewport, inlineHtml) {
     };
   })()`);
   assert(generatorAbsenceRuleState.ok, `${viewport.name}: generátor pravidel absencí se nespustil ${JSON.stringify(generatorAbsenceRuleState)}`);
-  assert(generatorAbsenceRuleState.ruleVersion === '1.147', `${viewport.name}: generátor nemá pravidla 1.147 ${JSON.stringify(generatorAbsenceRuleState)}`);
+  assert(generatorAbsenceRuleState.ruleVersion === '1.148', `${viewport.name}: generátor nemá pravidla 1.148 ${JSON.stringify(generatorAbsenceRuleState)}`);
   assert(generatorAbsenceRuleState.mfkf06 === '', `${viewport.name}: při jednom člověku na frézkách musí být MFKF06 prázdná ${JSON.stringify(generatorAbsenceRuleState)}`);
   assert(generatorAbsenceRuleState.mskc01 === '', `${viewport.name}: při dvou absencích musí být MSKC01 prázdná ${JSON.stringify(generatorAbsenceRuleState)}`);
   assert(generatorAbsenceRuleState.mfkf10, `${viewport.name}: při dvou absencích musí být člověk na MFKF10 ${JSON.stringify(generatorAbsenceRuleState)}`);
@@ -702,7 +702,7 @@ async function runViewportSmoke(cdpPort, viewport, inlineHtml) {
     }
   })()`);
   assert(generatorHardRepairState.ok, `${viewport.name}: test doplnění tvrdoty se nespustil ${JSON.stringify(generatorHardRepairState)}`);
-  assert(generatorHardRepairState.ruleVersion === '1.147', `${viewport.name}: doplnění tvrdoty neběží na pravidlech 1.147 ${JSON.stringify(generatorHardRepairState)}`);
+  assert(generatorHardRepairState.ruleVersion === '1.148', `${viewport.name}: doplnění tvrdoty neběží na pravidlech 1.148 ${JSON.stringify(generatorHardRepairState)}`);
   assert(generatorHardRepairState.tbkr07 && generatorHardRepairState.tbkr07 !== 'Třasák', `${viewport.name}: TBKR07 musí doplnit někdo s TBK, ne Třasák ${JSON.stringify(generatorHardRepairState)}`);
   assert(['TNKS01', 'TPKW01', 'TPKW02'].includes(generatorHardRepairState.trasakHardMachine) || !!generatorHardRepairState.trasakSoftMachine, `${viewport.name}: dostupný Třasák má být buď na povolené tvrdotě TNKS01/TPKW01/TPKW02, nebo na měkotě ${JSON.stringify(generatorHardRepairState)}`);
   assert(generatorHardRepairState.filled >= 8, `${viewport.name}: při dvou absencích má být obsazeno osm lidí ${JSON.stringify(generatorHardRepairState)}`);

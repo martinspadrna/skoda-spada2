@@ -605,7 +605,7 @@ function buildAdminRotationGeneratorRuleSummaryHtml() {
     adminRotationGeneratorRuleCardHtml('Příprava měsíce', 'dny + absence první', 'Nejdřív vyber měsíc, zkontroluj pracovní dny, doplň svátky, odstávky a absence.'),
     adminRotationGeneratorRuleCardHtml('Uložení návrhu', 'jen po kontrole', 'Vygenerovaný návrh se nejdřív otevře v editoru. Online se uloží až tlačítkem Uložit rozpis.'),
     adminRotationGeneratorRuleCardHtml('Tvrdotový cyklus', hardCycle.replace(/\n/g, ' → '), 'Pořadí strojů pro návaznou tvrdotu lze upravit níže.'),
-    adminRotationGeneratorRuleCardHtml('Trojice z měkoty', softCore, 'Chodí na ' + softHardCycle.replace(/\n/g, ' → ') + ' po blocích ' + String(rules.softHardBlockLength || 3) + ' pracovních dnů.'),
+    adminRotationGeneratorRuleCardHtml('Trojice z měkoty', softCore, 'Chodí na ' + softHardCycle.replace(/\n/g, ' → ') + ' po blocích ' + String(rules.softHardBlockLength || 3) + ' pracovních dnů. Tento cyklus má přednost před ostatním dorovnáním.'),
     adminRotationGeneratorRuleCardHtml('2 soustruhy + 1 fréza', rules.avoidLatheWhenTwoLathesOneMillEnabled === false ? 'vypnuto' : (avoidLatheNames || 'zapnuto'), 'Vypsaná jména mají být při tomto režimu spíš mimo soustruhy, pokud existuje rozumná alternativa.'),
     adminRotationGeneratorRuleCardHtml('Samostatné frézky', rules.soloMillBalanceEnabled === false ? 'vypnuto' : 'rozdíl max ' + String(rules.soloMillMaxSpread ?? 1), 'Když je na frézkách jen MFKF10, generátor se snaží samostatné frézky rozdělit měsíčně rovnoměrně.'),
     adminRotationGeneratorRuleCardHtml('Měkota skupiny', rules.softTotalBalanceEnabled === false ? 'vypnuto' : (softTotalNames || 'zapnuto'), 'Vypsaná jména mají mít podobný počet směn na měkotě; výchozí rozdíl max ' + String(rules.softTotalMaxSpread ?? 1) + '.'),
@@ -3027,6 +3027,12 @@ function adminRotationGeneratorGetSoftCoreNames(knownNames) {
   return generatorRules.softCore.filter((name) => known.includes(name));
 }
 
+function adminRotationGeneratorIsSoftCoreName(name, knownNames) {
+  const known = Array.isArray(knownNames) ? knownNames : adminGetKnownNames();
+  const canonical = adminRotationCanonicalName(name, known);
+  return !!canonical && adminRotationGeneratorGetSoftCoreNames(known).includes(canonical);
+}
+
 function adminRotationGeneratorSoftCoreStateInfo(counters, knownNames) {
   const generatorRules = getAdminRotationGeneratorRules();
   const cycle = Array.isArray(generatorRules.softHardCycle) ? generatorRules.softHardCycle : [];
@@ -3119,7 +3125,7 @@ function adminRotationGeneratorPickSoftCoreForHard(month, knownNames, rowIdx, ma
   if (!core.length || String(machineName || '').toUpperCase() !== String(info.machine || '').toUpperCase()) return '';
   const orderedCore = core.slice(info.personCursor).concat(core.slice(0, info.personCursor));
   const candidates = orderedCore.filter((name) => available.includes(name) && !usedNames.has(name) && !info.assigned.has(name)
-    && adminRotationGeneratorCanUseHardMachine(month, rowIdx, machineName, name, knownNames, monthKey));
+    && adminRotationGeneratorCanUseHardMachine(month, rowIdx, machineName, name, knownNames, monthKey, true));
   if (!candidates.length) return '';
   const minMonthly = Math.min(...core.map((name) => Number(counters.softCoreHardCount[name] || 0)));
   const safeCandidates = candidates.filter((name) => Number(counters.softCoreHardCount[name] || 0) <= minMonthly + 1);
@@ -3144,7 +3150,7 @@ function adminRotationGeneratorHoldUnavailableSoftCoreRemainder(month, knownName
   const remaining = info.core.filter((name) => !info.assigned.has(name));
   if (!remaining.length) return false;
   const canUseRemainderToday = remaining.some((name) => available.includes(name) && !usedNames.has(name)
-    && adminRotationGeneratorCanUseHardMachine(month, rowIdx, machineName, name, knownNames, monthKey));
+    && adminRotationGeneratorCanUseHardMachine(month, rowIdx, machineName, name, knownNames, monthKey, true));
   if (canUseRemainderToday) return false;
   // Delsi dovolena jednoho cloveka nema roztocit zbyvajici dva porad dokola na Tvrdote.
   // Den se bere jako mezera trojice; rozdelany blok zustava otevreny pro prvni dalsi dostupnou smenu.
@@ -3197,7 +3203,7 @@ function adminRotationGeneratorBuildDay(month, model, counters, rowIdx, dateLabe
   const assignHardCell = (machineIdx, name, reason) => {
     const machineName = HARD_MACHINE_HEADERS[machineIdx] || '';
     if (machineIdx < 0 || !machineName || !name || usedNames.has(name) || !available.includes(name) || hardCells[machineIdx]) return false;
-    if (!adminRotationGeneratorCanUseHardMachine(month, rowIdx, machineName, name, knownNames, monthKey)) return false;
+    if (!adminRotationGeneratorCanUseHardMachine(month, rowIdx, machineName, name, knownNames, monthKey, reason === 'soft-core-hard-block')) return false;
     if (!adminRotationGeneratorPersonKnowsMachine(name, machineName)) return false;
     hardCells[machineIdx] = name;
     usedNames.add(name);
@@ -3461,7 +3467,7 @@ function adminRotationGeneratorWouldBreakConsecutiveTnks(month, rowIdx, person, 
     || adminRotationGeneratorPersonHasTnksWorkOnRow(month, Number(rowIdx) + 1, name, knownNames, monthKey);
 }
 
-function adminRotationGeneratorCanUseHardMachine(month, rowIdx, machineName, person, knownNames, monthKey) {
+function adminRotationGeneratorCanUseHardMachine(month, rowIdx, machineName, person, knownNames, monthKey, allowSoftCoreBlock) {
   const machine = String(machineName || '').trim().toUpperCase();
   const name = adminRotationCanonicalName(person, Array.isArray(knownNames) ? knownNames : adminGetKnownNames());
   const generatorRules = getAdminRotationGeneratorRules();
@@ -3471,7 +3477,10 @@ function adminRotationGeneratorCanUseHardMachine(month, rowIdx, machineName, per
   const softHardCycle = (Array.isArray(generatorRules.softHardCycle) ? generatorRules.softHardCycle : [])
     .map((cycleMachine) => String(cycleMachine || '').trim().toUpperCase())
     .filter(Boolean);
-  if (name && softCore.includes(name) && softHardCycle.length && !softHardCycle.includes(machine)) return false;
+  if (name && softCore.includes(name)) {
+    if (softHardCycle.length && !softHardCycle.includes(machine)) return false;
+    if (allowSoftCoreBlock !== true) return false;
+  }
   const countsAsTnks = machine === 'TNKS01' || (machine === 'TPKW01' && adminRotationGeneratorRowShouldSplitPress(month, rowIdx, monthKey));
   if (!countsAsTnks) return true;
   return !adminRotationGeneratorWouldBreakConsecutiveTnks(month, rowIdx, name, knownNames, monthKey);
@@ -3534,6 +3543,7 @@ function adminRotationGeneratorFindSwapCellsOnDay(month, rowIdx, person, knownNa
 function adminRotationGeneratorRepairConsecutiveTnks(month, model, monthKey) {
   const knownNames = model && Array.isArray(model.knownNames) ? model.knownNames : adminGetKnownNames();
   if (!month || !knownNames.length) return { repairs: 0, remaining: 0 };
+  const softCore = new Set(adminRotationGeneratorGetSoftCoreNames(knownNames));
   let repairs = 0;
   const maxPasses = Math.max(1, (Array.isArray(month.hard && month.hard.rows) ? month.hard.rows.length : 0) * 3);
   for (let pass = 0; pass < maxPasses; pass += 1) {
@@ -3542,8 +3552,10 @@ function adminRotationGeneratorRepairConsecutiveTnks(month, model, monthKey) {
     const issue = issues[0];
     const current = issue.current;
     if (!current || !current.cells) break;
+    if (softCore.has(current.name)) break;
     const counts = adminRotationGeneratorCountHardMachine(month, 'TNKS01', knownNames, monthKey);
     const candidates = adminRotationGeneratorFindSwapCellsOnDay(month, current.rowIdx, current.name, knownNames)
+      .filter((cell) => !softCore.has(cell.name))
       .filter((cell) => adminRotationGeneratorPersonKnowsMachine(cell.name, current.machine))
       .filter((cell) => adminRotationGeneratorPersonKnowsMachine(current.name, cell.machine))
       .filter((cell) => adminRotationGeneratorCanUseHardMachine(month, current.rowIdx, current.machine, cell.name, knownNames, monthKey))
@@ -3555,6 +3567,68 @@ function adminRotationGeneratorRepairConsecutiveTnks(month, model, monthKey) {
     repairs += 1;
   }
   return { repairs, remaining: adminRotationGeneratorFindConsecutiveTnksIssues(month, monthKey, knownNames).length };
+}
+
+function adminRotationGeneratorFindSoftCoreSequenceIssues(month, monthKey, knownNames) {
+  const names = Array.isArray(knownNames) ? knownNames : adminGetKnownNames();
+  const generatorRules = getAdminRotationGeneratorRules();
+  const core = adminRotationGeneratorGetSoftCoreNames(names);
+  const cycle = (Array.isArray(generatorRules.softHardCycle) ? generatorRules.softHardCycle : [])
+    .map((machine) => String(machine || '').trim().toUpperCase())
+    .filter(Boolean);
+  if (!month || !core.length || !cycle.length) return [];
+
+  const historyModel = adminBuildRotationGenerationModel(monthKey);
+  const historyState = historyModel && historyModel.softCoreCycleState ? historyModel.softCoreCycleState : {};
+  const blockLength = Math.max(1, Number(generatorRules.softHardBlockLength) || core.length || 3);
+  let machineCursor = ((Number(historyState.machineCursor || 0) % cycle.length) + cycle.length) % cycle.length;
+  let filled = Math.max(0, Number(historyState.filledInMachine || 0));
+  let assigned = new Set((Array.isArray(historyState.assignedInMachineBlock) ? historyState.assignedInMachineBlock : [])
+    .map((name) => adminRotationCanonicalName(name, names))
+    .filter((name) => core.includes(name)));
+  const issues = [];
+  const hardRows = Array.isArray(month && month.hard && month.hard.rows) ? month.hard.rows : [];
+
+  hardRows.forEach((row, rowIdx) => {
+    const cells = Array.isArray(row && row.cells) ? row.cells : [];
+    cells.forEach((cell, machineIdx) => {
+      const name = adminRotationCanonicalName(cell, names);
+      if (!core.includes(name)) return;
+      const machine = String(HARD_MACHINE_HEADERS[machineIdx] || '').trim().toUpperCase();
+      if (!cycle.includes(machine)) return;
+      const expectedMachine = cycle[machineCursor] || cycle[0];
+      if (machine !== expectedMachine) {
+        issues.push({
+          rowIdx,
+          date: String(row && row.date || ''),
+          name,
+          machine,
+          expectedMachine,
+          type: 'machine-before-block-complete'
+        });
+        return;
+      }
+      if (assigned.has(name)) {
+        issues.push({
+          rowIdx,
+          date: String(row && row.date || ''),
+          name,
+          machine,
+          expectedMachine,
+          type: 'duplicate-in-block'
+        });
+        return;
+      }
+      assigned.add(name);
+      filled = Math.max(filled + 1, assigned.size);
+      if (filled >= blockLength || assigned.size >= Math.min(blockLength, core.length)) {
+        machineCursor = (machineCursor + 1) % cycle.length;
+        filled = 0;
+        assigned = new Set();
+      }
+    });
+  });
+  return issues;
 }
 
 function adminRotationValidateMonthRules(month, monthKey, options) {
@@ -3639,7 +3713,16 @@ function adminRotationValidateMonthRules(month, monthKey, options) {
     addIssue('error', 'consecutive-tnks', String(prevDate) + ' -> ' + String(currentDate) + ': ' + issue.current.name + ' je na TNKS01/TPKW01 dvě směny po sobě.', '');
   });
 
-  const eligiblePressNames = knownNames.filter((name) => adminRotationGeneratorPersonKnowsMachine(name, 'TNKS01'))
+  adminRotationGeneratorFindSoftCoreSequenceIssues(month, monthKey, knownNames).forEach((issue) => {
+    const message = issue.type === 'duplicate-in-block'
+      ? String(issue.date) + ': ' + issue.name + ' je ve stejném bloku trojice na ' + issue.machine + ' podruhé dřív, než se vystřídali všichni tři.'
+      : String(issue.date) + ': trojice má pokračovat na ' + issue.expectedMachine + ', ale ' + issue.name + ' je už na ' + issue.machine + '.';
+    addIssue(opts.source === 'generator' ? 'error' : 'warn', 'soft-core-sequence', message, 'Cyklus trojice má přednost před měsíčním dorovnáním TNKS01.');
+  });
+
+  const softCorePressNames = new Set(adminRotationGeneratorGetSoftCoreNames(knownNames));
+  const eligiblePressNames = knownNames.filter((name) => !softCorePressNames.has(name))
+    .filter((name) => adminRotationGeneratorPersonKnowsMachine(name, 'TNKS01'))
     .filter((name) => {
       for (let rowIdx = 0; rowIdx < maxRows; rowIdx += 1) {
         const row = hardRows[rowIdx] || softRows[rowIdx] || null;
@@ -3787,6 +3870,7 @@ function adminRotationGeneratorBalanceSoloMill(month, model) {
         if (mfkf06 || mfkf10 !== highName) continue;
         const lowCell = adminRotationGeneratorFindSoloMillSwapCell(month, rowIdx, lowName);
         if (!lowCell || !lowCell.cells) continue;
+        if (lowCell.sectionKey === 'hard' && (adminRotationGeneratorIsSoftCoreName(highName, knownNames) || adminRotationGeneratorIsSoftCoreName(lowName, knownNames))) continue;
         lowCell.cells[lowCell.idx] = highName;
         cells[mfkf10Idx] = lowName;
         counts[highName] = Number(counts[highName] || 0) - 1;
@@ -3989,7 +4073,8 @@ function adminRotationGeneratorBalanceSoftTotals(month, model, monthKey) {
   if (generatorRules.softTotalBalanceEnabled === false) return { swaps: 0, counts: Object.create(null), disabled: true };
   const workingNames = adminRotationGeneratorRawList(generatorRules.softTotalBalanceNames)
     .map((name) => adminRotationCanonicalName(name, knownNames))
-    .filter((name) => name && knownNames.includes(name));
+    .filter((name) => name && knownNames.includes(name))
+    .filter((name) => !adminRotationGeneratorIsSoftCoreName(name, knownNames));
   const softRows = Array.isArray(month && month.soft && month.soft.rows) ? month.soft.rows : [];
   if (!workingNames.length || !softRows.length) return { swaps: 0, counts: Object.create(null) };
   const allowedSpread = Math.max(0, Math.min(6, Number(generatorRules.softTotalMaxSpread ?? 1) || 1));
@@ -4037,8 +4122,10 @@ function adminRotationGeneratorBalanceHardMachine(month, machineName, model, mon
   const generatorRules = getAdminRotationGeneratorRules();
   const hardPreferred = generatorRules.hardPreferred.filter((name) => knownNames.includes(name));
   const isPressBalance = /^(?:TNKS01|TPKW01)$/i.test(String(machineName || ''));
+  const softCorePressNames = new Set(adminRotationGeneratorGetSoftCoreNames(knownNames));
   const workingNames = adminRotationGeneratorCollectWorkingNames(month, knownNames)
     .filter((name) => knownNames.includes(name))
+    .filter((name) => !isPressBalance || !softCorePressNames.has(name))
     .filter((name) => adminRotationGeneratorPersonKnowsMachine(name, machineName));
   const machineIdx = adminRotationGeneratorMachineIndex(HARD_MACHINE_HEADERS, machineName);
   const tnksIdx = adminRotationGeneratorMachineIndex(HARD_MACHINE_HEADERS, 'TNKS01');
@@ -4309,11 +4396,13 @@ function adminRotationGeneratorFindBridgeSoftSwapForEmptyHard(month, rowIdx, har
   if (!hardMachine || !softCells.length || !Array.isArray(unusedNames) || !unusedNames.length) return null;
   const generatorRules = getAdminRotationGeneratorRules();
   const softBaseLathe = generatorRules && generatorRules.softBaseLathe ? generatorRules.softBaseLathe : {};
+  const softCore = new Set(adminRotationGeneratorGetSoftCoreNames(knownNames));
   const options = [];
   softCells.forEach((cell, softIdx) => {
     const softName = adminRotationCanonicalName(cell, knownNames);
     const softMachine = SOFT_MACHINE_HEADERS[softIdx] || '';
     if (!softName || !softMachine) return;
+    if (softCore.has(softName)) return;
     if (!adminRotationGeneratorPersonKnowsMachine(softName, hardMachine)) return;
     if (!adminRotationGeneratorCanUseHardMachine(month, rowIdx, hardMachine, softName, knownNames, monthKey)) return;
     unusedNames.forEach((unusedName) => {
@@ -4349,6 +4438,7 @@ function adminRotationGeneratorRepairEmptyHardCells(month, model, monthKey) {
   const generatorRules = getAdminRotationGeneratorRules();
   const hardPreferred = generatorRules.hardPreferred.filter((name) => knownNames.includes(name));
   const softPreferred = generatorRules.softPreferred.filter((name) => knownNames.includes(name));
+  const softCore = new Set(adminRotationGeneratorGetSoftCoreNames(knownNames));
   const hardTotals = Object.create(null);
   knownNames.forEach((name) => { hardTotals[name] = 0; });
   hardRows.forEach((row) => {
@@ -4386,6 +4476,7 @@ function adminRotationGeneratorRepairEmptyHardCells(month, model, monthKey) {
       const machineCounts = adminRotationGeneratorCountHardMachine(month, machineName, knownNames, monthKey);
       const unusedNames = available.filter((name) => !usedNames.has(name));
       const candidates = unusedNames
+        .filter((name) => !softCore.has(name))
         .filter((name) => adminRotationGeneratorPersonKnowsMachine(name, machineName))
         .filter((name) => adminRotationGeneratorCanUseHardMachine(month, rowIdx, machineName, name, knownNames, monthKey))
         .sort((a, b) => {
@@ -4547,7 +4638,7 @@ function adminGenerateRotationMonthDraft(monthKey, preparedMonth) {
     softTotalBalanceSwaps: softTotalBalance && Number(softTotalBalance.swaps || 0),
     softKindBalanceSwaps: (softKindBalance && Number(softKindBalance.swaps || 0)) + (finalSoftKindBalance && Number(finalSoftKindBalance.swaps || 0)),
     kminekNovotnyMoToBalanceSwaps: kminekNovotnyMoToBalance && Number(kminekNovotnyMoToBalance.swaps || 0),
-    ruleVersion: '1.147'
+    ruleVersion: '1.148'
   };
 }
 

@@ -1,3 +1,10 @@
+## RaK 1.2 (1.331)
+
+- Generátor / Priorita trojice: Synek, Třasák a Střížek se na TNKS01, TPKW01 a TPKW02 přesouvají výhradně blokovým cyklem; měsíční dorovnání TNKS01, opravy prázdných míst ani další následné úpravy už nemohou vytvořit osamocené zařazení mimo blok.
+- Generátor / Kontrola návaznosti: návrh se odmítne, pokud trojice přejde na další stroj dřív, než se na aktuálním vystřídají všichni tři, nebo pokud se někdo ve stejném bloku zopakuje.
+- Generátor / Vyrovnání TNKS01: trojice má vlastní počítání a není součástí obecného měsíčního dorovnání nýtovačky; administrace tuto prioritu nově výslovně uvádí.
+- Release metadata sjednocena na `RaK 1.2 (1.331)`, technicka verze `1.2.331`, cache `v1.2-1.331`; loader modulu ma cache znacku `1.2.331`.
+
 ## RaK 1.2 (1.330)
 
 - Generátor / Trojice z měkoty: Synek, Třasák a Střížek mají na tvrdotě pevně povolené jen TNKS01, TPKW01 a TPKW02; TBKR07/TBKR01 už jim nevezme ani nouzové doplnění.
