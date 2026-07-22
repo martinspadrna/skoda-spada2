@@ -149,14 +149,12 @@ async function loadCalendarText(url) {
     try {
       resolvedAddress = await resolveCalendarIpv4();
     } catch (dnsError) {
-      dnsError.calendarPhase = 'doh';
-      throw dnsError;
+      throw calendarPhaseError(dnsError, 'doh');
     }
     try {
       return await fetchCalendarViaHttps(url, 0, resolvedAddress);
     } catch (directError) {
-      directError.calendarPhase = 'google_ip';
-      throw directError;
+      throw calendarPhaseError(directError, 'google_ip');
     }
   }
 }
@@ -180,6 +178,14 @@ function calendarErrorReason(error) {
   if (matched) return matched;
   const statusMatch = values.join(' ').match(/calendar_fetch_failed:(\d{3})/);
   return statusMatch ? `http_${statusMatch[1]}` : 'network_error';
+}
+
+function calendarPhaseError(error, phase) {
+  const wrapped = new Error(calendarErrorReason(error));
+  wrapped.code = calendarErrorReason(error);
+  wrapped.calendarPhase = phase;
+  wrapped.status = Number(error && error.status || 0) || undefined;
+  return wrapped;
 }
 
 module.exports = async function rotationAbsenceCalendar(req, res) {
