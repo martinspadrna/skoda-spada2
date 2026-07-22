@@ -1,25 +1,24 @@
-const DEFAULT_ABSENCE_ICS_URL = 'https://calendar.google.com/calendar/ical/31eea99edff1771be15ba877f7c2f5b1371e0a742ad9d54fca526d41eafa5995%40group.calendar.google.com/private-20207b8c912744f47f557dbde95c6815/basic.ics';
+const { requireAdmin } = require('./_admin-auth');
 
-function setCorsHeaders(res) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, HEAD, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+function setResponseHeaders(res) {
   res.setHeader('Cache-Control', 'no-store, max-age=0');
+  res.setHeader('Vary', 'Authorization');
 }
 
 module.exports = async function rotationAbsenceCalendar(req, res) {
-  setCorsHeaders(res);
-  if (req.method === 'OPTIONS') {
-    res.status(204).end();
-    return;
-  }
+  setResponseHeaders(res);
   if (req.method !== 'GET' && req.method !== 'HEAD') {
     res.status(405).json({ ok: false, error: 'method_not_allowed' });
     return;
   }
 
   try {
-    const url = String(process.env.RAK_ABSENCE_ICS_URL || DEFAULT_ABSENCE_ICS_URL).trim();
+    const admin = await requireAdmin(req);
+    if (!admin.ok) {
+      res.status(admin.status).json({ ok: false, error: admin.error });
+      return;
+    }
+    const url = String(process.env.RAK_ABSENCE_ICS_URL || '').trim();
     if (!/^https:\/\/calendar\.google\.com\/calendar\/ical\//i.test(url)) {
       res.status(500).json({ ok: false, error: 'invalid_calendar_url' });
       return;

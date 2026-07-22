@@ -1,3 +1,11 @@
+## RaK 1.2 (1.337)
+
+- Administrace: připravena bezpečná trvalá relace přes Supabase Auth, role hlavního a nižšího správce a vzdálené odhlášení zařízení.
+- Rozpisy a nastavení: zápisy mají revize, automatickou zálohu a ochranu rozepsaných změn před přepsáním synchronizací.
+- Bezpečnost: soukromý kalendář se přesouvá do serverového nastavení, hlášení a servisní data dostávají úzké RPC rozhraní a citlivé tabulky přestanou být veřejně zapisovatelné.
+- Stabilita: service worker respektuje privátní odpovědi a parametry URL, Excel import má bezpečné limity a externí knihovny jsou připnuté s kontrolou integrity.
+- Release metadata sjednocena na `RaK 1.2 (1.337)`, technicka verze `1.2.337`, cache `v1.2-1.337`; loader modulu ma cache znacku `1.2.337`.
+
 ## RaK 1.2 (1.336)
 
 - Generátor / živý srpen 2026: pozdější přesuny mezi tvrdotou a měkotou už nemohou po prvním vyrovnání znovu rozhodit TNKS01/TPKW01; před závěrečnou validací proběhne ještě jedno dorovnání.

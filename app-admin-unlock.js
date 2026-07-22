@@ -1,6 +1,5 @@
 // RaK 1.2 (1.268) - admin opravneni navazane na prihlaseny ucet.
 const RAK_OWNER_ADMIN_ACCOUNT_ID = '9811';
-const RAK_OWNER_ADMIN_PASSWORD = '772326';
 const RAK_ADMIN_ACCOUNTS_SETTINGS_KEY = 'ADMIN_ACCOUNTS_SETTINGS';
 const RAK_ADMIN_ACCOUNTS_SETTINGS_CATEGORY = 'admin_accounts_settings';
 const RAK_ADMIN_SESSION_UNLOCKED_KEY = 'adminUnlockedSession';
@@ -141,6 +140,35 @@ function rakAdminNormalizeSessionEntry(entry) {
 }
 
 function rakAdminGetAccountsSettings() {
+  if (typeof app !== 'undefined' && app && app.adminAuthVersion === 2 && Array.isArray(app.adminProfilesV2)) {
+    const entries = app.adminProfilesV2
+      .filter((entry) => entry && String(entry.role || '') === 'admin')
+      .map((entry) => ({
+        accountId: String(entry.account_id || entry.accountId || '').trim(),
+        label: String(entry.display_name || entry.displayName || '').trim(),
+        passwordHash: 'supabase-auth',
+        passwordSalt: 'supabase-auth',
+        enabled: entry.enabled !== false
+      }))
+      .filter((entry) => entry.accountId);
+    const sessions = (Array.isArray(app.adminDevicesV2) ? app.adminDevicesV2 : []).map((entry) => ({
+      accountId: String(entry.account_id || ''),
+      deviceId: String(entry.device_id || ''),
+      token: 'supabase-auth',
+      label: String(entry.label || 'Zařízení'),
+      createdAt: String(entry.created_at || ''),
+      lastSeenAt: String(entry.last_seen_at || ''),
+      appVersion: String(entry.app_version || ''),
+      revokedAt: String(entry.revoked_at || ''),
+      isCurrent: entry.is_current === true
+    })).filter((entry) => entry.accountId && entry.deviceId);
+    return {
+      type: RAK_ADMIN_ACCOUNTS_SETTINGS_CATEGORY,
+      ownerAccountId: RAK_OWNER_ADMIN_ACCOUNT_ID,
+      admins: entries,
+      sessions
+    };
+  }
   const row = rakAdminSettingsRows().find(rakAdminIsAccountsSettingsRow);
   const raw = row && row.settings_json && typeof row.settings_json === 'object'
     ? row.settings_json
@@ -168,17 +196,171 @@ function rakAdminFindManagedEntry(accountId) {
 }
 
 function rakAdminAccountRequiresPassword(accountId) {
-  return rakAdminIsOwnerAccount(accountId) || !!rakAdminFindManagedEntry(accountId);
+  const id = String(accountId || '').trim();
+  if (rakAdminIsOwnerAccount(id)) return true;
+  const profiles = typeof app !== 'undefined' && app && Array.isArray(app.adminProfilesV2) ? app.adminProfilesV2 : [];
+  return profiles.some((entry) => (
+    entry
+    && entry.enabled !== false
+    && String(entry.role || '') === 'admin'
+    && String(entry.account_id || entry.accountId || '').trim() === id
+  ));
 }
 
 function rakAdminVerifyPasswordForAccount(accountId, pass) {
+  return false;
+}
+
+function rakAdminSecureDevicePayload() {
+  return {
+    deviceId: rakAdminGetDeviceId(),
+    label: rakAdminDeviceLabel(),
+    appVersion: String((typeof app !== 'undefined' && app && app.version) || (typeof APP_VERSION !== 'undefined' ? APP_VERSION : '') || '').trim()
+  };
+}
+
+function rakAdminApplySecureContext(context, capabilities) {
+  const safe = context && typeof context === 'object' ? context : {};
+  const accountId = String(safe.account_id || safe.accountId || '').trim();
+  const role = String(safe.role || '').trim();
+  if (!accountId || (role !== 'owner' && role !== 'admin')) return false;
+  if (typeof app !== 'undefined' && app) {
+    app.adminUnlocked = true;
+    app.adminPin = '';
+    app.adminAccountId = accountId;
+    app.adminIsOwner = role === 'owner';
+    app.adminAuthVersion = 2;
+    app.contactTapCount = 0;
+  }
+  try {
+    sessionStorage.setItem(RAK_ADMIN_SESSION_UNLOCKED_KEY, '1');
+    sessionStorage.removeItem(RAK_ADMIN_SESSION_PIN_KEY);
+    sessionStorage.setItem(RAK_ADMIN_SESSION_AUTH_PIN_KEY, RAK_ADMIN_TRUSTED_SESSION_MARKER);
+    sessionStorage.setItem(RAK_ADMIN_SESSION_ACCOUNT_KEY, accountId);
+    sessionStorage.setItem(RAK_ADMIN_SESSION_OWNER_KEY, role === 'owner' ? '1' : '0');
+  } catch (err) {}
+  rakAdminClearPersistentSession();
+  if (typeof updateImportBoxVisibility === 'function') updateImportBoxVisibility();
+  if (role === 'owner') void rakAdminLoadSecureDirectory();
+  return true;
+}
+
+async function rakAdminLoadSecureDirectory() {
+  const bridge = window.RotationSupabaseBridge;
+  if (!bridge || typeof app === 'undefined' || !app || app.adminAuthVersion !== 2) return { ok: false, reason: 'secure-auth-inactive' };
+  const profileResult = typeof bridge.listAdminAuthProfiles === 'function'
+    ? await bridge.listAdminAuthProfiles()
+    : { ok: false, rows: [] };
+  const deviceResult = typeof bridge.listAdminAuthDevices === 'function'
+    ? await bridge.listAdminAuthDevices()
+    : { ok: false, rows: [] };
+  if (profileResult.ok) app.adminProfilesV2 = profileResult.rows;
+  if (deviceResult.ok) app.adminDevicesV2 = deviceResult.rows;
+  return {
+    ok: profileResult.ok && deviceResult.ok,
+    profiles: Array.isArray(app.adminProfilesV2) ? app.adminProfilesV2 : [],
+    devices: Array.isArray(app.adminDevicesV2) ? app.adminDevicesV2 : [],
+    profileError: profileResult.error || null,
+    deviceError: deviceResult.error || null
+  };
+}
+
+function readAdminAccountsSecureDraftRowsFromDom(root) {
+  const scope = root && root.querySelectorAll ? root : document;
+  return Array.from(scope.querySelectorAll('tr[data-admin-account-row]')).map((row) => ({
+    accountId: String(row.querySelector('[data-admin-account-id]')?.value || '').trim(),
+    displayName: String(row.querySelector('[data-admin-account-label]')?.value || '').trim(),
+    password: String(row.querySelector('[data-admin-account-password]')?.value || ''),
+    enabled: !!(row.querySelector('[data-admin-account-enabled]') && row.querySelector('[data-admin-account-enabled]').checked)
+  })).filter((entry) => entry.accountId || entry.displayName || entry.password);
+}
+
+async function rakAdminSaveSecureAccounts(root) {
+  if (!rakAdminCanManageAdmins() || typeof app === 'undefined' || !app || app.adminAuthVersion !== 2) {
+    return { ok: false, reason: 'not-allowed' };
+  }
+  const bridge = window.RotationSupabaseBridge;
+  const accessToken = bridge && typeof bridge.getAdminAccessToken === 'function' ? await bridge.getAdminAccessToken() : '';
+  if (!accessToken) return { ok: false, reason: 'missing-session' };
+  const desired = readAdminAccountsSecureDraftRowsFromDom(root);
+  const duplicateIds = desired.map((entry) => entry.accountId).filter((id, index, all) => id && all.indexOf(id) !== index);
+  if (duplicateIds.length) return { ok: false, reason: 'duplicate-account' };
+  if (desired.some((entry) => !entry.accountId || !entry.displayName || entry.accountId === RAK_OWNER_ADMIN_ACCOUNT_ID)) {
+    return { ok: false, reason: 'invalid-admin-profile' };
+  }
+  const existing = (Array.isArray(app.adminProfilesV2) ? app.adminProfilesV2 : [])
+    .filter((entry) => entry && entry.role === 'admin');
+  const desiredIds = new Set(desired.map((entry) => entry.accountId));
+  const requests = desired.concat(existing
+    .filter((entry) => !desiredIds.has(String(entry.account_id || '')))
+    .map((entry) => ({
+      accountId: String(entry.account_id || ''),
+      displayName: String(entry.display_name || entry.account_id || ''),
+      password: '',
+      enabled: false
+    })));
+  for (const entry of requests) {
+    const response = await fetch('/api/admin-users', {
+      method: 'POST',
+      cache: 'no-store',
+      headers: {
+        Authorization: 'Bearer ' + accessToken,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(entry)
+    });
+    const payload = await response.json().catch(() => ({}));
+    if (!response.ok || !payload.ok) return { ok: false, reason: payload.error || 'admin-save-failed' };
+  }
+  const loaded = await rakAdminLoadSecureDirectory();
+  return loaded.ok ? { ok: true, savedCount: requests.length } : loaded;
+}
+
+async function rakAdminGetSecureCapabilities(force) {
+  const bridge = window.RotationSupabaseBridge;
+  if (!bridge || typeof bridge.getAdminAuthCapabilities !== 'function') return { available: false, enforced: false };
+  try {
+    return await bridge.getAdminAuthCapabilities({ force: force === true });
+  } catch (err) {
+    return { available: false, enforced: false, error: err };
+  }
+}
+
+async function rakAdminRestoreSecureSessionForActiveAccount(reason) {
+  const activeId = rakAdminGetActiveAccountId();
+  const bridge = window.RotationSupabaseBridge;
+  if (!activeId || !bridge || typeof bridge.restoreAdminAuthSession !== 'function') return false;
+  const capabilities = await rakAdminGetSecureCapabilities(false);
+  if (!capabilities.available) return false;
+  const result = await bridge.restoreAdminAuthSession(activeId, rakAdminSecureDevicePayload());
+  if (!result || !result.ok) return false;
+  return rakAdminApplySecureContext(result.context, capabilities);
+}
+
+async function rakAdminSecureSignIn(accountId, password) {
   const id = String(accountId || '').trim();
-  const safePass = String(pass || '');
-  if (!safePass) return false;
-  if (rakAdminIsOwnerAccount(id)) return safePass === RAK_OWNER_ADMIN_PASSWORD;
-  const managed = rakAdminFindManagedEntry(id);
-  if (!managed || !managed.passwordHash || !managed.passwordSalt) return false;
-  return rakAdminHashPassword(safePass, managed.passwordSalt) === managed.passwordHash;
+  const bridge = window.RotationSupabaseBridge;
+  const capabilities = await rakAdminGetSecureCapabilities(true);
+  if (!capabilities.available || !bridge || typeof bridge.signInAdminAccount !== 'function') {
+    return { ok: false, fallbackAllowed: false, reason: 'auth-not-ready' };
+  }
+  const result = await bridge.signInAdminAccount(id, String(password || ''), rakAdminSecureDevicePayload());
+  if (result && result.ok && rakAdminApplySecureContext(result.context, capabilities)) {
+    return { ok: true, secure: true };
+  }
+  return Object.assign({ ok: false, fallbackAllowed: false }, result || {});
+}
+
+async function rakAdminAccountRequiresSecureAuth(accountId) {
+  const id = String(accountId || '').trim();
+  if (!id) return false;
+  if (rakAdminAccountRequiresPassword(id)) return true;
+  try {
+    const bridge = window.RotationSupabaseBridge;
+    return !!(bridge && typeof bridge.adminAccountRequiresAuth === 'function' && await bridge.adminAccountRequiresAuth(id));
+  } catch (err) {
+    return false;
+  }
 }
 
 function rakAdminMakeId(prefix) {
@@ -273,8 +455,13 @@ function rakAdminLock(options) {
     app.adminPin = '';
     app.adminAccountId = '';
     app.adminIsOwner = false;
+    app.adminAuthVersion = 0;
   }
   rakAdminClearSession(options && typeof options === 'object' ? options : {});
+  try {
+    const bridge = window.RotationSupabaseBridge;
+    if (bridge && typeof bridge.signOutAdminAccount === 'function') void bridge.signOutAdminAccount();
+  } catch (err) {}
 }
 
 function rakAdminSessionMatchesSettings(session, settings) {
@@ -293,31 +480,7 @@ function rakAdminSessionMatchesSettings(session, settings) {
 }
 
 function rakAdminApplyUnlockedAccount(accountId, authPin, options) {
-  const id = String(accountId || '').trim();
-  const pass = String(authPin || '').trim();
-  const opts = options && typeof options === 'object' ? options : {};
-  if (!id || !rakAdminAccountRequiresPassword(id)) {
-    rakAdminLock({ clearPersistent: false });
-    return false;
-  }
-  if (typeof app !== 'undefined' && app) {
-    app.adminUnlocked = true;
-    app.adminPin = RAK_OWNER_ADMIN_PASSWORD;
-    app.adminAccountId = id;
-    app.adminIsOwner = rakAdminIsOwnerAccount(id);
-    app.contactTapCount = 0;
-  }
-  try {
-    sessionStorage.setItem(RAK_ADMIN_SESSION_UNLOCKED_KEY, '1');
-    sessionStorage.setItem(RAK_ADMIN_SESSION_PIN_KEY, RAK_OWNER_ADMIN_PASSWORD);
-    sessionStorage.setItem(RAK_ADMIN_SESSION_AUTH_PIN_KEY, pass);
-    sessionStorage.setItem(RAK_ADMIN_SESSION_ACCOUNT_KEY, id);
-    sessionStorage.setItem(RAK_ADMIN_SESSION_OWNER_KEY, rakAdminIsOwnerAccount(id) ? '1' : '0');
-    localStorage.removeItem('adminUnlocked');
-  } catch (err) {}
-  if (opts.touchPersistent !== false) rakAdminPersistUnlockedSession(id);
-  if (typeof updateImportBoxVisibility === 'function') updateImportBoxVisibility();
-  return true;
+  return false;
 }
 
 function rakAdminPersistUnlockedSession(accountId) {
@@ -382,6 +545,14 @@ function rakAdminSaveCurrentSessionDevice(session) {
 function rakAdminRevokePersistentSession(deviceId) {
   const targetId = String(deviceId || '').trim();
   if (!targetId || !rakAdminCanManageAdmins()) return Promise.resolve({ ok: false, reason: 'not-allowed' });
+  if (typeof app !== 'undefined' && app && app.adminAuthVersion === 2) {
+    const bridge = window.RotationSupabaseBridge;
+    if (!bridge || typeof bridge.revokeAdminAuthDevice !== 'function') return Promise.resolve({ ok: false, reason: 'missing-bridge' });
+    return bridge.revokeAdminAuthDevice(targetId).then(async (result) => {
+      if (result && result.ok) await rakAdminLoadSecureDirectory();
+      return result;
+    });
+  }
   const settings = rakAdminGetAccountsSettings();
   const nowIso = new Date().toISOString();
   const sessions = (Array.isArray(settings.sessions) ? settings.sessions : []).map((entry) => {
@@ -400,55 +571,22 @@ function rakAdminRevokePersistentSession(deviceId) {
 }
 
 function rakAdminRestorePersistentSessionForActiveAccount(reason) {
-  const activeId = rakAdminGetActiveAccountId();
-  const session = rakAdminReadPersistentSession();
-  if (!activeId || !session || String(session.accountId || '') !== activeId) return false;
-  if (!rakAdminIsOwnerAccount(activeId) && !rakAdminAccountRequiresPassword(activeId)) return false;
-  if (!rakAdminSessionMatchesSettings(session)) {
-    // Nemazat ulozenou relaci jen kvuli tomu, ze prave nacitana nastaveni session
-    // neobsahuji (prazdny/nekompletni/cache-fallback nacteni pri pomale/vypadle
-    // siti). Skutecne odhlaseni zarizeni resi vyhradne rakAdminRevokePersistentSession
-    // (tlacitko Odhlasit), kde uz je jiste, ze data jsou cerstva.
-    return false;
-  }
-  const restored = rakAdminApplyUnlockedAccount(activeId, RAK_ADMIN_TRUSTED_SESSION_MARKER, { touchPersistent: false, source: reason || 'persistent' });
-  if (restored) rakAdminPersistUnlockedSession(activeId);
-  return restored;
+  return false;
 }
 
 function rakAdminUnlockForAccount(accountId, pin, options) {
-  const id = String(accountId || '').trim();
-  const pass = String(pin || '').trim();
-  if (!id || !rakAdminAccountRequiresPassword(id)) {
-    rakAdminLock({ clearPersistent: false });
-    return false;
-  }
-  if (!rakAdminVerifyPasswordForAccount(id, pass)) return false;
-  return rakAdminApplyUnlockedAccount(id, pass, options || {});
+  return false;
 }
 
 function rakAdminRestoreSessionForActiveAccount() {
   const activeId = rakAdminGetActiveAccountId();
-  if (!rakAdminAccountRequiresPassword(activeId)) {
-    rakAdminLock({ clearPersistent: false });
-    return false;
-  }
-  try {
-    const unlocked = sessionStorage.getItem(RAK_ADMIN_SESSION_UNLOCKED_KEY) === '1';
-    const sessionAccount = String(sessionStorage.getItem(RAK_ADMIN_SESSION_ACCOUNT_KEY) || '').trim();
-    const pin = String(sessionStorage.getItem(RAK_ADMIN_SESSION_AUTH_PIN_KEY) || sessionStorage.getItem(RAK_ADMIN_SESSION_PIN_KEY) || '').trim();
-    if (unlocked && sessionAccount === activeId && pin === RAK_ADMIN_TRUSTED_SESSION_MARKER) {
-      return rakAdminApplyUnlockedAccount(activeId, pin, { touchPersistent: false });
-    }
-    if (unlocked && sessionAccount === activeId && pin) return rakAdminUnlockForAccount(activeId, pin);
-  } catch (err) {}
-  rakAdminLock();
-  return false;
+  return !!(activeId && typeof app !== 'undefined' && app && app.adminAuthVersion === 2 && app.adminUnlocked === true && String(app.adminAccountId || '') === activeId);
 }
 
-function rakAdminPromptUnlockForAccount(accountId) {
+async function rakAdminPromptUnlockForAccount(accountId) {
   const id = String(accountId || '').trim();
-  if (!rakAdminAccountRequiresPassword(id)) {
+  const requiresPassword = await rakAdminAccountRequiresSecureAuth(id);
+  if (!requiresPassword) {
     rakAdminLock({ clearPersistent: false });
     return true;
   }
@@ -459,15 +597,16 @@ function rakAdminPromptUnlockForAccount(accountId) {
   } catch (err) {
     pass = '';
   }
-  if (rakAdminUnlockForAccount(id, pass)) return true;
+  const secureResult = await rakAdminSecureSignIn(id, pass);
+  if (secureResult.ok) return true;
   rakAdminLock({ clearPersistent: true });
-  try { alert('Spatne heslo administrace.'); } catch (err) {}
+  try { alert(secureResult.reason === 'auth-not-ready' ? 'Bezpečné přihlášení administrace zatím není dostupné.' : 'Špatné heslo administrace.'); } catch (err) {}
   return false;
 }
 
-function rakAdminPromptOnceForActiveAccount(reason) {
+async function rakAdminPromptOnceForActiveAccount(reason) {
   const id = rakAdminGetActiveAccountId();
-  if (!id || !rakAdminAccountRequiresPassword(id)) return false;
+  if (!id || !await rakAdminAccountRequiresSecureAuth(id)) return false;
   if (typeof app !== 'undefined' && app && app.adminUnlocked === true && String(app.adminAccountId || '') === id) return true;
   let prompted = false;
   try {
@@ -481,13 +620,13 @@ function rakAdminPromptOnceForActiveAccount(reason) {
   } catch (err) {
     window.__rakAdminPromptedAccountId = id;
   }
-  return rakAdminPromptUnlockForAccount(id);
+  return await rakAdminPromptUnlockForAccount(id);
 }
 
 function rakAdminScheduleStartupPrompt() {
   [0, 350, 1200].forEach((delay) => {
     try {
-      setTimeout(() => rakAdminLoadSettingsThenCheck('startup'), delay);
+      setTimeout(() => { void rakAdminLoadSettingsThenCheck('startup'); }, delay);
     } catch (err) {}
   });
 }
@@ -503,33 +642,41 @@ function rakAdminSupabaseLooksHealthy() {
   }
 }
 
-function rakAdminLoadSettingsThenCheck(reason) {
+async function rakAdminLoadSettingsThenCheckOnce(reason) {
   const activeId = rakAdminGetActiveAccountId();
   if (!activeId) return false;
-  const alreadyKnownAdmin = rakAdminIsOwnerAccount(activeId) || rakAdminAccountRequiresPassword(activeId);
-  const persistentResult = alreadyKnownAdmin ? rakAdminRestorePersistentSessionForActiveAccount(reason || 'persistent') : false;
+  if (await rakAdminRestoreSecureSessionForActiveAccount(reason || 'secure-session')) return true;
+  const alreadyKnownAdmin = await rakAdminAccountRequiresSecureAuth(activeId);
   // Blokujici prompt() jde spustit jen kdyz je Supabase zdravy - jinak by nejistota
   // zpusobena pomalou/vypadlou siti zamkla celou appku za nativnim dialogem na heslo.
-  const promptResult = alreadyKnownAdmin && !persistentResult && rakAdminSupabaseLooksHealthy() ? rakAdminPromptOnceForActiveAccount(reason) : persistentResult;
+  const promptResult = alreadyKnownAdmin && rakAdminSupabaseLooksHealthy() ? await rakAdminPromptOnceForActiveAccount(reason) : false;
   if (!(window.RotationSupabaseBridge && typeof window.RotationSupabaseBridge.loadMachineSettings === 'function')) return promptResult;
   if (window.__rakAdminSettingsLoadPending === true) return promptResult;
   window.__rakAdminSettingsLoadPending = true;
   window.RotationSupabaseBridge.loadMachineSettings().then((rows) => {
     window.__rakAdminSettingsLoadPending = false;
     if (typeof app !== 'undefined' && app) app.machineSettingsRows = Array.isArray(rows) ? rows : [];
-    const restoredPersistent = rakAdminRestorePersistentSessionForActiveAccount(reason || 'settings-loaded');
-    if (restoredPersistent) return;
-    const restoredAfterSettings = rakAdminRestoreSessionForActiveAccount();
-    if (!restoredAfterSettings && rakAdminSupabaseLooksHealthy()) rakAdminPromptOnceForActiveAccount(reason || 'settings-loaded');
+    if (!rakAdminRestoreSessionForActiveAccount() && rakAdminSupabaseLooksHealthy()) void rakAdminPromptOnceForActiveAccount(reason || 'settings-loaded');
   }).catch(() => {
     window.__rakAdminSettingsLoadPending = false;
   });
   return true;
 }
 
+async function rakAdminLoadSettingsThenCheck(reason) {
+  if (window.__rakAdminAuthCheckPromise) return await window.__rakAdminAuthCheckPromise;
+  const pending = rakAdminLoadSettingsThenCheckOnce(reason);
+  window.__rakAdminAuthCheckPromise = pending;
+  try {
+    return await pending;
+  } finally {
+    if (window.__rakAdminAuthCheckPromise === pending) window.__rakAdminAuthCheckPromise = null;
+  }
+}
+
 function rakAdminCanOpenAdmin() {
   const activeId = rakAdminGetActiveAccountId();
-  return !!(activeId && rakAdminAccountRequiresPassword(activeId) && typeof app !== 'undefined' && app && app.adminUnlocked === true && String(app.adminAccountId || '') === activeId);
+  return !!(activeId && typeof app !== 'undefined' && app && app.adminAuthVersion === 2 && app.adminUnlocked === true && String(app.adminAccountId || '') === activeId);
 }
 
 function rakAdminCanManageAdmins() {
@@ -619,7 +766,7 @@ function buildAdminAccountsSafetyHtml(source) {
     '  <div class="adminAccountsSafetyGrid">',
     adminAccountsSafetyItemHtml('Owner ucet', RAK_OWNER_ADMIN_ACCOUNT_ID, 'Vestaveny hlavni admin se do tabulky nepridava.', 'isOwner'),
     adminAccountsSafetyItemHtml('Nizsi admini', String(enabledAdmins) + ' aktivni', 'Kazdy nizsi admin musi mit vlastni ucet a heslo.', 'isOk'),
-    adminAccountsSafetyItemHtml('Hesla', 'jen hash', 'Hesla se ukladaji jen jako hash a nikam se z appky nedaji stahnout; nastavuji se jen tady.', 'isInfo'),
+    adminAccountsSafetyItemHtml('Hesla', 'Supabase Auth', 'Hesla spravuje zabezpecene prihlaseni a aplikace je neuklada ani je neumoznuje stahnout.', 'isInfo'),
     adminAccountsSafetyItemHtml('Bezni uzivatele', 'bez zmen', 'Bez admin hesla nevidi admin menu a nemeni provozni data.', 'isInfo'),
     '  </div>',
     '</div>'
@@ -779,7 +926,7 @@ function buildAdminAccountsSettingsHtml() {
     buildAdminAccountsSafetyHtml(settings),
     buildAdminSessionDevicesHtml(settings),
     '<div class="tableWrap appMenuTableWrap uMt8">',
-    '  <div class="smallText uMb10">Tady pridavas dalsi admin ucty, ktere po prihlaseni uvidi administraci. Heslo nech prazdne, pokud ho nechces menit. Pro odebrani spravce klikni na × u radku (nebo smaz ucet) a uloz. Hesla se ukladaji jen jako hash, appka je uz zpatky neumi zobrazit.</div>',
+    '  <div class="smallText uMb10">Tady pridavas dalsi admin ucty, ktere po prihlaseni uvidi administraci. Heslo nech prazdne, pokud ho nechces menit. Pro odebrani spravce klikni na × u radku (nebo smaz ucet) a uloz. Hesla spravuje Supabase Auth a aplikace je neuklada ani je neumoznuje stahnout.</div>',
     '  <table class="appMenuTable appMenuAdminTable appMenuAdminTableDense adminAccountsTable">',
     '    <thead><tr><th>Ucet</th><th>Popis</th><th>Heslo</th><th>Aktivni</th><th></th></tr></thead>',
     '    <tbody>' + body + '</tbody>',
@@ -866,8 +1013,7 @@ function bindAdminAccountUnlock() {
   try { localStorage.removeItem('adminUnlocked'); } catch (err) {}
   if (document.documentElement.dataset.adminAccountUnlockBound === '1') return true;
   document.documentElement.dataset.adminAccountUnlockBound = '1';
-  const restored = rakAdminRestoreSessionForActiveAccount();
-  if (!restored) rakAdminScheduleStartupPrompt();
+  rakAdminScheduleStartupPrompt();
   try {
     rakAdminLoadSettingsThenCheck('settings-loaded');
   } catch (err) {}
@@ -885,6 +1031,7 @@ try {
   window.rakAdminPromptOnceForActiveAccount = rakAdminPromptOnceForActiveAccount;
   window.rakAdminRestoreSessionForActiveAccount = rakAdminRestoreSessionForActiveAccount;
   window.rakAdminRestorePersistentSessionForActiveAccount = rakAdminRestorePersistentSessionForActiveAccount;
+  window.rakAdminRestoreSecureSessionForActiveAccount = rakAdminRestoreSecureSessionForActiveAccount;
   window.rakAdminRevokePersistentSession = rakAdminRevokePersistentSession;
   window.rakAdminLock = rakAdminLock;
   window.rakAdminCanOpenAdmin = rakAdminCanOpenAdmin;
@@ -896,6 +1043,9 @@ try {
   window.rakAdminClearAccountRow = rakAdminClearAccountRow;
   window.buildAdminAccountsSettingsHtml = buildAdminAccountsSettingsHtml;
   window.readAdminAccountsSettingsFromDom = readAdminAccountsSettingsFromDom;
+  window.readAdminAccountsSecureDraftRowsFromDom = readAdminAccountsSecureDraftRowsFromDom;
+  window.rakAdminLoadSecureDirectory = rakAdminLoadSecureDirectory;
+  window.rakAdminSaveSecureAccounts = rakAdminSaveSecureAccounts;
   window.mergeAdminAccountsSettingsRows = mergeAdminAccountsSettingsRows;
 } catch (err) {}
 

@@ -104,7 +104,11 @@ function renderAdminMonthPickerHtml(selectedMonthKey) {
 
 async function loadAdminRotationFromSupabase() {
   if (typeof syncRotationFromSupabase === 'function') {
-    return syncRotationFromSupabase(true);
+    if (typeof app !== 'undefined' && app && app.adminRotationDirty === true && document.getElementById('adminRotationEditor')) {
+      if (!confirm('V editoru jsou neuložené změny. Opravdu je zahodit a načíst online stav?')) return null;
+      app.adminRotationDirty = false;
+    }
+    return syncRotationFromSupabase('discard-draft');
   }
   return null;
 }
@@ -2417,17 +2421,13 @@ async function saveAdminRotationFromDom(monthKey) {
   if (!ruleCheck.ok) {
     throw new Error('Rozpis nejde uložit: ' + adminRotationFormatRuleIssues(ruleCheck.issues.filter((issue) => issue.severity === 'error')));
   }
-  if (!app.rotation.months) app.rotation.months = {};
-  app.rotation.months[monthKey] = normalized;
-  app.rotation = normalizeRotationData(app.rotation);
-  app.selectedMonth = monthKey;
-  saveRotationData();
-  renderRotace();
-  if (typeof renderMonth === 'function') renderMonth(monthKey);
-  if (app.selectedName && typeof renderPerson === 'function') renderPerson(app.selectedName);
+  const candidateRotation = app.rotation ? JSON.parse(JSON.stringify(app.rotation)) : { months: {} };
+  if (!candidateRotation.months) candidateRotation.months = {};
+  candidateRotation.months[monthKey] = normalized;
+  const normalizedRotation = normalizeRotationData(candidateRotation);
   let saveResult = null;
   if (app.adminUnlocked) {
-    saveResult = await saveRotationToSupabase(app.rotation, { source: 'admin-menu', monthKey });
+    saveResult = await saveRotationToSupabase(normalizedRotation, { source: 'admin-menu', monthKey });
     if (saveResult && saveResult.ok !== false) {
       if (typeof createRotationSaveBackup === 'function') {
         try { await createRotationSaveBackup(previousRotationSnapshot, monthKey); } catch (err) {}
@@ -2437,6 +2437,17 @@ async function saveAdminRotationFromDom(monthKey) {
       }
     }
   }
+  if (!saveResult || saveResult.ok === false) {
+    if (typeof app !== 'undefined' && app) app.adminRotationDirty = true;
+    return { normalized, saveResult: saveResult || { ok: false, reason: 'admin-required' }, ruleCheck, preservedDraft: true };
+  }
+  app.rotation = normalizedRotation;
+  app.selectedMonth = monthKey;
+  app.adminRotationDirty = false;
+  saveRotationData();
+  renderRotace();
+  if (typeof renderMonth === 'function') renderMonth(monthKey);
+  if (app.selectedName && typeof renderPerson === 'function') renderPerson(app.selectedName);
   try {
     if (typeof adminRotationGeneratorClearPendingDraft === 'function') adminRotationGeneratorClearPendingDraft(monthKey);
   } catch (err) {}
@@ -5334,7 +5345,15 @@ async function adminRotationGeneratorLoadCalendarAbsences() {
   const status = document.getElementById('adminOnlineSaveStatus');
   if (status) status.textContent = 'Načítám dovolené z Google kalendáře...';
   try {
-    const response = await fetch(ADMIN_ROTATION_GENERATOR_ABSENCE_ICS_URL, { cache: 'no-store' });
+    const bridge = window.RotationSupabaseBridge;
+    const accessToken = bridge && typeof bridge.getAdminAccessToken === 'function'
+      ? await bridge.getAdminAccessToken()
+      : '';
+    if (!accessToken) throw new Error('admin-auth-required');
+    const response = await fetch(ADMIN_ROTATION_GENERATOR_ABSENCE_ICS_URL, {
+      cache: 'no-store',
+      headers: { Authorization: 'Bearer ' + accessToken }
+    });
     if (!response || !response.ok) throw new Error('HTTP ' + String(response && response.status || ''));
     const text = await response.text();
     const imported = adminRotationGeneratorParseIcsAbsences(text, state.monthKey, state.days);

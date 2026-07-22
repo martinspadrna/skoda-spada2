@@ -1,6 +1,6 @@
-// RaK 1.2 (1.336) – sw.
-const CACHE_VERSION = 'v1.2-1.336';
-const SW_APP_VERSION = '1.2 (1.336)';
+// RaK 1.2 (1.337) – sw.
+const CACHE_VERSION = 'v1.2-1.337';
+const SW_APP_VERSION = '1.2 (1.337)';
 const STATIC_CACHE = `rotace-static-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `rotace-runtime-${CACHE_VERSION}`;
 const APP_SHELL = [
@@ -184,7 +184,7 @@ function getScopeRelativeCacheKeys(requestOrUrl) {
 }
 
 async function matchCacheCandidates(cache, requestOrUrl, opts = {}) {
-  const matchOptions = { ignoreSearch: opts.ignoreSearch !== false };
+  const matchOptions = { ignoreSearch: opts.ignoreSearch === true };
   const candidates = getScopeRelativeCacheKeys(requestOrUrl);
   for (const candidate of candidates) {
     try {
@@ -218,8 +218,8 @@ function getStableCachePutKey(requestOrUrl, fallbackKey) {
     let relativePath = url.pathname || '/';
     if (relativePath.startsWith(scopePath)) relativePath = relativePath.slice(scopePath.length);
     relativePath = relativePath.replace(/^\/+/, '');
-    if (!relativePath || relativePath === '/') return './index.html';
-    return './' + relativePath;
+    if (!relativePath || relativePath === '/') return './index.html' + url.search;
+    return './' + relativePath + url.search;
   } catch (err) {
     return fallbackKey || requestOrUrl;
   }
@@ -228,6 +228,8 @@ function getStableCachePutKey(requestOrUrl, fallbackKey) {
 function isCacheableResponse(response) {
   if (!response || !response.ok) return false;
   if (response.status === 206) return false;
+  const cacheControl = String(response.headers && response.headers.get ? response.headers.get('cache-control') || '' : '').toLowerCase();
+  if (/\bno-store\b|\bprivate\b/.test(cacheControl)) return false;
   const type = String(response.type || 'basic').toLowerCase();
   return type === 'basic' || type === 'default' || type === 'cors';
 }
@@ -735,7 +737,7 @@ async function matchAppCaches(request, opts = {}) {
 }
 
 async function cacheFirst(request) {
-  const cached = await matchAppCaches(request, { ignoreSearch: true });
+  const cached = await matchAppCaches(request, { ignoreSearch: false });
   if (cached) return cached;
   const cache = await caches.open(RUNTIME_CACHE);
   const response = await fetchWithTimeout(request, NETWORK_FALLBACK_TIMEOUT_MS);
@@ -754,7 +756,7 @@ async function networkFirst(request, fallbackTo) {
     }
     return response;
   } catch (err) {
-    const cached = await matchAppCaches(request, { ignoreSearch: true });
+    const cached = await matchAppCaches(request, { ignoreSearch: false });
     if (cached) return cached;
     if (fallbackTo) {
       const fallback = await matchAppCaches(fallbackTo, { ignoreSearch: true });
@@ -772,6 +774,11 @@ self.addEventListener('fetch', (event) => {
   const sameOrigin = url.origin === self.location.origin;
   const isNavigation = request.mode === 'navigate' || request.destination === 'document';
   const hasStaticExt = RUNTIME_EXTENSIONS.some((ext) => url.pathname.endsWith(ext));
+
+  if (sameOrigin && url.pathname.startsWith('/api/')) {
+    event.respondWith(fetch(request));
+    return;
+  }
 
   if (isNavigation) {
     event.respondWith((async () => {
@@ -798,7 +805,7 @@ self.addEventListener('fetch', (event) => {
 
   if (sameOrigin) {
     event.respondWith(networkFirst(request).catch(async () => {
-      const cached = await matchAppCaches(request, { ignoreSearch: true });
+      const cached = await matchAppCaches(request, { ignoreSearch: false });
       return cached || Response.error();
     }));
   }

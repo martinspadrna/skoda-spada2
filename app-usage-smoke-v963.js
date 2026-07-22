@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// RaK 1.2 (1.336) – smoke test přehledu připojení + Dashboard/appearance contract guard.
+// RaK 1.2 (1.337) – smoke test přehledu připojení + Dashboard/appearance contract guard.
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
@@ -229,12 +229,12 @@ const dashboardReleaseIsolationGuardV198 = Object.freeze({
 });
 
 const releaseMetadataContractV199 = Object.freeze({
-  displayVersion: '1.2 (1.336)',
-  appLabel: 'RaK 1.2 (1.336)',
-  packageVersion: '1.2.336',
-  cacheVersion: 'v1.2-1.336',
+  displayVersion: '1.2 (1.337)',
+  appLabel: 'RaK 1.2 (1.337)',
+  packageVersion: '1.2.337',
+  cacheVersion: 'v1.2-1.337',
   realtimeChannel: 'rak-public-live-v1-2-1-126',
-  changelogHeader: '## RaK 1.2 (1.336)',
+  changelogHeader: '## RaK 1.2 (1.337)',
   previousBuildFragments: Object.freeze(['1.2 (1.138)', '1.2.138', 'v1.2-1.138', '1.2 (1.137)', '1.2.137', 'v1.2-1.137', '1.2 (1.118)', '1.2.118', 'v1.2-1.118', 'rak-public-live-v1-2-1-118'])
 });
 
@@ -343,8 +343,8 @@ function assertDashboardReleaseIsolationGuardV198() {
 function assertReleaseMetadataContractV199() {
   const contract = releaseMetadataContractV199;
   assertIncludes(exportJs, 'RAK_RELEASE_METADATA_CONTRACT_V199', 'export.js musí obsahovat release metadata contract v1.99');
-  assertIncludes(exportJs, "displayVersion: '1.2 (1.336)'", 'Release contract v export.js musí držet display verzi 1.105');
-  assertIncludes(exportJs, "packageVersion: '1.2.336'", 'Release contract v export.js musí držet package verzi 1.2.114');
+  assertIncludes(exportJs, "displayVersion: '1.2 (1.337)'", 'Release contract v export.js musí držet aktuální display verzi');
+  assertIncludes(exportJs, "packageVersion: '1.2.337'", 'Release contract v export.js musí držet aktuální package verzi');
   assert(packageJson.version === contract.packageVersion, `package.json version drift: čekám ${contract.packageVersion}, mám ${packageJson.version}`);
   assertIncludes(coreJs, `const APP_VERSION = "${contract.displayVersion}";`, 'core.js APP_VERSION není sjednocený s 1.105');
   assertIncludes(serviceWorkerJs, `const CACHE_VERSION = '${contract.cacheVersion}';`, 'sw.js CACHE_VERSION není sjednocený s 1.105');
@@ -899,9 +899,11 @@ function assertRotationGeneratorWizardContractV1108() {
   assertIncludes(ui, 'function adminRotationGeneratorLoadCalendarAbsences', 'Generátor musí umět načíst absence z Google kalendáře');
   assertIncludes(ui, 'function adminRotationGeneratorParseIcsAbsences', 'Generátor musí mít parser ICS absencí');
   assertIncludes(ui, 'generator-load-calendar-absences', 'Krok Absence musí mít akci pro načtení dovolených z kalendáře');
-  assertIncludes(rotationAbsenceCalendarApiJs, 'DEFAULT_ABSENCE_ICS_URL', 'API proxy musí mít fallback Google ICS URL');
   assertIncludes(rotationAbsenceCalendarApiJs, 'process.env.RAK_ABSENCE_ICS_URL', 'API proxy musí umět vzít ICS URL z prostředí');
-  assertIncludes(rotationAbsenceCalendarApiJs, 'Access-Control-Allow-Origin', 'API proxy musí vracet CORS hlavičku pro appku');
+  assertIncludes(rotationAbsenceCalendarApiJs, "requireAdmin(req)", 'Soukromý kalendář smí načíst jen přihlášený admin');
+  assertIncludes(rotationAbsenceCalendarApiJs, "'Cache-Control', 'no-store, max-age=0'", 'Soukromý kalendář se nesmí ukládat do veřejné cache');
+  assertNotIncludes(rotationAbsenceCalendarApiJs, 'calendar.google.com/calendar/ical/31eea99', 'Soukromá ICS adresa nesmí být ve zdrojovém kódu');
+  assertNotIncludes(rotationAbsenceCalendarApiJs, 'Access-Control-Allow-Origin', 'Soukromý kalendář nesmí povolit veřejné CORS');
   assertIncludes(ui, 'copy-rotation-vacations', 'Administrace rozpisu musí mít tlačítko Kopírovat dovolené');
   assertIncludes(ui, 'function buildAdminRotationVacationCopyText', 'Administrace rozpisu musí umět složit text dovolených pro WhatsApp');
   assertIncludes(ui, 'function copyAdminRotationVacationsToClipboard', 'Administrace rozpisu musí umět zkopírovat dovolené do schránky');
@@ -1384,7 +1386,7 @@ function assertAdminAccountLoginContractV1141() {
   assertIncludes(adminUnlockJs, "const RAK_ADMIN_ACCOUNTS_SETTINGS_KEY = 'ADMIN_ACCOUNTS_SETTINGS'", 'Seznam dalsich adminu musi mit vlastni machine_settings klic');
   assertIncludes(adminUnlockJs, "const RAK_ADMIN_ACCOUNTS_SETTINGS_CATEGORY = 'admin_accounts_settings'", 'Seznam dalsich adminu musi mit vlastni kategorii nastaveni');
   assertIncludes(adminUnlockJs, "const RAK_ADMIN_SESSION_AUTH_PIN_KEY = 'adminAuthPinSession'", 'Admin login heslo musi byt oddelene od interniho Supabase PINu');
-  assertIncludes(adminUnlockJs, 'app.adminPin = RAK_OWNER_ADMIN_PASSWORD', 'Platny admin musi pro online zapisy pouzit interni owner PIN');
+  assertIncludes(adminUnlockJs, 'app.adminAuthVersion = 2', 'Platny admin musi pro online zapisy pouzit Supabase Auth kontext');
   assertIncludes(adminUnlockJs, 'function buildAdminAccountsRoleOverviewHtml', 'Sprava spravcu musi ukazovat prehled roli owner/admin');
   assertIncludes(adminUnlockJs, 'function buildAdminAccountsStatusHtml', 'Sprava spravcu musi ukazovat stav opravneni, hesel a radku');
   assertIncludes(adminUnlockJs, 'function adminAccountsRefreshStatus', 'Sprava spravcu musi umet prepocitat stav jeste pred ulozenim');
@@ -1409,7 +1411,7 @@ function assertAdminAccountLoginContractV1141() {
   assertIncludes(ui, "target.dataset.adminCurrentDevice === '1'", 'Odhlaseni aktualniho admin zarizeni musi zavrit admin zpet do bezneho menu');
   assertIncludes(adminUnlockJs, 'function rakAdminCanOpenAdmin', 'Admin menu musi mit centralni kontrolu otevreni');
   assertIncludes(adminUnlockJs, 'function bindAdminAccountUnlock', 'Admin inicializace musi byt navazana na prihlaseny ucet, ne na tajne klikani');
-  assertIncludes(adminUnlockJs, 'rakAdminLock()', 'Bez admin uctu se musi admin opravneni zrusit');
+  assertIncludes(adminUnlockJs, 'function rakAdminLock', 'Bez admin uctu se musi admin opravneni zrusit centralnim zamkem');
   assertIncludes(gamesProfileJs, 'rakAdminPromptUnlockForAccount(id)', 'Pri vyberu aktivniho uctu se musi overit admin heslo');
   assertIncludes(gamesProfileJs, 'window.RotationSupabaseBridge.loadMachineSettings', 'Pri prihlaseni se musi nacist online seznam adminu');
   assertIncludes(gamesProfileJs, "if (typeof rakAdminLock === 'function') rakAdminLock();", 'Odhlaseni profilu musi zamknout admin relaci');
@@ -1430,7 +1432,7 @@ function assertAdminAccountLoginContractV1141() {
   assertIncludes(adminUnlockJs, 'Stav spravcu', 'Sprava spravcu musi mit jasny stavovy souhrn');
   assertIncludes(adminUnlockJs, 'function buildAdminAccountsSafetyHtml', 'Sprava spravcu musi mit bezpecnostni souhrn pro predani');
   assertIncludes(adminUnlockJs, 'Bezpecnost pristupu', 'Sprava spravcu musi jasne pojmenovat bezpecnost pristupu');
-  assertIncludes(adminUnlockJs, 'Hesla se ukladaji jen jako hash', 'Sprava spravcu musi jasne rikat, ze hesla jsou jen hash');
+  assertIncludes(adminUnlockJs, 'Hesla spravuje Supabase Auth', 'Sprava spravcu musi jasne rikat, ze hesla spravuje Supabase Auth');
   assertIncludes(adminUnlockJs, 'Kontrola radku', 'Sprava spravcu musi upozornovat na nedokoncene nebo duplicitni radky');
   assertIncludes(adminUnlockJs, 'Muzou spravovat pracovni casti administrace, ale nemuzou menit hesla ani dalsi adminy.', 'Nizsi admini nesmi byt popsani jako owner admini');
   assertIncludes(ui, 'Provoz, rozpisy, absence, zálohy, exporty a nastavení aplikace.', 'Prehled opravneni musi rikat, ze nizsi admin muze menit pracovni casti aplikace');
@@ -1442,7 +1444,7 @@ function assertAdminAccountLoginContractV1141() {
   assertIncludes(ui, 'async function appMenuEnsureAdminAccessFromMenu', 'Klik na administraci musi umet obnovit admin session pred otevrenim');
   assertIncludes(ui, 'const adminReady = await appMenuEnsureAdminAccessFromMenu()', 'Klik na administraci nesmi zustat bez odezvy pri ulozenem admin prihlaseni');
   assertIncludes(ui, 'function appMenuShouldShowAdminEntry', 'Menu musi ukazat vstup do administrace i admin uctu pred dokoncenym obnovenim session');
-  assertIncludes(ui, "localStorage.getItem('adminPersistentSessionV1')", 'Menu musi poznat ulozenou admin session bez viditelneho dopadu na bezne ucty');
+  assertIncludes(ui, 'function appMenuPersistentAdminSessionMatches', 'Menu musi mit kompatibilni kontrolu starsi admin session bez jejiho pouziti k opravneni');
   assertIncludes(ui, 'appMenuShouldShowAdminEntry() ? \'  <button type="button" class="appMenuAction isActive" data-menu-action="admin">Administrace</button>\'', 'Tlacitko Administrace musi pouzivat admin-entry helper');
   assertIncludes(ui, "buildAdminMenuSectionHtml('1. Provoz'", 'Admin menu musi byt rozdelene do prehlednych provoznich skupin');
   assertIncludes(ui, 'buildAdminMenuSectionHtml', 'Admin menu musi skladat prehledne skupiny pres spolecny helper');

@@ -1,4 +1,9 @@
 // RaK 1.2 (1.155) – Excel import rozpisů oddělený ze startovacích vazeb aplikace.
+const RAK_EXCEL_IMPORT_MAX_FILE_BYTES = 8 * 1024 * 1024;
+const RAK_EXCEL_IMPORT_MAX_SHEETS = 24;
+const RAK_EXCEL_IMPORT_MAX_ROWS_PER_SHEET = 5000;
+const RAK_EXCEL_IMPORT_MAX_CELLS_PER_SHEET = 120000;
+
 function normalizeExcelImportMonthKey(value, fallbackYear) {
   const raw = String(value || '').trim();
   if (!raw) return '';
@@ -121,11 +126,16 @@ window.updateRakExcelImportPreviewUi = updateRakExcelImportPreviewUi;
 
 async function buildRakExcelImportPreview(file) {
   if (!file) throw new Error('Vyber Excel soubor.');
+  if (Number(file.size || 0) > RAK_EXCEL_IMPORT_MAX_FILE_BYTES) throw new Error('Excel je příliš velký. Maximum je 8 MB.');
+  if (file.name && !/\.(xlsx|xlsm|xls)$/i.test(String(file.name))) throw new Error('Vyber soubor Excel (.xlsx, .xlsm nebo .xls).');
   if (typeof XLSX === 'undefined') throw new Error('Knihovna pro Excel se nenačetla.');
   const yearEl = document.getElementById('rakExcelImportYear') || document.getElementById('importYearSelect');
   const fallbackYear = parseInt(yearEl && yearEl.value, 10) || app.importYear || app.selectedYear || new Date().getFullYear();
   const buffer = await file.arrayBuffer();
   const wb = XLSX.read(buffer, { type: 'array', cellDates: true });
+  if (!Array.isArray(wb.SheetNames) || wb.SheetNames.length > RAK_EXCEL_IMPORT_MAX_SHEETS) {
+    throw new Error('Excel obsahuje příliš mnoho listů. Maximum je ' + String(RAK_EXCEL_IMPORT_MAX_SHEETS) + '.');
+  }
   const imported = parseWorkbookFromSheetJS(wb, { scope: 'all', fallbackYear });
   const months = imported && imported.months ? imported.months : {};
   const monthKeys = Object.keys(months).sort((a, b) => {
@@ -507,6 +517,14 @@ function parseWorkbookFromSheetJS(workbook, options) {
     }
     const sheet = workbook.Sheets[sheetName];
     if (!sheet || typeof XLSX === 'undefined') return;
+    const sheetRange = sheet['!ref'] ? XLSX.utils.decode_range(sheet['!ref']) : null;
+    if (sheetRange) {
+      const rowCount = Math.max(0, sheetRange.e.r - sheetRange.s.r + 1);
+      const columnCount = Math.max(0, sheetRange.e.c - sheetRange.s.c + 1);
+      if (rowCount > RAK_EXCEL_IMPORT_MAX_ROWS_PER_SHEET || rowCount * columnCount > RAK_EXCEL_IMPORT_MAX_CELLS_PER_SHEET) {
+        throw new Error('List ' + String(sheetName) + ' je příliš velký pro bezpečný import.');
+      }
+    }
     const rows = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '', raw: false });
     if (!rows || !rows.length) return;
 

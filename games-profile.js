@@ -673,11 +673,11 @@ function gamesRenderActiveAccountBar(account) {
   if (typeof syncGamesLockedSections === 'function') syncGamesLockedSections();
 }
 
-function gamesSetActiveAccount(accountId) {
+async function gamesSetActiveAccount(accountId) {
   const profile = gamesGetProfile();
   const id = String(accountId || '').trim();
   if (!id || GAMES_ACCOUNT_BLOCKLIST.has(id)) return false;
-  if (typeof rakAdminPromptUnlockForAccount === 'function' && !rakAdminPromptUnlockForAccount(id)) return false;
+  if (typeof rakAdminPromptUnlockForAccount === 'function' && !await rakAdminPromptUnlockForAccount(id)) return false;
   const knownAccount = gamesAccountById(id);
   if (!profile.accounts[id]) {
     profile.accounts[id] = gamesMakeAccountEntry(id, knownAccount && knownAccount.name ? knownAccount.name : id);
@@ -833,7 +833,7 @@ function gamesRenderAccountChips() {
         return;
       }
       try {
-        if (!gamesSetActiveAccount(found.id)) {
+        if (!await gamesSetActiveAccount(found.id)) {
           setLoginFeedback('Přihlášení se nepovedlo');
           inputEl.focus();
           inputEl.select();

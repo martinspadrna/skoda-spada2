@@ -388,6 +388,19 @@ function isRakChangeLogRow(row) {
 }
 
 function getRakChangeLogEntries() {
+  if (Array.isArray(app && app.adminAuditRows)) {
+    return app.adminAuditRows.map((row) => {
+      const details = row && row.details && typeof row.details === 'object' ? row.details : {};
+      const action = String(row && row.action || '');
+      return {
+        id: String(row && row.id || ''),
+        area: String(details.area || (action === 'rotation.save' ? 'Rozpis' : action === 'settings.save' ? 'Nastaveni' : row && row.target_type || action)),
+        summary: String(details.summary || (action === 'rotation.save' ? 'Ulozen rozpis' : action === 'settings.save' ? 'Ulozeno nastaveni' : action)),
+        accountId: String(row && row.account_id || ''),
+        at: row && row.created_at || ''
+      };
+    });
+  }
   const rows = Array.isArray(app && app.machineSettingsRows) ? app.machineSettingsRows : [];
   const row = rows.find(isRakChangeLogRow);
   const settings = row && row.settings_json && typeof row.settings_json === 'object' ? row.settings_json : {};
@@ -415,6 +428,20 @@ function makeRakChangeLogRow(entries) {
 async function rakAdminLogChange(area, summary) {
   try {
     if (!window.RotationSupabaseBridge || typeof window.RotationSupabaseBridge.saveMachineSettings !== 'function') return { ok: false, reason: 'missing-bridge' };
+    if (app && Number(app.adminAuthVersion) === 2 && typeof window.RotationSupabaseBridge.writeAdminAudit === 'function') {
+      const secureResult = await window.RotationSupabaseBridge.writeAdminAudit(area, summary);
+      if (secureResult && secureResult.ok !== false && Array.isArray(app.adminAuditRows)) {
+        app.adminAuditRows.unshift({
+          id: 'local-' + Date.now().toString(36),
+          account_id: (typeof rakAdminGetActiveAccountId === 'function' ? rakAdminGetActiveAccountId() : '') || '',
+          action: 'admin.change',
+          target_type: 'admin_setting',
+          details: { area: String(area || ''), summary: String(summary || '') },
+          created_at: secureResult.created_at || new Date().toISOString()
+        });
+      }
+      return secureResult;
+    }
     const accountId = (typeof rakAdminGetActiveAccountId === 'function' ? rakAdminGetActiveAccountId() : '') || '';
     const entry = {
       id: Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 8),
@@ -432,6 +459,15 @@ async function rakAdminLogChange(area, summary) {
   } catch (err) {
     return { ok: false, error: err };
   }
+}
+
+async function rakAdminLoadChangeLog() {
+  if (app && Number(app.adminAuthVersion) === 2 && window.RotationSupabaseBridge && typeof window.RotationSupabaseBridge.listAdminAudit === 'function') {
+    const result = await window.RotationSupabaseBridge.listAdminAudit(RAK_ADMIN_CHANGE_LOG_MAX);
+    if (result && result.ok !== false) app.adminAuditRows = Array.isArray(result.rows) ? result.rows : [];
+    return result;
+  }
+  return await loadAdminMachineSettingsFromSupabase();
 }
 
 function rakChangeLogDateLabel(value) {
@@ -640,6 +676,7 @@ function adminFullSettingsSourceRows(rows) {
   return (Array.isArray(rows) ? rows : [])
     .filter((row) => !adminIsFullSettingsBackupRow(row))
     .filter((row) => !adminIsDeletedMachineSettingsRow(row))
+    .filter((row) => !(typeof rakAdminIsAccountsSettingsRow === 'function' && rakAdminIsAccountsSettingsRow(row)))
     .map(adminCloneFullSettingsRow)
     .filter(Boolean);
 }
@@ -721,6 +758,20 @@ function adminFullSettingsBackupDateLabel(value) {
 }
 
 function adminFullSettingsBackupList() {
+  if (typeof app !== 'undefined' && app && app.adminAuthVersion === 2 && Array.isArray(app.adminSettingsBackupsV2)) {
+    return app.adminSettingsBackupsV2.map((backup) => ({
+      row: null,
+      id: String(backup && backup.id || ''),
+      label: 'Úplná záloha nastavení',
+      createdAt: String(backup && backup.created_at || ''),
+      createdBy: String(backup && backup.created_by_account_id || ''),
+      source: String(backup && backup.source || 'manual'),
+      sourceLabel: String(backup && backup.source || '') === 'before-restore' ? 'před obnovou' : (String(backup && backup.source || '') === 'imported' ? 'importovaná' : 'ruční'),
+      restoredBackupId: String(backup && backup.restored_backup_id || ''),
+      rowCount: Number(backup && backup.row_count || 0),
+      appVersion: String(backup && backup.app_version || '')
+    })).filter((item) => item.id).sort((a, b) => String(b.createdAt).localeCompare(String(a.createdAt)));
+  }
   return adminFullSettingsBackupRows().map((row) => {
     const settings = adminFullSettingsBackupJson(row);
     const rows = Array.isArray(settings && settings.rows) ? settings.rows : [];
@@ -790,16 +841,39 @@ function buildAdminFullSettingsBackupsHtml() {
   ].join('');
 }
 
-function downloadAdminFullSettingsBackup(backupId) {
+async function downloadAdminFullSettingsBackup(backupId) {
   if (!(typeof rakAdminCanManageAdmins === 'function' && rakAdminCanManageAdmins())) return { ok: false, reason: 'not-allowed' };
-  const backup = adminFullSettingsBackupList().find((item) => item.id === String(backupId || '').trim());
+  let backup = adminFullSettingsBackupList().find((item) => item.id === String(backupId || '').trim());
   if (!backup) return { ok: false, reason: 'missing-backup' };
+  if (typeof app !== 'undefined' && app && app.adminAuthVersion === 2) {
+    const bridge = window.RotationSupabaseBridge;
+    if (!bridge || typeof bridge.getAdminSettingsBackup !== 'function') return { ok: false, reason: 'missing-bridge' };
+    const remote = await bridge.getAdminSettingsBackup(backup.id);
+    if (!remote.ok || !remote.backup) return remote;
+    backup = Object.assign({}, backup, { remote: remote.backup });
+  }
   const payload = {
     type: 'rak-full-settings-backup-export',
     exportedAt: new Date().toISOString(),
     appVersion: String((typeof app !== 'undefined' && app && app.version) || (typeof APP_VERSION !== 'undefined' ? APP_VERSION : '') || '').trim(),
     backupId: backup.id,
-    backup: adminCloneFullSettingsRow(backup.row)
+    backup: backup.remote
+      ? {
+          machine_key: 'ADMIN_FULL_SETTINGS_BACKUP_' + String(backup.id),
+          machine_code: 'ADMIN',
+          machine_index: String(backup.id),
+          label: 'Úplná záloha nastavení',
+          category: RAK_FULL_SETTINGS_BACKUP_CATEGORY,
+          settings_json: Object.assign({}, backup.remote.snapshot || {}, {
+            type: RAK_FULL_SETTINGS_BACKUP_CATEGORY,
+            createdAt: backup.remote.created_at,
+            createdBy: backup.remote.created_by_account_id,
+            source: backup.remote.source,
+            appVersion: backup.remote.app_version,
+            rowCount: backup.remote.row_count
+          })
+        }
+      : adminCloneFullSettingsRow(backup.row)
   };
   const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json;charset=utf-8' });
   const url = URL.createObjectURL(blob);
@@ -849,6 +923,10 @@ function normalizeImportedFullSettingsBackupRow(payload) {
 
 function readTextFile(file) {
   return new Promise((resolve, reject) => {
+    if (!file || Number(file.size || 0) > 3 * 1024 * 1024) {
+      reject(new Error('Soubor zálohy je příliš velký. Maximum jsou 3 MB.'));
+      return;
+    }
     const reader = new FileReader();
     reader.onload = () => resolve(String(reader.result || ''));
     reader.onerror = () => reject(reader.error || new Error('Soubor se nepodařilo načíst.'));
@@ -869,6 +947,21 @@ async function importAdminFullSettingsBackupFile(file) {
   }
   const backupRow = normalizeImportedFullSettingsBackupRow(parsed);
   if (!backupRow) return { ok: false, reason: 'invalid-backup' };
+  if (typeof app !== 'undefined' && app && app.adminAuthVersion === 2) {
+    const bridge = window.RotationSupabaseBridge;
+    if (!bridge || typeof bridge.createAdminSettingsBackup !== 'function') return { ok: false, reason: 'missing-bridge' };
+    const settings = adminFullSettingsBackupJson(backupRow);
+    const rows = Array.isArray(settings.rows) ? settings.rows.map(adminCloneFullSettingsRow).filter(Boolean) : [];
+    if (!rows.length || rows.length > 500) return { ok: false, reason: 'invalid-backup' };
+    const created = await bridge.createAdminSettingsBackup({ rows }, {
+      source: 'imported',
+      appVersion: String(settings.appVersion || app.version || ''),
+      legacyKey: String(backupRow.machine_key || '')
+    });
+    if (!created.ok) return created;
+    await loadAdminFullSettingsBackupsFromSupabase();
+    return { ok: true, backup: { machine_key: String(created.id || ''), settings_json: { rows } }, result: created };
+  }
   const loadedRows = await window.RotationSupabaseBridge.loadMachineSettings();
   const currentRows = Array.isArray(loadedRows) ? loadedRows : [];
   app.machineSettingsRows = currentRows;
@@ -880,6 +973,14 @@ async function importAdminFullSettingsBackupFile(file) {
 }
 
 async function loadAdminFullSettingsBackupsFromSupabase() {
+  if (typeof app !== 'undefined' && app && app.adminAuthVersion === 2) {
+    const bridge = window.RotationSupabaseBridge;
+    if (!bridge || typeof bridge.listAdminSettingsBackups !== 'function') return { ok: false, reason: 'missing-bridge' };
+    const result = await bridge.listAdminSettingsBackups(100);
+    if (!result.ok) return result;
+    app.adminSettingsBackupsV2 = result.rows;
+    return { ok: true, backups: adminFullSettingsBackupList() };
+  }
   if (!(window.RotationSupabaseBridge && typeof window.RotationSupabaseBridge.loadMachineSettings === 'function')) return { ok: false, reason: 'missing-bridge' };
   app.machineSettingsRows = await window.RotationSupabaseBridge.loadMachineSettings();
   return { ok: true, backups: adminFullSettingsBackupList() };
@@ -891,6 +992,22 @@ async function createAdminFullSettingsBackupOnline() {
   const loadedRows = await window.RotationSupabaseBridge.loadMachineSettings();
   const currentRows = Array.isArray(loadedRows) ? loadedRows : [];
   app.machineSettingsRows = currentRows;
+  if (typeof app !== 'undefined' && app && app.adminAuthVersion === 2) {
+    const sourceRows = adminFullSettingsSourceRows(currentRows);
+    const bridge = window.RotationSupabaseBridge;
+    if (!bridge || typeof bridge.createAdminSettingsBackup !== 'function') return { ok: false, reason: 'missing-bridge' };
+    const result = await bridge.createAdminSettingsBackup({ rows: sourceRows }, {
+      source: 'manual',
+      appVersion: String(app.version || (typeof APP_VERSION !== 'undefined' ? APP_VERSION : ''))
+    });
+    if (!result.ok) return result;
+    await loadAdminFullSettingsBackupsFromSupabase();
+    return {
+      ok: true,
+      backup: { machine_key: String(result.id || ''), settings_json: { rows: sourceRows } },
+      result
+    };
+  }
   const backupRow = makeAdminFullSettingsBackupRow(currentRows);
   const nextRows = currentRows.concat([backupRow]);
   const result = await window.RotationSupabaseBridge.saveMachineSettings(nextRows);
@@ -905,6 +1022,32 @@ async function restoreAdminFullSettingsBackupOnline(backupId) {
   const loadedRows = await window.RotationSupabaseBridge.loadMachineSettings();
   const currentRows = Array.isArray(loadedRows) ? loadedRows : [];
   app.machineSettingsRows = currentRows;
+  if (typeof app !== 'undefined' && app && app.adminAuthVersion === 2) {
+    const bridge = window.RotationSupabaseBridge;
+    if (!bridge || typeof bridge.getAdminSettingsBackup !== 'function' || typeof bridge.createAdminSettingsBackup !== 'function') return { ok: false, reason: 'missing-bridge' };
+    const loadedBackup = await bridge.getAdminSettingsBackup(String(backupId || ''));
+    const snapshot = loadedBackup && loadedBackup.backup && loadedBackup.backup.snapshot;
+    const restoredRows = snapshot && Array.isArray(snapshot.rows) ? snapshot.rows.map(adminCloneFullSettingsRow).filter(Boolean) : [];
+    if (!loadedBackup.ok || !restoredRows.length) return loadedBackup.ok ? { ok: false, reason: 'missing-backup' } : loadedBackup;
+    const currentSourceRows = adminFullSettingsSourceRows(currentRows);
+    const preRestore = await bridge.createAdminSettingsBackup({ rows: currentSourceRows }, {
+      source: 'before-restore',
+      appVersion: String(app.version || (typeof APP_VERSION !== 'undefined' ? APP_VERSION : '')),
+      restoredBackupId: String(backupId || '')
+    });
+    if (!preRestore.ok) return preRestore;
+    const restoredKeys = new Set(restoredRows.map((row) => String(row.machine_key || '')));
+    const deletedRows = currentSourceRows
+      .filter((row) => !restoredKeys.has(String(row.machine_key || '')))
+      .map(makeDeletedMachineSettingsRow)
+      .filter(Boolean);
+    const result = await bridge.saveMachineSettings(restoredRows.concat(deletedRows));
+    if (result && result.ok === false) return result;
+    app.machineSettingsRows = restoredRows;
+    await loadAdminFullSettingsBackupsFromSupabase();
+    try { if (typeof updateDashboard === 'function') updateDashboard(); } catch (err) {}
+    return { ok: true, backup: loadedBackup.backup, preRestoreBackup: preRestore, result, deletedCount: deletedRows.length };
+  }
   const backup = adminFullSettingsBackupList().find((item) => item.id === String(backupId || '').trim());
   const backupSettings = backup ? adminFullSettingsBackupJson(backup.row) : null;
   const restoredRows = backupSettings && Array.isArray(backupSettings.rows)
@@ -3775,15 +3918,7 @@ function appMenuCanRunAdminInteraction(currentView) {
 }
 
 function appMenuPersistentAdminSessionMatches(activeId) {
-  const id = String(activeId || '').trim();
-  if (!id) return false;
-  try {
-    const raw = localStorage.getItem('adminPersistentSessionV1');
-    const parsed = raw ? JSON.parse(raw) : null;
-    return !!(parsed && String(parsed.accountId || '').trim() === id && String(parsed.token || '').trim());
-  } catch (err) {
-    return false;
-  }
+  return false;
 }
 
 function appMenuShouldShowAdminEntry() {
@@ -3801,6 +3936,9 @@ async function appMenuEnsureAdminAccessFromMenu() {
   const activeId = typeof rakAdminGetActiveAccountId === 'function' ? String(rakAdminGetActiveAccountId() || '').trim() : '';
   if (!activeId) return false;
   try {
+    if (typeof rakAdminRestoreSecureSessionForActiveAccount === 'function' && await rakAdminRestoreSecureSessionForActiveAccount('admin-menu-click') && canOpen()) return true;
+  } catch (err) {}
+  try {
     if (typeof rakAdminRestorePersistentSessionForActiveAccount === 'function' && rakAdminRestorePersistentSessionForActiveAccount('admin-menu-click') && canOpen()) return true;
   } catch (err) {}
   try {
@@ -3815,7 +3953,7 @@ async function appMenuEnsureAdminAccessFromMenu() {
     }
   } catch (err) {}
   try {
-    if (typeof rakAdminPromptUnlockForAccount === 'function' && rakAdminPromptUnlockForAccount(activeId) && canOpen()) return true;
+    if (typeof rakAdminPromptUnlockForAccount === 'function' && await rakAdminPromptUnlockForAccount(activeId) && canOpen()) return true;
   } catch (err) {}
   return canOpen();
 }
@@ -3841,6 +3979,9 @@ function bindAppMenuHandlers(body) {
   }, true);
   body.addEventListener('input', (event) => {
     const target = event.target;
+    if (target && target.matches && target.matches('[data-rot-field], [data-note-field], [data-press-rotation-date]') && typeof app !== 'undefined' && app) {
+      app.adminRotationDirty = true;
+    }
     if (target && target.matches && target.matches('[data-rot-field^="cell-"], [data-note-field="person"]')) adminShowRotationSelectedRemove(target);
     if (target && target.matches && target.matches('[data-rotation-overtime-date]') && typeof adminRotationRefreshOvertimeShiftBadges === 'function') {
       adminRotationRefreshOvertimeShiftBadges(body, false);
@@ -4497,11 +4638,12 @@ function bindAppMenuHandlers(body) {
         return;
       }
       if (adminAction === 'open-change-log') {
+        await rakAdminLoadChangeLog();
         openAppMenu('admin-change-log');
         return;
       }
       if (adminAction === 'load-change-log') {
-        await loadAdminMachineSettingsFromSupabase();
+        await rakAdminLoadChangeLog();
         renderAdminMenuBody(body, 'change-log');
         return;
       }
@@ -4737,7 +4879,7 @@ function bindAppMenuHandlers(body) {
         const result = await createAdminFullSettingsBackupOnline();
         if (!result || result.ok === false) throw (result && result.error ? result.error : new Error('Vytvoření zálohy nastavení selhalo.'));
         const backupId = result.backup && result.backup.machine_key ? result.backup.machine_key : '';
-        const downloadResult = backupId ? downloadAdminFullSettingsBackup(backupId) : { ok: false };
+        const downloadResult = backupId ? await downloadAdminFullSettingsBackup(backupId) : { ok: false };
         if (!downloadResult || downloadResult.ok === false) throw new Error('Záloha je uložená online, ale stažení JSON souboru selhalo.');
         renderAdminMenuBody(body, 'settings-backups');
         const nextStatus = document.getElementById('adminOnlineSaveStatus');
@@ -4766,7 +4908,7 @@ function bindAppMenuHandlers(body) {
       if (adminAction === 'download-full-settings-backup') {
         if (!(typeof rakAdminCanManageAdmins === 'function' && rakAdminCanManageAdmins())) return;
         const backupId = target.getAttribute('data-settings-backup-id') || target.closest('[data-settings-backup-id]')?.getAttribute('data-settings-backup-id') || '';
-        const result = downloadAdminFullSettingsBackup(backupId);
+        const result = await downloadAdminFullSettingsBackup(backupId);
         if (!result || result.ok === false) throw new Error('Stažení zálohy nastavení selhalo.');
         return;
       }
@@ -4882,6 +5024,12 @@ function bindAppMenuHandlers(body) {
         return;
       }
       if (adminAction === 'load-admin-accounts') {
+        if (typeof app !== 'undefined' && app && app.adminAuthVersion === 2 && typeof rakAdminLoadSecureDirectory === 'function') {
+          const loaded = await rakAdminLoadSecureDirectory();
+          if (!loaded.ok) throw (loaded.profileError || loaded.deviceError || new Error('Načtení správců selhalo.'));
+          renderAdminMenuBody(body, 'admin-accounts');
+          return;
+        }
         if (window.RotationSupabaseBridge && typeof window.RotationSupabaseBridge.loadMachineSettings === 'function') {
           app.machineSettingsRows = await window.RotationSupabaseBridge.loadMachineSettings();
           renderAdminMenuBody(body, 'admin-accounts');
@@ -4890,6 +5038,14 @@ function bindAppMenuHandlers(body) {
       }
       if (adminAction === 'save-admin-accounts') {
         if (!(typeof rakAdminCanManageAdmins === 'function' && rakAdminCanManageAdmins())) return;
+        if (typeof app !== 'undefined' && app && app.adminAuthVersion === 2 && typeof rakAdminSaveSecureAccounts === 'function') {
+          const secureResult = await rakAdminSaveSecureAccounts(body);
+          if (!secureResult.ok) throw (secureResult.error || new Error('Uložení správců selhalo: ' + String(secureResult.reason || 'neznámá chyba')));
+          renderAdminMenuBody(body, 'admin-accounts');
+          const secureStatus = document.getElementById('adminOnlineSaveStatus');
+          if (secureStatus) secureStatus.textContent = 'Správci uloženi bezpečně online ✓';
+          return;
+        }
         const adminSettings = readAdminAccountsSettingsFromDom();
         const rows = mergeAdminAccountsSettingsRows(adminSettings);
         if (window.RotationSupabaseBridge && typeof window.RotationSupabaseBridge.saveMachineSettings === 'function') {
@@ -5013,9 +5169,11 @@ function bindAppMenuHandlers(body) {
         const statusText = ruleWarnings.length && typeof adminRotationFormatRuleIssues === 'function'
           ? baseText + ' · Kontrola: ' + adminRotationFormatRuleIssues(ruleWarnings)
           : baseText;
-        renderAdminMenuBody(body, currentView);
+        if (saveResult && saveResult.ok === true) renderAdminMenuBody(body, currentView);
         const statusEl = document.getElementById('adminOnlineSaveStatus');
-        if (statusEl) statusEl.textContent = statusText;
+        if (statusEl) statusEl.textContent = saveResult && saveResult.ok === true
+          ? statusText
+          : 'Rozpis se nepodařilo uložit online. Rozepsané změny zůstaly v editoru.';
         return;
       }
       if (adminAction === 'load-food-schedule') {

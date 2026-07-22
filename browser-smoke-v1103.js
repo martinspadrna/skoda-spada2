@@ -10,7 +10,7 @@ const { spawn } = require('child_process');
 const { pathToFileURL } = require('url');
 
 const ROOT_DIR = __dirname;
-const EXPECTED_APP_VERSION = '1.2 (1.336)';
+const EXPECTED_APP_VERSION = '1.2 (1.337)';
 const RAK_BROWSER_SMOKE_ENGINE = 'local-chromium-cdp';
 const RAK_BROWSER_SMOKE_LOAD_MODE = 'about-blank-inline-html';
 const CHROMIUM_BIN = process.env.CHROMIUM_BIN || process.env.CHROME_BIN || '/usr/bin/chromium';
@@ -954,7 +954,10 @@ async function runViewportSmoke(cdpPort, viewport, inlineHtml, liveRotationPaylo
       return { ok: false, reason: 'missing calendar import functions' };
     }
     const originalFetch = window.fetch;
+    const bridge = window.RotationSupabaseBridge;
+    const originalGetAdminAccessToken = bridge && bridge.getAdminAccessToken;
     try {
+      if (bridge) bridge.getAdminAccessToken = async () => 'browser-smoke-admin-token';
       adminRotationGeneratorSetWizardState({
         step: 'absences',
         monthKey: '7/26',
@@ -995,6 +998,7 @@ async function runViewportSmoke(cdpPort, viewport, inlineHtml, liveRotationPaylo
       return { ok: true, result, rowsByDay, statusText };
     } finally {
       window.fetch = originalFetch;
+      if (bridge) bridge.getAdminAccessToken = originalGetAdminAccessToken;
     }
   })()`);
   assert(calendarAbsenceImportState.ok, `${viewport.name}: import absencí z kalendáře se nespustil ${JSON.stringify(calendarAbsenceImportState)}`);

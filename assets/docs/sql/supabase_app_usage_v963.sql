@@ -166,11 +166,9 @@ declare
   v_events jsonb;
   v_summary jsonb;
 begin
-  -- Klientská administrace v RaK je už odemčená PINem 772326.
-  -- Tohle není náhrada serverového auth, ale brání náhodnému veřejnému SELECTu tabulek.
-  if coalesce(p_admin_pin, '') <> '772326' then
-    return jsonb_build_object('ok', false, 'reason', 'bad-admin-pin');
-  end if;
+  -- Parametr zustava jen kvuli kompatibilite stareho SQL navodu. Opravneni
+  -- overuje serverova Supabase Auth relace, nikdy hodnota z klienta.
+  perform private.rak_require_admin(false);
 
   select coalesce(jsonb_agg(to_jsonb(x)), '[]'::jsonb)
   into v_devices
@@ -224,5 +222,6 @@ end;
 $$;
 
 grant execute on function public.rak_log_app_usage(text,text,text,text,text,text,text,jsonb) to anon, authenticated;
-grant execute on function public.rak_admin_get_app_usage(text, integer) to anon, authenticated;
+revoke all on function public.rak_admin_get_app_usage(text, integer) from public, anon;
+grant execute on function public.rak_admin_get_app_usage(text, integer) to authenticated;
 grant execute on function public.rak_usage_ip_hash() to anon, authenticated;

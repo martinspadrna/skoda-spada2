@@ -1,0 +1,7 @@
+supabase/.temp/
+node_modules/
+.pnpm-store/
+pnpm-lock.yaml
+
+.vercel
+.env*

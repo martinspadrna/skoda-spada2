@@ -13,6 +13,19 @@
     realtimeEvents: [],
     lastRealtimeAt: null,
     realtimeBindStartedAt: 0,
+    adminAuth: {
+      capabilities: null,
+      context: null,
+      checkedAt: 0,
+      lastError: null
+    },
+    rotationRevision: null,
+    rotationSync: {
+      lastReadAt: null,
+      lastWriteAt: null,
+      lastWriteRevision: null,
+      lastError: null
+    },
     queueGuard: {
       trimmed: 0,
       deduped: 0,
@@ -197,12 +210,211 @@
     if (!url || !key) return null;
     state.client = window.supabase.createClient(url, key, {
       auth: {
-        persistSession: false,
-        autoRefreshToken: false,
+        persistSession: true,
+        autoRefreshToken: true,
         detectSessionInUrl: false
       }
     });
     return state.client;
+  }
+
+  function adminAuthEmail(accountId) {
+    const id = String(accountId || '').trim();
+    return /^\d{4,12}$/.test(id) ? (id + '@admin.rak.local') : '';
+  }
+
+  async function getAdminAuthCapabilities(options) {
+    const opts = options && typeof options === 'object' ? options : {};
+    const cached = state.adminAuth.capabilities;
+    if (!opts.force && cached && Date.now() - state.adminAuth.checkedAt < 60000) return cached;
+    const client = getClient();
+    if (!client || !navigator.onLine) return cached || { available: false, enforced: false, reason: 'offline' };
+    try {
+      const { data, error } = await client.rpc('rak_admin_auth_capabilities');
+      if (error) throw error;
+      const capabilities = data && typeof data === 'object'
+        ? data
+        : { available: false, enforced: false };
+      state.adminAuth.capabilities = capabilities;
+      state.adminAuth.checkedAt = Date.now();
+      state.adminAuth.lastError = null;
+      return capabilities;
+    } catch (err) {
+      state.adminAuth.lastError = err;
+      state.adminAuth.checkedAt = Date.now();
+      const unavailable = { available: false, enforced: false, reason: 'rpc-unavailable' };
+      state.adminAuth.capabilities = unavailable;
+      return unavailable;
+    }
+  }
+
+  async function loadAdminAuthContext() {
+    const client = getClient();
+    if (!client) return { ok: false, reason: 'missing-client' };
+    const { data: sessionData, error: sessionError } = await client.auth.getSession();
+    if (sessionError) return { ok: false, error: sessionError, reason: 'session-error' };
+    const session = sessionData && sessionData.session ? sessionData.session : null;
+    if (!session) {
+      state.adminAuth.context = null;
+      return { ok: false, reason: 'missing-session' };
+    }
+    const { data, error } = await client.rpc('rak_admin_context');
+    if (error) {
+      state.adminAuth.context = null;
+      state.adminAuth.lastError = error;
+      return { ok: false, error, reason: 'not-authorized' };
+    }
+    const context = data && typeof data === 'object' ? data : null;
+    state.adminAuth.context = context;
+    state.adminAuth.lastError = null;
+    return { ok: !!context, context, session };
+  }
+
+  async function adminAccountRequiresAuth(accountId) {
+    const client = getClient();
+    const id = String(accountId || '').trim();
+    if (!client || !id || !navigator.onLine) return false;
+    const capabilities = await getAdminAuthCapabilities();
+    if (!capabilities.available) return false;
+    const { data, error } = await client.rpc('rak_admin_account_requires_auth', { p_account_id: id });
+    if (error) return false;
+    return data === true;
+  }
+
+  async function signInAdminAccount(accountId, password, device) {
+    const client = getClient();
+    const email = adminAuthEmail(accountId);
+    if (!client || !email || !String(password || '')) return { ok: false, reason: 'invalid-credentials' };
+    const capabilities = await getAdminAuthCapabilities({ force: true });
+    if (!capabilities.available) return { ok: false, reason: 'auth-not-ready', capabilities };
+    const { data, error } = await client.auth.signInWithPassword({ email, password: String(password) });
+    if (error) return { ok: false, error, reason: 'invalid-credentials' };
+    const contextResult = await loadAdminAuthContext();
+    if (!contextResult.ok || String(contextResult.context && contextResult.context.account_id || '') !== String(accountId || '').trim()) {
+      await client.auth.signOut({ scope: 'local' }).catch(() => {});
+      return { ok: false, error: contextResult.error, reason: 'not-authorized' };
+    }
+    const safeDevice = device && typeof device === 'object' ? device : {};
+    if (safeDevice.deviceId) {
+      const { error: touchError } = await client.rpc('rak_admin_touch_device', {
+        p_device_id: String(safeDevice.deviceId),
+        p_label: String(safeDevice.label || 'Zařízení'),
+        p_app_version: String(safeDevice.appVersion || '')
+      });
+      if (touchError) {
+        await client.auth.signOut({ scope: 'local' }).catch(() => {});
+        return { ok: false, error: touchError, reason: 'device-registration-failed' };
+      }
+    }
+    return Object.assign({ ok: true }, contextResult);
+  }
+
+  async function restoreAdminAuthSession(accountId, device) {
+    const capabilities = await getAdminAuthCapabilities();
+    if (!capabilities.available) return { ok: false, reason: 'auth-not-ready', capabilities };
+    const result = await loadAdminAuthContext();
+    if (!result.ok) return result;
+    if (String(result.context && result.context.account_id || '') !== String(accountId || '').trim()) {
+      return { ok: false, reason: 'account-mismatch' };
+    }
+    const client = getClient();
+    const safeDevice = device && typeof device === 'object' ? device : {};
+    if (client && safeDevice.deviceId) {
+      const { error } = await client.rpc('rak_admin_touch_device', {
+        p_device_id: String(safeDevice.deviceId),
+        p_label: String(safeDevice.label || 'Zařízení'),
+        p_app_version: String(safeDevice.appVersion || '')
+      });
+      if (error) return { ok: false, error, reason: 'device-registration-failed' };
+    }
+    return result;
+  }
+
+  async function signOutAdminAccount() {
+    const client = getClient();
+    state.adminAuth.context = null;
+    if (!client) return { ok: true };
+    const { error } = await client.auth.signOut({ scope: 'local' });
+    return error ? { ok: false, error } : { ok: true };
+  }
+
+  async function getAdminAccessToken() {
+    const client = getClient();
+    if (!client || !hasSecureAdminContext()) return '';
+    const { data, error } = await client.auth.getSession();
+    if (error) return '';
+    return String(data && data.session && data.session.access_token || '');
+  }
+
+  async function listAdminAuthDevices() {
+    const client = getClient();
+    if (!client) return { ok: false, reason: 'missing-client', rows: [] };
+    const { data, error } = await client.rpc('rak_owner_list_admin_devices');
+    return error ? { ok: false, error, rows: [] } : { ok: true, rows: Array.isArray(data) ? data : [] };
+  }
+
+  async function revokeAdminAuthDevice(deviceId) {
+    const client = getClient();
+    if (!client) return { ok: false, reason: 'missing-client' };
+    const { data, error } = await client.rpc('rak_owner_revoke_admin_device', { p_device_id: String(deviceId || '') });
+    return error ? { ok: false, error } : (data || { ok: true });
+  }
+
+  async function listAdminAuthProfiles() {
+    const client = getClient();
+    if (!client) return { ok: false, reason: 'missing-client', rows: [] };
+    const { data, error } = await client.rpc('rak_owner_list_admin_profiles');
+    return error ? { ok: false, error, rows: [] } : { ok: true, rows: Array.isArray(data) ? data : [] };
+  }
+
+  async function createAdminSettingsBackup(snapshot, options) {
+    const client = getClient();
+    const opts = options && typeof options === 'object' ? options : {};
+    if (!client || !hasSecureAdminContext()) return { ok: false, reason: 'admin-auth-required' };
+    const { data, error } = await client.rpc('rak_owner_create_settings_backup_v2', {
+      p_snapshot: snapshot && typeof snapshot === 'object' ? snapshot : {},
+      p_source: String(opts.source || 'manual'),
+      p_app_version: String(opts.appVersion || ''),
+      p_restored_backup_id: opts.restoredBackupId || null,
+      p_legacy_key: opts.legacyKey || null
+    });
+    return error ? { ok: false, error } : (data || { ok: true });
+  }
+
+  async function listAdminSettingsBackups(limit) {
+    const client = getClient();
+    if (!client || !hasSecureAdminContext()) return { ok: false, reason: 'admin-auth-required', rows: [] };
+    const safeLimit = Math.max(1, Math.min(100, Number(limit) || 50));
+    const { data, error } = await client.rpc('rak_owner_list_settings_backups_v2', { p_limit: safeLimit });
+    return error ? { ok: false, error, rows: [] } : { ok: true, rows: Array.isArray(data) ? data : [] };
+  }
+
+  async function getAdminSettingsBackup(backupId) {
+    const client = getClient();
+    if (!client || !hasSecureAdminContext()) return { ok: false, reason: 'admin-auth-required' };
+    const { data, error } = await client.rpc('rak_owner_get_settings_backup_v2', { p_backup_id: String(backupId || '') });
+    return error ? { ok: false, error } : { ok: true, backup: data || null };
+  }
+
+  async function writeAdminAudit(area, summary, options) {
+    const client = getClient();
+    const opts = options && typeof options === 'object' ? options : {};
+    if (!client || !hasSecureAdminContext()) return { ok: false, reason: 'admin-auth-required' };
+    const { data, error } = await client.rpc('rak_admin_write_audit_v2', {
+      p_area: String(area || '').trim(),
+      p_summary: String(summary || '').trim(),
+      p_target_type: String(opts.targetType || ''),
+      p_target_id: String(opts.targetId || '')
+    });
+    return error ? { ok: false, error } : (data || { ok: true });
+  }
+
+  async function listAdminAudit(limit) {
+    const client = getClient();
+    if (!client || !hasSecureAdminContext()) return { ok: false, reason: 'admin-auth-required', rows: [] };
+    const safeLimit = Math.max(1, Math.min(300, Number(limit) || 100));
+    const { data, error } = await client.rpc('rak_admin_list_audit_v2', { p_limit: safeLimit });
+    return error ? { ok: false, error, rows: [] } : { ok: true, rows: Array.isArray(data) ? data : [] };
   }
 
   const REALTIME_TABLES = [
@@ -1042,7 +1254,7 @@
       ends_at: payload.ends_at,
       marquee: payload.marquee,
       updated_at: nowIso,
-      app_version: String(window.APP_VERSION || '1.2 (1.155)'),
+      app_version: String(window.APP_VERSION || '1.2 (1.337)'),
       priority: 0
     });
     return [
@@ -1087,24 +1299,35 @@
           ends_at: fallback.ends_at,
           marquee: fallback.marquee,
           updated_at: new Date().toISOString(),
-          app_version: String(window.APP_VERSION || '1.2 (1.155)'),
+          app_version: String(window.APP_VERSION || '1.2 (1.337)'),
           priority: 0
         });
   }
 
   async function saveDashboardAnnouncementViaRpc(client, safe, nowIso) {
     try {
-      const res = await runSupabaseOperation('announcements.rpc-save', () => client.rpc('rak_save_dashboard_announcement', {
-        p_title: safe.title || null,
-        p_message: safe.message,
-        p_is_active: safe.is_active,
-        p_starts_at: safe.starts_at,
-        p_ends_at: safe.ends_at,
-        p_marquee: safe.marquee,
-        p_updated_by: 'rak-admin-ui',
-        p_app_version: String(window.APP_VERSION || '1.2 (1.155)'),
-        p_priority: 0
-      }), { mode: 'write', timeoutMs: 8000, attempts: 1 });
+      const secure = hasSecureAdminContext();
+      const res = await runSupabaseOperation('announcements.rpc-save', () => secure
+        ? client.rpc('rak_admin_save_announcement_v2', {
+            p_title: safe.title || null,
+            p_message: safe.message,
+            p_is_active: safe.is_active,
+            p_starts_at: safe.starts_at,
+            p_ends_at: safe.ends_at,
+            p_marquee: safe.marquee,
+            p_app_version: String(window.APP_VERSION || '1.2 (1.337)')
+          })
+        : client.rpc('rak_save_dashboard_announcement', {
+            p_title: safe.title || null,
+            p_message: safe.message,
+            p_is_active: safe.is_active,
+            p_starts_at: safe.starts_at,
+            p_ends_at: safe.ends_at,
+            p_marquee: safe.marquee,
+            p_updated_by: 'rak-admin-ui',
+            p_app_version: String(window.APP_VERSION || '1.2 (1.337)'),
+            p_priority: 0
+          }), { mode: 'write', timeoutMs: 8000, attempts: 1 });
       if (res && res.error) return { ok: false, error: res.error, shape: 'rpc-save' };
       return { ok: true, row: normalizeRpcAnnouncementRow(res && res.data, safe), shape: 'rpc-save' };
     } catch (err) {
@@ -1114,10 +1337,13 @@
 
   async function clearDashboardAnnouncementViaRpc(client, nowIso) {
     try {
-      const res = await runSupabaseOperation('announcements.rpc-clear', () => client.rpc('rak_clear_dashboard_announcement', {
-        p_updated_by: 'rak-admin-ui',
-        p_app_version: String(window.APP_VERSION || '1.2 (1.155)')
-      }), { mode: 'write', timeoutMs: 8000, attempts: 1 });
+      const secure = hasSecureAdminContext();
+      const res = await runSupabaseOperation('announcements.rpc-clear', () => secure
+        ? client.rpc('rak_admin_clear_announcement_v2')
+        : client.rpc('rak_clear_dashboard_announcement', {
+            p_updated_by: 'rak-admin-ui',
+            p_app_version: String(window.APP_VERSION || '1.2 (1.337)')
+          }), { mode: 'write', timeoutMs: 8000, attempts: 1 });
       if (res && res.error) return { ok: false, error: res.error, shape: 'rpc-clear' };
       return { ok: true, cleared: true, count: Number(res && res.data || 0), shape: 'rpc-clear' };
     } catch (err) {
@@ -1156,6 +1382,16 @@
         fallback: ''
       });
       return { ok: true, row, shape: rpc.shape || 'rpc-save', status };
+    }
+
+    if (hasSecureAdminContext() && state.adminAuth.capabilities && state.adminAuth.capabilities.enforced === true) {
+      const status = rememberDashboardAnnouncementOnlineStatus({
+        lastErrorAt: nowIso,
+        lastErrorMessage: supabaseErrorText(rpc && rpc.error),
+        lastErrorCode: 'RAK_ANNOUNCEMENT_SECURE_RPC',
+        fallback: ''
+      });
+      return { ok: false, reason: 'secure-rpc-failed', error: rpc && rpc.error, status };
     }
 
     const deactivate = await softDeactivateDashboardAnnouncements(client);
@@ -1212,7 +1448,8 @@
       return { ok: false, reason: 'offline-or-missing-client', status };
     }
     const rpc = await clearDashboardAnnouncementViaRpc(client, nowIso);
-    const result = rpc && rpc.ok ? rpc : await softDeactivateDashboardAnnouncements(client);
+    const secureEnforced = hasSecureAdminContext() && state.adminAuth.capabilities && state.adminAuth.capabilities.enforced === true;
+    const result = rpc && rpc.ok ? rpc : (secureEnforced ? rpc : await softDeactivateDashboardAnnouncements(client));
     if (result.ok) {
       state.announcements = [];
       safeWriteJson(LOCAL_ANNOUNCEMENTS_KEY, state.announcements);
@@ -1272,7 +1509,6 @@
   const APP_USAGE_STATUS_KEY = 'rak_app_usage_status_v1';
   const APP_USAGE_MIN_INTERVAL_MS = 8 * 60 * 1000;
   const APP_USAGE_TIMEOUT_MS = 8000;
-  const APP_USAGE_ADMIN_PIN = '772326';
   let flushPromise = null;
   let flushScheduleTimer = null;
   let lastQueueWakeRequestAt = 0;
@@ -2045,6 +2281,22 @@
       || key.indexOf('ROTATION_SAVE_BACKUP_') === 0;
   }
 
+  function isCredentialOrBackupMachineSettingsPayload(payload) {
+    const category = String(payload && payload.category || '').trim();
+    const key = String(payload && payload.machine_key || '').trim();
+    const settings = payload && payload.settings_json && typeof payload.settings_json === 'object' ? payload.settings_json : {};
+    const storedCategory = String(settings.stored_category || settings.type || '').trim();
+    const storedKey = String(settings.admin_settings_key || '').trim();
+    return category === 'admin_accounts_settings'
+      || key === 'ADMIN_ACCOUNTS_SETTINGS'
+      || category === 'admin_full_settings_backup'
+      || key.indexOf('ADMIN_FULL_SETTINGS_BACKUP_') === 0
+      || storedCategory === 'admin_accounts_settings'
+      || storedCategory === 'admin_full_settings_backup'
+      || storedKey === 'ADMIN_ACCOUNTS_SETTINGS'
+      || storedKey.indexOf('ADMIN_FULL_SETTINGS_BACKUP_') === 0;
+  }
+
   function makeMachineSettingsRpcPayload(payload) {
     if (!isSpecialAdminMachineSettingsPayload(payload)) return payload;
     return Object.assign({}, payload, {
@@ -2056,28 +2308,31 @@
     });
   }
 
-  function getAdminPinForWrite(options) {
-    if (options && options.adminPin) return String(options.adminPin);
-    if (typeof app !== 'undefined' && app && app.adminPin) return String(app.adminPin);
-    try {
-      return String(sessionStorage.getItem('adminPinSession') || '');
-    } catch (err) {
-      return '';
-    }
+  function hasSecureAdminContext() {
+    const context = state.adminAuth && state.adminAuth.context;
+    return !!(context && context.authenticated === true && context.account_id && (context.role === 'owner' || context.role === 'admin'));
+  }
+
+  function hasAdminWriteCredential() {
+    return hasSecureAdminContext();
   }
 
   async function trySaveMachineSettingsViaRpc(client, payloads, options) {
     if (!client || typeof client.rpc !== 'function' || !Array.isArray(payloads) || !payloads.length) return null;
     try {
-      const { data, error } = await client.rpc('rak_admin_save_machine_settings', {
-        p_rows: payloads,
-        p_admin_pin: getAdminPinForWrite(options || {})
+      if (!hasSecureAdminContext()) throw new Error('admin authentication required');
+      const operationalPayloads = payloads.filter((payload) => !isCredentialOrBackupMachineSettingsPayload(payload));
+      if (!operationalPayloads.length) return { ok: true, rpc: true, secure: true, savedCount: 0 };
+      const { data, error } = await client.rpc('rak_admin_save_machine_settings_v2', {
+        p_rows: operationalPayloads,
+        p_reason: String(options && options.reason || 'app-save')
       });
       if (error) throw error;
       return {
         ok: true,
         rpc: true,
-        savedCount: Number((data && (data.saved_count || data.count)) || data || payloads.length) || payloads.length
+        secure: true,
+        savedCount: Number(data && data.saved_count || operationalPayloads.length) || operationalPayloads.length
       };
     } catch (err) {
       if (isSupabaseRpcUnavailableError(err)) {
@@ -2092,13 +2347,15 @@
   async function trySaveRotationStateViaRpc(client, row, options) {
     if (!client || typeof client.rpc !== 'function' || !row) return null;
     try {
-      const { data, error } = await client.rpc('rak_admin_save_rotation_state', {
+      if (!hasSecureAdminContext()) throw new Error('admin authentication required');
+      const { data, error } = await client.rpc('rak_admin_save_rotation_v2', {
         p_key: row.key || 'main',
         p_payload: row.payload || null,
         p_meta: row.meta || {},
-        p_admin_pin: getAdminPinForWrite(options || {})
+        p_expected_revision: state.rotationRevision
       });
       if (error) throw error;
+      if (data && Number.isFinite(Number(data.revision))) state.rotationRevision = Number(data.revision);
       return data || row;
     } catch (err) {
       if (isSupabaseRpcUnavailableError(err)) {
@@ -2120,14 +2377,7 @@
     const rpcPayloads = payloads.map(makeMachineSettingsRpcPayload);
     const rpcResult = await trySaveMachineSettingsViaRpc(client, rpcPayloads, options || {});
     if (rpcResult && rpcResult.ok) return Number(rpcResult.savedCount || payloads.length) || payloads.length;
-
-    let savedCount = 0;
-    for (const payload of payloads) {
-      const { error } = await client.from('machine_settings').upsert([payload], { onConflict: 'machine_key' });
-      if (error) throw error;
-      savedCount += 1;
-    }
-    return savedCount;
+    throw new Error('secure machine settings RPC unavailable');
   }
 
   async function upsertRotationStateDirect(client, rotation, meta, options) {
@@ -2145,7 +2395,8 @@
         key: rpcRow.key || row.key,
         payload: rpcRow.payload || row.payload,
         meta: rpcRow.meta || row.meta,
-        updated_at: rpcRow.updated_at || row.updated_at
+        updated_at: rpcRow.updated_at || row.updated_at,
+        revision: Number.isFinite(Number(rpcRow.revision)) ? Number(rpcRow.revision) : state.rotationRevision
       };
     }
 
@@ -2153,6 +2404,23 @@
   }
 
   async function upsertRotationMonthEntriesDirect(client, monthStart, label, rows) {
+    if (hasSecureAdminContext()) {
+      const payloadRows = (Array.isArray(rows) ? rows : []).map((row, idx) => ({
+        employee_name: String(row && row.employee_name ? row.employee_name : '').trim(),
+        target_machine: String(row && row.target_machine ? row.target_machine : '').trim() || null,
+        assignment_type: String(row && row.assignment_type ? row.assignment_type : 'work').trim(),
+        shift_code: String(row && row.shift_code ? row.shift_code : '').trim() || null,
+        note: String(row && row.note ? row.note : '').trim() || null,
+        row_order: Number.isFinite(Number(row && row.row_order)) ? Number(row.row_order) : idx
+      }));
+      const { data, error } = await client.rpc('rak_admin_save_rotation_month_entries_v2', {
+        p_month_start: monthStart,
+        p_label: String(label || '').trim() || null,
+        p_rows: payloadRows
+      });
+      if (error) throw error;
+      return Number(data && data.inserted || payloadRows.length) || 0;
+    }
     const monthRow = {
       month_start: monthStart,
       label: String(label || '').trim() || null,
@@ -2195,6 +2463,19 @@
       o_moves: Number(entry && entry.oMoves ? entry.oMoves : 0) || 0,
       ruleset_version: String((entry && (entry.rulesetVersion || entry.ruleset_version)) || window.GOMOKU_RULESET_VERSION || 'gomoku-10col-19row-ai-rules-v3').trim() || 'gomoku-10col-19row-ai-rules-v3'
     };
+    const { data: rpcData, error: rpcError } = await client.rpc('rak_submit_gomoku_win_v2', {
+      p_player_name: payload.player_name,
+      p_difficulty: payload.difficulty,
+      p_moves: payload.moves,
+      p_app_version: payload.app_version,
+      p_created_at: payload.created_at,
+      p_elapsed_ms: payload.elapsed_ms,
+      p_elapsed_text: payload.elapsed_text,
+      p_x_moves: payload.x_moves,
+      p_o_moves: payload.o_moves,
+      p_ruleset_version: payload.ruleset_version
+    });
+    if (!rpcError) return rpcData ? [rpcData] : [];
     const { data, error } = await client.from('gomoku_wins').insert([payload]).select('*');
     if (error) throw error;
     return Array.isArray(data) ? data : [];
@@ -2430,9 +2711,10 @@
 
   async function loadAppUsageDirect(client, options = {}) {
     const limit = Math.max(1, Math.min(200, Number(options.limit || 80) || 80));
-    const { data, error } = await runSupabaseOperation('app_usage.rpc.presence_admin', () => client.rpc('rak_usage_presence_admin', {
-      limit_count: limit
-    }), { mode: 'read', attempts: 1, timeoutMs: 10000 });
+    const secure = hasSecureAdminContext();
+    const { data, error } = await runSupabaseOperation('app_usage.rpc.presence_admin', () => secure
+      ? client.rpc('rak_admin_usage_presence_v2', { p_limit: limit })
+      : client.rpc('rak_usage_presence_admin', { limit_count: limit }), { mode: 'read', attempts: 1, timeoutMs: 10000 });
     if (error) throw error;
     const rows = Array.isArray(data) ? data : [];
     const devices = rows.map(normalizeAppUsageRow);
@@ -2497,6 +2779,18 @@
 
   async function saveBugReportDirect(client, entry) {
     const row = normalizeBugReportPayload(entry);
+    const { data: rpcData, error: rpcError } = await runSupabaseOperation('bug_reports.rpc_insert_v2', () => client.rpc('rak_submit_bug_report_v2', {
+      p_account_number: row.account_number,
+      p_player_name: row.player_name,
+      p_report_type: row.report_type,
+      p_message: row.message,
+      p_app_version: row.app_version,
+      p_route: row.route,
+      p_user_agent: row.user_agent,
+      p_device_info: row.device_info
+    }), { mode: 'write', attempts: 1 });
+    if (!rpcError) return Object.assign({ ok: true, row }, rpcData || {});
+    if (state.adminAuth.capabilities && state.adminAuth.capabilities.enforced === true) throw rpcError;
     if (!row.message || row.message.length < 3) throw new Error('Report je moc krátký.');
     const { error } = await runSupabaseOperation('bug_reports.insert', () => client.from('bug_reports').insert([row]), { mode: 'write', attempts: 1 });
     if (error) throw error;
@@ -2518,6 +2812,14 @@
   async function loadBugReportsDirect(client, options = {}) {
     const limit = Math.max(1, Math.min(80, Number(options.limit || 40) || 40));
     const status = String(options.status || '').trim();
+    if (hasSecureAdminContext()) {
+      const { data, error } = await runSupabaseOperation('bug_reports.rpc_list_v2', () => client.rpc('rak_admin_list_bug_reports_v2', {
+        p_status: status && status !== 'all' ? normalizeBugReportStatus(status) : 'all',
+        p_limit: limit
+      }), { mode: 'read', attempts: 1 });
+      if (error) throw error;
+      return { ok: true, rows: Array.isArray(data) ? data : [] };
+    }
     let query = client.from('bug_reports')
       .select('id, account_number, player_name, report_type, message, app_version, route, user_agent, device_info, status, created_at, handled_at, handled_note')
       .or('handled_note.is.null,handled_note.neq.' + BUG_REPORT_DELETED_NOTE)
@@ -2534,6 +2836,15 @@
     if (!reportId) throw new Error('Chybí ID reportu.');
     if (!isBugReportUuid(reportId)) return { ok: false, reason: 'non-uuid-report-id', localOnly: true };
     const nextStatus = normalizeBugReportStatus(status);
+    if (hasSecureAdminContext()) {
+      const { data, error } = await runSupabaseOperation('bug_reports.rpc_update_v2', () => client.rpc('rak_admin_update_bug_report_v2', {
+        p_id: reportId,
+        p_status: nextStatus,
+        p_note: String(note || '').slice(0, 600) || null
+      }), { mode: 'write', attempts: 1 });
+      if (error) throw error;
+      return data || { ok: true };
+    }
     const patch = {
       status: nextStatus,
       handled_at: nextStatus === 'new' ? null : new Date().toISOString(),
@@ -2551,6 +2862,13 @@
     const reportId = String(id || '').trim();
     if (!reportId) throw new Error('Chybí ID reportu.');
     if (!isBugReportUuid(reportId)) return { ok: false, reason: 'non-uuid-report-id', localOnly: true };
+    if (hasSecureAdminContext()) {
+      const { data, error } = await runSupabaseOperation('bug_reports.rpc_delete_v2', () => client.rpc('rak_admin_delete_bug_report_v2', {
+        p_id: reportId
+      }), { mode: 'write', attempts: 1 });
+      if (error) throw error;
+      return data || { ok: true, id: reportId, softDeleted: true };
+    }
     // DB nemá DELETE policy. Mažeme bezpečně přes existující UPDATE cestu: report schováme jako ignorovaný se speciální poznámkou.
     const patch = {
       status: 'ignored',
@@ -3535,12 +3853,11 @@
 
   async function saveMachineSettings(rows, options) {
     const client = getClient();
-    const adminPin = getAdminPinForWrite(options || {});
-    if (!adminPin) return { ok: false, reason: 'admin-pin-required' };
+    if (!hasSecureAdminContext()) return { ok: false, reason: 'admin-auth-required' };
     try {
       if (client && navigator.onLine) {
         if (shouldDeferOnlineWrite()) return { ok: false, queued: false, deferred: true, reason: 'admin-online-required', savedCount: 0 };
-        const savedCount = await runOptimizedSupabaseWrite('machine_settings.save', rows, () => runSupabaseOperation('machine_settings.save', () => upsertMachineSettingsDirect(client, rows, { adminPin }), { mode: 'write' }));
+        const savedCount = await runOptimizedSupabaseWrite('machine_settings.save', rows, () => runSupabaseOperation('machine_settings.save', () => upsertMachineSettingsDirect(client, rows, options || {}), { mode: 'write' }));
         state.machineSettingsSnapshot = Array.isArray(rows) ? rows : [];
         saveLocalSnapshot(state.rotationSnapshot || null, rows);
         await flushPendingWrites();
@@ -4369,13 +4686,17 @@
         if (row && (row.payload || row.rotation)) {
           const payload = row.payload || row.rotation || null;
           state.rotationSnapshot = payload;
+          state.rotationRevision = Number.isFinite(Number(row.revision)) ? Number(row.revision) : 0;
+          state.rotationSync.lastReadAt = new Date().toISOString();
+          state.rotationSync.lastError = null;
           state.lastError = null;
           saveLocalSnapshot(payload, state.machineSettingsSnapshot || []);
           return {
             id: row.key || 'main',
             payload,
             updatedAt: row.updated_at || null,
-            meta: row.meta || null
+            meta: row.meta || null,
+            revision: Number.isFinite(Number(row.revision)) ? Number(row.revision) : 0
           };
         }
 
@@ -4396,6 +4717,7 @@
       }
     } catch (err) {
       state.lastError = err;
+      state.rotationSync.lastError = err;
       console.warn('Supabase rotation load failed', err);
     }
 
@@ -4416,26 +4738,30 @@
 
   async function saveRotationState(rotation, meta, options) {
     const client = getClient();
-    const adminPin = getAdminPinForWrite(options || {});
-    if (!adminPin) return { ok: false, reason: 'admin-pin-required' };
+    if (!hasAdminWriteCredential()) return { ok: false, reason: 'admin-auth-required' };
     try {
       if (client && navigator.onLine) {
         if (shouldDeferOnlineWrite()) return { ok: false, queued: false, deferred: true, reason: 'admin-online-required' };
-        const row = await runOptimizedSupabaseWrite('rotation_state.save', { rotation, meta }, () => runSupabaseOperation('rotation_state.save', () => upsertRotationStateDirect(client, rotation, meta, { adminPin }), { mode: 'write' }), { windowMs: 2200 });
+        const row = await runOptimizedSupabaseWrite('rotation_state.save', { rotation, meta }, () => runSupabaseOperation('rotation_state.save', () => upsertRotationStateDirect(client, rotation, meta, options || {}), { mode: 'write' }), { windowMs: 2200 });
         state.rotationSnapshot = rotation && typeof rotation === 'object' ? rotation : null;
         state.lastError = null;
+        state.rotationSync.lastWriteAt = new Date().toISOString();
+        state.rotationSync.lastWriteRevision = Number.isFinite(Number(row.revision)) ? Number(row.revision) : state.rotationRevision;
+        state.rotationSync.lastError = null;
         saveLocalSnapshot(state.rotationSnapshot, state.machineSettingsSnapshot || []);
         await flushPendingWrites();
         return {
           ok: true,
           queued: false,
           verified: true,
-          updatedAt: row.updated_at
+          updatedAt: row.updated_at,
+          revision: Number.isFinite(Number(row.revision)) ? Number(row.revision) : state.rotationRevision
         };
       }
       return { ok: false, queued: false, reason: 'admin-online-required' };
     } catch (err) {
       state.lastError = err;
+      state.rotationSync.lastError = err;
       console.warn('Supabase rotation save failed', err);
       return { ok: false, error: err };
     }
@@ -4444,17 +4770,15 @@
   async function listRotationBackups(options) {
     const client = getClient();
     const opts = options || {};
-    const adminPin = getAdminPinForWrite(opts);
-    if (!adminPin) return { ok: false, reason: 'admin-pin-required', backups: [] };
+    if (!hasAdminWriteCredential()) return { ok: false, reason: 'admin-auth-required', backups: [] };
     if (!client || !navigator.onLine) return { ok: false, reason: 'admin-online-required', backups: [] };
     try {
       const limit = Math.max(1, Math.min(100, Number(opts.limit) || 30));
-      const { data, error } = await runSupabaseOperation('rotation_backups.list', () => client.rpc('rak_admin_list_rotation_backups', {
-        p_admin_pin: adminPin,
+      const { data, error } = await runSupabaseOperation('rotation_backups.list_v2', () => client.rpc('rak_admin_list_rotation_backups_v2', {
         p_limit: limit
       }), { mode: 'read', attempts: 1, timeoutMs: 12000 });
       if (error) throw error;
-      return { ok: true, backups: Array.isArray(data) ? data : [], at: new Date().toISOString() };
+      return { ok: true, secure: true, backups: Array.isArray(data) ? data : [], at: new Date().toISOString() };
     } catch (err) {
       state.lastError = err;
       console.warn('Supabase rotation backups list failed', err);
@@ -4465,27 +4789,26 @@
   async function restoreRotationBackup(backupId, options) {
     const client = getClient();
     const opts = options || {};
-    const adminPin = getAdminPinForWrite(opts);
     const id = String(backupId || '').trim();
-    if (!adminPin) return { ok: false, reason: 'admin-pin-required' };
+    if (!hasAdminWriteCredential()) return { ok: false, reason: 'admin-auth-required' };
     if (!id) return { ok: false, reason: 'missing-backup-id' };
     if (!client || !navigator.onLine) return { ok: false, reason: 'admin-online-required' };
     try {
       const meta = opts.meta && typeof opts.meta === 'object' ? opts.meta : {};
-      const { data, error } = await runSupabaseOperation('rotation_backups.restore', () => client.rpc('rak_admin_restore_rotation_backup', {
+      const { data, error } = await runSupabaseOperation('rotation_backups.restore_v2', () => client.rpc('rak_admin_restore_rotation_backup_v2', {
         p_backup_id: id,
-        p_admin_pin: adminPin,
+        p_expected_revision: state.rotationRevision,
         p_meta: meta
       }), { mode: 'write', attempts: 1, timeoutMs: 16000 });
       if (error) throw error;
       const row = data && data.row ? data.row : null;
+      if (row && Number.isFinite(Number(row.revision))) state.rotationRevision = Number(row.revision);
       if (row && row.payload) {
         state.rotationSnapshot = row.payload;
         state.lastError = null;
         saveLocalSnapshot(row.payload, state.machineSettingsSnapshot || []);
       }
-      await flushPendingWrites();
-      return { ok: true, data: data || null, row, updatedAt: row && row.updated_at ? row.updated_at : null };
+      return { ok: true, secure: true, data: data || null, row, updatedAt: row && row.updated_at ? row.updated_at : null };
     } catch (err) {
       state.lastError = err;
       console.warn('Supabase rotation backup restore failed', err);
@@ -4800,7 +5123,19 @@
     const hasCache = !!(cached && (cached.rotation || (Array.isArray(cached.machineSettingsRows) && cached.machineSettingsRows.length)));
     const queueLength = readQueue().length;
     const online = typeof navigator !== 'undefined' ? navigator.onLine : true;
-    const lastError = state.lastError || null;
+    const lastError = state.rotationSync.lastError || null;
+    const rotationDirty = !!(typeof app !== 'undefined' && app && app.adminRotationDirty === true);
+
+    if (rotationDirty) {
+      return {
+        kind: 'pending',
+        label: 'Rozpis má neuložené změny',
+        detail: 'Změny zůstávají v editoru do úspěšného uložení',
+        queued: queueLength,
+        hasCache,
+        hardening: getSupabaseHardeningStatus()
+      };
+    }
 
     if (!online) {
       return {
@@ -4835,10 +5170,24 @@
       };
     }
 
+    if (!state.rotationSync.lastReadAt && !state.rotationSync.lastWriteAt) {
+      return {
+        kind: 'pending',
+        label: 'Online · ověřuji synchronizaci',
+        detail: 'Čekám na první potvrzené načtení rozpisu',
+        queued: 0,
+        hasCache,
+        realtime: state.realtimeStatus || 'idle',
+        hardening: getSupabaseHardeningStatus()
+      };
+    }
+
     return {
       kind: 'online',
       label: '🟢 Online synchronizováno',
-      detail: cached && cached.updatedAt ? ('Aktualizováno ' + new Date(cached.updatedAt).toLocaleString('cs-CZ')) : 'Online',
+      detail: state.rotationSync.lastWriteAt
+        ? ('Rozpis uložen ' + new Date(state.rotationSync.lastWriteAt).toLocaleString('cs-CZ'))
+        : ('Rozpis načten ' + new Date(state.rotationSync.lastReadAt).toLocaleString('cs-CZ')),
       queued: 0,
       hasCache,
       realtime: state.realtimeStatus || 'idle',
@@ -4881,38 +5230,42 @@
   }
 
   async function getAdminServiceSnapshotDirect(client) {
-    const nowIso = new Date().toISOString();
-    const counts = {
-      game_accounts: await countAdminRowsDirect(client, 'game_accounts'),
-      game_stats: await countAdminRowsDirect(client, 'game_stats'),
-      game_invites: await countAdminRowsDirect(client, 'game_invites'),
-      game_invites_pending: await countAdminRowsDirect(client, 'game_invites', q => q.eq('status', 'pending')),
-      game_sessions: await countAdminRowsDirect(client, 'game_sessions'),
-      game_sessions_active: await countAdminRowsDirect(client, 'game_sessions', q => q.in('status', ['active', 'waiting', 'placing'])),
-      bug_reports_new: await countAdminRowsDirect(client, 'bug_reports', q => q.eq('status', 'new')),
-      app_usage_devices: await countAdminRowsDirect(client, 'app_usage_devices'),
-      app_usage_events_24h: await countAdminRowsDirect(client, 'app_usage_events', q => q.gte('seen_at', new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()))
-    };
-    const profileUiRows = await countAdminRowsDirect(client, 'game_stats', q => q.eq('game_type', GAME_UI_SETTINGS_TYPE));
-    counts.profile_ui_settings = profileUiRows;
-    return {
-      ok: true,
-      at: nowIso,
-      counts,
+    if (!hasSecureAdminContext()) throw new Error('admin authentication required');
+    const { data, error } = await runSupabaseOperation('admin.service_snapshot_v2', () => client.rpc('rak_admin_service_snapshot_v2'), { mode: 'read', attempts: 1, timeoutMs: 12000 });
+    if (error) throw error;
+    return Object.assign({}, data || {}, {
       sync: getSyncUiStatus(),
       bridge: getSupabaseHardeningStatus(),
       profileUiStorage: 'game_stats:' + GAME_UI_SETTINGS_TYPE
-    };
+    });
   }
 
   async function cleanupExpiredGameInvitesDirect(client) {
-    const { data, error } = await runSupabaseOperation('admin.cleanup_expired_game_invites', () => client.rpc('rak_admin_cleanup_expired_game_invites'), { mode: 'write', attempts: 1, timeoutMs: 12000 });
+    if (!hasSecureAdminContext()) throw new Error('admin authentication required');
+    const { data, error } = await runSupabaseOperation('admin.cleanup_expired_game_invites_v2', () => client.rpc(
+      'rak_admin_cleanup_expired_game_invites_v2'
+    ), { mode: 'write', attempts: 1, timeoutMs: 12000 });
     if (error) throw error;
     return { ok: true, data: data || null, at: new Date().toISOString() };
   }
 
   window.RotationSupabaseBridge = {
     init,
+    getAdminAuthCapabilities,
+    loadAdminAuthContext,
+    adminAccountRequiresAuth,
+    signInAdminAccount,
+    restoreAdminAuthSession,
+    signOutAdminAccount,
+    getAdminAccessToken,
+    listAdminAuthDevices,
+    revokeAdminAuthDevice,
+    listAdminAuthProfiles,
+    createAdminSettingsBackup,
+    listAdminSettingsBackups,
+    getAdminSettingsBackup,
+    writeAdminAudit,
+    listAdminAudit,
     refreshPublicData,
     sendGomokuWin,
     loadRotationState,

@@ -2,6 +2,7 @@
 async function syncRotationFromSupabase(force) {
   const bridge = window.RotationSupabaseBridge;
   if (!bridge || typeof bridge.loadRotationState !== 'function') return null;
+  if (force !== 'discard-draft' && typeof app !== 'undefined' && app && app.adminRotationDirty === true && document.getElementById('adminRotationEditor')) return null;
   try {
     const remote = await bridge.loadRotationState();
     if (!remote || !remote.payload) return null;
@@ -68,7 +69,7 @@ async function saveRotationToSupabase(rotation, meta) {
   if (!bridge || typeof bridge.saveRotationState !== 'function') return { ok: false, reason: 'missing-bridge' };
   if (!isRakAdminRotationWrite(meta || {})) return { ok: false, reason: 'admin-required' };
   const adminPin = getRakAdminPinForWrite();
-  if (!adminPin) return { ok: false, reason: 'admin-pin-required' };
+  if (!adminPin && !(typeof app !== 'undefined' && app && app.adminAuthVersion === 2)) return { ok: false, reason: 'admin-auth-required' };
   try {
     return await bridge.saveRotationState(rotation, meta || {}, { adminPin });
   } catch (err) {
