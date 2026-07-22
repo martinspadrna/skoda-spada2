@@ -1,4 +1,4 @@
-const { requireAdmin, SUPABASE_URL } = require('./_admin-auth');
+const { fetchWithRetry, requireAdmin, SUPABASE_URL } = require('./_admin-auth');
 
 const MAX_ICS_BYTES = 2 * 1024 * 1024;
 const PROXY_TOKEN = String(process.env.RAK_CALENDAR_PROXY_TOKEN || '').trim();
@@ -11,7 +11,7 @@ function setResponseHeaders(res) {
 
 async function loadCalendarText() {
   if (!SUPABASE_URL || !PROXY_TOKEN) throw new Error('calendar_service_not_configured');
-  const response = await fetch(`${SUPABASE_URL}/functions/v1/rak-absence-calendar`, {
+  const response = await fetchWithRetry(`${SUPABASE_URL}/functions/v1/rak-absence-calendar`, {
     headers: {
       apikey: PROXY_TOKEN,
       accept: 'text/calendar'
@@ -29,12 +29,16 @@ async function loadCalendarText() {
 
 function safeCalendarError(error) {
   const message = String(error && error.message || error || '');
+  const code = String(error && (error.code || (error.cause && error.cause.code)) || '');
   if (message === 'calendar_service_not_configured') return 'server_not_configured';
   const status = message.match(/^calendar_service_failed:(\d{3})$/)?.[1];
   if (status) return `edge_http_${status}`;
   if (message === 'calendar_response_too_large') return 'response_too_large';
   if (message === 'calendar_invalid_response') return 'invalid_response';
   if (/timeout/i.test(message)) return 'timeout';
+  if (/^(ENOTFOUND|EAI_AGAIN|ECONNRESET|ECONNREFUSED|ETIMEDOUT|UND_ERR_CONNECT_TIMEOUT)$/.test(code)) {
+    return code.toLowerCase();
+  }
   return 'network_error';
 }
 

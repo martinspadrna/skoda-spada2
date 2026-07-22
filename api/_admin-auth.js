@@ -33,9 +33,28 @@ function bearerToken(req) {
   return /^Bearer\s+\S+$/i.test(value) ? value.replace(/^Bearer\s+/i, '') : '';
 }
 
+function wait(milliseconds) {
+  return new Promise((resolve) => setTimeout(resolve, milliseconds));
+}
+
+async function fetchWithRetry(url, options = {}, attempts = 3) {
+  let lastError;
+  for (let attempt = 0; attempt < attempts; attempt += 1) {
+    try {
+      const response = await fetch(url, options);
+      if (response.status < 500 || attempt === attempts - 1) return response;
+    } catch (error) {
+      lastError = error;
+      if (attempt === attempts - 1) throw error;
+    }
+    await wait(150 * (attempt + 1));
+  }
+  throw lastError || new Error('server_fetch_failed');
+}
+
 async function supabaseRequest(path, options = {}) {
   if (!SUPABASE_URL || !PUBLISHABLE_KEY) throw new Error('server_auth_not_configured');
-  return fetch(`${SUPABASE_URL}${path}`, {
+  return fetchWithRetry(`${SUPABASE_URL}${path}`, {
     ...options,
     headers: {
       apikey: PUBLISHABLE_KEY,
@@ -89,5 +108,6 @@ module.exports = {
   requireAdmin,
   sameOriginRequest,
   sendJson,
+  fetchWithRetry,
   supabaseRequest
 };
