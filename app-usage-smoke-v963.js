@@ -44,6 +44,7 @@ const brusyJs = read('brusy.js');
 const stylesLayoutCss = read('styles-layout.css');
 const browserSmokeJs = read('browser-smoke-v1103.js');
 const rotationAbsenceCalendarApiJs = read('api/rotation-absence-calendar.js');
+const rotationAbsenceCalendarEdgeTs = read('supabase/functions/rak-absence-calendar/index.ts');
 const dashboardCss = `${dashboardFitCss}
 ${dashboardPolishCss}`;
 const styleHrefMatches = Array.from(indexHtml.matchAll(/<link[^>]+rel=["']stylesheet["'][^>]+href=["']([^"']+)["'][^>]*>/g));
@@ -899,10 +900,12 @@ function assertRotationGeneratorWizardContractV1108() {
   assertIncludes(ui, 'function adminRotationGeneratorLoadCalendarAbsences', 'Generátor musí umět načíst absence z Google kalendáře');
   assertIncludes(ui, 'function adminRotationGeneratorParseIcsAbsences', 'Generátor musí mít parser ICS absencí');
   assertIncludes(ui, 'generator-load-calendar-absences', 'Krok Absence musí mít akci pro načtení dovolených z kalendáře');
-  assertIncludes(rotationAbsenceCalendarApiJs, 'process.env.RAK_ABSENCE_ICS_URL', 'API proxy musí umět vzít ICS URL z prostředí');
+  assertIncludes(rotationAbsenceCalendarApiJs, '/functions/v1/rak-absence-calendar', 'API proxy musí předat načtení ICS zabezpečené Edge Function');
+  assertIncludes(rotationAbsenceCalendarEdgeTs, 'Deno.env.get("RAK_ABSENCE_ICS_URL")', 'Edge Function musí vzít ICS URL jen ze Supabase secrets');
   assertIncludes(rotationAbsenceCalendarApiJs, "requireAdmin(req)", 'Soukromý kalendář smí načíst jen přihlášený admin');
   assertIncludes(rotationAbsenceCalendarApiJs, "'Cache-Control', 'no-store, max-age=0'", 'Soukromý kalendář se nesmí ukládat do veřejné cache');
   assertNotIncludes(rotationAbsenceCalendarApiJs, 'calendar.google.com/calendar/ical/31eea99', 'Soukromá ICS adresa nesmí být ve zdrojovém kódu');
+  assertNotIncludes(rotationAbsenceCalendarEdgeTs, 'calendar.google.com/calendar/ical/31eea99', 'Soukromá ICS adresa nesmí být ani v Edge Function');
   assertNotIncludes(rotationAbsenceCalendarApiJs, 'Access-Control-Allow-Origin', 'Soukromý kalendář nesmí povolit veřejné CORS');
   assertIncludes(ui, 'copy-rotation-vacations', 'Administrace rozpisu musí mít tlačítko Kopírovat dovolené');
   assertIncludes(ui, 'function buildAdminRotationVacationCopyText', 'Administrace rozpisu musí umět složit text dovolených pro WhatsApp');

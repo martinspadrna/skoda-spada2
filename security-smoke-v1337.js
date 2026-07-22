@@ -18,6 +18,7 @@ const adminMenu = read('app-menu.js');
 const adminRotation = read('admin-rotation.js');
 const excelImport = read('app-excel-import.js');
 const calendarApi = read('api/rotation-absence-calendar.js');
+const calendarEdge = read('supabase/functions/rak-absence-calendar/index.ts');
 const adminAuthApi = read('api/_admin-auth.js');
 const adminUsersApi = read('api/admin-users.js');
 const migrationDir = path.join(root, 'supabase', 'migrations');
@@ -33,17 +34,19 @@ includes(migrationText, 'revoke insert, update, delete on table', 'Provozni tabu
 
 includes(adminAuthApi, "'/rest/v1/rpc/rak_admin_context'", 'Server musi overovat i odvolani admin relace.');
 includes(adminUsersApi, 'RAK_SUPABASE_SERVICE_ROLE_KEY', 'Sprava Auth uzivatelu musi pouzivat jen serverovy service-role klic.');
-includes(calendarApi, 'process.env.RAK_ABSENCE_ICS_URL', 'ICS URL musi byt jen v serverovem prostredi.');
 includes(calendarApi, 'requireAdmin(req)', 'ICS API musi vyzadovat admina.');
 includes(calendarApi, "'Cache-Control', 'no-store, max-age=0'", 'ICS odpoved se nesmi cachovat.');
 includes(calendarApi, 'MAX_ICS_BYTES', 'ICS odpoved musi mit limit velikosti.');
-includes(calendarApi, 'family: 4', 'ICS API musi mit IPv4 HTTPS fallback pro Vercel sit.');
-includes(calendarApi, "hostname: '1.1.1.1'", 'ICS API musi mit primy DoH fallback pro cilene DNS chyby Vercelu.');
-includes(calendarApi, "servername: 'cloudflare-dns.com'", 'DoH spojeni musi overovat TLS certifikat Cloudflare.');
-includes(calendarApi, 'servername: target.hostname', 'Prime IP spojeni musi overovat TLS certifikat puvodniho Google hostu.');
-includes(calendarApi, "headers: Object.assign({ host: target.host }", 'Prime IP spojeni musi zachovat HTTP Host puvodniho Google hostu.');
-includes(calendarApi, "parsed.hostname === CALENDAR_HOST", 'ICS presmerovani musi zustat na povolenem Google hostu.');
+includes(calendarApi, '/functions/v1/rak-absence-calendar', 'Vercel API musi nacitat ICS pres zabezpecenou Edge Function.');
+includes(calendarApi, 'RAK_CALENDAR_PROXY_TOKEN', 'Volani Edge Function musi pouzivat samostatny serverovy proxy token.');
+excludes(calendarApi, 'process.env.RAK_ABSENCE_ICS_URL', 'Soukrome ICS URL nema byt ve Vercel vrstve.');
+includes(calendarEdge, 'Deno.env.get("RAK_ABSENCE_ICS_URL")', 'ICS URL musi byt jen v Supabase secrets.');
+includes(calendarEdge, 'Deno.env.get("RAK_CALENDAR_PROXY_TOKEN")', 'Edge Function musi overovat samostatny serverovy proxy token.');
+includes(calendarEdge, 'crypto.subtle.digest("SHA-256"', 'Serverovy klic se musi porovnavat pres otisk.');
+includes(calendarEdge, 'parsed.hostname === CALENDAR_HOST', 'ICS presmerovani musi zustat na povolenem Google hostu.');
+includes(calendarEdge, 'MAX_ICS_BYTES', 'Edge Function musi omezit velikost soukromeho kalendare.');
 excludes(calendarApi, 'Access-Control-Allow-Origin', 'Soukrome ICS API nesmi mit verejne CORS.');
+excludes(calendarEdge, 'Access-Control-Allow-Origin', 'Soukroma Edge Function nesmi mit verejne CORS.');
 excludes(calendarApi, '31eea99edff1771be15ba877f7c2f5b1371e0a742ad9d54fca526d41eafa5995', 'Soukrome ID kalendare nesmi byt ve zdrojich.');
 
 includes(bridge, 'persistSession: true', 'Admin Auth relace musi prezit restart aplikace.');
