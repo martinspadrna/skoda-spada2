@@ -128,7 +128,7 @@ const ADMIN_ROTATION_OVERTIME_SHIFT_FILTER_KEY = 'rak_admin_overtime_shift_filte
 const ADMIN_ROTATION_OVERTIME_DEFAULT_TEAM = 'D';
 const ADMIN_ROTATION_GENERATOR_SETTINGS_KEY = 'ROTATION_GENERATOR_SETTINGS';
 const ADMIN_ROTATION_GENERATOR_SETTINGS_CATEGORY = 'rotation_generator_settings';
-const ADMIN_ROTATION_GENERATOR_ABSENCE_ICS_URL = '/api/rotation-absence-calendar';
+const ADMIN_ROTATION_GENERATOR_ABSENCE_ICS_URL = String(window.SUPABASE_CONFIG && window.SUPABASE_CONFIG.url || '').replace(/\/$/, '') + '/functions/v1/rak-absence-calendar';
 
 function adminRotationOvertimeIsoToCzechDate(value) {
   const raw = String(value || '').trim();
@@ -5352,7 +5352,10 @@ async function adminRotationGeneratorLoadCalendarAbsences() {
     if (!accessToken) throw new Error('admin-auth-required');
     const response = await fetch(ADMIN_ROTATION_GENERATOR_ABSENCE_ICS_URL, {
       cache: 'no-store',
-      headers: { Authorization: 'Bearer ' + accessToken }
+      headers: {
+        Authorization: 'Bearer ' + accessToken,
+        apikey: String(window.SUPABASE_CONFIG && window.SUPABASE_CONFIG.publishableKey || '')
+      }
     });
     if (!response || !response.ok) throw new Error('HTTP ' + String(response && response.status || ''));
     const text = await response.text();
@@ -5367,7 +5370,7 @@ async function adminRotationGeneratorLoadCalendarAbsences() {
     return { ok: true, importedCount };
   } catch (err) {
     const failStatus = document.getElementById('adminOnlineSaveStatus');
-    if (failStatus) failStatus.textContent = 'Kalendář se nepodařilo načíst. Zkontroluj nasazení /api/rotation-absence-calendar nebo dostupnost Google kalendáře.';
+    if (failStatus) failStatus.textContent = 'Kalendář se nepodařilo načíst. Zkontroluj přihlášení nebo dostupnost Google kalendáře.';
     return { ok: false, error: err && err.message ? err.message : String(err || 'neznámá chyba') };
   }
 }

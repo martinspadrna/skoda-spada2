@@ -970,7 +970,7 @@ async function runViewportSmoke(cdpPort, viewport, inlineHtml, liveRotationPaylo
       });
       adminRotationGeneratorRenderWizard('absences');
       window.fetch = async (url) => ({
-        ok: String(url || '').includes('/api/rotation-absence-calendar') || String(url || '').includes('calendar.google.com'),
+        ok: String(url || '').includes('/functions/v1/rak-absence-calendar') || String(url || '').includes('calendar.google.com'),
         status: 200,
         text: async () => [
           'BEGIN:VCALENDAR',

@@ -896,13 +896,14 @@ function assertRotationGeneratorWizardContractV1108() {
   assertIncludes(ui, 'generator-day-remove', 'Průvodce musí umět smazat pracovní den křížkem');
   assertIncludes(ui, 'generator-day-add', 'Průvodce musí umět přidat pracovní den přes +');
   assertIncludes(ui, 'generator-absence-add', 'Průvodce musí umět přidat více absencí ke dni přes +');
-  assertIncludes(ui, "ADMIN_ROTATION_GENERATOR_ABSENCE_ICS_URL = '/api/rotation-absence-calendar'", 'Generátor musí načítat absence přes vlastní API proxy kvůli CORS');
+  assertIncludes(ui, "'/functions/v1/rak-absence-calendar'", 'Generátor musí načítat absence přímo přes zabezpečenou Edge Function');
   assertIncludes(ui, 'function adminRotationGeneratorLoadCalendarAbsences', 'Generátor musí umět načíst absence z Google kalendáře');
   assertIncludes(ui, 'function adminRotationGeneratorParseIcsAbsences', 'Generátor musí mít parser ICS absencí');
   assertIncludes(ui, 'generator-load-calendar-absences', 'Krok Absence musí mít akci pro načtení dovolených z kalendáře');
-  assertIncludes(rotationAbsenceCalendarApiJs, '/functions/v1/rak-absence-calendar', 'API proxy musí předat načtení ICS zabezpečené Edge Function');
+  assertIncludes(rotationAbsenceCalendarApiJs, 'calendar_endpoint_moved', 'Starý Vercel endpoint musí být bezpečně vyřazený');
   assertIncludes(rotationAbsenceCalendarEdgeTs, 'Deno.env.get("RAK_ABSENCE_ICS_URL")', 'Edge Function musí vzít ICS URL jen ze Supabase secrets');
-  assertIncludes(rotationAbsenceCalendarApiJs, "requireAdmin(req)", 'Soukromý kalendář smí načíst jen přihlášený admin');
+  assertIncludes(rotationAbsenceCalendarEdgeTs, 'withSupabase({ auth: "user" }', 'Soukromý kalendář smí načíst jen přihlášený uživatel');
+  assertIncludes(rotationAbsenceCalendarEdgeTs, 'ctx.supabase.rpc("rak_admin_context")', 'Soukromý kalendář musí ověřit admin oprávnění');
   assertIncludes(rotationAbsenceCalendarApiJs, "'Cache-Control', 'no-store, max-age=0'", 'Soukromý kalendář se nesmí ukládat do veřejné cache');
   assertNotIncludes(rotationAbsenceCalendarApiJs, 'calendar.google.com/calendar/ical/31eea99', 'Soukromá ICS adresa nesmí být ve zdrojovém kódu');
   assertNotIncludes(rotationAbsenceCalendarEdgeTs, 'calendar.google.com/calendar/ical/31eea99', 'Soukromá ICS adresa nesmí být ani v Edge Function');

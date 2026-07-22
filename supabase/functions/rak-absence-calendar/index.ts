@@ -1,40 +1,32 @@
-const CALENDAR_HOST = "calendar.google.com";
-const MAX_ICS_BYTES = 2 * 1024 * 1024;
-const encoder = new TextEncoder();
+import { withSupabase } from "npm:@supabase/server@1.4.1";
 
-function responseHeaders(contentType = "application/json; charset=utf-8") {
-  return {
+const CALENDAR_HOST = "calendar.google.com";
+const ALLOWED_ORIGIN = "https://skoda-spada.vercel.app";
+const MAX_ICS_BYTES = 2 * 1024 * 1024;
+
+function originAllowed(req: Request) {
+  const origin = String(req.headers.get("origin") || "").trim();
+  return !origin || origin === ALLOWED_ORIGIN;
+}
+
+function responseHeaders(req: Request, contentType = "application/json; charset=utf-8") {
+  const headers: Record<string, string> = {
     "cache-control": "no-store, max-age=0",
     "content-type": contentType,
+    "vary": "Origin",
     "x-content-type-options": "nosniff",
   };
+  if (String(req.headers.get("origin") || "").trim() === ALLOWED_ORIGIN) {
+    headers["access-control-allow-origin"] = ALLOWED_ORIGIN;
+  }
+  return headers;
 }
 
-function jsonResponse(status: number, error: string) {
+function jsonResponse(req: Request, status: number, error: string) {
   return new Response(JSON.stringify({ ok: false, error }), {
     status,
-    headers: responseHeaders(),
+    headers: responseHeaders(req),
   });
-}
-
-async function equalSecret(left: string, right: string) {
-  const [leftHash, rightHash] = await Promise.all([
-    crypto.subtle.digest("SHA-256", encoder.encode(left)),
-    crypto.subtle.digest("SHA-256", encoder.encode(right)),
-  ]);
-  const leftBytes = new Uint8Array(leftHash);
-  const rightBytes = new Uint8Array(rightHash);
-  let difference = leftBytes.length ^ rightBytes.length;
-  for (let index = 0; index < leftBytes.length; index += 1) {
-    difference |= leftBytes[index] ^ rightBytes[index];
-  }
-  return difference === 0;
-}
-
-async function hasServerAccess(req: Request) {
-  const provided = String(req.headers.get("apikey") || "").trim();
-  const expected = String(Deno.env.get("RAK_CALENDAR_PROXY_TOKEN") || "").trim();
-  return !!provided && !!expected && await equalSecret(provided, expected);
 }
 
 function validCalendarUrl(value: string) {
@@ -100,25 +92,48 @@ async function fetchCalendar(url: string, redirectCount = 0): Promise<string> {
   return text;
 }
 
-Deno.serve(async (req) => {
+const authenticatedFetch = withSupabase({ auth: "user" }, async (req, ctx) => {
+  if (!originAllowed(req)) return jsonResponse(req, 403, "origin_not_allowed");
   if (req.method !== "GET" && req.method !== "HEAD") {
     return new Response(null, {
       status: 405,
-      headers: { ...responseHeaders(), allow: "GET, HEAD" },
+      headers: { ...responseHeaders(req), allow: "GET, HEAD, OPTIONS" },
     });
   }
-  if (!(await hasServerAccess(req))) return jsonResponse(401, "authentication_required");
+
+  const { data: profile, error: profileError } = await ctx.supabase.rpc("rak_admin_context");
+  if (profileError || !profile || (profile.role !== "owner" && profile.role !== "admin")) {
+    return jsonResponse(req, 403, "admin_permission_required");
+  }
 
   const calendarUrl = String(Deno.env.get("RAK_ABSENCE_ICS_URL") || "").trim();
-  if (!validCalendarUrl(calendarUrl)) return jsonResponse(500, "calendar_not_configured");
+  if (!validCalendarUrl(calendarUrl)) return jsonResponse(req, 500, "calendar_not_configured");
 
   try {
     const text = await fetchCalendar(calendarUrl);
     return new Response(req.method === "HEAD" ? null : text, {
       status: 200,
-      headers: responseHeaders("text/calendar; charset=utf-8"),
+      headers: responseHeaders(req, "text/calendar; charset=utf-8"),
     });
   } catch {
-    return jsonResponse(502, "calendar_fetch_failed");
+    return jsonResponse(req, 502, "calendar_fetch_failed");
   }
 });
+
+export default {
+  fetch(req: Request, context: unknown) {
+    if (req.method === "OPTIONS") {
+      if (!originAllowed(req)) return jsonResponse(req, 403, "origin_not_allowed");
+      return new Response(null, {
+        status: 204,
+        headers: {
+          ...responseHeaders(req),
+          "access-control-allow-headers": "authorization, apikey, content-type",
+          "access-control-allow-methods": "GET, HEAD, OPTIONS",
+          "access-control-max-age": "600",
+        },
+      });
+    }
+    return authenticatedFetch(req, context);
+  },
+};

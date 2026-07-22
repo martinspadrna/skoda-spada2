@@ -1,4 +1,7 @@
 project_id = "skoda-spada2"
 
 [functions.rak-absence-calendar]
-verify_jwt = false
+verify_jwt = true
+
+[functions.rak-admin-users]
+verify_jwt = true

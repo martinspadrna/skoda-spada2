@@ -300,11 +300,13 @@ async function rakAdminSaveSecureAccounts(root) {
       enabled: false
     })));
   for (const entry of requests) {
-    const response = await fetch('/api/admin-users', {
+    const adminUsersUrl = String(window.SUPABASE_CONFIG && window.SUPABASE_CONFIG.url || '').replace(/\/$/, '') + '/functions/v1/rak-admin-users';
+    const response = await fetch(adminUsersUrl, {
       method: 'POST',
       cache: 'no-store',
       headers: {
         Authorization: 'Bearer ' + accessToken,
+        apikey: String(window.SUPABASE_CONFIG && window.SUPABASE_CONFIG.publishableKey || ''),
         'Content-Type': 'application/json'
       },
       body: JSON.stringify(entry)
