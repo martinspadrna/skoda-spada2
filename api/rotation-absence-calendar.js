@@ -149,8 +149,19 @@ async function loadCalendarText(url) {
       return await fetchCalendarViaHttps(url);
     } catch (httpsError) {
       if (calendarErrorReason(httpsError) !== 'ENOTFOUND') throw httpsError;
-      const resolvedAddress = await resolveCalendarIpv4();
-      return fetchCalendarViaHttps(url, 0, resolvedAddress);
+      let resolvedAddress = '';
+      try {
+        resolvedAddress = await resolveCalendarIpv4();
+      } catch (dnsError) {
+        dnsError.calendarPhase = 'doh';
+        throw dnsError;
+      }
+      try {
+        return await fetchCalendarViaHttps(url, 0, resolvedAddress);
+      } catch (directError) {
+        directError.calendarPhase = 'google_ip';
+        throw directError;
+      }
     }
   }
 }
@@ -199,6 +210,7 @@ module.exports = async function rotationAbsenceCalendar(req, res) {
     res.status(200).send(text);
   } catch (err) {
     const status = Number(err && err.status || 0) || undefined;
-    res.status(502).json({ ok: false, error: 'calendar_fetch_failed', status, reason: calendarErrorReason(err) });
+    const phase = ['doh', 'google_ip'].includes(String(err && err.calendarPhase || '')) ? err.calendarPhase : 'system_dns';
+    res.status(502).json({ ok: false, error: 'calendar_fetch_failed', status, reason: calendarErrorReason(err), phase });
   }
 };
