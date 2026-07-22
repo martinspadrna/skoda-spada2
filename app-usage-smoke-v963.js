@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// RaK 1.2 (1.335) – smoke test přehledu připojení + Dashboard/appearance contract guard.
+// RaK 1.2 (1.336) – smoke test přehledu připojení + Dashboard/appearance contract guard.
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
@@ -229,12 +229,12 @@ const dashboardReleaseIsolationGuardV198 = Object.freeze({
 });
 
 const releaseMetadataContractV199 = Object.freeze({
-  displayVersion: '1.2 (1.335)',
-  appLabel: 'RaK 1.2 (1.335)',
-  packageVersion: '1.2.335',
-  cacheVersion: 'v1.2-1.335',
+  displayVersion: '1.2 (1.336)',
+  appLabel: 'RaK 1.2 (1.336)',
+  packageVersion: '1.2.336',
+  cacheVersion: 'v1.2-1.336',
   realtimeChannel: 'rak-public-live-v1-2-1-126',
-  changelogHeader: '## RaK 1.2 (1.335)',
+  changelogHeader: '## RaK 1.2 (1.336)',
   previousBuildFragments: Object.freeze(['1.2 (1.138)', '1.2.138', 'v1.2-1.138', '1.2 (1.137)', '1.2.137', 'v1.2-1.137', '1.2 (1.118)', '1.2.118', 'v1.2-1.118', 'rak-public-live-v1-2-1-118'])
 });
 
@@ -343,8 +343,8 @@ function assertDashboardReleaseIsolationGuardV198() {
 function assertReleaseMetadataContractV199() {
   const contract = releaseMetadataContractV199;
   assertIncludes(exportJs, 'RAK_RELEASE_METADATA_CONTRACT_V199', 'export.js musí obsahovat release metadata contract v1.99');
-  assertIncludes(exportJs, "displayVersion: '1.2 (1.335)'", 'Release contract v export.js musí držet display verzi 1.105');
-  assertIncludes(exportJs, "packageVersion: '1.2.335'", 'Release contract v export.js musí držet package verzi 1.2.114');
+  assertIncludes(exportJs, "displayVersion: '1.2 (1.336)'", 'Release contract v export.js musí držet display verzi 1.105');
+  assertIncludes(exportJs, "packageVersion: '1.2.336'", 'Release contract v export.js musí držet package verzi 1.2.114');
   assert(packageJson.version === contract.packageVersion, `package.json version drift: čekám ${contract.packageVersion}, mám ${packageJson.version}`);
   assertIncludes(coreJs, `const APP_VERSION = "${contract.displayVersion}";`, 'core.js APP_VERSION není sjednocený s 1.105');
   assertIncludes(serviceWorkerJs, `const CACHE_VERSION = '${contract.cacheVersion}';`, 'sw.js CACHE_VERSION není sjednocený s 1.105');
@@ -952,8 +952,10 @@ function assertRotationGeneratorMonthBalanceContractV1112() {
   assertIncludes(ui, 'adminRotationGeneratorResolveSelectableMonthKey', 'Pokračování generátoru musí znovu ověřit povolený měsíc');
   assertIncludes(ui, 'function adminRotationGeneratorBalanceHardMachine', 'Generátor musí po sestavení měsíce umět vyrovnat tvrdotní stroj');
   assertIncludes(ui, "adminRotationGeneratorBalanceHardMachine(month, 'TNKS01', model, monthKey)", 'Generátor musí vyrovnávat nýtovačku TNKS01 po vygenerování');
+  assertIncludes(ui, "const finalTnksBalance = adminRotationGeneratorBalanceHardMachine(month, 'TNKS01', model, monthKey);", 'Generátor musí TNKS01 znovu dorovnat po všech pozdějších přesunech mezi tvrdotou a měkotou');
   assertIncludes(ui, 'adminRotationGeneratorFindPersonCellOnDay(month, rowIdx, targetLowName, \'soft\')', 'Vyrovnání TNKS01 musí umět prohodit člověka z tvrdoty dočasně napsaného na měkotě');
   assertIncludes(ui, 'tnksBalanceSwaps', 'Výsledek generátoru musí vracet počet prohozů TNKS01');
+  assertIncludes(ui, "|| (state && state.result ? adminRotationGeneratorGetPendingDraft(state.monthKey) : null);", 'Neúspěšné generování nesmí v kroku výsledku ukázat starý uložený měsíc');
   assertIncludes(browserSmokeJs, 'tnksBalance', 'Browser smoke musí ověřit nenulovou/rozumnou rovnováhu TNKS01');
 }
 

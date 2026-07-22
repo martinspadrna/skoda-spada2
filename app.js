@@ -19,7 +19,7 @@ try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleR
 
 
 (async () => {
-  const RAK_MODULE_CACHE_VERSION = "1.2.335";
+  const RAK_MODULE_CACHE_VERSION = "1.2.336";
   const files = [
     "app-runtime-guards.js",
     "app-health-audits.js",

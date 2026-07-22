@@ -4725,6 +4725,7 @@ function adminGenerateRotationMonthDraft(monthKey, preparedMonth) {
     : { swaps: 0 };
   const tnksConsecutiveRepair = adminRotationGeneratorRepairConsecutiveTnks(month, model, monthKey);
   const finalSoftKindBalance = adminRotationGeneratorBalanceSoftKind(month, model);
+  const finalTnksBalance = adminRotationGeneratorBalanceHardMachine(month, 'TNKS01', model, monthKey);
   const ruleCheck = adminRotationValidateMonthRules(month, monthKey, { source: 'generator' });
   const criticalIssues = ruleCheck.issues.filter((issue) => issue && issue.severity === 'error');
   if (criticalIssues.length) {
@@ -4743,7 +4744,9 @@ function adminGenerateRotationMonthDraft(monthKey, preparedMonth) {
     skippedDays,
     protectedEmptyCells,
     emptyHardCellRepairs: emptyHardRepair && Number(emptyHardRepair.repairs || 0),
-    tnksBalanceSwaps: (tnksBalance && Number(tnksBalance.swaps || 0)) + (tnksPostRepairBalance && Number(tnksPostRepairBalance.swaps || 0)),
+    tnksBalanceSwaps: (tnksBalance && Number(tnksBalance.swaps || 0))
+      + (tnksPostRepairBalance && Number(tnksPostRepairBalance.swaps || 0))
+      + (finalTnksBalance && Number(finalTnksBalance.swaps || 0)),
     tnksConsecutiveRepairs: tnksConsecutiveRepair && Number(tnksConsecutiveRepair.repairs || 0),
     soloMillBalanceSwaps: (soloMillBalance && Number(soloMillBalance.swaps || 0)) + (soloMillRebalance && Number(soloMillRebalance.swaps || 0)),
     softTotalBalanceSwaps: softTotalBalance && Number(softTotalBalance.swaps || 0),
@@ -5661,8 +5664,7 @@ function adminRotationGeneratorDownloadExcel(monthKey) {
 
 function adminRotationGeneratorRenderResultStep(state) {
   const month = (state && state.result && state.result.normalized)
-    || adminRotationGeneratorGetPendingDraft(state && state.monthKey)
-    || (app.rotation && app.rotation.months ? app.rotation.months[state.monthKey] : null);
+    || (state && state.result ? adminRotationGeneratorGetPendingDraft(state.monthKey) : null);
   const summary = adminBuildRotationMachineCountSummaryHtml(month, state.monthKey);
   const preview = adminBuildRotationGeneratorPreviewHtml(month, state.monthKey);
   return [
@@ -5941,6 +5943,7 @@ function adminHandleRotationGeneratorWizardAction(action, target) {
       if (!state.days.length) throw new Error('Nejsou vybrané žádné pracovní dny. Vrať se na krok Dny a přidej aspoň jeden den.');
       const hasFilledCells = typeof adminRotationMonthHasFilledCells === 'function' ? adminRotationMonthHasFilledCells(state.monthKey) : false;
       if (hasFilledCells && !confirm('Tenhle měsíc už má v rozpisu jména. Přepsat ho novým návrhem podle průvodce?')) return true;
+      adminRotationGeneratorClearPendingDraft(state.monthKey);
       const preparedMonth = adminRotationGeneratorEnsurePreparedMonthFromWizard();
       const result = adminGenerateRotationMonthDraft(state.monthKey, preparedMonth);
       state.result = result;
@@ -5948,6 +5951,7 @@ function adminHandleRotationGeneratorWizardAction(action, target) {
         ? ('Návrh vygenerovaný lokálně ✓ · dnů: ' + String(result.days || 0) + ' · políček: ' + String(result.filledCells || 0) + ' · absence: ' + String(result.blockedByAbsence || 0) + '.')
         : 'Návrh se nepodařilo vygenerovat. Vrať se na krok Dny a zkontroluj, že jsou vybrané pracovní dny.';
     } catch (err) {
+      adminRotationGeneratorClearPendingDraft(state.monthKey);
       state.result = null;
       state.resultText = 'Návrh se nepodařilo vygenerovat: ' + (err && err.message ? err.message : String(err || 'neznámá chyba'));
     }

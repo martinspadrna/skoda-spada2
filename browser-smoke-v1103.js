@@ -10,7 +10,7 @@ const { spawn } = require('child_process');
 const { pathToFileURL } = require('url');
 
 const ROOT_DIR = __dirname;
-const EXPECTED_APP_VERSION = '1.2 (1.335)';
+const EXPECTED_APP_VERSION = '1.2 (1.336)';
 const RAK_BROWSER_SMOKE_ENGINE = 'local-chromium-cdp';
 const RAK_BROWSER_SMOKE_LOAD_MODE = 'about-blank-inline-html';
 const CHROMIUM_BIN = process.env.CHROMIUM_BIN || process.env.CHROME_BIN || '/usr/bin/chromium';
@@ -327,7 +327,7 @@ async function clickAndWait(client, action, activeSelector) {
   await waitForPageCondition(client, `document.querySelector(${JSON.stringify(activeSelector)})`, activeSelector, 8000);
 }
 
-async function runViewportSmoke(cdpPort, viewport, inlineHtml) {
+async function runViewportSmoke(cdpPort, viewport, inlineHtml, liveRotationPayload) {
   const target = await createTarget(cdpPort);
   const client = new CdpClient(target.webSocketDebuggerUrl);
   const runtimeExceptions = [];
@@ -414,6 +414,41 @@ async function runViewportSmoke(cdpPort, viewport, inlineHtml) {
   assert(bootState.bottomNavCount >= 5, `${viewport.name}: chybí spodní navigace`);
   assert(bootState.homeCards > 0, `${viewport.name}: Dashboard nemá karty`);
   assert(bootState.bodyBeforePosition === 'fixed', `${viewport.name}: pevné pozadí není fixed`);
+
+  const liveRotationGenerator = liveRotationPayload ? await evalInPage(client, `(() => {
+    const originalRotation = JSON.parse(JSON.stringify(app.rotation || {}));
+    const originalDrafts = JSON.parse(JSON.stringify(app.adminRotationPendingDrafts || {}));
+    const originalWindowDrafts = JSON.parse(JSON.stringify(window.__rakRotationGeneratorPendingDrafts || {}));
+    try {
+      app.rotation = ${JSON.stringify(liveRotationPayload)};
+      app.selectedMonth = '8/26';
+      const prefill = adminRotationGeneratorBuildPrefillState('8/26');
+      adminRotationGeneratorSetWizardState({ step: 'absences', monthKey: '8/26', days: prefill.days, absencesByDay: prefill.absencesByDay });
+      const prepared = adminRotationGeneratorEnsurePreparedMonthFromWizard();
+      const before = adminBuildRotationGenerationModel('8/26').softCoreCycleState;
+      const result = adminGenerateRotationMonthDraft('8/26', prepared);
+      const ruleCheck = adminRotationValidateMonthRules(result.normalized, '8/26', { source: 'generator' });
+      const hits = [];
+      (result.normalized.hard.rows || []).forEach((row) => {
+        (row.cells || []).forEach((person, idx) => {
+          if (['Synek', 'Třasák', 'Střížek'].includes(String(person || '').trim())) hits.push({ date: row.date, person, machine: HARD_MACHINE_HEADERS[idx] });
+        });
+      });
+      const balanceNames = adminGetKnownNames().filter((name) => !['Synek', 'Třasák', 'Střížek'].includes(name) && adminRotationGeneratorPersonKnowsMachine(name, 'TNKS01'));
+      const pressCounts = adminRotationGeneratorCountHardMachine(result.normalized, 'TNKS01', balanceNames, '8/26');
+      return { before, hits, skipped: result.softCoreSkippedSlots || 0, pressCounts, issues: ruleCheck.issues };
+    } finally {
+      app.rotation = originalRotation;
+      app.adminRotationPendingDrafts = originalDrafts;
+      window.__rakRotationGeneratorPendingDrafts = originalWindowDrafts;
+    }
+  })()`) : null;
+  if (liveRotationGenerator) {
+    assert(liveRotationGenerator.issues.length === 0, `${viewport.name}: živý srpen neprošel pravidly ${JSON.stringify(liveRotationGenerator)}`);
+    assert(liveRotationGenerator.hits[0]?.date === '5.8. N' && liveRotationGenerator.hits[0]?.person === 'Střížek' && liveRotationGenerator.hits[0]?.machine === 'TNKS01', `${viewport.name}: živý srpen nezačal Střížkem 5.8. na TNKS01 ${JSON.stringify(liveRotationGenerator)}`);
+    assert(liveRotationGenerator.hits[1]?.date === '6.8. N' && liveRotationGenerator.hits[1]?.person === 'Synek' && liveRotationGenerator.hits[1]?.machine === 'TNKS01', `${viewport.name}: živý srpen nepokračoval Synkem 6.8. na TNKS01 ${JSON.stringify(liveRotationGenerator)}`);
+    assert(!liveRotationGenerator.hits.some((hit) => hit.date === '10.8. R'), `${viewport.name}: živý srpen nevynechal chybějícího Třasáka 10.8. ${JSON.stringify(liveRotationGenerator)}`);
+  }
 
   const vacationShiftCountdownState = await evalInPage(client, `(() => {
     if (typeof getVacationCountdownTeamShiftCount !== 'function') return { ok: false, reason: 'missing countdown function' };
@@ -1150,6 +1185,7 @@ async function runViewportSmoke(cdpPort, viewport, inlineHtml) {
     rotationGenerator: generatorState,
     augustGenerator: augustGeneratorState,
     rotationGeneratorWizard: wizardRunState,
+    liveRotationGenerator,
     brusChoiceHeight: { min: brusState.minHeight, max: brusState.maxHeight },
     gamesTiles: gamesState.tiles,
     consoleErrorCount: consoleErrors.length,
@@ -1191,10 +1227,18 @@ async function main() {
   try {
     await waitForBrowser(cdpPort);
     const inlineHtml = buildInlineSmokeHtml();
-    const results = [];
-    for (const viewport of VIEWPORTS) {
-      results.push(await runViewportSmoke(cdpPort, viewport, inlineHtml));
+    let liveRotationPayload = null;
+    if (process.env.RAK_LIVE_ROTATION_DIAG === '1') {
+      const key = 'sb_publishable_MYL2dR_WGYFUMf0jKHpUbQ_70mCbUOy';
+      const response = await fetch('https://bkqamcbkiwumsvelahxr.supabase.co/rest/v1/rotation_state?key=eq.main&select=payload', { headers: { apikey: key, Authorization: 'Bearer ' + key } });
+      const rows = await response.json();
+      liveRotationPayload = rows && rows[0] ? rows[0].payload : null;
     }
+    const results = [];
+    for (let viewportIdx = 0; viewportIdx < VIEWPORTS.length; viewportIdx += 1) {
+      results.push(await runViewportSmoke(cdpPort, VIEWPORTS[viewportIdx], inlineHtml, viewportIdx === 0 ? liveRotationPayload : null));
+    }
+    if (liveRotationPayload) console.error('RAK_LIVE_ROTATION_DIAG ' + JSON.stringify(results[0].liveRotationGenerator));
     console.log(JSON.stringify({ ok: true, mode: 'browser-smoke-v1103', chromium: CHROMIUM_BIN, loadMode: 'about-blank-inline-html', results }, null, 2));
   } finally {
     server.close();

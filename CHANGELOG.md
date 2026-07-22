@@ -1,3 +1,10 @@
+## RaK 1.2 (1.336)
+
+- Generátor / živý srpen 2026: pozdější přesuny mezi tvrdotou a měkotou už nemohou po prvním vyrovnání znovu rozhodit TNKS01/TPKW01; před závěrečnou validací proběhne ještě jedno dorovnání.
+- Generátor / trojice: kontrola nad aktuálním online červencem a srpnovými absencemi potvrzuje `Střížek 5.8. TNKS01`, `Synek 6.8. TNKS01`, vynechaný krok 10.8. a nový blok `Třasák 11.8. TPKW01`.
+- Průvodce / chyba: neúspěšné generování už v náhledu neukáže starý uložený měsíc jako nový návrh; zobrazí pouze chybovou zprávu.
+- Release metadata sjednocena na `RaK 1.2 (1.336)`, technicka verze `1.2.336`, cache `v1.2-1.336`; loader modulu ma cache znacku `1.2.336`.
+
 ## RaK 1.2 (1.335)
 
 - Generátor / editor: pracovní návrh je oddělený od synchronizovaného stavu aplikace, takže ho online načtení už nemůže nahradit starým uloženým měsícem.
