@@ -10,7 +10,7 @@ const { spawn } = require('child_process');
 const { pathToFileURL } = require('url');
 
 const ROOT_DIR = __dirname;
-const EXPECTED_APP_VERSION = '1.2 (1.334)';
+const EXPECTED_APP_VERSION = '1.2 (1.335)';
 const RAK_BROWSER_SMOKE_ENGINE = 'local-chromium-cdp';
 const RAK_BROWSER_SMOKE_LOAD_MODE = 'about-blank-inline-html';
 const CHROMIUM_BIN = process.env.CHROMIUM_BIN || process.env.CHROME_BIN || '/usr/bin/chromium';
@@ -572,6 +572,7 @@ async function runViewportSmoke(cdpPort, viewport, inlineHtml) {
   const softCoreContinuationState = await evalInPage(client, `(() => {
     const original = JSON.parse(JSON.stringify(app.rotation?.months || {}));
     const originalDrafts = JSON.parse(JSON.stringify(app.adminRotationPendingDrafts || {}));
+    const originalWindowDrafts = JSON.parse(JSON.stringify(window.__rakRotationGeneratorPendingDrafts || {}));
     try {
       const hardHeaders = typeof HARD_MACHINE_HEADERS !== 'undefined' ? HARD_MACHINE_HEADERS : ['TNKS01', 'TBKR07', 'TPKW01', 'TPKW02', 'TBKR01'];
       const softHeaders = typeof SOFT_MACHINE_HEADERS !== 'undefined' ? SOFT_MACHINE_HEADERS : ['MSKC01', 'MSKC03', 'MSKC04', 'MFKF06', 'MFKF10'];
@@ -608,6 +609,7 @@ async function runViewportSmoke(cdpPort, viewport, inlineHtml) {
     } finally {
       app.rotation.months = original;
       app.adminRotationPendingDrafts = originalDrafts;
+      window.__rakRotationGeneratorPendingDrafts = originalWindowDrafts;
     }
   })()`);
   assert(softCoreContinuationState.ok, `${viewport.name}: synteticka kontrola navaznosti trojice se nespustila ${JSON.stringify(softCoreContinuationState)}`);
@@ -620,6 +622,7 @@ async function runViewportSmoke(cdpPort, viewport, inlineHtml) {
   const softCoreSavedJulyState = await evalInPage(client, `(() => {
     const original = JSON.parse(JSON.stringify(app.rotation?.months || {}));
     const originalDrafts = JSON.parse(JSON.stringify(app.adminRotationPendingDrafts || {}));
+    const originalWindowDrafts = JSON.parse(JSON.stringify(window.__rakRotationGeneratorPendingDrafts || {}));
     try {
       const hardHeaders = typeof HARD_MACHINE_HEADERS !== 'undefined' ? HARD_MACHINE_HEADERS : ['TNKS01', 'TBKR07', 'TPKW01', 'TPKW02', 'TBKR01'];
       const softHeaders = typeof SOFT_MACHINE_HEADERS !== 'undefined' ? SOFT_MACHINE_HEADERS : ['MSKC01', 'MSKC03', 'MSKC04', 'MFKF06', 'MFKF10'];
@@ -666,6 +669,7 @@ async function runViewportSmoke(cdpPort, viewport, inlineHtml) {
     } finally {
       app.rotation.months = original;
       app.adminRotationPendingDrafts = originalDrafts;
+      window.__rakRotationGeneratorPendingDrafts = originalWindowDrafts;
     }
   })()`);
   assert(softCoreSavedJulyState.ok, `${viewport.name}: kontrola skutecneho konce cervence se nespustila ${JSON.stringify(softCoreSavedJulyState)}`);
@@ -677,6 +681,7 @@ async function runViewportSmoke(cdpPort, viewport, inlineHtml) {
   const pendingDraftEditorState = await evalInPage(client, `(() => {
     const original = JSON.parse(JSON.stringify(app.rotation?.months?.['8/26'] || null));
     const originalDrafts = JSON.parse(JSON.stringify(app.adminRotationPendingDrafts || {}));
+    const originalWindowDrafts = JSON.parse(JSON.stringify(window.__rakRotationGeneratorPendingDrafts || {}));
     try {
       const saved = JSON.parse(JSON.stringify(original));
       const pending = JSON.parse(JSON.stringify(original));
@@ -684,23 +689,30 @@ async function runViewportSmoke(cdpPort, viewport, inlineHtml) {
       pending.hard.rows[0].date = 'NOVY-NAVRH';
       app.rotation.months['8/26'] = saved;
       adminRotationGeneratorSetPendingDraft('8/26', pending);
+      app.adminRotationPendingDrafts = {};
       const html = buildAdminRotationTableHtml('8/26');
+      window.__rakRotationGeneratorPendingDrafts = {};
+      const opened = adminRotationGeneratorOpenDraftInEditor({ monthKey: '8/26', result: { normalized: pending } }, null);
       return {
         hasPendingDate: html.includes('NOVY-NAVRH'),
         hasSavedDate: html.includes('ULOZENO-ONLINE'),
+        reopenedFromResult: opened && app.rotation.months['8/26'].hard.rows[0].date === 'NOVY-NAVRH',
         hasPendingLabel: html.includes('vygenerovaný návrh')
       };
     } finally {
       app.rotation.months['8/26'] = original;
       app.adminRotationPendingDrafts = originalDrafts;
+      window.__rakRotationGeneratorPendingDrafts = originalWindowDrafts;
     }
   })()`);
   assert(pendingDraftEditorState.hasPendingDate && !pendingDraftEditorState.hasSavedDate, `${viewport.name}: editor neuprednostnil vygenerovany navrh ${JSON.stringify(pendingDraftEditorState)}`);
   assert(pendingDraftEditorState.hasPendingLabel, `${viewport.name}: editor neoznacil zobrazeny vygenerovany navrh ${JSON.stringify(pendingDraftEditorState)}`);
+  assert(pendingDraftEditorState.reopenedFromResult, `${viewport.name}: otevreni editoru neobnovilo navrh z vysledku generatoru ${JSON.stringify(pendingDraftEditorState)}`);
 
   const softCoreOneDayAbsenceState = await evalInPage(client, `(() => {
     const original = JSON.parse(JSON.stringify(app.rotation?.months || {}));
     const originalDrafts = JSON.parse(JSON.stringify(app.adminRotationPendingDrafts || {}));
+    const originalWindowDrafts = JSON.parse(JSON.stringify(window.__rakRotationGeneratorPendingDrafts || {}));
     try {
       const hardHeaders = typeof HARD_MACHINE_HEADERS !== 'undefined' ? HARD_MACHINE_HEADERS : ['TNKS01', 'TBKR07', 'TPKW01', 'TPKW02', 'TBKR01'];
       const softHeaders = typeof SOFT_MACHINE_HEADERS !== 'undefined' ? SOFT_MACHINE_HEADERS : ['MSKC01', 'MSKC03', 'MSKC04', 'MFKF06', 'MFKF10'];
@@ -733,6 +745,7 @@ async function runViewportSmoke(cdpPort, viewport, inlineHtml) {
     } finally {
       app.rotation.months = original;
       app.adminRotationPendingDrafts = originalDrafts;
+      window.__rakRotationGeneratorPendingDrafts = originalWindowDrafts;
     }
   })()`);
   assert(softCoreOneDayAbsenceState.ok, `${viewport.name}: test jednodeni absence trojice se nespustil ${JSON.stringify(softCoreOneDayAbsenceState)}`);

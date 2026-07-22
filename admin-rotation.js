@@ -2438,7 +2438,7 @@ async function saveAdminRotationFromDom(monthKey) {
     }
   }
   try {
-    if (app.adminRotationPendingDrafts && monthKey) delete app.adminRotationPendingDrafts[monthKey];
+    if (typeof adminRotationGeneratorClearPendingDraft === 'function') adminRotationGeneratorClearPendingDraft(monthKey);
   } catch (err) {}
   return { normalized, saveResult, ruleCheck };
 }
@@ -4596,8 +4596,11 @@ function adminRotationGeneratorCanReadEditorDraftFromDom() {
 }
 
 function adminRotationGeneratorEnsurePendingDrafts() {
-  if (!app.adminRotationPendingDrafts || typeof app.adminRotationPendingDrafts !== 'object') app.adminRotationPendingDrafts = {};
-  return app.adminRotationPendingDrafts;
+  const root = typeof window !== 'undefined' ? window : globalThis;
+  if (!root.__rakRotationGeneratorPendingDrafts || typeof root.__rakRotationGeneratorPendingDrafts !== 'object') {
+    root.__rakRotationGeneratorPendingDrafts = {};
+  }
+  return root.__rakRotationGeneratorPendingDrafts;
 }
 
 function adminRotationGeneratorSetPendingDraft(monthKey, month) {
@@ -4605,13 +4608,34 @@ function adminRotationGeneratorSetPendingDraft(monthKey, month) {
   if (!key || !month) return null;
   const drafts = adminRotationGeneratorEnsurePendingDrafts();
   drafts[key] = JSON.parse(JSON.stringify(month));
+  if (app && typeof app === 'object') {
+    if (!app.adminRotationPendingDrafts || typeof app.adminRotationPendingDrafts !== 'object') app.adminRotationPendingDrafts = {};
+    app.adminRotationPendingDrafts[key] = JSON.parse(JSON.stringify(month));
+  }
   return drafts[key];
 }
 
 function adminRotationGeneratorGetPendingDraft(monthKey) {
   const key = String(monthKey || '').trim();
-  const drafts = app && app.adminRotationPendingDrafts && typeof app.adminRotationPendingDrafts === 'object' ? app.adminRotationPendingDrafts : {};
-  return key && drafts[key] ? JSON.parse(JSON.stringify(drafts[key])) : null;
+  if (!key) return null;
+  const drafts = adminRotationGeneratorEnsurePendingDrafts();
+  const appDrafts = app && app.adminRotationPendingDrafts && typeof app.adminRotationPendingDrafts === 'object'
+    ? app.adminRotationPendingDrafts
+    : {};
+  const draft = drafts[key] || appDrafts[key];
+  if (!draft) return null;
+  if (!drafts[key]) drafts[key] = JSON.parse(JSON.stringify(draft));
+  return JSON.parse(JSON.stringify(draft));
+}
+
+function adminRotationGeneratorClearPendingDraft(monthKey) {
+  const key = String(monthKey || '').trim();
+  if (!key) return;
+  const drafts = adminRotationGeneratorEnsurePendingDrafts();
+  delete drafts[key];
+  if (app && app.adminRotationPendingDrafts && typeof app.adminRotationPendingDrafts === 'object') {
+    delete app.adminRotationPendingDrafts[key];
+  }
 }
 
 function adminRotationGeneratorApplyPendingDraft(monthKey) {
@@ -4624,6 +4648,17 @@ function adminRotationGeneratorApplyPendingDraft(monthKey) {
     : draft;
   app.selectedMonth = key;
   return true;
+}
+
+function adminRotationGeneratorOpenDraftInEditor(state, body) {
+  const wizardState = state && typeof state === 'object' ? state : adminRotationGeneratorGetWizardState();
+  const monthKey = String(wizardState.monthKey || app.selectedMonth || '').trim();
+  const resultDraft = wizardState.result && wizardState.result.normalized ? wizardState.result.normalized : null;
+  if (monthKey && resultDraft) adminRotationGeneratorSetPendingDraft(monthKey, resultDraft);
+  const applied = adminRotationGeneratorApplyPendingDraft(monthKey);
+  app.selectedMonth = monthKey;
+  if (body && typeof renderAdminMenuBody === 'function') renderAdminMenuBody(body, 'rotation');
+  return applied;
 }
 
 function adminGenerateRotationMonthDraft(monthKey, preparedMonth) {
@@ -5833,10 +5868,7 @@ function adminHandleRotationGeneratorWizardAction(action, target) {
     return true;
   }
   if (action === 'generator-open-editor') {
-    const monthKey = state.monthKey || app.selectedMonth;
-    const applied = adminRotationGeneratorApplyPendingDraft(monthKey);
-    app.selectedMonth = monthKey;
-    if (typeof renderAdminMenuBody === 'function') renderAdminMenuBody(body, 'rotation');
+    const applied = adminRotationGeneratorOpenDraftInEditor(state, body);
     const status = document.getElementById('adminOnlineSaveStatus') || document.getElementById('adminRotationDraftStatus');
     if (status && applied) status.textContent = 'Návrh je otevřený v editoru. Online se uloží až tlačítkem Uložit rozpis.';
     return true;

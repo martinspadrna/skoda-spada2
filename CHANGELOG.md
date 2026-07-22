@@ -1,3 +1,10 @@
+## RaK 1.2 (1.335)
+
+- Generátor / editor: pracovní návrh je oddělený od synchronizovaného stavu aplikace, takže ho online načtení už nemůže nahradit starým uloženým měsícem.
+- Generátor / otevření rozpisu: tlačítko `Otevřít rozpis` obnoví editor přímo z posledního výsledku generování; starý srpnový rozpis se ukáže až tehdy, když nový návrh skutečně neexistuje.
+- Browser smoke nově simuluje ztrátu pomocného stavu mezi vygenerováním a otevřením editoru a hlídá obnovení správného návrhu.
+- Release metadata sjednocena na `RaK 1.2 (1.335)`, technicka verze `1.2.335`, cache `v1.2-1.335`; loader modulu ma cache znacku `1.2.335`.
+
 ## RaK 1.2 (1.334)
 
 - Generátor / editor: rozpisový editor nyní vždy upřednostní čekající vygenerovaný návrh před starou online verzí stejného měsíce.
