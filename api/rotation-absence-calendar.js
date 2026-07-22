@@ -34,12 +34,42 @@ function validIpv4(value) {
 
 async function resolveCalendarIpv4() {
   if (cachedCalendarAddress && Date.now() - cachedCalendarAddressAt < DNS_CACHE_MS) return cachedCalendarAddress;
-  const response = await fetch(`https://1.1.1.1/dns-query?name=${encodeURIComponent(CALENDAR_HOST)}&type=A`, {
-    headers: { accept: 'application/dns-json' },
-    signal: AbortSignal.timeout(7000)
+  const payload = await new Promise((resolve, reject) => {
+    const request = https.get({
+      hostname: '1.1.1.1',
+      port: 443,
+      path: `/dns-query?name=${encodeURIComponent(CALENDAR_HOST)}&type=A`,
+      servername: 'cloudflare-dns.com',
+      rejectUnauthorized: true,
+      headers: { host: 'cloudflare-dns.com', accept: 'application/dns-json' },
+      timeout: 7000
+    }, (response) => {
+      if (Number(response.statusCode || 0) !== 200) {
+        response.resume();
+        reject(new Error(`calendar_dns_failed:${response.statusCode || 0}`));
+        return;
+      }
+      const chunks = [];
+      let totalBytes = 0;
+      response.on('data', (chunk) => {
+        totalBytes += chunk.length;
+        if (totalBytes > 64 * 1024) {
+          request.destroy(new Error('calendar_dns_response_too_large'));
+          return;
+        }
+        chunks.push(chunk);
+      });
+      response.on('end', () => {
+        try {
+          resolve(JSON.parse(Buffer.concat(chunks).toString('utf8')));
+        } catch (error) {
+          reject(new Error('calendar_dns_invalid_response'));
+        }
+      });
+    });
+    request.on('timeout', () => request.destroy(new Error('calendar_dns_timeout')));
+    request.on('error', reject);
   });
-  if (!response.ok) throw new Error(`calendar_dns_failed:${response.status}`);
-  const payload = await response.json();
   const address = (Array.isArray(payload && payload.Answer) ? payload.Answer : [])
     .filter((answer) => Number(answer && answer.type) === 1)
     .map((answer) => String(answer && answer.data || '').trim())
@@ -136,7 +166,9 @@ function calendarErrorReason(error) {
     'ENOTFOUND', 'EAI_AGAIN', 'ECONNREFUSED', 'ECONNRESET', 'ETIMEDOUT',
     'UND_ERR_CONNECT_TIMEOUT', 'UNABLE_TO_VERIFY_LEAF_SIGNATURE',
     'ERR_TLS_CERT_ALTNAME_INVALID', 'calendar_fetch_timeout',
-    'calendar_response_too_large', 'calendar_redirect_not_allowed'
+    'calendar_response_too_large', 'calendar_redirect_not_allowed',
+    'calendar_dns_timeout', 'calendar_dns_response_too_large',
+    'calendar_dns_invalid_response', 'calendar_dns_no_address'
   ];
   const matched = safeCodes.find((code) => values.some((value) => value.includes(code)));
   if (matched) return matched;
