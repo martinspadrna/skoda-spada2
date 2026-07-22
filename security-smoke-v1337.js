@@ -36,6 +36,9 @@ includes(adminUsersApi, 'RAK_SUPABASE_SERVICE_ROLE_KEY', 'Sprava Auth uzivatelu 
 includes(calendarApi, 'process.env.RAK_ABSENCE_ICS_URL', 'ICS URL musi byt jen v serverovem prostredi.');
 includes(calendarApi, 'requireAdmin(req)', 'ICS API musi vyzadovat admina.');
 includes(calendarApi, "'Cache-Control', 'no-store, max-age=0'", 'ICS odpoved se nesmi cachovat.');
+includes(calendarApi, 'MAX_ICS_BYTES', 'ICS odpoved musi mit limit velikosti.');
+includes(calendarApi, 'family: 4', 'ICS API musi mit IPv4 HTTPS fallback pro Vercel sit.');
+includes(calendarApi, "parsed.hostname === CALENDAR_HOST", 'ICS presmerovani musi zustat na povolenem Google hostu.');
 excludes(calendarApi, 'Access-Control-Allow-Origin', 'Soukrome ICS API nesmi mit verejne CORS.');
 excludes(calendarApi, '31eea99edff1771be15ba877f7c2f5b1371e0a742ad9d54fca526d41eafa5995', 'Soukrome ID kalendare nesmi byt ve zdrojich.');
 
