@@ -27,6 +27,17 @@ async function loadCalendarText() {
   return text;
 }
 
+function safeCalendarError(error) {
+  const message = String(error && error.message || error || '');
+  if (message === 'calendar_service_not_configured') return 'server_not_configured';
+  const status = message.match(/^calendar_service_failed:(\d{3})$/)?.[1];
+  if (status) return `edge_http_${status}`;
+  if (message === 'calendar_response_too_large') return 'response_too_large';
+  if (message === 'calendar_invalid_response') return 'invalid_response';
+  if (/timeout/i.test(message)) return 'timeout';
+  return 'network_error';
+}
+
 module.exports = async function rotationAbsenceCalendar(req, res) {
   setResponseHeaders(res);
   if (req.method !== 'GET' && req.method !== 'HEAD') {
@@ -44,7 +55,7 @@ module.exports = async function rotationAbsenceCalendar(req, res) {
     const text = await loadCalendarText();
     res.setHeader('Content-Type', 'text/calendar; charset=utf-8');
     res.status(200).send(req.method === 'HEAD' ? '' : text);
-  } catch {
-    res.status(502).json({ ok: false, error: 'calendar_fetch_failed' });
+  } catch (error) {
+    res.status(502).json({ ok: false, error: 'calendar_fetch_failed', reason: safeCalendarError(error) });
   }
 };

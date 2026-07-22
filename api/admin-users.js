@@ -26,6 +26,14 @@ function validAccountId(value) {
   return /^\d{4,12}$/.test(accountId) && accountId !== '9811' ? accountId : '';
 }
 
+function safeAdminError(error) {
+  const message = String(error && error.message || error || '');
+  if (/server_(auth|admin)_not_configured/.test(message)) return 'server_not_configured';
+  const matched = message.match(/^(profile_lookup_failed|auth_user_create_failed|auth_user_update_failed|profile_save_failed):(\d{3})/);
+  if (matched) return `${matched[1]}_${matched[2]}`;
+  return 'unexpected_error';
+}
+
 async function readProfile(accountId) {
   const response = await secretRequest(`/rest/v1/rak_admin_profiles?select=user_id,account_id,display_name,role,enabled&account_id=eq.${encodeURIComponent(accountId)}&limit=1`);
   if (!response.ok) throw new Error(`profile_lookup_failed:${response.status}`);
@@ -132,10 +140,12 @@ module.exports = async function adminUsers(req, res) {
       }
     });
   } catch (error) {
-    const configurationError = /server_(auth|admin)_not_configured/.test(String(error && error.message || error));
+    const reason = safeAdminError(error);
+    const configurationError = reason === 'server_not_configured';
     sendJson(res, configurationError ? 503 : 500, {
       ok: false,
-      error: configurationError ? 'server_not_configured' : 'admin_user_save_failed'
+      error: configurationError ? 'server_not_configured' : 'admin_user_save_failed',
+      reason
     });
   }
 };
