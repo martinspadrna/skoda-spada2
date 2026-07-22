@@ -52,15 +52,18 @@ async function resolveCalendarIpv4() {
 
 function fetchCalendarViaHttps(url, redirectCount = 0, resolvedAddress = '') {
   return new Promise((resolve, reject) => {
+    const target = new URL(url);
     const requestOptions = {
       family: 4,
-      headers: CALENDAR_HEADERS,
+      hostname: validIpv4(resolvedAddress) ? resolvedAddress : target.hostname,
+      port: 443,
+      path: target.pathname + target.search,
+      servername: target.hostname,
+      rejectUnauthorized: true,
+      headers: Object.assign({ host: target.host }, CALENDAR_HEADERS),
       timeout: 15000
     };
-    if (validIpv4(resolvedAddress)) {
-      requestOptions.lookup = (hostname, options, callback) => callback(null, resolvedAddress, 4);
-    }
-    const request = https.get(url, requestOptions, (response) => {
+    const request = https.get(requestOptions, (response) => {
       const status = Number(response.statusCode || 0);
       const location = String(response.headers.location || '').trim();
       if (status >= 300 && status < 400 && location && redirectCount < 3) {

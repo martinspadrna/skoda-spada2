@@ -39,7 +39,8 @@ includes(calendarApi, "'Cache-Control', 'no-store, max-age=0'", 'ICS odpoved se 
 includes(calendarApi, 'MAX_ICS_BYTES', 'ICS odpoved musi mit limit velikosti.');
 includes(calendarApi, 'family: 4', 'ICS API musi mit IPv4 HTTPS fallback pro Vercel sit.');
 includes(calendarApi, "https://1.1.1.1/dns-query", 'ICS API musi mit DoH fallback pro cilene DNS chyby Vercelu.');
-includes(calendarApi, 'requestOptions.lookup', 'DoH adresa se musi pouzit jen jako TLS lookup pro puvodni Google host.');
+includes(calendarApi, 'servername: target.hostname', 'Prime IP spojeni musi overovat TLS certifikat puvodniho Google hostu.');
+includes(calendarApi, "headers: Object.assign({ host: target.host }", 'Prime IP spojeni musi zachovat HTTP Host puvodniho Google hostu.');
 includes(calendarApi, "parsed.hostname === CALENDAR_HOST", 'ICS presmerovani musi zustat na povolenem Google hostu.');
 excludes(calendarApi, 'Access-Control-Allow-Origin', 'Soukrome ICS API nesmi mit verejne CORS.');
 excludes(calendarApi, '31eea99edff1771be15ba877f7c2f5b1371e0a742ad9d54fca526d41eafa5995', 'Soukrome ID kalendare nesmi byt ve zdrojich.');
