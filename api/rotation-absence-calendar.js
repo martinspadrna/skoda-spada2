@@ -86,6 +86,25 @@ async function loadCalendarText(url) {
   }
 }
 
+function calendarErrorReason(error) {
+  const values = [
+    error && error.code,
+    error && error.cause && error.cause.code,
+    error && error.message,
+    error && error.cause && error.cause.message
+  ].map((value) => String(value || '')).filter(Boolean);
+  const safeCodes = [
+    'ENOTFOUND', 'EAI_AGAIN', 'ECONNREFUSED', 'ECONNRESET', 'ETIMEDOUT',
+    'UND_ERR_CONNECT_TIMEOUT', 'UNABLE_TO_VERIFY_LEAF_SIGNATURE',
+    'ERR_TLS_CERT_ALTNAME_INVALID', 'calendar_fetch_timeout',
+    'calendar_response_too_large', 'calendar_redirect_not_allowed'
+  ];
+  const matched = safeCodes.find((code) => values.some((value) => value.includes(code)));
+  if (matched) return matched;
+  const statusMatch = values.join(' ').match(/calendar_fetch_failed:(\d{3})/);
+  return statusMatch ? `http_${statusMatch[1]}` : 'network_error';
+}
+
 module.exports = async function rotationAbsenceCalendar(req, res) {
   setResponseHeaders(res);
   if (req.method !== 'GET' && req.method !== 'HEAD') {
@@ -109,6 +128,6 @@ module.exports = async function rotationAbsenceCalendar(req, res) {
     res.status(200).send(text);
   } catch (err) {
     const status = Number(err && err.status || 0) || undefined;
-    res.status(502).json({ ok: false, error: 'calendar_fetch_failed', status });
+    res.status(502).json({ ok: false, error: 'calendar_fetch_failed', status, reason: calendarErrorReason(err) });
   }
 };
