@@ -396,6 +396,15 @@
     return error ? { ok: false, error } : { ok: true, backup: data || null };
   }
 
+  async function deleteAdminSettingsBackup(backupId) {
+    const client = getClient();
+    const id = String(backupId || '').trim();
+    if (!client || !hasSecureAdminContext()) return { ok: false, reason: 'admin-auth-required' };
+    if (!id) return { ok: false, reason: 'missing-backup-id' };
+    const { data, error } = await client.rpc('rak_owner_delete_settings_backup_v2', { p_backup_id: id });
+    return error ? { ok: false, error } : (data || { ok: true, id });
+  }
+
   async function writeAdminAudit(area, summary, options) {
     const client = getClient();
     const opts = options && typeof options === 'object' ? options : {};
@@ -1254,7 +1263,7 @@
       ends_at: payload.ends_at,
       marquee: payload.marquee,
       updated_at: nowIso,
-      app_version: String(window.APP_VERSION || '1.2 (1.337)'),
+      app_version: String(window.APP_VERSION || '1.2 (1.338)'),
       priority: 0
     });
     return [
@@ -1299,7 +1308,7 @@
           ends_at: fallback.ends_at,
           marquee: fallback.marquee,
           updated_at: new Date().toISOString(),
-          app_version: String(window.APP_VERSION || '1.2 (1.337)'),
+          app_version: String(window.APP_VERSION || '1.2 (1.338)'),
           priority: 0
         });
   }
@@ -1315,7 +1324,7 @@
             p_starts_at: safe.starts_at,
             p_ends_at: safe.ends_at,
             p_marquee: safe.marquee,
-            p_app_version: String(window.APP_VERSION || '1.2 (1.337)')
+            p_app_version: String(window.APP_VERSION || '1.2 (1.338)')
           })
         : client.rpc('rak_save_dashboard_announcement', {
             p_title: safe.title || null,
@@ -1325,7 +1334,7 @@
             p_ends_at: safe.ends_at,
             p_marquee: safe.marquee,
             p_updated_by: 'rak-admin-ui',
-            p_app_version: String(window.APP_VERSION || '1.2 (1.337)'),
+            p_app_version: String(window.APP_VERSION || '1.2 (1.338)'),
             p_priority: 0
           }), { mode: 'write', timeoutMs: 8000, attempts: 1 });
       if (res && res.error) return { ok: false, error: res.error, shape: 'rpc-save' };
@@ -1342,7 +1351,7 @@
         ? client.rpc('rak_admin_clear_announcement_v2')
         : client.rpc('rak_clear_dashboard_announcement', {
             p_updated_by: 'rak-admin-ui',
-            p_app_version: String(window.APP_VERSION || '1.2 (1.337)')
+            p_app_version: String(window.APP_VERSION || '1.2 (1.338)')
           }), { mode: 'write', timeoutMs: 8000, attempts: 1 });
       if (res && res.error) return { ok: false, error: res.error, shape: 'rpc-clear' };
       return { ok: true, cleared: true, count: Number(res && res.data || 0), shape: 'rpc-clear' };
@@ -2348,6 +2357,17 @@
     if (!client || typeof client.rpc !== 'function' || !row) return null;
     try {
       if (!hasSecureAdminContext()) throw new Error('admin authentication required');
+      if (state.rotationRevision === null || state.rotationRevision === undefined || !Number.isFinite(Number(state.rotationRevision))) {
+        const { data: current, error: revisionError } = await client
+          .from('rotation_state')
+          .select('revision')
+          .eq('key', row.key || 'main')
+          .maybeSingle();
+        if (revisionError) throw revisionError;
+        state.rotationRevision = current && Number.isFinite(Number(current.revision))
+          ? Number(current.revision)
+          : 0;
+      }
       const { data, error } = await client.rpc('rak_admin_save_rotation_v2', {
         p_key: row.key || 'main',
         p_payload: row.payload || null,
@@ -5264,6 +5284,7 @@
     createAdminSettingsBackup,
     listAdminSettingsBackups,
     getAdminSettingsBackup,
+    deleteAdminSettingsBackup,
     writeAdminAudit,
     listAdminAudit,
     refreshPublicData,

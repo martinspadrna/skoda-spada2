@@ -937,6 +937,57 @@ function buildAdminAccountsSettingsHtml() {
   ].join('');
 }
 
+function buildAdminOwnerPasswordHtml() {
+  if (!rakAdminCanManageAdmins()) return '';
+  return [
+    '<div class="adminOwnerPasswordPanel">',
+    '  <div class="appMenuSubTitle">Změna hesla hlavního admina</div>',
+    '  <div class="smallText">Po změně zůstane tento telefon přihlášený novým heslem.</div>',
+    '  <div class="adminOwnerPasswordGrid">',
+    '    <label><span>Současné heslo</span><input class="appMenuInlineInput" type="password" autocomplete="current-password" data-admin-owner-password="current"></label>',
+    '    <label><span>Nové heslo</span><input class="appMenuInlineInput" type="password" autocomplete="new-password" data-admin-owner-password="new"></label>',
+    '    <label><span>Nové heslo znovu</span><input class="appMenuInlineInput" type="password" autocomplete="new-password" data-admin-owner-password="confirm"></label>',
+    '  </div>',
+    '  <button type="button" class="appMenuAction isActive" data-admin-action="change-owner-password">Změnit moje heslo</button>',
+    '</div>'
+  ].join('');
+}
+
+async function rakAdminChangeOwnerPassword(root) {
+  if (!rakAdminCanManageAdmins() || typeof app === 'undefined' || !app || app.adminAuthVersion !== 2) return { ok: false, reason: 'not-allowed' };
+  const scope = root && root.querySelector ? root : document;
+  const currentPassword = String(scope.querySelector('[data-admin-owner-password="current"]')?.value || '');
+  const newPassword = String(scope.querySelector('[data-admin-owner-password="new"]')?.value || '');
+  const confirmation = String(scope.querySelector('[data-admin-owner-password="confirm"]')?.value || '');
+  if (!currentPassword || newPassword.length < 6) return { ok: false, reason: 'password-too-short' };
+  if (newPassword !== confirmation) return { ok: false, reason: 'password-mismatch' };
+  if (newPassword === currentPassword) return { ok: false, reason: 'password-unchanged' };
+  const bridge = window.RotationSupabaseBridge;
+  const accessToken = bridge && typeof bridge.getAdminAccessToken === 'function' ? await bridge.getAdminAccessToken() : '';
+  if (!accessToken) return { ok: false, reason: 'missing-session' };
+  const adminUsersUrl = String(window.SUPABASE_CONFIG && window.SUPABASE_CONFIG.url || '').replace(/\/$/, '') + '/functions/v1/rak-admin-users';
+  const response = await fetch(adminUsersUrl, {
+    method: 'POST',
+    cache: 'no-store',
+    headers: {
+      Authorization: 'Bearer ' + accessToken,
+      apikey: String(window.SUPABASE_CONFIG && window.SUPABASE_CONFIG.publishableKey || ''),
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ action: 'change-owner-password', currentPassword, newPassword })
+  });
+  const payload = await response.json().catch(() => ({}));
+  if (!response.ok || !payload.ok) return { ok: false, reason: payload.error || 'password-update-failed' };
+  const signInResult = bridge && typeof bridge.signInAdminAccount === 'function'
+    ? await bridge.signInAdminAccount(RAK_OWNER_ADMIN_ACCOUNT_ID, newPassword, rakAdminSecureDevicePayload())
+    : { ok: false, reason: 'missing-bridge' };
+  const capabilities = await rakAdminGetSecureCapabilities(true);
+  if (!signInResult.ok || !rakAdminApplySecureContext(signInResult.context, capabilities)) {
+    return { ok: false, reason: signInResult.reason || 'reauthentication-failed', error: signInResult.error };
+  }
+  return { ok: true };
+}
+
 function readAdminAccountsDraftRowsFromDom(root) {
   const scope = root && root.querySelectorAll ? root : document;
   const existingByIdMap = new Map((rakAdminGetAccountsSettings().admins || []).map((entry) => [entry.accountId, entry]));

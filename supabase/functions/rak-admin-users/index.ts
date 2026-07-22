@@ -45,6 +45,30 @@ const authenticatedFetch = withSupabase({ auth: "user" }, async (req, ctx) => {
     return jsonResponse(req, 400, { ok: false, error: "invalid_request" });
   }
 
+  if (String(body.action || "") === "change-owner-password") {
+    const currentPassword = String(body.currentPassword || "");
+    const newPassword = String(body.newPassword || "");
+    if (!currentPassword || currentPassword.length > 128 || newPassword.length < 6 || newPassword.length > 128) {
+      return jsonResponse(req, 400, { ok: false, error: "invalid_password_length" });
+    }
+    if (currentPassword === newPassword) {
+      return jsonResponse(req, 400, { ok: false, error: "password_unchanged" });
+    }
+    const ownerEmail = `${String(owner.account_id || "").trim()}@admin.rak.local`;
+    const { data: verified, error: verifyError } = await ctx.supabase.auth.signInWithPassword({
+      email: ownerEmail,
+      password: currentPassword,
+    });
+    if (verifyError || String(verified && verified.user && verified.user.id || "") !== String(owner.user_id || "")) {
+      return jsonResponse(req, 403, { ok: false, error: "invalid_current_password" });
+    }
+    const { error: updateError } = await ctx.supabaseAdmin.auth.admin.updateUserById(String(owner.user_id || ""), {
+      password: newPassword,
+    });
+    if (updateError) return jsonResponse(req, 500, { ok: false, error: "password_update_failed" });
+    return jsonResponse(req, 200, { ok: true });
+  }
+
   const accountId = validAccountId(body.accountId);
   const displayName = String(body.displayName || "").trim().slice(0, 120);
   const password = String(body.password || "");

@@ -827,7 +827,7 @@ function buildAdminFullSettingsBackupsHtml() {
   const rows = backups.map((backup) => [
     '<tr>',
     '  <td class="adminFullSettingsBackupLabelCell">' + escapeHtml(adminFullSettingsBackupDateLabel(backup.createdAt)) + '<div class="smallText">' + escapeHtml(String(backup.sourceLabel || 'ruční') + ' · ' + String(backup.rowCount) + ' řádků' + (backup.appVersion ? (' · ' + backup.appVersion) : '') + (backup.createdBy ? (' · účet ' + backup.createdBy) : '') + (backup.restoredBackupId ? (' · obnova ' + backup.restoredBackupId.slice(0, 16)) : '')) + '</div></td>',
-    '  <td class="adminFullSettingsBackupActionCell"><button type="button" class="appMenuAction" data-admin-action="download-full-settings-backup" data-settings-backup-id="' + escapeHtml(backup.id) + '">Stáhnout</button><button type="button" class="appMenuAction" data-admin-action="restore-full-settings-backup" data-settings-backup-id="' + escapeHtml(backup.id) + '">Obnovit</button></td>',
+    '  <td class="adminFullSettingsBackupActionCell"><button type="button" class="appMenuAction" data-admin-action="download-full-settings-backup" data-settings-backup-id="' + escapeHtml(backup.id) + '">Stáhnout</button><button type="button" class="appMenuAction" data-admin-action="restore-full-settings-backup" data-settings-backup-id="' + escapeHtml(backup.id) + '">Obnovit</button><button type="button" class="appMenuAction appMenuDangerBtn" data-admin-action="delete-full-settings-backup" data-settings-backup-id="' + escapeHtml(backup.id) + '">Smazat</button></td>',
     '</tr>'
   ].join('')).join('');
   return [
@@ -890,6 +890,17 @@ async function downloadAdminFullSettingsBackup(backupId) {
   const status = document.getElementById('adminOnlineSaveStatus');
   if (status) status.textContent = 'Záloha nastavení stažena jako JSON soubor.';
   return { ok: true, backup };
+}
+
+async function deleteAdminFullSettingsBackup(backupId) {
+  if (!(typeof rakAdminCanManageAdmins === 'function' && rakAdminCanManageAdmins())) return { ok: false, reason: 'not-allowed' };
+  const bridge = window.RotationSupabaseBridge;
+  const id = String(backupId || '').trim();
+  if (!id || !bridge || typeof bridge.deleteAdminSettingsBackup !== 'function') return { ok: false, reason: 'missing-bridge' };
+  const result = await bridge.deleteAdminSettingsBackup(id);
+  if (!result || result.ok === false) return result || { ok: false, reason: 'delete-failed' };
+  await loadAdminFullSettingsBackupsFromSupabase();
+  return { ok: true, id };
 }
 
 function normalizeImportedFullSettingsBackupRow(payload) {
@@ -3429,6 +3440,7 @@ function renderAdminMenuBody(body, section) {
     '    <div class="smallText" id="adminOnlineSaveStatus">Heslo nech prázdné, pokud ho nechceš měnit. Pro odebrání správce klikni na × u řádku a ulož.</div>',
     '  </div>',
     buildAdminAccountsSettingsHtml(),
+    (typeof buildAdminOwnerPasswordHtml === 'function' ? buildAdminOwnerPasswordHtml() : ''),
     '  <div class="appMenuActionRow">',
     '    <button type="button" class="appMenuAction" data-admin-action="load-admin-accounts">Načíst online</button>',
     '    <button type="button" class="appMenuAction isActive" data-admin-action="save-admin-accounts">Uložit správce</button>',
@@ -3441,7 +3453,7 @@ function renderAdminMenuBody(body, section) {
     '<div class="appMenuCard appMenuAdminCard adminExternalLinksCard">',
     '  <div class="appMenuCardTitle">Odkazy</div>',
     '  <div class="appMenuText">',
-    '    <div>Tady nastavíš odkazy na jídelní lístek, Eportal, výplatní portál a vložený Google kalendář. Změna se projeví v běžné aplikaci.</div>',
+    '    <div>Tady nastavíš odkazy na jídelní lístek, Eportal, výplatní portál a vložený Google kalendář. Řádek Kalendář určuje adresu, která se otevře po klepnutí na kalendář v aplikaci.</div>',
     '    <div class="smallText" id="adminOnlineSaveStatus">Bez uložené změny zůstávají původní odkazy.</div>',
     '  </div>',
     buildAdminExternalLinksSettingsHtml(),
@@ -4926,6 +4938,17 @@ function bindAppMenuHandlers(body) {
         if (nextStatus) nextStatus.textContent = 'Nastavení obnovené ze zálohy online ✓';
         return;
       }
+      if (adminAction === 'delete-full-settings-backup') {
+        if (!(typeof rakAdminCanManageAdmins === 'function' && rakAdminCanManageAdmins())) return;
+        const backupId = target.getAttribute('data-settings-backup-id') || target.closest('[data-settings-backup-id]')?.getAttribute('data-settings-backup-id') || '';
+        if (!backupId || !confirm('Opravdu smazat tuto online zálohu nastavení? Stažený JSON soubor se tím nesmaže.')) return;
+        const result = await deleteAdminFullSettingsBackup(backupId);
+        if (!result || result.ok === false) throw (result && result.error ? result.error : new Error('Smazání zálohy nastavení selhalo.'));
+        renderAdminMenuBody(body, 'settings-backups');
+        const nextStatus = document.getElementById('adminOnlineSaveStatus');
+        if (nextStatus) nextStatus.textContent = 'Online záloha nastavení byla smazána.';
+        return;
+      }
       if (adminAction === 'generate-rotation') {
         if (typeof adminOpenRotationGeneratorWizard === 'function') {
           adminOpenRotationGeneratorWizard(monthKey);
@@ -5074,6 +5097,27 @@ function bindAppMenuHandlers(body) {
         renderAdminMenuBody(body, 'admin-accounts');
         const statusEl = document.getElementById('adminOnlineSaveStatus');
         if (statusEl) statusEl.textContent = 'Zařízení odhlášené online ✓';
+        return;
+      }
+      if (adminAction === 'change-owner-password') {
+        if (!(typeof rakAdminCanManageAdmins === 'function' && rakAdminCanManageAdmins())) return;
+        const statusEl = document.getElementById('adminOnlineSaveStatus');
+        if (statusEl) statusEl.textContent = 'Měním heslo hlavního admina…';
+        const result = typeof rakAdminChangeOwnerPassword === 'function'
+          ? await rakAdminChangeOwnerPassword(body)
+          : { ok: false, reason: 'missing-handler' };
+        if (!result || result.ok === false) {
+          const messages = {
+            'password-too-short': 'Nové heslo musí mít alespoň 6 znaků a současné nesmí být prázdné.',
+            'password-mismatch': 'Nová hesla se neshodují.',
+            'password-unchanged': 'Nové heslo je stejné jako současné.',
+            'invalid_current_password': 'Současné heslo není správné.'
+          };
+          throw (result && result.error ? result.error : new Error(messages[result && result.reason] || 'Změna hesla selhala.'));
+        }
+        renderAdminMenuBody(body, 'admin-accounts');
+        const nextStatus = document.getElementById('adminOnlineSaveStatus');
+        if (nextStatus) nextStatus.textContent = 'Heslo hlavního admina bylo změněno.';
         return;
       }
       if (adminAction === 'load-external-links') {

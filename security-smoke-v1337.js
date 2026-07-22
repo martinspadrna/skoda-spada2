@@ -29,7 +29,10 @@ const migrationText = migrations.map((name) => read(path.join('supabase', 'migra
 assert(migrations.length >= 5, 'Chybi kompletni sada bezpecnostnich migraci.');
 includes(migrationText, "'enforced', true", 'Posledni migrace musi vynutit Supabase Auth.');
 includes(migrationText, 'rak_admin_save_rotation_v2', 'Rozpis musi mit revizni admin RPC.');
+includes(migrationText, "jsonb_object_keys(current_row.payload -> 'months')", 'Zaloha rozpisu musi pocitat mesice platnou PostgreSQL funkci.');
 includes(migrationText, 'rak_admin_settings_backups', 'Zalohy nastaveni musi byt v chranene tabulce.');
+includes(migrationText, 'v_machine_key text', 'Bezpecny zapis nastaveni nesmi kolidovat se sloupcem machine_key.');
+includes(migrationText, 'rak_owner_delete_settings_backup_v2', 'Hlavni admin musi mit chranene mazani zaloh nastaveni.');
 includes(migrationText, 'revoke select, insert, update, delete on table public.bug_reports', 'Reporty nesmi mit primy verejny pristup.');
 includes(migrationText, 'revoke insert, update, delete on table', 'Provozni tabulky musi mit odebrane prime zapisy.');
 
@@ -38,6 +41,8 @@ includes(adminUsersApi, 'admin_users_endpoint_moved', 'Stary Vercel endpoint spr
 includes(adminUsersEdge, 'withSupabase({ auth: "user" }', 'Sprava adminu musi overovat prihlaseneho uzivatele.');
 includes(adminUsersEdge, 'owner.role !== "owner"', 'Sprava adminu musi vyzadovat hlavniho admina.');
 includes(adminUsersEdge, 'ctx.supabaseAdmin.auth.admin.createUser', 'Auth uzivatele smi vytvaret jen interni Edge Function.');
+includes(adminUsersEdge, 'change-owner-password', 'Hlavni admin musi mit chranenou zmenu vlastniho hesla.');
+includes(adminUsersEdge, 'invalid_current_password', 'Zmena hesla musi overit soucasne heslo.');
 includes(adminUsersEdge, 'ALLOWED_ORIGIN = "https://skoda-spada.vercel.app"', 'Sprava adminu smi povolit jen produkcni origin.');
 includes(calendarApi, "'Cache-Control', 'no-store, max-age=0'", 'ICS odpoved se nesmi cachovat.');
 includes(calendarApi, 'calendar_endpoint_moved', 'Stary Vercel endpoint musi byt vyradenit bez prace se soukromymi klici.');
@@ -58,12 +63,16 @@ includes(adminRotation, 'apikey: String(window.SUPABASE_CONFIG', 'Prime volani E
 includes(bridge, 'persistSession: true', 'Admin Auth relace musi prezit restart aplikace.');
 includes(bridge, 'rak_admin_touch_device', 'Admin relace musi evidovat zarizeni.');
 includes(bridge, 'rak_admin_write_audit_v2', 'Historie zmen musi pouzivat chraneny audit.');
+includes(bridge, "select('revision')", 'Prvni zapis rozpisu musi nacist aktualni online revizi.');
+includes(bridge, 'rak_owner_delete_settings_backup_v2', 'Mazani zalohy musi jit pres owner-only RPC.');
 includes(bridge, 'rak_submit_bug_report_v2', 'Report musi jit pres omezeny RPC.');
 includes(adminUnlock, 'rakAdminRestoreSecureSessionForActiveAccount', 'Start aplikace musi obnovit bezpecnou admin relaci.');
 excludes(adminUnlock, 'RAK_OWNER_ADMIN_PASSWORD', 'Klient nesmi obsahovat konstantu s heslem hlavniho admina.');
 excludes(bridge, 'p_admin_pin', 'Klient nesmi volat starsi PINove admin RPC.');
 excludes(bridge, 'getAdminPinForWrite', 'Klient nesmi sestavovat PIN pro online zapisy.');
 includes(adminMenu, 'rakAdminLoadChangeLog', 'Historie zmen se musi nacitat z online auditu.');
+includes(adminMenu, 'delete-full-settings-backup', 'Zalohy nastaveni musi mit ovladani pro smazani.');
+includes(adminUnlock, 'rakAdminChangeOwnerPassword', 'Spravci musi mit ovladani pro zmenu hesla hlavniho admina.');
 includes(adminRotation, "syncRotationFromSupabase('discard-draft')", 'Online nacteni musi explicitne potvrdit zahozeni rozepsaneho navrhu.');
 
 includes(serviceWorker, "url.pathname.startsWith('/api/')", 'Service worker musi obejit cache pro API.');

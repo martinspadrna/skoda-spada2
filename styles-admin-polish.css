@@ -1635,6 +1635,30 @@
   gap:8px !important;
   margin:12px 0 !important;
 }
+.adminOwnerPasswordPanel{
+  display:grid !important;
+  gap:10px !important;
+  margin-top:14px !important;
+  padding-top:14px !important;
+  border-top:1px solid rgba(175,210,255,.22) !important;
+}
+.adminOwnerPasswordGrid{
+  display:grid !important;
+  grid-template-columns:repeat(3,minmax(0,1fr)) !important;
+  gap:8px !important;
+}
+.adminOwnerPasswordGrid label{
+  display:grid !important;
+  gap:5px !important;
+  min-width:0 !important;
+}
+.adminOwnerPasswordGrid label > span{
+  font-size:12px !important;
+  line-height:1.25 !important;
+}
+@media (max-width:720px){
+  .adminOwnerPasswordGrid{grid-template-columns:1fr !important;}
+}
 .adminAccountsRoleCard,
 .adminAccountsReadonlyNotice{
   display:grid !important;

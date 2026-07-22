@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// RaK 1.2 (1.337) – smoke test přehledu připojení + Dashboard/appearance contract guard.
+// RaK 1.2 (1.338) – smoke test přehledu připojení + Dashboard/appearance contract guard.
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
@@ -230,12 +230,12 @@ const dashboardReleaseIsolationGuardV198 = Object.freeze({
 });
 
 const releaseMetadataContractV199 = Object.freeze({
-  displayVersion: '1.2 (1.337)',
-  appLabel: 'RaK 1.2 (1.337)',
-  packageVersion: '1.2.337',
-  cacheVersion: 'v1.2-1.337',
+  displayVersion: '1.2 (1.338)',
+  appLabel: 'RaK 1.2 (1.338)',
+  packageVersion: '1.2.338',
+  cacheVersion: 'v1.2-1.338',
   realtimeChannel: 'rak-public-live-v1-2-1-126',
-  changelogHeader: '## RaK 1.2 (1.337)',
+  changelogHeader: '## RaK 1.2 (1.338)',
   previousBuildFragments: Object.freeze(['1.2 (1.138)', '1.2.138', 'v1.2-1.138', '1.2 (1.137)', '1.2.137', 'v1.2-1.137', '1.2 (1.118)', '1.2.118', 'v1.2-1.118', 'rak-public-live-v1-2-1-118'])
 });
 
@@ -344,8 +344,8 @@ function assertDashboardReleaseIsolationGuardV198() {
 function assertReleaseMetadataContractV199() {
   const contract = releaseMetadataContractV199;
   assertIncludes(exportJs, 'RAK_RELEASE_METADATA_CONTRACT_V199', 'export.js musí obsahovat release metadata contract v1.99');
-  assertIncludes(exportJs, "displayVersion: '1.2 (1.337)'", 'Release contract v export.js musí držet aktuální display verzi');
-  assertIncludes(exportJs, "packageVersion: '1.2.337'", 'Release contract v export.js musí držet aktuální package verzi');
+  assertIncludes(exportJs, "displayVersion: '1.2 (1.338)'", 'Release contract v export.js musí držet aktuální display verzi');
+  assertIncludes(exportJs, "packageVersion: '1.2.338'", 'Release contract v export.js musí držet aktuální package verzi');
   assert(packageJson.version === contract.packageVersion, `package.json version drift: čekám ${contract.packageVersion}, mám ${packageJson.version}`);
   assertIncludes(coreJs, `const APP_VERSION = "${contract.displayVersion}";`, 'core.js APP_VERSION není sjednocený s 1.105');
   assertIncludes(serviceWorkerJs, `const CACHE_VERSION = '${contract.cacheVersion}';`, 'sw.js CACHE_VERSION není sjednocený s 1.105');
@@ -1363,7 +1363,7 @@ assertIncludes(appearanceThemeJs, '"id": "light-zigzag"', 'Musí existovat zákl
   assertIncludes(appUiJs, 'Předání správy a kontrolní souhrny', 'O aplikaci musi mit aktualni kratky souhrn verzi 1.200-1.233');
   assertIncludes(appUiJs, 'Nastavení přímo z administrace', 'O aplikaci musi mit aktualni kratky souhrn verzi 1.179-1.199');
   assertIncludes(appUiJs, 'Admin sekce postupně dostaly stavové souhrny', 'O aplikaci musi vysvetlit nove admin souhrny pro predani');
-  assertIncludes(appUiJs, 'prázdná Historie změn teď vysvětluje starší výpadek ukládání', 'O aplikaci musi vysvetlit dodelani historie zmen a zalohovych tabulek');
+  assertIncludes(appUiJs, 'Ukládání rozpisů a nastavení nyní používá chráněné účty', 'O aplikaci musi strucne shrnout zabezpecene ukladani');
 }
 
 function assertRotationOvertimeDefaults2025ContractV1129() {

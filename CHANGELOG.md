@@ -1,3 +1,10 @@
+## RaK 1.2 (1.338)
+
+- Administrace: opravené ukládání nastavení po bezpečnostní migraci, přidána změna hesla hlavního admina a mazání online záloh nastavení.
+- Rozpisy: před prvním chráněným zápisem se načte aktuální revize, takže lze uložit i rozpis 10/26; vzdálenost měsíce není omezená.
+- Odkazy a O aplikaci: nastavení odkazu Kalendář je popsané přímo v administraci a poslední souhrn historie je zkrácený.
+- Release metadata sjednocena na `RaK 1.2 (1.338)`, technicka verze `1.2.338`, cache `v1.2-1.338`; loader modulu ma cache znacku `1.2.338`.
+
 ## RaK 1.2 (1.337)
 
 - Administrace: připravena bezpečná trvalá relace přes Supabase Auth, role hlavního a nižšího správce a vzdálené odhlášení zařízení.
