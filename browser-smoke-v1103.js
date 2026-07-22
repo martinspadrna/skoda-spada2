@@ -10,7 +10,7 @@ const { spawn } = require('child_process');
 const { pathToFileURL } = require('url');
 
 const ROOT_DIR = __dirname;
-const EXPECTED_APP_VERSION = '1.2 (1.333)';
+const EXPECTED_APP_VERSION = '1.2 (1.334)';
 const RAK_BROWSER_SMOKE_ENGINE = 'local-chromium-cdp';
 const RAK_BROWSER_SMOKE_LOAD_MODE = 'about-blank-inline-html';
 const CHROMIUM_BIN = process.env.CHROMIUM_BIN || process.env.CHROME_BIN || '/usr/bin/chromium';
@@ -673,6 +673,30 @@ async function runViewportSmoke(cdpPort, viewport, inlineHtml) {
   assert(softCoreSavedJulyState.hits[1] && softCoreSavedJulyState.hits[1].date === '6.8. N' && softCoreSavedJulyState.hits[1].machine === 'TNKS01', `${viewport.name}: srpnovy TNKS01 blok nepokracoval 6.8. ${JSON.stringify(softCoreSavedJulyState)}`);
   assert(!softCoreSavedJulyState.hits.some((hit) => hit.date === '10.8. R'), `${viewport.name}: chybejici treti krok TNKS01 mel zustat 10.8. prazdny ${JSON.stringify(softCoreSavedJulyState)}`);
   assert(softCoreSavedJulyState.hits.some((hit) => hit.date === '11.8. R' && hit.machine === 'TPKW01'), `${viewport.name}: po preskoceni 10.8. nezacal 11.8. novy TPKW01 blok ${JSON.stringify(softCoreSavedJulyState)}`);
+
+  const pendingDraftEditorState = await evalInPage(client, `(() => {
+    const original = JSON.parse(JSON.stringify(app.rotation?.months?.['8/26'] || null));
+    const originalDrafts = JSON.parse(JSON.stringify(app.adminRotationPendingDrafts || {}));
+    try {
+      const saved = JSON.parse(JSON.stringify(original));
+      const pending = JSON.parse(JSON.stringify(original));
+      saved.hard.rows[0].date = 'ULOZENO-ONLINE';
+      pending.hard.rows[0].date = 'NOVY-NAVRH';
+      app.rotation.months['8/26'] = saved;
+      adminRotationGeneratorSetPendingDraft('8/26', pending);
+      const html = buildAdminRotationTableHtml('8/26');
+      return {
+        hasPendingDate: html.includes('NOVY-NAVRH'),
+        hasSavedDate: html.includes('ULOZENO-ONLINE'),
+        hasPendingLabel: html.includes('vygenerovaný návrh')
+      };
+    } finally {
+      app.rotation.months['8/26'] = original;
+      app.adminRotationPendingDrafts = originalDrafts;
+    }
+  })()`);
+  assert(pendingDraftEditorState.hasPendingDate && !pendingDraftEditorState.hasSavedDate, `${viewport.name}: editor neuprednostnil vygenerovany navrh ${JSON.stringify(pendingDraftEditorState)}`);
+  assert(pendingDraftEditorState.hasPendingLabel, `${viewport.name}: editor neoznacil zobrazeny vygenerovany navrh ${JSON.stringify(pendingDraftEditorState)}`);
 
   const softCoreOneDayAbsenceState = await evalInPage(client, `(() => {
     const original = JSON.parse(JSON.stringify(app.rotation?.months || {}));

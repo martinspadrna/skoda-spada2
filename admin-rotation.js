@@ -2132,7 +2132,12 @@ function buildAdminRotationCompactOverviewHtml(monthKey, hardRows, softRows, har
 
 function buildAdminRotationTableHtml(monthKey) {
 
-  const month = app.rotation && app.rotation.months ? app.rotation.months[monthKey] : null;
+  const pendingMonth = typeof adminRotationGeneratorGetPendingDraft === 'function'
+    ? adminRotationGeneratorGetPendingDraft(monthKey)
+    : null;
+  const savedMonth = app.rotation && app.rotation.months ? app.rotation.months[monthKey] : null;
+  const month = pendingMonth || savedMonth;
+  const hasPendingDraft = !!pendingMonth;
   if (!month) {
     return '<div class="smallText">Pro tenhle měsíc zatím nejsou data.</div>';
   }
@@ -2172,15 +2177,19 @@ function buildAdminRotationTableHtml(monthKey) {
 
   return [
     '<div class="appMenuSubSection" id="adminRotationEditor">',
-    '  <div class="appMenuSubTitle">Rozpis – ' + escapeHtml(monthKey) + '</div>',
-    '  <div class="appMenuText">Stejný rozpis, jen editovatelný. Změny zůstávají rozepsané lokálně a do Supabase jdou až po kliknutí na Uložit rozpis.</div>',
+    '  <div class="appMenuSubTitle">Rozpis – ' + escapeHtml(monthKey) + (hasPendingDraft ? ' · vygenerovaný návrh' : '') + '</div>',
+    '  <div class="appMenuText">' + (hasPendingDraft
+      ? 'Je zobrazený nový vygenerovaný návrh. Online rozpis se nezmění, dokud nekliknete na Uložit rozpis.'
+      : 'Stejný rozpis, jen editovatelný. Změny zůstávají rozepsané lokálně a do Supabase jdou až po kliknutí na Uložit rozpis.') + '</div>',
     '  <div class="adminRotationSaveDock">',
     '    <div class="adminRotationSaveActions">',
     '      <button type="button" class="appMenuAction adminRotationSelectedRemoveBtn" data-admin-selected-remove hidden>Odebrat vybrané</button>',
     '      <button type="button" class="appMenuAction rakOtOverviewBtn" data-daymod-overtime-overview>Přehled přesčasů</button>',
     '      <button type="button" class="appMenuAction" data-admin-action="copy-rotation-vacations">Kopírovat dovolené</button>',
     '    </div>',
-    '    <span id="adminRotationDraftStatus" class="adminRotationDraftStatus">Rozepsané změny se uloží horním tlačítkem Uložit rozpis.</span>',
+    '    <span id="adminRotationDraftStatus" class="adminRotationDraftStatus">' + (hasPendingDraft
+      ? 'Zobrazen je nový návrh. Uloží se až horním tlačítkem Uložit rozpis.'
+      : 'Rozepsané změny se uloží horním tlačítkem Uložit rozpis.') + '</span>',
     '  </div>',
     buildAdminRotationPreSaveChecklistHtml(monthKey),
     buildAdminRotationCompactOverviewHtml(monthKey, hardRows, softRows, hardMachines, softMachines),

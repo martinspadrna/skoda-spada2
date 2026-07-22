@@ -1,3 +1,10 @@
+## RaK 1.2 (1.334)
+
+- Generátor / editor: rozpisový editor nyní vždy upřednostní čekající vygenerovaný návrh před starou online verzí stejného měsíce.
+- Generátor / synchronizace: návrh zůstane v editoru viditelný i po návratu jinou cestou nebo po mezilehlém načtení online dat; Supabase se pořád změní až po kliknutí na `Uložit rozpis`.
+- Kontrola nad kompletními online daty potvrdila srpnový sled `Střížek 5.8. TNKS01`, `Synek 6.8. TNKS01`, přeskočený Třasák 10.8. a nový blok TPKW01 od 11.8.
+- Release metadata sjednocena na `RaK 1.2 (1.334)`, technicka verze `1.2.334`, cache `v1.2-1.334`; loader modulu ma cache znacku `1.2.334`.
+
 ## RaK 1.2 (1.333)
 
 - Aktualizace aplikace: JavaScript a CSS se na serveru znovu ověřují místo roční neměnné cache; `app.js` má navíc verzi přímo v URL, takže telefon po vydání nespustí starý generátor.
