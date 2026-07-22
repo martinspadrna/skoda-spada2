@@ -145,23 +145,18 @@ async function loadCalendarText(url) {
     if (Buffer.byteLength(text, 'utf8') > MAX_ICS_BYTES) throw new Error('calendar_response_too_large');
     return text;
   } catch (fetchError) {
+    let resolvedAddress = '';
     try {
-      return await fetchCalendarViaHttps(url);
-    } catch (httpsError) {
-      if (calendarErrorReason(httpsError) !== 'ENOTFOUND') throw httpsError;
-      let resolvedAddress = '';
-      try {
-        resolvedAddress = await resolveCalendarIpv4();
-      } catch (dnsError) {
-        dnsError.calendarPhase = 'doh';
-        throw dnsError;
-      }
-      try {
-        return await fetchCalendarViaHttps(url, 0, resolvedAddress);
-      } catch (directError) {
-        directError.calendarPhase = 'google_ip';
-        throw directError;
-      }
+      resolvedAddress = await resolveCalendarIpv4();
+    } catch (dnsError) {
+      dnsError.calendarPhase = 'doh';
+      throw dnsError;
+    }
+    try {
+      return await fetchCalendarViaHttps(url, 0, resolvedAddress);
+    } catch (directError) {
+      directError.calendarPhase = 'google_ip';
+      throw directError;
     }
   }
 }
