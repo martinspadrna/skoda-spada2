@@ -49,6 +49,11 @@ with protected_tables(name) as (
     ('rak_admin_list_rotation_backups'), ('rak_admin_restore_rotation_backup'),
     ('rak_save_dashboard_announcement'), ('rak_clear_dashboard_announcement'),
     ('rak_usage_presence_admin'), ('rak_admin_cleanup_expired_game_invites')
+), game_write_functions(name) as (
+  values
+    ('rak_create_game_invite_session'), ('rak_accept_game_invite'),
+    ('rak_record_game_stat_delta'), ('rak_save_game_session_by_invite_code'),
+    ('rak_save_game_ui_settings'), ('rak_submit_gomoku_win_v2')
 )
 select jsonb_build_object(
   'admin_auth', public.rak_admin_auth_capabilities(),
@@ -74,6 +79,18 @@ select jsonb_build_object(
       and (
         has_function_privilege('public', procedure.oid, 'EXECUTE')
         or has_function_privilege('anon', procedure.oid, 'EXECUTE')
+        or has_function_privilege('authenticated', procedure.oid, 'EXECUTE')
+      )
+  ),
+  'game_write_rpcs_ready', (
+    select count(distinct game_function.name)
+    from game_write_functions game_function
+    join pg_proc procedure on procedure.proname = game_function.name
+    join pg_namespace namespace on namespace.oid = procedure.pronamespace
+    where namespace.nspname = 'public'
+      and procedure.prosecdef
+      and (
+        has_function_privilege('anon', procedure.oid, 'EXECUTE')
         or has_function_privilege('authenticated', procedure.oid, 'EXECUTE')
       )
   ),
