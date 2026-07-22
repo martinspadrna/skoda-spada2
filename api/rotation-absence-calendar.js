@@ -3,10 +3,13 @@ const https = require('node:https');
 
 const CALENDAR_HOST = 'calendar.google.com';
 const MAX_ICS_BYTES = 2 * 1024 * 1024;
+const DNS_CACHE_MS = 10 * 60 * 1000;
 const CALENDAR_HEADERS = {
   accept: 'text/calendar,text/plain;q=0.9,*/*;q=0.8',
   'user-agent': 'RaK rotation absence calendar importer'
 };
+let cachedCalendarAddress = '';
+let cachedCalendarAddressAt = 0;
 
 function setResponseHeaders(res) {
   res.setHeader('Cache-Control', 'no-store, max-age=0');
@@ -24,13 +27,40 @@ function validCalendarUrl(value) {
   }
 }
 
-function fetchCalendarViaHttps(url, redirectCount = 0) {
+function validIpv4(value) {
+  const parts = String(value || '').split('.');
+  return parts.length === 4 && parts.every((part) => /^\d{1,3}$/.test(part) && Number(part) >= 0 && Number(part) <= 255);
+}
+
+async function resolveCalendarIpv4() {
+  if (cachedCalendarAddress && Date.now() - cachedCalendarAddressAt < DNS_CACHE_MS) return cachedCalendarAddress;
+  const response = await fetch(`https://1.1.1.1/dns-query?name=${encodeURIComponent(CALENDAR_HOST)}&type=A`, {
+    headers: { accept: 'application/dns-json' },
+    signal: AbortSignal.timeout(7000)
+  });
+  if (!response.ok) throw new Error(`calendar_dns_failed:${response.status}`);
+  const payload = await response.json();
+  const address = (Array.isArray(payload && payload.Answer) ? payload.Answer : [])
+    .filter((answer) => Number(answer && answer.type) === 1)
+    .map((answer) => String(answer && answer.data || '').trim())
+    .find(validIpv4);
+  if (!address) throw new Error('calendar_dns_no_address');
+  cachedCalendarAddress = address;
+  cachedCalendarAddressAt = Date.now();
+  return address;
+}
+
+function fetchCalendarViaHttps(url, redirectCount = 0, resolvedAddress = '') {
   return new Promise((resolve, reject) => {
-    const request = https.get(url, {
+    const requestOptions = {
       family: 4,
       headers: CALENDAR_HEADERS,
       timeout: 15000
-    }, (response) => {
+    };
+    if (validIpv4(resolvedAddress)) {
+      requestOptions.lookup = (hostname, options, callback) => callback(null, resolvedAddress, 4);
+    }
+    const request = https.get(url, requestOptions, (response) => {
       const status = Number(response.statusCode || 0);
       const location = String(response.headers.location || '').trim();
       if (status >= 300 && status < 400 && location && redirectCount < 3) {
@@ -40,7 +70,7 @@ function fetchCalendarViaHttps(url, redirectCount = 0) {
           reject(new Error('calendar_redirect_not_allowed'));
           return;
         }
-        fetchCalendarViaHttps(nextUrl, redirectCount + 1).then(resolve, reject);
+        fetchCalendarViaHttps(nextUrl, redirectCount + 1, resolvedAddress).then(resolve, reject);
         return;
       }
       if (status < 200 || status >= 300) {
@@ -82,7 +112,13 @@ async function loadCalendarText(url) {
     if (Buffer.byteLength(text, 'utf8') > MAX_ICS_BYTES) throw new Error('calendar_response_too_large');
     return text;
   } catch (fetchError) {
-    return fetchCalendarViaHttps(url);
+    try {
+      return await fetchCalendarViaHttps(url);
+    } catch (httpsError) {
+      if (calendarErrorReason(httpsError) !== 'ENOTFOUND') throw httpsError;
+      const resolvedAddress = await resolveCalendarIpv4();
+      return fetchCalendarViaHttps(url, 0, resolvedAddress);
+    }
   }
 }
 
