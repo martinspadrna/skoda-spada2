@@ -28,20 +28,20 @@ try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleR
   } catch (err) {}
 })();
 
-// RaK 1.2 (1.155) – runtime guardy aplikace jsou oddělené v app-runtime-guards.js.
-// RaK 1.2 (1.155) – delegované klikací akce jsou oddělené v app-actions.js.
-// RaK 1.2 (1.155) – health/audit helpery aplikace jsou oddělené v app-health-audits.js.
-// RaK 1.2 (1.155) – PWA/service worker konektivita je oddělená v app-pwa-connectivity.js.
-// RaK 1.2 (1.155) – boot self-test je oddělený v app-boot-selftest.js.
-// RaK 1.2 (1.155) – Excel import rozpisů je oddělený v app-excel-import.js.
-// RaK 1.2 (1.155) – admin odemčení je oddělené v app-admin-unlock.js.
-// RaK 1.2 (1.155) – home boot sekvence je oddělená v app-home-boot.js.
-// RaK 1.2 (1.155) – sync a startovací volby Rotace jsou v app-rotation-sync.js a app-rotation-controls.js.
-// RaK 1.2 (1.155) – spodní navigace je oddělená v app-bottom-nav.js.
-
 (async () => {
-  const RAK_MODULE_CACHE_VERSION = "1.2.347";
-  const files = [
+  const RAK_MODULE_CACHE_VERSION = "1.2.348";
+
+  // První fáze je schválně krátká: uživatel má co nejdřív vidět přihlášení.
+  // Těžší kalkulačky, admin, exporty a audity se načtou až poté, co browser dostane šanci vykreslit login.
+  const criticalFiles = [
+    "supabase-config.js",
+    "rak-user-profile.js",
+    "rak-login-splash.js",
+    "rak-login-fix.js",
+    "rak-login-life.js"
+  ];
+
+  const deferredFiles = [
     "app-runtime-guards.js",
     "app-health-audits.js",
     "app-postload-audits.js",
@@ -70,9 +70,7 @@ try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleR
     "app-actions.js",
     "app-boot-selftest.js",
     "export.js",
-    "supabase-config.js",
     "supabase-bridge.js",
-    "rak-user-profile.js",
     "app-rotation-sync.js",
     "app-excel-import.js",
     "app-rotation-controls.js",
@@ -80,11 +78,10 @@ try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleR
     "app-home-boot.js",
     "app-init.js",
     "rak-shift-report.js",
-    "rak-shift-report-share.js",
-    "rak-login-splash.js",
-    "rak-login-fix.js",
-    "rak-login-life.js"
+    "rak-shift-report-share.js"
   ];
+
+  const files = criticalFiles.concat(deferredFiles);
 
   try {
     if (window.__rakModuleReadinessRegistry) {
@@ -115,19 +112,28 @@ try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleR
     document.head.appendChild(script);
   });
 
-  for (const file of files) await loadScript(file);
-  if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleReady('boot-loader', 'ready', { source: 'dynamic-loader' });
+  for (const file of criticalFiles) await loadScript(file);
 
+  // Přihlášení spouštíme hned po kritických modulech, ne až po celé aplikaci.
   try { if (typeof window.rakUserProfileBootstrap === 'function') window.rakUserProfileBootstrap(); } catch (err) { console.warn('RaK user profile bootstrap failed', err); }
   try { if (typeof window.installRakLoginSplash === 'function') window.installRakLoginSplash(); } catch (err) { console.warn('RaK login splash failed', err); }
   try { if (typeof window.rakInstallLoginLife === 'function') window.rakInstallLoginLife(); } catch (err) { console.warn('RaK login mascot failed', err); }
 
-  installPwaAndConnectivityHooks();
-  installBottomNavBindings();
-  try { applyBottomNavMoreHardFix(); } catch (err) { console.warn('Bottom nav Více hard-fix failed', err); }
-  try { applyRakFixedBottomNavMetrics(); } catch (err) { console.warn('Bottom nav fixed metrics failed', err); }
-  installDelegatedAppActions();
-  try { runRakPostLoadAudits(); } catch (err) { console.warn('Post-load audit orchestrace failed', err); }
+  // Dva snímky dají Safari/PWA reálnou šanci login vykreslit ještě před zbytkem bootu.
+  await new Promise((resolve) => {
+    if (typeof requestAnimationFrame !== 'function') { setTimeout(resolve, 0); return; }
+    requestAnimationFrame(() => requestAnimationFrame(resolve));
+  });
+
+  for (const file of deferredFiles) await loadScript(file);
+  if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleReady('boot-loader', 'ready', { source: 'dynamic-loader' });
+
+  if (typeof installPwaAndConnectivityHooks === 'function') installPwaAndConnectivityHooks();
+  if (typeof installBottomNavBindings === 'function') installBottomNavBindings();
+  try { if (typeof applyBottomNavMoreHardFix === 'function') applyBottomNavMoreHardFix(); } catch (err) { console.warn('Bottom nav Více hard-fix failed', err); }
+  try { if (typeof applyRakFixedBottomNavMetrics === 'function') applyRakFixedBottomNavMetrics(); } catch (err) { console.warn('Bottom nav fixed metrics failed', err); }
+  if (typeof installDelegatedAppActions === 'function') installDelegatedAppActions();
+  try { if (typeof runRakPostLoadAudits === 'function') runRakPostLoadAudits(); } catch (err) { console.warn('Post-load audit orchestrace failed', err); }
 
   try {
     if (typeof window.__rotaceBootHomeRefreshLate === 'function') window.__rotaceBootHomeRefreshLate();
