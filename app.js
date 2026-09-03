@@ -1,6 +1,33 @@
 // RaK 1.2 (1.155) – boot/load shell aplikace.
 try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleReady('app.js', 'loaded', { source: 'index' }); } catch (err) {}
 
+// DEV: Hry jsou v této vývojové větvi úplně skryté ještě před prvním paintem.
+(function disableGamesSurface() {
+  const removeGames = () => {
+    try {
+      const gamesPage = document.getElementById('games');
+      if (gamesPage) gamesPage.remove();
+      document.querySelectorAll('[data-action="games"], [data-page="games"], .bottomNavGamesBtn').forEach((el) => el.remove());
+      document.querySelectorAll('link[href*="styles-games.css"]').forEach((el) => el.remove());
+      document.body && document.body.classList.remove('gamesOpen', 'tttOpen');
+    } catch (err) {}
+  };
+  try {
+    const style = document.createElement('style');
+    style.id = 'rak-dev-no-games-critical';
+    style.textContent = '#games,[data-action="games"],[data-page="games"],.bottomNavGamesBtn,link[href*="styles-games.css"]{display:none!important;}';
+    document.head.appendChild(style);
+  } catch (err) {}
+  removeGames();
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', removeGames, { once: true });
+  else removeGames();
+  try {
+    const observer = new MutationObserver(() => removeGames());
+    observer.observe(document.documentElement, { childList: true, subtree: true });
+    window.__rakDevGamesObserver = observer;
+  } catch (err) {}
+})();
+
 // RaK 1.2 (1.155) – runtime guardy aplikace jsou oddělené v app-runtime-guards.js.
 // RaK 1.2 (1.155) – delegované klikací akce jsou oddělené v app-actions.js.
 // RaK 1.2 (1.155) – health/audit helpery aplikace jsou oddělené v app-health-audits.js.
@@ -13,7 +40,7 @@ try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleR
 // RaK 1.2 (1.155) – spodní navigace je oddělená v app-bottom-nav.js.
 
 (async () => {
-  const RAK_MODULE_CACHE_VERSION = "1.2.341";
+  const RAK_MODULE_CACHE_VERSION = "1.2.346";
   const files = [
     "app-runtime-guards.js",
     "app-health-audits.js",
@@ -28,11 +55,7 @@ try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleR
     "dashboard.js",
     "soustruhy.js",
     "rotace.js",
-    "games-engine.js",
-    "games-profile.js",
     "appearance-theme.js",
-    "games-gomoku.js",
-    "games-classic.js",
     "changelog.js",
     "admin-rotation.js",
     "admin-food.js",
@@ -46,7 +69,6 @@ try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleR
     "rak-admin-menu-fix.js",
     "app-actions.js",
     "app-boot-selftest.js",
-    "games-arcade.js",
     "export.js",
     "supabase-config.js",
     "supabase-bridge.js",
@@ -57,7 +79,10 @@ try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleR
     "app-home-boot.js",
     "app-init.js",
     "rak-shift-report.js",
-    "rak-shift-report-share.js"
+    "rak-shift-report-share.js",
+    "rak-login-splash.js",
+    "rak-login-fix.js",
+    "rak-login-life.js"
   ];
 
   try {
@@ -89,10 +114,11 @@ try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleR
     document.head.appendChild(script);
   });
 
-  for (const file of files) {
-    await loadScript(file);
-  }
+  for (const file of files) await loadScript(file);
   if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleReady('boot-loader', 'ready', { source: 'dynamic-loader' });
+
+  try { if (typeof window.installRakLoginSplash === 'function') window.installRakLoginSplash(); } catch (err) { console.warn('RaK login splash failed', err); }
+  try { if (typeof window.rakInstallLoginLife === 'function') window.rakInstallLoginLife(); } catch (err) { console.warn('RaK login mascot failed', err); }
 
   installPwaAndConnectivityHooks();
   installBottomNavBindings();
@@ -102,20 +128,11 @@ try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleR
   try { runRakPostLoadAudits(); } catch (err) { console.warn('Post-load audit orchestrace failed', err); }
 
   try {
-    if (typeof window.__rotaceBootHomeRefreshLate === 'function') {
-      window.__rotaceBootHomeRefreshLate();
-    } else if (typeof bootHomeRefresh === 'function') {
-      bootHomeRefresh();
-    }
-  } catch (err) {
-    console.warn('Post-load boot failed', err);
-  }
+    if (typeof window.__rotaceBootHomeRefreshLate === 'function') window.__rotaceBootHomeRefreshLate();
+    else if (typeof bootHomeRefresh === 'function') bootHomeRefresh();
+  } catch (err) { console.warn('Post-load boot failed', err); }
 
-  try {
-    if (typeof runRakBootSelfTest === 'function') runRakBootSelfTest();
-  } catch (err) {
-    console.warn('Boot self-test selhal', err);
-  }
+  try { if (typeof runRakBootSelfTest === 'function') runRakBootSelfTest(); } catch (err) { console.warn('Boot self-test selhal', err); }
 })().catch(err => {
   console.error(err);
   alert("Nepodařilo se načíst aplikační skripty: " + (err && err.message ? err.message : err));
