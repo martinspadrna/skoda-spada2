@@ -40,7 +40,7 @@ try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleR
 // RaK 1.2 (1.155) – spodní navigace je oddělená v app-bottom-nav.js.
 
 (async () => {
-  const RAK_MODULE_CACHE_VERSION = "1.2.346";
+  const RAK_MODULE_CACHE_VERSION = "1.2.347";
   const files = [
     "app-runtime-guards.js",
     "app-health-audits.js",
@@ -72,6 +72,7 @@ try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleR
     "export.js",
     "supabase-config.js",
     "supabase-bridge.js",
+    "rak-user-profile.js",
     "app-rotation-sync.js",
     "app-excel-import.js",
     "app-rotation-controls.js",
@@ -117,6 +118,7 @@ try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleR
   for (const file of files) await loadScript(file);
   if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleReady('boot-loader', 'ready', { source: 'dynamic-loader' });
 
+  try { if (typeof window.rakUserProfileBootstrap === 'function') window.rakUserProfileBootstrap(); } catch (err) { console.warn('RaK user profile bootstrap failed', err); }
   try { if (typeof window.installRakLoginSplash === 'function') window.installRakLoginSplash(); } catch (err) { console.warn('RaK login splash failed', err); }
   try { if (typeof window.rakInstallLoginLife === 'function') window.rakInstallLoginLife(); } catch (err) { console.warn('RaK login mascot failed', err); }
 
