@@ -77,113 +77,50 @@
     const production = {};
     SECTIONS.forEach((section) => {
       production[section.id] = Array.from(root.querySelectorAll('[data-section="' + section.id + '"]')).map((row) => ({
-        index: row.querySelector('.rakShiftIndex')?.value || 'AD',
-        qty: row.querySelector('.rakShiftQty')?.value || '',
-        nok: row.querySelector('.rakShiftNok')?.value || '',
-        free: row.querySelector('.rakShiftFree')?.value || ''
+        index: row.querySelector('.rakShiftIndex')?.value || 'AD', qty: row.querySelector('.rakShiftQty')?.value || '', nok: row.querySelector('.rakShiftNok')?.value || '', free: row.querySelector('.rakShiftFree')?.value || ''
       })).filter((r) => r.qty !== '' || r.nok !== '' || r.free !== '');
     });
-    const problems = Array.from(root.querySelectorAll('.rakShiftProblemRow')).map((row) => ({
-      machine: row.querySelector('.rakShiftMachine')?.value || '',
-      from: row.querySelector('.rakShiftFrom')?.value || '',
-      to: row.querySelector('.rakShiftTo')?.value || '',
-      text: row.querySelector('.rakShiftProblemText')?.value.trim() || ''
-    })).filter((p) => p.machine || p.from || p.to || p.text);
+    const problems = Array.from(root.querySelectorAll('.rakShiftProblemRow')).map((row) => ({ machine: row.querySelector('.rakShiftMachine')?.value || '', from: row.querySelector('.rakShiftFrom')?.value || '', to: row.querySelector('.rakShiftTo')?.value || '', text: row.querySelector('.rakShiftProblemText')?.value.trim() || '' })).filter((p) => p.machine || p.from || p.to || p.text);
     return { date: root.querySelector('.rakShiftDate')?.value || '', shift: root.querySelector('.rakShiftShift')?.value || '', production, problems };
   }
   function reportText(draft) {
     const date = draft.date ? new Date(draft.date + 'T12:00:00').toLocaleDateString('cs-CZ') : new Date().toLocaleDateString('cs-CZ');
     const lines = ['RaK – REPORT SMĚNY', date + (draft.shift ? ' · ' + draft.shift : ''), ''];
     const labels = { mo: 'MO', to: 'TO', r01: 'R01', r07: 'R07' };
-    Object.keys(labels).forEach((id) => {
-      lines.push(labels[id] + ':');
-      const rows = draft.production[id] || [];
-      rows.forEach((r) => {
-        const extras = [];
-        if (r.nok) extras.push(r.nok + ' NOK');
-        if (r.free) extras.push(r.free + ' volné');
-        lines.push('  - ' + r.qty + ' ' + r.index + (extras.length ? ' (' + extras.join(', ') + ')' : ''));
-      });
-      if (!rows.length) lines.push('  -');
-      lines.push('');
-    });
-    if (draft.problems.length) {
-      lines.push('PROBLÉMY:');
-      draft.problems.forEach((p) => lines.push('  ' + p.machine + ' – ' + (p.from || '??:??') + '–' + (p.to || '??:??') + ', ' + (p.text || 'bez popisu')));
-    }
+    Object.keys(labels).forEach((id) => { lines.push(labels[id] + ':'); const rows = draft.production[id] || []; rows.forEach((r) => { const extras = []; if (r.nok) extras.push(r.nok + ' NOK'); if (r.free) extras.push(r.free + ' volné'); lines.push('  - ' + r.qty + ' ' + r.index + (extras.length ? ' (' + extras.join(', ') + ')' : '')); }); if (!rows.length) lines.push('  -'); lines.push(''); });
+    if (draft.problems.length) { lines.push('PROBLÉMY:'); draft.problems.forEach((p) => lines.push('  ' + p.machine + ' – ' + (p.from || '??:??') + '–' + (p.to || '??:??') + ', ' + (p.text || 'bez popisu'))); }
     return lines.join('\n').trim();
   }
-  function saveLocal(text, draft) {
-    try {
-      const rows = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
-      rows.unshift({ id: Date.now(), createdAt: new Date().toISOString(), text, draft });
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(rows.slice(0, 30)));
-    } catch (err) {}
-  }
-  async function shareReport(text, root) {
-    saveLocal(text, getDraft(root));
-    try {
-      if (navigator.share) { await navigator.share({ title: 'RaK – report směny', text }); setStatus(root, 'Report připravený k odeslání.'); return; }
-      await navigator.clipboard.writeText(text);
-      setStatus(root, 'Report zkopírovaný do schránky – můžeš ho poslat mistrovi.');
-    } catch (err) { setStatus(root, 'Odeslání bylo zrušeno nebo se nepovedlo.'); }
-  }
+  function saveLocal(text, draft) { try { const rows = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); rows.unshift({ id: Date.now(), createdAt: new Date().toISOString(), text, draft }); localStorage.setItem(STORAGE_KEY, JSON.stringify(rows.slice(0, 30))); } catch (err) {} }
+  async function shareReport(text, root) { saveLocal(text, getDraft(root)); try { if (navigator.share) { await navigator.share({ title: 'RaK – report směny', text }); setStatus(root, 'Report připravený k odeslání.'); return; } await navigator.clipboard.writeText(text); setStatus(root, 'Report zkopírovaný do schránky – můžeš ho poslat mistrovi.'); } catch (err) { setStatus(root, 'Odeslání bylo zrušeno nebo se nepovedlo.'); } }
   function setStatus(root, text) { const el = root.querySelector('.rakShiftStatus'); if (el) el.textContent = text; }
   function renderPreview(root) { const el = root.querySelector('.rakShiftPreview'); if (el) el.textContent = reportText(getDraft(root)); }
   function addIndex(root, id) { const block = root.querySelector('[data-section-block="' + id + '"] .rakShiftRows'); const section = SECTIONS.find((s) => s.id === id); if (!block || !section) return; block.insertAdjacentHTML('beforeend', sectionRow(section, { index: 'AD' })); renderPreview(root); }
   function addProblem(root) { const block = root.querySelector('.rakShiftProblems'); if (!block) return; block.insertAdjacentHTML('beforeend', problemRow()); renderPreview(root); }
+  function canUseShiftReport() { return typeof rakAdminCanOpenAdmin === 'function' && rakAdminCanOpenAdmin(); }
   function build() {
-    ensureStyles();
-    const body = document.getElementById('appMenuBody');
-    if (!body || body.dataset.rakShiftReportOpen !== '1') return;
-    const root = body.querySelector('#rakShiftReport');
-    if (root) return;
-    body.innerHTML = [
-      '<div id="rakShiftReport" class="rakShiftReport">',
-      '  <div><div class="appMenuSubTitle">Report směny pro mistra</div><div class="rakShiftIntro">MO je první, TO druhé. R01/R07 jsou brus. Přidej libovolný počet indexů; ručně zadáváš hlavně ks a popis problému.</div></div>',
-      '  <label>Datum směny<input class="rakShiftInput rakShiftDate" type="date" value="' + new Date().toISOString().slice(0,10) + '"></label>',
-      '  <label>Směna<select class="rakShiftSelect rakShiftShift"><option value="N">Noc</option><option value="R">Ráno</option><option value="N8">Noc 8 h</option><option value="R8">Ráno 8 h</option></select></label>',
-      SECTIONS.map(sectionHtml).join(''),
-      '  <section class="rakShiftSection"><div class="rakShiftSectionHead"><h4>Problémy / odstávky</h4><button type="button" class="appMenuAction rakShiftAddProblem">＋ Přidat problém</button></div><div class="rakShiftProblems">' + problemRow() + '</div></section>',
-      '  <section class="rakShiftSection"><div class="appMenuSubTitle">Náhled reportu</div><div class="rakShiftPreview"></div></section>',
-      '  <div class="rakShiftActions"><button type="button" class="appMenuAction" data-shift-action="preview">Obnovit náhled</button><button type="button" class="appMenuAction isActive" data-shift-action="send">Odeslat report</button><button type="button" class="appMenuAction" data-shift-action="close">Zpět do Adminu</button></div>',
-      '  <div class="rakShiftStatus"></div>',
-      '</div>'
-    ].join('');
-    renderPreview(root);
+    if (!canUseShiftReport()) return;
+    ensureStyles(); const body = document.getElementById('appMenuBody'); if (!body || body.dataset.rakShiftReportOpen !== '1') return; const root = body.querySelector('#rakShiftReport'); if (root) return;
+    body.innerHTML = ['<div id="rakShiftReport" class="rakShiftReport">','  <div><div class="appMenuSubTitle">Report směny pro mistra</div><div class="rakShiftIntro">MO je první, TO druhé. R01/R07 jsou brus. Přidej libovolný počet indexů; ručně zadáváš hlavně ks a popis problému.</div></div>','  <label>Datum směny<input class="rakShiftInput rakShiftDate" type="date" value="' + new Date().toISOString().slice(0,10) + '"></label>','  <label>Směna<select class="rakShiftSelect rakShiftShift"><option value="N">Noc</option><option value="R">Ráno</option><option value="N8">Noc 8 h</option><option value="R8">Ráno 8 h</option></select></label>',SECTIONS.map(sectionHtml).join(''),'  <section class="rakShiftSection"><div class="rakShiftSectionHead"><h4>Problémy / odstávky</h4><button type="button" class="appMenuAction rakShiftAddProblem">＋ Přidat problém</button></div><div class="rakShiftProblems">' + problemRow() + '</div></section>','  <section class="rakShiftSection"><div class="appMenuSubTitle">Náhled reportu</div><div class="rakShiftPreview"></div></section>','  <div class="rakShiftActions"><button type="button" class="appMenuAction" data-shift-action="preview">Obnovit náhled</button><button type="button" class="appMenuAction isActive" data-shift-action="send">Odeslat report</button><button type="button" class="appMenuAction" data-shift-action="close">Zpět do Adminu</button></div>','  <div class="rakShiftStatus"></div>','</div>'].join(''); renderPreview(body.querySelector('#rakShiftReport'));
   }
   function injectAdminEntry() {
     const body = document.getElementById('appMenuBody');
-    if (!body || body.dataset.rakShiftReportInjected === '1' || body.querySelector('[data-admin-action="shift-report"]')) return;
-    const button = document.createElement('button');
-    button.type = 'button'; button.className = 'appMenuAction isActive'; button.dataset.adminAction = 'shift-report'; button.textContent = 'Report směny';
-    body.prepend(button);
-    body.dataset.rakShiftReportInjected = '1';
-    button.addEventListener('click', () => { body.dataset.rakShiftReportOpen = '1'; body.dataset.rakShiftReportInjected = '0'; build(); });
+    if (!body || body.dataset.rakShiftReportOpen === '1') return;
+    const old = body.querySelector('[data-admin-action="shift-report"]');
+    if (!canUseShiftReport()) { if (old) old.remove(); return; }
+    if (old) return;
+    const adminButton = body.querySelector('[data-menu-action="admin"]');
+    if (!adminButton) return;
+    const button = document.createElement('button'); button.type = 'button'; button.className = 'appMenuAction isActive'; button.dataset.adminAction = 'shift-report'; button.textContent = 'Report směny';
+    adminButton.insertAdjacentElement('afterend', button);
+    button.addEventListener('click', () => { if (!canUseShiftReport()) return; body.dataset.rakShiftReportOpen = '1'; build(); });
   }
   function bindBody() {
-    const body = document.getElementById('appMenuBody');
-    if (!body || body.dataset.rakShiftDelegated === '1') return;
-    body.dataset.rakShiftDelegated = '1';
-    body.addEventListener('input', (e) => { if (e.target.closest('#rakShiftReport')) renderPreview(body); });
-    body.addEventListener('change', (e) => { if (e.target.closest('#rakShiftReport')) renderPreview(body); });
-    body.addEventListener('click', (e) => {
-      const root = e.target.closest('#rakShiftReport'); if (!root) return;
-      const add = e.target.closest('[data-shift-add]'); if (add) { addIndex(root, add.dataset.shiftAdd); return; }
-      if (e.target.closest('.rakShiftAddProblem')) { addProblem(root); return; }
-      if (e.target.closest('.rakShiftRemove')) { e.target.closest('.rakShiftProdRow,.rakShiftProblemRow')?.remove(); renderPreview(root); return; }
-      const action = e.target.closest('[data-shift-action]')?.dataset.shiftAction;
-      if (action === 'preview') { renderPreview(root); return; }
-      if (action === 'send') { void shareReport(reportText(getDraft(root)), root); return; }
-      if (action === 'close') { body.dataset.rakShiftReportOpen = '0'; body.dataset.rakShiftReportInjected = '0'; if (typeof renderAdminMenuBody === 'function') renderAdminMenuBody(body, 'home'); else build(); return; }
-    });
+    const body = document.getElementById('appMenuBody'); if (!body || body.dataset.rakShiftDelegated === '1') return; body.dataset.rakShiftDelegated = '1';
+    body.addEventListener('input', (e) => { if (e.target.closest('#rakShiftReport')) renderPreview(body); }); body.addEventListener('change', (e) => { if (e.target.closest('#rakShiftReport')) renderPreview(body); });
+    body.addEventListener('click', (e) => { const root = e.target.closest('#rakShiftReport'); if (!root) return; const add = e.target.closest('[data-shift-add]'); if (add) { addIndex(root, add.dataset.shiftAdd); return; } if (e.target.closest('.rakShiftAddProblem')) { addProblem(root); return; } if (e.target.closest('.rakShiftRemove')) { e.target.closest('.rakShiftProdRow,.rakShiftProblemRow')?.remove(); renderPreview(root); return; } const action = e.target.closest('[data-shift-action]')?.dataset.shiftAction; if (action === 'preview') { renderPreview(root); return; } if (action === 'send') { void shareReport(reportText(getDraft(root)), root); return; } if (action === 'close') { body.dataset.rakShiftReportOpen = '0'; if (typeof renderAdminMenuBody === 'function') renderAdminMenuBody(body, 'home'); return; } });
   }
-  function observe() {
-    bindBody();
-    injectAdminEntry();
-    const observer = new MutationObserver(() => { bindBody(); if (document.getElementById('appMenuBody')?.dataset.rakShiftReportOpen !== '1') injectAdminEntry(); });
-    observer.observe(document.body, { childList: true, subtree: true });
-  }
-  window.RakShiftReport = { open: () => { const body = document.getElementById('appMenuBody'); if (body) { body.dataset.rakShiftReportOpen = '1'; build(); } } };
+  function observe() { bindBody(); injectAdminEntry(); const observer = new MutationObserver(() => { bindBody(); if (document.getElementById('appMenuBody')?.dataset.rakShiftReportOpen !== '1') injectAdminEntry(); }); observer.observe(document.body, { childList: true, subtree: true }); }
+  window.RakShiftReport = { open: () => { if (!canUseShiftReport()) return; const body = document.getElementById('appMenuBody'); if (body) { body.dataset.rakShiftReportOpen = '1'; build(); } } };
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', observe, { once: true }); else observe();
 })();
