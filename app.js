@@ -1,7 +1,6 @@
 // RaK 1.2 (1.155) – boot/load shell aplikace.
 try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleReady('app.js', 'loaded', { source: 'index' }); } catch (err) {}
 
-
 // RaK 1.2 (1.155) – runtime guardy aplikace jsou oddělené v app-runtime-guards.js.
 // RaK 1.2 (1.155) – delegované klikací akce jsou oddělené v app-actions.js.
 // RaK 1.2 (1.155) – health/audit helpery aplikace jsou oddělené v app-health-audits.js.
@@ -11,15 +10,10 @@ try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleR
 // RaK 1.2 (1.155) – admin odemčení je oddělené v app-admin-unlock.js.
 // RaK 1.2 (1.155) – home boot sekvence je oddělená v app-home-boot.js.
 // RaK 1.2 (1.155) – sync a startovací volby Rotace jsou v app-rotation-sync.js a app-rotation-controls.js.
-
-
 // RaK 1.2 (1.155) – spodní navigace je oddělená v app-bottom-nav.js.
 
-
-
-
 (async () => {
-  const RAK_MODULE_CACHE_VERSION = "1.2.338";
+  const RAK_MODULE_CACHE_VERSION = "1.2.339";
   const files = [
     "app-runtime-guards.js",
     "app-health-audits.js",
@@ -60,7 +54,8 @@ try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleR
     "app-rotation-controls.js",
     "app-admin-unlock.js",
     "app-home-boot.js",
-    "app-init.js"
+    "app-init.js",
+    "rak-shift-report.js"
   ];
 
   try {
@@ -119,11 +114,6 @@ try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleR
   } catch (err) {
     console.warn('Boot self-test selhal', err);
   }
-
-
-
-
-
 })().catch(err => {
   console.error(err);
   alert("Nepodařilo se načíst aplikační skripty: " + (err && err.message ? err.message : err));
