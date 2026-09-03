@@ -29,10 +29,8 @@ try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleR
 })();
 
 (async () => {
-  const RAK_MODULE_CACHE_VERSION = "1.2.348";
+  const RAK_MODULE_CACHE_VERSION = "1.2.349";
 
-  // První fáze je schválně krátká: uživatel má co nejdřív vidět přihlášení.
-  // Těžší kalkulačky, admin, exporty a audity se načtou až poté, co browser dostane šanci vykreslit login.
   const criticalFiles = [
     "supabase-config.js",
     "rak-user-profile.js",
@@ -114,16 +112,19 @@ try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleR
 
   for (const file of criticalFiles) await loadScript(file);
 
-  // Přihlášení spouštíme hned po kritických modulech, ne až po celé aplikaci.
   try { if (typeof window.rakUserProfileBootstrap === 'function') window.rakUserProfileBootstrap(); } catch (err) { console.warn('RaK user profile bootstrap failed', err); }
-  try { if (typeof window.installRakLoginSplash === 'function') window.installRakLoginSplash(); } catch (err) { console.warn('RaK login splash failed', err); }
-  try { if (typeof window.rakInstallLoginLife === 'function') window.rakInstallLoginLife(); } catch (err) { console.warn('RaK login mascot failed', err); }
 
-  // Dva snímky dají Safari/PWA reálnou šanci login vykreslit ještě před zbytkem bootu.
-  await new Promise((resolve) => {
-    if (typeof requestAnimationFrame !== 'function') { setTimeout(resolve, 0); return; }
-    requestAnimationFrame(() => requestAnimationFrame(resolve));
-  });
+  let hasStoredProfile = false;
+  try { hasStoredProfile = !!(typeof window.rakUserProfileGet === 'function' && window.rakUserProfileGet()); } catch (err) {}
+
+  if (!hasStoredProfile) {
+    try { if (typeof window.installRakLoginSplash === 'function') window.installRakLoginSplash(); } catch (err) { console.warn('RaK login splash failed', err); }
+    try { if (typeof window.rakInstallLoginLife === 'function') window.rakInstallLoginLife(); } catch (err) { console.warn('RaK login mascot failed', err); }
+    await new Promise((resolve) => {
+      if (typeof requestAnimationFrame !== 'function') { setTimeout(resolve, 0); return; }
+      requestAnimationFrame(() => requestAnimationFrame(resolve));
+    });
+  }
 
   for (const file of deferredFiles) await loadScript(file);
   if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleReady('boot-loader', 'ready', { source: 'dynamic-loader' });
