@@ -13,7 +13,7 @@ try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleR
 // RaK 1.2 (1.155) – spodní navigace je oddělená v app-bottom-nav.js.
 
 (async () => {
-  const RAK_MODULE_CACHE_VERSION = "1.2.340";
+  const RAK_MODULE_CACHE_VERSION = "1.2.341";
   const files = [
     "app-runtime-guards.js",
     "app-health-audits.js",
@@ -43,6 +43,7 @@ try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleR
     "app-navigation.js",
     "app-bottom-nav.js",
     "app-menu.js",
+    "rak-admin-menu-fix.js",
     "app-actions.js",
     "app-boot-selftest.js",
     "games-arcade.js",
