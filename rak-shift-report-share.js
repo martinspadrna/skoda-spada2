@@ -1,4 +1,4 @@
-// RaK – doplňkové akce sdílení reportu směny.
+// RaK – doplňkové akce sdílení reportu směny + umístění vstupu jen pro adminy.
 (function () {
   'use strict';
 
@@ -68,10 +68,49 @@
     whatsappButton.addEventListener('click', () => whatsapp(root));
   }
 
+  function adminAllowed() {
+    try {
+      if (typeof appMenuShouldShowAdminEntry === 'function') return !!appMenuShouldShowAdminEntry();
+    } catch (err) {}
+    try {
+      const id = typeof rakAdminGetActiveAccountId === 'function' ? String(rakAdminGetActiveAccountId() || '').trim() : '';
+      if (id === '9811') return true;
+      if (id && typeof rakAdminAccountRequiresPassword === 'function' && rakAdminAccountRequiresPassword(id)) return true;
+      if (typeof rakAdminCanOpenAdmin === 'function' && rakAdminCanOpenAdmin()) return true;
+    } catch (err) {}
+    return false;
+  }
+
+  function placeAdminEntry() {
+    const body = document.getElementById('appMenuBody');
+    if (!body || body.dataset.rakShiftReportOpen === '1') return;
+    const report = body.querySelector('[data-admin-action="shift-report"]');
+    if (!report) return;
+    const admin = body.querySelector('[data-menu-action="admin"]');
+    const allowed = adminAllowed() && !!admin;
+
+    report.hidden = !allowed;
+    report.disabled = !allowed;
+    report.setAttribute('aria-hidden', allowed ? 'false' : 'true');
+    if (!allowed) return;
+
+    report.classList.remove('isActive');
+    report.dataset.rakAdminOnly = '1';
+    if (admin.nextElementSibling !== report) admin.insertAdjacentElement('afterend', report);
+  }
+
   function scan() {
     const root = document.getElementById('rakShiftReport');
     if (root) install(root);
+    placeAdminEntry();
   }
+
+  document.addEventListener('click', (event) => {
+    const trigger = event.target && event.target.closest ? event.target.closest('[data-admin-action="shift-report"]') : null;
+    if (!trigger || adminAllowed()) return;
+    event.preventDefault();
+    event.stopImmediatePropagation();
+  }, true);
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', scan, { once: true });
   else scan();
