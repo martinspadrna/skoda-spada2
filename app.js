@@ -29,7 +29,7 @@ try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleR
 })();
 
 (async () => {
-  const RAK_MODULE_CACHE_VERSION = "1.2.353";
+  const RAK_MODULE_CACHE_VERSION = "1.2.354";
 
   const criticalFiles = [
     "supabase-config.js",
@@ -79,6 +79,7 @@ try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleR
     "app-home-boot.js",
     "app-init.js",
     "rak-shift-report.js",
+    "rak-shift-report-entry-fix.js",
     "rak-shift-report-share.js"
   ];
 
