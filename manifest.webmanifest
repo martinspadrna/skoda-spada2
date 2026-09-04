@@ -1,6 +1,7 @@
 {
   "name": "Rotace a kalkulačky",
   "short_name": "Rotace",
+  "id": "./",
   "start_url": "./index.html?source=pwa",
   "scope": "./",
   "display": "standalone",
