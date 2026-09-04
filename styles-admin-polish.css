@@ -936,10 +936,11 @@
 .adminWorkerMachineCheck{display:inline-flex;align-items:center;gap:4px;font-size:12px;white-space:nowrap;}
 .adminWorkerMachineCheck input{width:16px;height:16px;flex:0 0 auto;}
 .adminAppAccountsTable{width:240px !important;min-width:240px !important;max-width:100%;table-layout:fixed;}
-.adminAppAccountNameCol{width:115px;}
-.adminAppAccountLoginCol{width:52px;}
-.adminAppAccountScopeCol{width:73px;}
-.adminAppAccountsTable .appMenuInlineInput{padding:6px 5px;}
+.adminAppAccountNameCol{width:90px;}
+.adminAppAccountLoginCol{width:45px;}
+.adminAppAccountScopeCol{width:105px;}
+.adminAppAccountsTable .appMenuInlineInput{width:100% !important;min-width:0 !important;padding:6px 4px;}
+.adminAppAccountLoginInput{text-align:center;}
 .adminAppAccountScope{font-size:11px;line-height:1.15;opacity:.78;white-space:normal;overflow-wrap:anywhere;}
 .adminAppContactTable{min-width:320px !important;}
 .adminAppContactLabelCol{width:160px;}
