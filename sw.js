@@ -1,6 +1,6 @@
 // RaK development PWA service worker – update-safe build.
-const CACHE_VERSION = 'v1.2-dev-20260904-1';
-const SW_APP_VERSION = 'development 2026-09-04.1';
+const CACHE_VERSION = 'v1.2-dev-20260904-2';
+const SW_APP_VERSION = 'development 2026-09-04.2';
 const STATIC_CACHE = `rotace-static-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `rotace-runtime-${CACHE_VERSION}`;
 const CORE = ['./', './index.html', './manifest.webmanifest', './assets/app-icons/icon-180.png', './assets/app-icons/icon-192.png', './assets/app-icons/icon-512.png'];
@@ -79,38 +79,37 @@ async function networkFirst(request, fallback) {
     put(RUNTIME_CACHE, request, response);
     return response;
   } catch (_) {
-    return (await cached(request)) || (fallback ? await cached(fallback) : null) || Response.error();
+    return (await cached(request)) || fallback;
   }
+}
+
+async function navigationResponse(request, event) {
+  try {
+    if (event && event.preloadResponse) {
+      const preload = await event.preloadResponse;
+      if (cacheable(preload)) {
+        put(RUNTIME_CACHE, request, preload);
+        return preload;
+      }
+    }
+  } catch (_) {}
+  const fallback = (await cached('./index.html')) || (await cached('./')) || Response.error();
+  return networkFirst(request, fallback);
 }
 
 self.addEventListener('fetch', event => {
   const request = event.request;
-  if (request.method !== 'GET') return;
+  if (!request || request.method !== 'GET') return;
   const url = new URL(request.url);
   if (url.origin !== self.location.origin) return;
-  if (url.pathname.startsWith('/api/')) return;
 
-  const navigation = request.mode === 'navigate' || request.destination === 'document';
-  if (navigation) {
-    event.respondWith((async () => {
-      try {
-        const preload = await event.preloadResponse;
-        if (preload) {
-          put(RUNTIME_CACHE, request, preload);
-          return preload;
-        }
-      } catch (_) {}
-      return networkFirst(request, './index.html');
-    })());
+  if (request.mode === 'navigate') {
+    event.respondWith(navigationResponse(request, event));
     return;
   }
 
-  // Development: JS/CSS/manifest are network-first. This prevents an iOS home-screen
-  // installation from staying on an old deployment after a new development build.
   if (STATIC_EXT.test(url.pathname)) {
-    event.respondWith(networkFirst(request));
+    event.respondWith(networkFirst(request, (async () => (await cached(request)) || Response.error())()));
     return;
   }
-
-  event.respondWith(networkFirst(request));
 });
