@@ -2748,9 +2748,8 @@ function buildAdminHandoverRunbookHtml(monthKey) {
     },
     {
       title: '4. Kontrola',
-      detail: 'Po uložení ověřit synchronizaci, připojení, reporty chyb a připravit export pro předání.',
+      detail: 'Po uložení ověřit synchronizaci, reporty chyb a připravit export pro předání.',
       actions: [
-        { action: 'open-usage', label: 'Připojení' },
         { action: 'open-reports', label: 'Reporty' },
         { action: 'open-export', label: 'Export' }
       ]
@@ -2963,7 +2962,6 @@ function buildAdminSettingsMapStatusHtml(items) {
 function getAdminSettingsMapItems() {
   const ownerAccess = typeof rakAdminCanManageAdmins === 'function' && rakAdminCanManageAdmins();
   const serviceActions = [
-    { action: 'open-usage', label: 'Připojení' },
     { action: 'open-reports', label: 'Reporty' },
     { action: 'open-service', label: 'Servis' }
   ];
@@ -3189,7 +3187,7 @@ function buildAdminManualText(monthKey) {
     '',
     'Kontrola po úpravách',
     '- Po uložení zkontroluj stav synchronizace na hlavní stránce.',
-    '- V administraci můžeš otevřít Přehled připojení, Reporty chyb a Servis / synchronizace.',
+    '- V administraci můžeš otevřít Reporty chyb a Servis / synchronizace.',
     ''
   ]).join('\n');
 }
@@ -3263,7 +3261,6 @@ function renderAdminMenuBody(body, section) {
       { action: 'open-payroll-settings', label: 'Výplata' }
     ])),
     buildAdminMenuSectionHtml('4. Kontrola a servis', adminServiceDetail, [
-      { action: 'open-usage', label: 'Přehled připojení' },
       { action: 'open-reports', label: 'Reporty chyb' }
     ].concat(adminServiceActions)),
     '  </div>',
@@ -3613,8 +3610,6 @@ function renderAdminMenuBody(body, section) {
   ].join('');
 
   const announcementHtml = buildAdminAnnouncementHtml();
-  const usageHtml = buildAdminUsageHtml();
-
   const importPreview = (typeof getRakExcelImportPreview === 'function') ? getRakExcelImportPreview() : null;
   const rotationExcelMonthOptions = buildRakRotationExcelExportMonthOptions(monthKey);
   const exportHtml = [
@@ -3705,8 +3700,6 @@ function renderAdminMenuBody(body, section) {
     body.innerHTML = settingsMapHtml;
   } else if (mode === 'announcement') {
     body.innerHTML = announcementHtml;
-  } else if (mode === 'usage') {
-    body.innerHTML = usageHtml;
   } else if (mode === 'export') {
     body.innerHTML = exportHtml;
   } else if (mode === 'reports') {
@@ -4703,10 +4696,6 @@ function bindAppMenuHandlers(body) {
         openAppMenu('admin-announcement');
         return;
       }
-      if (adminAction === 'open-usage') {
-        openAppMenu('admin-usage');
-        return;
-      }
       if (adminAction === 'open-export') {
         openAppMenu('admin-export');
         return;
@@ -4750,13 +4739,6 @@ function bindAppMenuHandlers(body) {
         if (!result || result.ok === false) throw (result && result.error ? result.error : new Error('Úklid pozvánek se nepovedl.'));
         await loadAdminServiceSnapshotFromSupabase();
         renderAdminMenuBody(body, 'service');
-        return;
-      }
-      if (adminAction === 'usage-load') {
-        const statusEl = document.getElementById('adminOnlineSaveStatus');
-        if (statusEl) statusEl.textContent = 'Načítám připojení…';
-        await loadAdminAppUsageFromSupabase();
-        renderAdminMenuBody(body, 'usage');
         return;
       }
       if (adminAction === 'load-reports') {
@@ -5456,7 +5438,7 @@ function openAppMenu(view) {
   page.classList.add('active');
   const body = page.querySelector('#appMenuBody');
   const v = view || 'menu';
-  const adminViews = new Set(['admin', 'admin-machines', 'admin-food', 'admin-vacation', 'admin-special-days', 'admin-rotation', 'admin-overtime', 'admin-generator-settings', 'admin-workers', 'admin-change-log', 'admin-monthly-workflow', 'admin-handover', 'admin-manual', 'admin-settings-map', 'admin-accounts', 'admin-external-links', 'admin-app-contact', 'admin-payroll-settings', 'admin-backups', 'admin-settings-backups', 'admin-announcement', 'admin-usage', 'admin-export', 'admin-reports', 'admin-service']);
+  const adminViews = new Set(['admin', 'admin-machines', 'admin-food', 'admin-vacation', 'admin-special-days', 'admin-rotation', 'admin-overtime', 'admin-generator-settings', 'admin-workers', 'admin-change-log', 'admin-monthly-workflow', 'admin-handover', 'admin-manual', 'admin-settings-map', 'admin-accounts', 'admin-external-links', 'admin-app-contact', 'admin-payroll-settings', 'admin-backups', 'admin-settings-backups', 'admin-announcement', 'admin-export', 'admin-reports', 'admin-service']);
 
   const versionText = (typeof app !== 'undefined' && app.version) || (typeof APP_VERSION !== 'undefined' ? APP_VERSION : '');
   const contact = typeof getRakAppContactSettings === 'function'
@@ -5774,18 +5756,6 @@ function openAppMenu(view) {
       renderAdminMenuBody(body, 'announcement');
     } else if (v === 'admin-export') {
       renderAdminMenuBody(body, 'export');
-    } else if (v === 'admin-usage') {
-      bindAppMenuHandlers(body);
-      void (async () => {
-        try {
-          await loadAdminAppUsageFromSupabase();
-          renderAdminMenuBody(body, 'usage');
-        } catch (err) {
-          console.warn('Admin usage preload failed', err);
-          app.adminUsageSnapshot = { ok: false, error: err, devices: [], events: [], summary: {} };
-          renderAdminMenuBody(body, 'usage');
-        }
-      })();
     } else if (v === 'admin-reports') {
       void (async () => {
         try {

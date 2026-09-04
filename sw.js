@@ -1,6 +1,6 @@
 // RaK development PWA service worker – update-safe build.
-const CACHE_VERSION = 'v1.2-dev-20260904-11';
-const SW_APP_VERSION = 'development 2026-09-04.11';
+const CACHE_VERSION = 'v1.2-dev-20260904-12';
+const SW_APP_VERSION = 'development 2026-09-04.12';
 const STATIC_CACHE = `rotace-static-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `rotace-runtime-${CACHE_VERSION}`;
 const CORE = ['./', './index.html', './manifest.webmanifest', './assets/app-icons/icon-180.png', './assets/app-icons/icon-192.png', './assets/app-icons/icon-512.png'];

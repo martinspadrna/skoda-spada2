@@ -1,4 +1,4 @@
-// RaK 1.2 (1.155) – Administrace Připojení, servis a oznámení oddělené z hlavního UI modulu.
+// RaK 1.2 (1.155) – Administrace servisu a oznámení oddělené z hlavního UI modulu.
 try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleReady('admin-service-usage.js', 'loaded', { source: 'dynamic-loader' }); } catch (err) {}
 
 function formatAdminServiceCount(value) {
@@ -16,255 +16,6 @@ function formatAdminUsageDate(value, includeSeconds) {
     return d.toLocaleString('cs-CZ', opts);
   } catch (err) { return '—'; }
 }
-
-function formatAdminUsageAgo(value) {
-  const minutes = Number(value);
-  if (!Number.isFinite(minutes)) return '';
-  if (minutes < 1) return 'teď';
-  if (minutes < 60) return 'před ' + Math.round(minutes) + ' min';
-  if (minutes < 60 * 24) return 'před ' + Math.round(minutes / 60) + ' h';
-  return 'před ' + Math.round(minutes / 60 / 24) + ' dny';
-}
-
-function shortAdminUsageDevice(value) {
-  const ua = String(value || '');
-  if (/iPhone/i.test(ua)) return 'iPhone';
-  if (/iPad/i.test(ua)) return 'iPad';
-  if (/Android/i.test(ua)) return 'Android';
-  if (/Windows/i.test(ua)) return 'Windows';
-  if (/Macintosh|Mac OS/i.test(ua)) return 'Mac';
-  return ua ? ua.slice(0, 42) : 'Zařízení neznámé';
-}
-
-function formatAdminUsageViewport(info) {
-  const base = info && typeof info === 'object' ? info : {};
-  const parseMaybeJson = (value) => {
-    if (value && typeof value === 'object') return value;
-    const raw = String(value || '').trim();
-    if (!raw) return {};
-    try { return JSON.parse(raw); } catch (err) { return { raw }; }
-  };
-  const mergeDeviceInfo = (value) => {
-    const parsed = parseMaybeJson(value);
-    if (parsed && (parsed.viewport || parsed.screen || parsed.dpr || parsed.viewportWidth || parsed.screenWidth)) return parsed;
-    return {};
-  };
-  const nested = Object.assign({}, mergeDeviceInfo(base.screen), mergeDeviceInfo(base.raw), mergeDeviceInfo(base.deviceInfo));
-  const obj = Object.assign({}, base, nested);
-  const vp = parseMaybeJson(obj.viewport);
-  const scrCandidate = parseMaybeJson(obj.screen);
-  const scr = scrCandidate && (scrCandidate.width || scrCandidate.height)
-    ? scrCandidate
-    : parseMaybeJson(scrCandidate.screen || obj.screenInfo || obj.display || '');
-  const nestedVp = scrCandidate && scrCandidate.viewport ? parseMaybeJson(scrCandidate.viewport) : {};
-  const nestedScr = scrCandidate && scrCandidate.screen ? parseMaybeJson(scrCandidate.screen) : {};
-  const w = Number(vp.width || nestedVp.width || obj.viewportWidth || obj.innerWidth || 0) || 0;
-  const h = Number(vp.height || nestedVp.height || obj.viewportHeight || obj.innerHeight || 0) || 0;
-  const dpr = Number(vp.dpr || nestedVp.dpr || obj.dpr || obj.devicePixelRatio || 0) || 0;
-  const sw = Number(nestedScr.width || scr.width || obj.screenWidth || 0) || 0;
-  const sh = Number(nestedScr.height || scr.height || obj.screenHeight || 0) || 0;
-  const rawScreen = scr.raw && !/^Europe\//i.test(String(scr.raw)) ? String(scr.raw) : '';
-  const parts = [];
-  if (w && h) parts.push('Viewport ' + w + '×' + h);
-  if (sw && sh && (sw !== w || sh !== h)) parts.push('Screen ' + sw + '×' + sh);
-  else if (!w && !h && sw && sh) parts.push('Screen ' + sw + '×' + sh);
-  else if (!w && !h && rawScreen) parts.push(rawScreen);
-  if (dpr) parts.push('DPR ' + dpr);
-  return parts.filter(Boolean).join(' · ') || '—';
-}
-
-async function loadAdminAppUsageFromSupabase() {
-  if (window.RotationSupabaseBridge && typeof window.RotationSupabaseBridge.loadAppUsage === 'function') {
-    const result = await window.RotationSupabaseBridge.loadAppUsage({ limit: 100 });
-    app.adminUsageSnapshot = result || null;
-    return app.adminUsageSnapshot;
-  }
-  app.adminUsageSnapshot = { ok: false, reason: 'missing-bridge', devices: [], events: [], summary: {} };
-  return app.adminUsageSnapshot;
-}
-
-async function recordAdminAppUsageNow() {
-  if (window.RotationSupabaseBridge && typeof window.RotationSupabaseBridge.recordAppUsage === 'function') {
-    return window.RotationSupabaseBridge.recordAppUsage({ force: true, eventType: 'admin-manual-check' });
-  }
-  return { ok: false, reason: 'missing-bridge' };
-}
-
-function buildAdminUsageInitials(value) {
-  const raw = String(value || '').trim();
-  if (!raw) return '??';
-  const cleaned = raw
-    .normalize('NFC')
-    .replace(/[_@.]+/g, ' ')
-    .replace(/[^\p{L}\p{N}\s-]+/gu, ' ')
-    .trim();
-  const parts = cleaned.split(/[\s-]+/u).filter(Boolean);
-  let initials = '';
-  if (parts.length >= 2) {
-    initials = parts.slice(0, 2).map((part) => Array.from(part)[0] || '').join('');
-  } else if (parts.length === 1) {
-    initials = Array.from(parts[0]).slice(0, 2).join('');
-  } else {
-    initials = Array.from(raw).slice(0, 2).join('');
-  }
-  return initials.toLocaleUpperCase('cs-CZ').slice(0, 2) || '??';
-}
-
-function buildAdminUsageGroups(devices) {
-  const rows = Array.isArray(devices) ? devices : [];
-  const map = new Map();
-  rows.forEach((row) => {
-    const displayName = String(row.player_name || row.account_number || 'Bez profilu').trim() || 'Bez profilu';
-    const keyBase = String(row.player_name || row.account_number || '').trim().toLowerCase();
-    const key = keyBase || ('device:' + String(row.device_key || row.device_id || Math.random()).slice(0, 96));
-    if (!map.has(key)) {
-      map.set(key, {
-        key,
-        name: displayName,
-        account: String(row.account_number || '').trim(),
-        devices: [],
-        openCount: 0,
-        firstSeen: null,
-        lastSeen: null,
-        newest: null,
-        appVersions: new Set(),
-        displays: new Set()
-      });
-    }
-    const group = map.get(key);
-    group.devices.push(row);
-    group.openCount += Number(row.open_count || 0) || 0;
-    if (row.app_version) group.appVersions.add(String(row.app_version));
-    const display = formatAdminUsageViewport(row.device_info);
-    if (display && display !== '—') group.displays.add(display);
-    const lastTime = Date.parse(row.last_seen_at || '') || 0;
-    const firstTime = Date.parse(row.first_seen_at || '') || 0;
-    if (!group.lastSeen || lastTime > (Date.parse(group.lastSeen) || 0)) {
-      group.lastSeen = row.last_seen_at || group.lastSeen;
-      group.newest = row;
-    }
-    if (row.first_seen_at && (!group.firstSeen || firstTime < (Date.parse(group.firstSeen) || 0))) {
-      group.firstSeen = row.first_seen_at;
-    }
-  });
-  return Array.from(map.values()).sort((a, b) => (Date.parse(b.lastSeen || '') || 0) - (Date.parse(a.lastSeen || '') || 0));
-}
-
-function buildAdminUsageMonthGroupsHtml(itemsHtml) {
-  const monthNames = ['leden', 'únor', 'březen', 'duben', 'květen', 'červen', 'červenec', 'srpen', 'září', 'říjen', 'listopad', 'prosinec'];
-  const groupOrder = [];
-  const groups = new Map();
-  itemsHtml.forEach((item) => {
-    const date = item.lastSeen ? new Date(item.lastSeen) : null;
-    const hasDate = date && Number.isFinite(date.getTime());
-    const groupKey = hasDate ? (date.getFullYear() + '-' + String(date.getMonth() + 1).padStart(2, '0')) : 'neznamo';
-    if (!groups.has(groupKey)) {
-      const label = hasDate ? (monthNames[date.getMonth()] + ' ' + date.getFullYear()) : 'Neznámé datum';
-      groups.set(groupKey, { label: label.charAt(0).toUpperCase() + label.slice(1), items: [] });
-      groupOrder.push(groupKey);
-    }
-    groups.get(groupKey).items.push(item.html);
-  });
-  return groupOrder.map((key, idx) => {
-    const group = groups.get(key);
-    return [
-      '<details class="appMenuFoldSection adminUsageMonthGroup"' + (idx === 0 ? ' open' : '') + '>',
-      '  <summary>' + escapeHtml(group.label) + ' <span class="smallText">' + String(group.items.length) + '×</span></summary>',
-      '  <div class="adminUsageMonthGroupList">' + group.items.join('') + '</div>',
-      '</details>'
-    ].join('');
-  }).join('');
-}
-
-function buildAdminUsageHtml() {
-  const snapshot = app && app.adminUsageSnapshot && typeof app.adminUsageSnapshot === 'object'
-    ? app.adminUsageSnapshot
-    : null;
-  const ok = !!(snapshot && snapshot.ok !== false);
-  const devices = snapshot && Array.isArray(snapshot.devices) ? snapshot.devices : [];
-  const groups = buildAdminUsageGroups(devices);
-  const events = snapshot && Array.isArray(snapshot.events) ? snapshot.events : [];
-  const summary = snapshot && snapshot.summary && typeof snapshot.summary === 'object' ? snapshot.summary : {};
-  const status = snapshot
-    ? (ok ? ('Načteno ' + formatAdminUsageDate(snapshot.fetchedAt || new Date().toISOString())) : ('Nepodařilo se načíst: ' + String((snapshot.error && snapshot.error.message) || snapshot.reason || 'zkontroluj Supabase migraci.')))
-    : 'Zatím nenačteno. Klikni na Načíst připojení.';
-  const newestGroup = groups[0] || null;
-  const cards = [
-    ['Jména / profily', groups.length],
-    ['Zařízení celkem', summary.device_count ?? devices.length],
-    ['Aktivní 24 h', summary.active_24h ?? '—'],
-    ['Aktivní 7 dní', summary.active_7d ?? '—']
-  ].map(pair => '<div class="adminUsageMetric"><span>' + escapeHtml(pair[0]) + '</span><b>' + escapeHtml(String(pair[1])) + '</b></div>').join('');
-  const list = groups.length ? buildAdminUsageMonthGroupsHtml(groups.map((group) => {
-    const newest = group.newest || group.devices[0] || {};
-    const ago = formatAdminUsageAgo(newest.minutes_since_seen);
-    const deviceCount = group.devices.length;
-    const versions = Array.from(group.appVersions).slice(0, 3).join(' · ') || '—';
-    const displays = Array.from(group.displays).slice(0, 4);
-    const displayText = displays.length ? displays.join(' | ') : '—';
-    const deviceRows = group.devices
-      .slice()
-      .sort((a, b) => (Date.parse(b.last_seen_at || '') || 0) - (Date.parse(a.last_seen_at || '') || 0))
-      .map((row, index) => {
-        const device = shortAdminUsageDevice(row.user_agent || '');
-        const hash = row.last_ip_hash ? String(row.last_ip_hash).slice(0, 10) + '…' : '—';
-        return [
-          '<div class="adminUsageDeviceRow">',
-          '  <div class="adminUsageDeviceHead"><b>' + escapeHtml(device || ('Zařízení ' + (index + 1))) + '</b><em>' + escapeHtml(String(row.open_count || 0) + '×') + '</em></div>',
-          '  <div><b>Naposledy:</b> ' + escapeHtml(formatAdminUsageDate(row.last_seen_at, true)) + '</div>',
-          '  <div><b>Poprvé:</b> ' + escapeHtml(formatAdminUsageDate(row.first_seen_at, true)) + '</div>',
-          '  <div><b>Verze:</b> ' + escapeHtml(row.app_version || '—') + '</div>',
-          '  <div><b>Displej:</b> ' + escapeHtml(formatAdminUsageViewport(row.device_info)) + '</div>',
-          '  <div><b>IP hash:</b> ' + escapeHtml(hash) + '</div>',
-          '  <div class="smallText adminUsageUa">' + escapeHtml(row.user_agent || '—') + '</div>',
-          '</div>'
-        ].join('');
-      }).join('');
-    const initials = buildAdminUsageInitials(group.name || group.account || 'Profil');
-    const itemHtml = [
-      '<details class="adminUsageItem" name="adminUsageConnectionProfiles">',
-      '  <summary class="adminUsageSummary">',
-      '    <span class="adminUsageAvatar" aria-hidden="true" title="' + escapeHtml(group.name || 'Profil') + '">' + escapeHtml(initials) + '</span>',
-      '    <span class="adminUsageSummaryText"><b>' + escapeHtml(group.name) + '</b><small>' + escapeHtml(String(deviceCount) + ' zařízení · ' + (ago || formatAdminUsageDate(group.lastSeen))) + '</small></span>',
-      '    <em class="adminUsageOpenCount">' + escapeHtml(String(group.openCount || 0) + '×') + '</em>',
-      '  </summary>',
-      '  <div class="adminUsageBody">',
-      '    <div class="adminUsageProfileMeta">',
-      '      <div><b>Naposledy:</b> ' + escapeHtml(formatAdminUsageDate(group.lastSeen, true)) + '</div>',
-      '      <div><b>Poprvé:</b> ' + escapeHtml(formatAdminUsageDate(group.firstSeen, true)) + '</div>',
-      group.account ? ('      <div><b>Profil:</b> ' + escapeHtml(group.account) + '</div>') : '',
-      '      <div><b>Verze:</b> ' + escapeHtml(versions) + '</div>',
-      '      <div><b>Displeje:</b> ' + escapeHtml(displayText) + '</div>',
-      '    </div>',
-      '    <div class="adminUsageDeviceList">' + deviceRows + '</div>',
-      '  </div>',
-      '</details>'
-    ].join('');
-    return { lastSeen: group.lastSeen, html: itemHtml };
-  })) : '<div class="smallText adminUsageEmpty">Zatím tu nejsou žádná zařízení. Jakmile někdo otevře novou verzi a Supabase migrace bude nasazená, objeví se tady.</div>';
-  const recentEvents = events.slice(0, 8).map((ev) => {
-    const label = [ev.player_name || ev.account_number || 'Bez profilu', ev.event_type || 'open', formatAdminUsageDate(ev.seen_at)].filter(Boolean).join(' · ');
-    return '<div class="adminUsageEvent">' + escapeHtml(label) + '</div>';
-  }).join('');
-  return [
-    '<div class="appMenuCard appMenuAdminCard adminUsageCard">',
-    '  <div class="appMenuCardTitle">Přehled připojení</div>',
-    '  <div class="appMenuText">',
-    '    <div>Každé jméno je tady jen jednou. Po rozkliknutí uvidíš všechna zařízení, ze kterých se profil připojil, včetně rozlišení displeje.</div>',
-    '    <div class="smallText" id="adminOnlineSaveStatus">' + escapeHtml(status) + '</div>',
-    '  </div>',
-    '  <div class="adminUsageGrid">' + cards + '</div>',
-    newestGroup ? ('  <div class="adminUsageLatest smallText">Naposledy: ' + escapeHtml(String(newestGroup.name || 'Bez profilu')) + ' · ' + escapeHtml(formatAdminUsageDate(newestGroup.lastSeen, true)) + '</div>') : '',
-    '  <div class="adminUsageList">' + list + '</div>',
-    recentEvents ? ('  <div class="adminUsageEvents"><div class="smallText">Poslední události</div>' + recentEvents + '</div>') : '',
-    '  <div class="appMenuActionRow adminUsageActions">',
-    '    <button type="button" class="appMenuAction isActive" data-admin-action="usage-load">Načíst připojení</button>',
-    '    <button type="button" class="appMenuAction" data-admin-action="back-admin">Zpět</button>',
-    '  </div>',
-    '</div>'
-  ].join('');
-}
-
 
 function getAdminServiceSnapshotCache() {
   return app && app.adminServiceSnapshot && typeof app.adminServiceSnapshot === 'object' ? app.adminServiceSnapshot : null;
@@ -303,7 +54,6 @@ function buildAdminServiceStatusHtml(snapshot, sync, profileUi, pwa) {
   const pendingInvites = Number(counts.game_invites_pending || 0) || 0;
   const newReports = Number(counts.bug_reports_new || 0) || 0;
   const activeSessions = Number(counts.game_sessions_active || 0) || 0;
-  const opened24h = Number(counts.app_usage_events_24h || 0) || 0;
   const loadedAt = snapshot && snapshot.at ? formatAdminUsageDate(snapshot.at, true) : '';
   const syncLabel = sync ? String(sync.label || sync.kind || sync.status || 'stav známý') : 'nenačteno';
   const updatePending = !!(pwa && pwa.updateToastVisible);
@@ -330,8 +80,8 @@ function buildAdminServiceStatusHtml(snapshot, sync, profileUi, pwa) {
     },
     {
       label: 'Provoz',
-      value: String(opened24h) + ' otevření',
-      detail: String(activeSessions) + ' aktivní session · profil ' + profileLabel + (updatePending ? ' · čeká update.' : '.'),
+      value: String(activeSessions) + ' aktivní session',
+      detail: 'profil ' + profileLabel + (updatePending ? ' · čeká update.' : '.'),
       state: updatePending ? 'warn' : 'info'
     }
   ];
@@ -363,9 +113,7 @@ function buildAdminServiceHtml() {
     ['Čekající pozvánky', counts.game_invites_pending],
     ['Session celkem', counts.game_sessions],
     ['Aktivní session', counts.game_sessions_active],
-    ['Nové reporty', counts.bug_reports_new],
-    ['Zařízení v appce', counts.app_usage_devices],
-    ['Otevření 24 h', counts.app_usage_events_24h]
+    ['Nové reporty', counts.bug_reports_new]
   ].map(pair => '<div class="adminServiceMetric"><span>' + escapeHtml(pair[0]) + '</span><b>' + escapeHtml(formatAdminServiceCount(pair[1])) + '</b></div>').join('');
   return [
     '<div class="appMenuCard appMenuAdminCard adminServiceCard">',
