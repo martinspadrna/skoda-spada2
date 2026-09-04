@@ -56,7 +56,6 @@
         '    <span>Osobní číslo: ' + esc(profile.accountNumber) + '</span>',
         '  </div>',
         '  <div class="rakProfileSettingsActions">',
-        '    <button type="button" class="appMenuAction" data-rak-profile-action="change">Změnit účet</button>',
         '    <button type="button" class="appMenuAction" data-rak-profile-action="logout">Odhlásit</button>',
         '  </div>',
         '</div>'
@@ -65,42 +64,28 @@
     return [
       '<div class="appMenuCard appMenuSettingsCard appMenuProfileCard rakProfileSettingsCard" id="gamesAccountCard">',
       '  <div class="appMenuCardTitle">Profil a přihlášení</div>',
-      '  <div class="rakProfileSettingsEmpty">Nikdo není přihlášený.</div>',
-      '  <div class="rakProfileSettingsActions">',
-      '    <button type="button" class="appMenuAction isActive" data-rak-profile-action="login">Přihlásit</button>',
-      '  </div>',
+      '  <div class="rakProfileSettingsEmpty">Pro používání RaK je nutné přihlášení.</div>',
       '</div>'
     ].join('');
   }
 
-  function openLogin(prefill) {
+  function openLogin() {
     try {
-      if (typeof window.rakUserProfileOpenLogin === 'function') {
-        window.rakUserProfileOpenLogin(prefill || '');
+      if (typeof window.rakAuthGateEnsureLogin === 'function') {
+        window.rakAuthGateEnsureLogin();
         return;
       }
     } catch (err) {}
-    try {
-      if (typeof window.installRakLoginSplash === 'function') window.installRakLoginSplash(prefill || '');
-    } catch (err) {}
+    try { if (typeof window.installRakLoginSplash === 'function') window.installRakLoginSplash(); } catch (err) {}
   }
 
   document.addEventListener('click', (event) => {
     const target = event.target && event.target.closest ? event.target.closest('[data-rak-profile-action]') : null;
     if (!target) return;
-    const action = String(target.getAttribute('data-rak-profile-action') || '');
-    if (action === 'change') {
-      const profile = getProfile();
-      openLogin(profile && profile.accountNumber || '');
-      return;
-    }
-    if (action === 'logout') {
-      try { if (typeof window.rakAdminLock === 'function') window.rakAdminLock({ clearPersistent: true }); } catch (err) {}
-      try { if (typeof window.rakUserProfileClear === 'function') window.rakUserProfileClear(); } catch (err) {}
-      openLogin('');
-      return;
-    }
-    if (action === 'login') openLogin('');
+    if (String(target.getAttribute('data-rak-profile-action') || '') !== 'logout') return;
+    try { if (typeof window.rakAdminLock === 'function') window.rakAdminLock({ clearPersistent: true }); } catch (err) {}
+    try { if (typeof window.rakUserProfileClear === 'function') window.rakUserProfileClear(); } catch (err) {}
+    openLogin();
   }, true);
 
   ensureStyles();

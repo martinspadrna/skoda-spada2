@@ -1,3 +1,22 @@
+// RaK DEV – co nejdriv pred prvnim paintem skryjeme aplikaci, pokud neni ulozeny platny profil.
+(function setupRakEarlyAuthPrivacyGate() {
+  try {
+    const key = 'rotace_kalkulacky:user_profile_v1';
+    let loggedIn = false;
+    try {
+      const parsed = JSON.parse(localStorage.getItem(key) || 'null');
+      loggedIn = !!(parsed && typeof parsed === 'object' && String(parsed.accountNumber || '').trim() && String(parsed.fullName || '').trim());
+    } catch (err) {}
+    document.documentElement.dataset.rakAuthState = loggedIn ? 'unlocked' : 'locked';
+    if (!document.getElementById('rak-early-auth-gate-style')) {
+      const style = document.createElement('style');
+      style.id = 'rak-early-auth-gate-style';
+      style.textContent = 'html[data-rak-auth-state="locked"] body{background:#030707!important;overflow:hidden!important}html[data-rak-auth-state="locked"] body>*:not(#rakUserLoginOverlay):not(script){visibility:hidden!important;pointer-events:none!important}html[data-rak-auth-state="locked"] #rakUserLoginOverlay{visibility:visible!important;pointer-events:auto!important}';
+      document.head.appendChild(style);
+    }
+  } catch (err) {}
+})();
+
 // RaK 1.2 (1.155) – module readiness registry a boot kontrola.
 
 (function setupRakModuleReadinessRegistry() {

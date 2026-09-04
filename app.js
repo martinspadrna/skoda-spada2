@@ -29,11 +29,12 @@ try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleR
 })();
 
 (async () => {
-  const RAK_MODULE_CACHE_VERSION = "1.2.352";
+  const RAK_MODULE_CACHE_VERSION = "1.2.353";
 
   const criticalFiles = [
     "supabase-config.js",
     "rak-user-profile.js",
+    "rak-auth-gate.js",
     "rak-account-access.js",
     "rak-login-splash.js",
     "rak-login-fix.js",
