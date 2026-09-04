@@ -18731,6 +18731,28 @@ body.gamesOpen[data-rak-arcade-game="memory"] #games #gamesShellBody[data-arcade
   border-radius:12px !important;
   font-size:14px !important;
 }
+
+/* DEV 2026-09-04.18 – čtyři stejné a rovnoměrně rozložené položky spodní navigace. */
+html body nav.bottomNav > #bottomNavScroll.bottomNavScroll{
+  display:grid !important;
+  grid-template-columns:repeat(4,minmax(0,1fr)) !important;
+  gap:var(--rak-v973-nav-gap) !important;
+}
+html body nav.bottomNav > #bottomNavScroll.bottomNavScroll > button.bottomNavGamesBtn{
+  display:none !important;
+}
+html body nav.bottomNav > #bottomNavScroll.bottomNavScroll > button.bottomNavBtn,
+html body nav.bottomNav > #bottomNavScroll.bottomNavScroll > button.bottomNavMenuBtn{
+  width:100% !important;
+  min-width:0 !important;
+  max-width:none !important;
+  flex:1 1 0 !important;
+  margin:0 !important;
+  justify-self:stretch !important;
+}
+html body nav.bottomNav > #bottomNavScroll.bottomNavScroll > button.bottomNavMenuBtn{
+  grid-column:4 !important;
+}
 @media (max-height:740px){
   body.gamesOpen[data-rak-arcade-game="memory"] #games #gamesShellBody[data-arcade-game="memory"] .arcadeMemoryBoard.arcadeMemoryBoardLarge.grid-8[data-memory-grid="8"]{
     width:min(calc(100vw - 24px), calc(100dvh - var(--bottom-nav-h, 52px) - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 198px), 318px) !important;

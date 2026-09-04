@@ -120,26 +120,25 @@ function applyBottomNavMoreHardFix() {
       || document.querySelector('nav.bottomNav > .bottomNavScroll > .bottomNavBtn:not(.bottomNavMenuBtn)');
     const peerRect = peer && peer.getBoundingClientRect ? peer.getBoundingClientRect() : null;
     const peerWidth = peerRect && peerRect.width ? Math.round(peerRect.width) : (compact ? 58 : 64);
-    // v971: „Více“ má zůstat opravdu úzké, ale text musí být čitelný a celé tlačítko nesmí přetékat.
-    const widthPx = Math.max(lightweight ? 34 : 38, Math.min(Math.round(peerWidth * 0.58), lightweight ? 38 : 42));
-    const width = String(widthPx) + 'px';
+    // „Více“ je plnohodnotná položka spodní lišty: stejná šířka jako ostatní.
+    const width = '100%';
     const peerHeight = peerRect && peerRect.height ? Math.round(peerRect.height) : 44;
     const height = Math.max(lightweight ? 40 : 42, Math.min(peerHeight || 44, lightweight ? 46 : 48)) + 'px';
     const setStyle = typeof setStylePropertyIfChanged === 'function'
       ? setStylePropertyIfChanged
       : ((el, prop, value, priority) => { if (el && el.style) el.style.setProperty(prop, value, priority || ''); return true; });
 
-    setStyle(btn, 'flex', '0 0 ' + width, 'important', 'bottomNavMore-flex');
+    setStyle(btn, 'flex', '1 1 0', 'important', 'bottomNavMore-flex');
     setStyle(btn, 'width', width, 'important', 'bottomNavMore-width');
-    setStyle(btn, 'min-width', width, 'important', 'bottomNavMore-minWidth');
-    setStyle(btn, 'max-width', width, 'important', 'bottomNavMore-maxWidth');
+    setStyle(btn, 'min-width', '0', 'important', 'bottomNavMore-minWidth');
+    setStyle(btn, 'max-width', 'none', 'important', 'bottomNavMore-maxWidth');
     setStyle(btn, 'height', height, 'important', 'bottomNavMore-height');
     setStyle(btn, 'min-height', height, 'important', 'bottomNavMore-minHeight');
     setStyle(btn, 'max-height', height, 'important', 'bottomNavMore-maxHeight');
     setStyle(btn, 'align-self', 'center', 'important', 'bottomNavMore-alignSelf');
-    setStyle(btn, 'justify-self', 'end', 'important', 'bottomNavMore-justifySelf');
-    setStyle(btn, 'padding', lightweight ? '1px 0' : '2px 0 1px', 'important', 'bottomNavMore-padding');
-    setStyle(btn, 'margin', '0 0 0 auto', 'important', 'bottomNavMore-margin');
+    setStyle(btn, 'justify-self', 'stretch', 'important', 'bottomNavMore-justifySelf');
+    setStyle(btn, 'padding', lightweight ? '3px 1px' : '4px 1px 3px', 'important', 'bottomNavMore-padding');
+    setStyle(btn, 'margin', '0', 'important', 'bottomNavMore-margin');
     setStyle(btn, 'box-sizing', 'border-box', 'important', 'bottomNavMore-boxSizing');
     setStyle(btn, 'justify-content', 'center', 'important', 'bottomNavMore-justify');
     setStyle(btn, 'gap', '1px', 'important', 'bottomNavMore-gap');
@@ -147,8 +146,8 @@ function applyBottomNavMoreHardFix() {
 
     const icon = btn.querySelector('.moreIcon');
     if (icon && icon.style) {
-      const iconWidth = lightweight ? '16px' : (compact ? '18px' : '20px');
-      const iconHeight = lightweight ? '23px' : (compact ? '25px' : '27px');
+      const iconWidth = lightweight ? '28px' : (compact ? '30px' : '32px');
+      const iconHeight = iconWidth;
       setStyle(icon, 'flex', '0 0 ' + iconHeight, 'important', 'bottomNavMoreIcon-flex');
       setStyle(icon, 'width', iconWidth, 'important', 'bottomNavMoreIcon-width');
       setStyle(icon, 'height', iconHeight, 'important', 'bottomNavMoreIcon-height');
@@ -156,19 +155,19 @@ function applyBottomNavMoreHardFix() {
       setStyle(icon, 'max-height', iconHeight, 'important', 'bottomNavMoreIcon-maxHeight');
       setStyle(icon, 'padding', '0', 'important', 'bottomNavMoreIcon-padding');
       setStyle(icon, 'margin', '0 auto', 'important', 'bottomNavMoreIcon-margin');
-      setStyle(icon, 'transform', 'translateX(1px)', 'important', 'bottomNavMoreIcon-transform');
+      setStyle(icon, 'transform', 'none', 'important', 'bottomNavMoreIcon-transform');
       setStyle(icon, 'box-sizing', 'border-box', 'important', 'bottomNavMoreIcon-boxSizing');
     }
 
     const label = btn.querySelector('.bottomNavLabel');
     if (label && label.style) {
-      setStyle(label, 'font-size', lightweight ? '7.9px' : '8.5px', 'important', 'bottomNavMoreLabel-fontSize');
+      setStyle(label, 'font-size', lightweight ? '8px' : '8.6px', 'important', 'bottomNavMoreLabel-fontSize');
       setStyle(label, 'line-height', '1', 'important', 'bottomNavMoreLabel-lineHeight');
       setStyle(label, 'margin', '0', 'important', 'bottomNavMoreLabel-margin');
       setStyle(label, 'padding', '0', 'important', 'bottomNavMoreLabel-padding');
       setStyle(label, 'white-space', 'nowrap', 'important', 'bottomNavMoreLabel-whiteSpace');
       setStyle(label, 'letter-spacing', '-.02em', 'important', 'bottomNavMoreLabel-letterSpacing');
-      setStyle(label, 'transform', 'translateX(1px)', 'important', 'bottomNavMoreLabel-transform');
+      setStyle(label, 'transform', 'none', 'important', 'bottomNavMoreLabel-transform');
     }
     return true;
   };
