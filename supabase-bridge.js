@@ -1518,6 +1518,9 @@
   const APP_USAGE_STATUS_KEY = 'rak_app_usage_status_v1';
   const APP_USAGE_MIN_INTERVAL_MS = 8 * 60 * 1000;
   const APP_USAGE_TIMEOUT_MS = 8000;
+  // Běžné používání aplikace není nutné pro její funkčnost. Neodesíláme proto
+  // účet, zařízení ani aktivní stránku do přehledu připojení bez výslovné volby uživatele.
+  const APP_USAGE_TELEMETRY_ENABLED = false;
   let flushPromise = null;
   let flushScheduleTimer = null;
   let lastQueueWakeRequestAt = 0;
@@ -2538,6 +2541,12 @@
     return normalizeAppUsageStatus(safeReadJson(APP_USAGE_STATUS_KEY, {}));
   }
 
+  function clearDisabledAppUsageTelemetry() {
+    if (APP_USAGE_TELEMETRY_ENABLED) return;
+    try { localStorage.removeItem(APP_USAGE_DEVICE_KEY); } catch (err) {}
+    try { localStorage.removeItem(APP_USAGE_STATUS_KEY); } catch (err) {}
+  }
+
   function writeAppUsageStatus(next) {
     const safe = normalizeAppUsageStatus(next);
     safeWriteJson(APP_USAGE_STATUS_KEY, safe);
@@ -2647,6 +2656,10 @@
   }
 
   async function recordAppUsageDirect(client, options = {}) {
+    if (!APP_USAGE_TELEMETRY_ENABLED) {
+      clearDisabledAppUsageTelemetry();
+      return { ok: false, skipped: true, reason: 'disabled-by-privacy' };
+    }
     const payload = buildAppUsagePayload(options || {});
     const allowed = shouldLogAppUsage(payload, options || {});
     const current = readAppUsageStatus();
@@ -2761,6 +2774,7 @@
   }
 
   function scheduleAppUsage(reason, delayMs, options) {
+    if (!APP_USAGE_TELEMETRY_ENABLED) return;
     const delay = Number.isFinite(Number(delayMs)) ? Math.max(0, Number(delayMs)) : 2000;
     try {
       window.setTimeout(() => {
@@ -5230,6 +5244,7 @@
   window.refreshPublicData = refreshPublicData;
 
   function init() {
+    clearDisabledAppUsageTelemetry();
     if (state.ready) {
       bindRealtimeSubscriptions();
       scheduleSupabaseKeepalive('init-ready', 1400);
@@ -5499,6 +5514,10 @@
       }
     },
     recordAppUsage: async (options = {}) => {
+      if (!APP_USAGE_TELEMETRY_ENABLED) {
+        clearDisabledAppUsageTelemetry();
+        return { ok: false, skipped: true, reason: 'disabled-by-privacy' };
+      }
       const client = getClient();
       if (!client || !navigator.onLine) {
         const current = readAppUsageStatus();
