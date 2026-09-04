@@ -3402,7 +3402,7 @@ function renderAdminMenuBody(body, section) {
     '<div class="appMenuCard appMenuAdminCard adminWorkerRosterCard">',
     '  <div class="appMenuCardTitle">Pracovníci</div>',
     '  <div class="appMenuText">',
-    '    <div>Tady nastavíš, kdo se počítá v rozpisu a statistikách. Napiš přesně jméno tak, jak je zapsané v rozpisu.</div>',
+    '    <div>Tady nastavíš pracovníky pro rozpis a statistiky i samostatné účty pouze pro aplikaci.</div>',
     '    <div class="smallText" id="adminOnlineSaveStatus">Prázdné řádky se neukládají. Pro odebrání jméno smaž a ulož.</div>',
     '  </div>',
     typeof buildAdminWorkerRosterSettingsHtml === 'function' ? buildAdminWorkerRosterSettingsHtml() : '',
@@ -5002,6 +5002,20 @@ function bindAppMenuHandlers(body) {
       }
       if (adminAction === 'save-workers') {
         const workerSettings = readAdminWorkerRosterSettingsFromDom();
+        const appAccounts = Array.isArray(workerSettings.appAccounts) ? workerSettings.appAccounts : [];
+        if (appAccounts.length) {
+          const bridge = window.RotationSupabaseBridge;
+          if (!bridge || typeof bridge.saveApplicationAccount !== 'function') throw new Error('Samostatné účty aplikace teď nejsou připravené.');
+          for (const account of appAccounts) {
+            const savedAccount = await bridge.saveApplicationAccount({ accountNumber: account.loginNumber, fullName: account.name });
+            if (!savedAccount || savedAccount.ok === false) {
+              const reason = savedAccount && savedAccount.reason === 'online-required'
+                ? 'Pro přidání účtu aplikace je potřeba připojení k internetu.'
+                : 'Uložení účtu aplikace se nepovedlo.';
+              throw (savedAccount && savedAccount.error ? savedAccount.error : new Error(reason));
+            }
+          }
+        }
         const rows = mergeRakWorkerRosterSettingsRows(workerSettings);
         if (window.RotationSupabaseBridge && typeof window.RotationSupabaseBridge.saveMachineSettings === 'function') {
           const result = await window.RotationSupabaseBridge.saveMachineSettings(rows);
@@ -5010,7 +5024,7 @@ function bindAppMenuHandlers(body) {
           try { if (typeof renderStatsPanel === 'function') renderStatsPanel(); } catch (err) {}
           renderAdminMenuBody(body, 'workers');
           const statusEl = document.getElementById('adminOnlineSaveStatus');
-          let newProfilesText = '';
+          let newProfilesText = appAccounts.length ? (' · účty aplikace: ' + String(appAccounts.length)) : '';
           if (!result.queued && typeof ensureGameAccountsExistForWorkers === 'function') {
             try {
               const ensured = await ensureGameAccountsExistForWorkers(workerSettings.workers);

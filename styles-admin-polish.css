@@ -935,6 +935,11 @@
 .adminWorkerMachineChecks{display:flex;flex-wrap:wrap;gap:4px 10px;}
 .adminWorkerMachineCheck{display:inline-flex;align-items:center;gap:4px;font-size:12px;white-space:nowrap;}
 .adminWorkerMachineCheck input{width:16px;height:16px;flex:0 0 auto;}
+.adminAppAccountsTable{min-width:360px !important;table-layout:fixed;}
+.adminAppAccountNameCol{width:60%;}
+.adminAppAccountLoginCol{width:20%;}
+.adminAppAccountScopeCol{width:20%;}
+.adminAppAccountScope{font-size:12px;opacity:.78;white-space:nowrap;}
 .adminAppContactTable{min-width:320px !important;}
 .adminAppContactLabelCol{width:160px;}
 .adminAppContactValueCol{width:160px;}

@@ -5413,6 +5413,31 @@
         return [];
       }
     },
+    saveApplicationAccount: async (payload) => {
+      const source = payload && typeof payload === 'object' ? payload : {};
+      const accountNumber = String(source.accountNumber || source.account_number || '').replace(/\D/g, '').slice(0, 4);
+      const fullName = String(source.fullName || source.full_name || '').trim().slice(0, 160);
+      if (!/^\d{4}$/.test(accountNumber) || fullName.length < 2) return { ok: false, reason: 'invalid-account' };
+      const client = getClient();
+      if (!client || !navigator.onLine) return { ok: false, reason: 'online-required' };
+      try {
+        const { data, error } = await runSupabaseOperation('application_account.save', () => client.rpc('rak_admin_upsert_application_account', {
+          p_account_number: accountNumber,
+          p_full_name: fullName
+        }), { mode: 'write', attempts: 1 });
+        if (error) throw error;
+        const row = normalizeSupabaseRpcJsonPayload(data) || {};
+        const cached = readTimedCache(LOCAL_GAME_ACCOUNTS_KEY, SUPABASE_GAME_CACHE_TTL_MS);
+        const nextRows = Array.isArray(cached && cached.rows) ? cached.rows.filter((item) => String(item && item.account_number || '') !== accountNumber) : [];
+        nextRows.push({ account_number: String(row.account_number || accountNumber), full_name: String(row.full_name || fullName), updated_at: row.updated_at || new Date().toISOString() });
+        writeTimedCache(LOCAL_GAME_ACCOUNTS_KEY, nextRows.sort((a, b) => String(a.account_number || '').localeCompare(String(b.account_number || ''))), 'accounts');
+        state.lastError = null;
+        return { ok: true, accountNumber: String(row.account_number || accountNumber), fullName: String(row.full_name || fullName) };
+      } catch (err) {
+        state.lastError = err;
+        return { ok: false, error: err, reason: 'save-failed' };
+      }
+    },
     loadGameAccountUiSettings: async (accountNumber) => {
       const account = String(accountNumber || '').trim();
       const cache = readTimedCache(gameUiSettingsCacheKey(account), SUPABASE_GAME_CACHE_TTL_MS);

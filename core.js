@@ -3,7 +3,7 @@
 const APP_KEY = "rotace_kalkulacky_state_v123";
 const APP_VERSION = "1.2 (1.338)";
 window.APP_VERSION = APP_VERSION;
-const RAK_DEV_BUILD = "DEV 2026-09-04.14";
+const RAK_DEV_BUILD = "DEV 2026-09-04.15";
 window.RAK_DEV_BUILD = RAK_DEV_BUILD;
 const ROTATION_BUILD = "2026-06-03-" + APP_VERSION;
 window.ROTATION_BUILD = ROTATION_BUILD;
@@ -643,9 +643,18 @@ function normalizeRakWorkerEntry(entry) {
   return { name, loginNumber, machines };
 }
 
+function normalizeRakApplicationAccountEntry(entry) {
+  if (!entry || typeof entry !== 'object') return null;
+  const name = String(entry.name || '').trim();
+  const loginNumber = normalizeRakWorkerLoginNumber(entry.loginNumber || entry.login_number || '');
+  if (!name || !loginNumber) return null;
+  return { name, loginNumber };
+}
+
 function normalizeRakWorkerRosterSettings(settings) {
   const raw = settings && typeof settings === 'object' ? settings : {};
   const source = Array.isArray(raw.workers) ? raw.workers : (Array.isArray(raw.names) ? raw.names : []);
+  const appAccountSource = Array.isArray(raw.appAccounts) ? raw.appAccounts : (Array.isArray(raw.applicationAccounts) ? raw.applicationAccounts : []);
   const seen = new Set();
   const workers = source
     .map(normalizeRakWorkerEntry)
@@ -654,10 +663,19 @@ function normalizeRakWorkerRosterSettings(settings) {
       seen.add(entry.name);
       return true;
     });
+  const seenAppAccounts = new Set();
+  const appAccounts = appAccountSource
+    .map(normalizeRakApplicationAccountEntry)
+    .filter((entry) => {
+      if (!entry || seenAppAccounts.has(entry.loginNumber)) return false;
+      seenAppAccounts.add(entry.loginNumber);
+      return true;
+    });
   return {
     type: RAK_WORKER_ROSTER_SETTINGS_CATEGORY,
     custom: true,
-    workers
+    workers,
+    appAccounts
   };
 }
 
@@ -761,6 +779,17 @@ function buildAdminWorkerRosterStatusHtml(workers) {
   ].join('');
 }
 
+function buildAdminApplicationAccountRowHtml(entry) {
+  const safe = entry && typeof entry === 'object' ? entry : {};
+  return [
+    '<tr data-app-account-row>',
+    '  <td><input class="appMenuInlineInput adminAppAccountNameInput" data-app-account-field="name" value="' + escapeHtml(String(safe.name || '')) + '" placeholder="Jméno"></td>',
+    '  <td><input class="appMenuInlineInput adminAppAccountLoginInput" data-app-account-field="loginNumber" value="' + escapeHtml(String(safe.loginNumber || '')) + '" placeholder="0000" inputmode="numeric" maxlength="4"></td>',
+    '  <td><span class="adminAppAccountScope">Mimo rotace</span></td>',
+    '</tr>'
+  ].join('');
+}
+
 function buildAdminWorkerRosterRowHtml(entry) {
   const safe = entry && typeof entry === 'object' ? entry : {};
   const name = String(safe.name || '');
@@ -781,8 +810,11 @@ function buildAdminWorkerRosterRowHtml(entry) {
 function buildAdminWorkerRosterSettingsHtml() {
   const settings = getRakWorkerRosterSettings();
   const workers = Array.isArray(settings.workers) ? settings.workers : [];
+  const appAccounts = Array.isArray(settings.appAccounts) ? settings.appAccounts : [];
   const rows = workers.map(buildAdminWorkerRosterRowHtml).join('')
     + Array.from({ length: 3 }, () => buildAdminWorkerRosterRowHtml({ name: '', loginNumber: '', machines: [] })).join('');
+  const appAccountRows = appAccounts.map(buildAdminApplicationAccountRowHtml).join('')
+    + Array.from({ length: 3 }, () => buildAdminApplicationAccountRowHtml({ name: '', loginNumber: '' })).join('');
   return [
     buildAdminWorkerRosterStatusHtml(workers.map((w) => w.name)),
     '<div class="tableWrap appMenuTableWrap">',
@@ -792,12 +824,23 @@ function buildAdminWorkerRosterSettingsHtml() {
     '    <tbody>' + rows + '</tbody>',
     '  </table>',
     '</div>',
-    '<div class="smallText uMt8">Pro přidání napiš jméno do prázdného řádku. Pro odebrání jméno smaž a ulož. Jméno musí přesně odpovídat tomu, jak je napsané v rozpisu. Přihlašovací číslo (poslední 4 číslice osobního čísla) použije pracovník k přihlášení do her/profilu. Když u pracovníka nezaškrtneš žádný stroj, generátor ho bude nabízet na všechny stroje bez omezení.</div>'
+    '<div class="smallText uMt8">Pro přidání napiš jméno do prázdného řádku. Pro odebrání jméno smaž a ulož. Jméno musí přesně odpovídat tomu, jak je napsané v rozpisu. Přihlašovací číslo (poslední 4 číslice osobního čísla) použije pracovník k přihlášení do aplikace. Když u pracovníka nezaškrtneš žádný stroj, generátor ho bude nabízet na všechny stroje bez omezení.</div>',
+    '<div class="appMenuSubTitle uMt16">Účty aplikace</div>',
+    '<div class="smallText uMb10">Tyto účty se nepřidají do pracovníků, rozpisu, statistik ani ke strojům. Slouží jen pro přihlášení do aplikace.</div>',
+    '<div class="tableWrap appMenuTableWrap">',
+    '  <table class="appMenuTable appMenuAdminTable appMenuAdminTableDense adminAppAccountsTable">',
+    '    <colgroup><col class="adminAppAccountNameCol"><col class="adminAppAccountLoginCol"><col class="adminAppAccountScopeCol"></colgroup>',
+    '    <thead><tr><th>Jméno</th><th>Os. číslo</th><th>Zařazení</th></tr></thead>',
+    '    <tbody>' + appAccountRows + '</tbody>',
+    '  </table>',
+    '</div>',
+    '<div class="smallText uMt8">Vyplň jméno a poslední 4 číslice osobního čísla. Stejné přihlašovací číslo nemůže být u pracovníka i samostatného účtu.</div>'
   ].join('');
 }
 
 function readAdminWorkerRosterSettingsFromDom() {
   const workers = [];
+  const appAccounts = [];
   document.querySelectorAll('#appMenuBody tr[data-worker-row]').forEach((tr) => {
     const name = String(tr.querySelector('[data-worker-field="name"]')?.value || '').trim();
     if (!name) return;
@@ -805,7 +848,22 @@ function readAdminWorkerRosterSettingsFromDom() {
     const machines = Array.from(tr.querySelectorAll('[data-worker-machine]:checked')).map((cb) => cb.getAttribute('data-worker-machine'));
     workers.push({ name, loginNumber, machines });
   });
-  return normalizeRakWorkerRosterSettings({ workers });
+  document.querySelectorAll('#appMenuBody tr[data-app-account-row]').forEach((tr) => {
+    const name = String(tr.querySelector('[data-app-account-field="name"]')?.value || '').trim();
+    const loginNumber = normalizeRakWorkerLoginNumber(tr.querySelector('[data-app-account-field="loginNumber"]')?.value || '');
+    if (!name && !loginNumber) return;
+    if (!name || !loginNumber) throw new Error('U účtu aplikace vyplň jméno i poslední 4 číslice osobního čísla.');
+    appAccounts.push({ name, loginNumber });
+  });
+  const settings = normalizeRakWorkerRosterSettings({ workers, appAccounts });
+  const knownLoginNumbers = new Set();
+  settings.workers.concat(settings.appAccounts).forEach((entry) => {
+    const loginNumber = String(entry.loginNumber || '');
+    if (!loginNumber) return;
+    if (knownLoginNumbers.has(loginNumber)) throw new Error('Přihlašovací číslo ' + loginNumber + ' je zadané vícekrát.');
+    knownLoginNumbers.add(loginNumber);
+  });
+  return settings;
 }
 
 window.getRakWorkerRosterSettings = getRakWorkerRosterSettings;
