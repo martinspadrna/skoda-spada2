@@ -1,6 +1,6 @@
 // RaK development PWA service worker – update-safe build.
-const CACHE_VERSION = 'v1.2-dev-20260904-7';
-const SW_APP_VERSION = 'development 2026-09-04.7';
+const CACHE_VERSION = 'v1.2-dev-20260904-8';
+const SW_APP_VERSION = 'development 2026-09-04.8';
 const STATIC_CACHE = `rotace-static-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `rotace-runtime-${CACHE_VERSION}`;
 const CORE = ['./', './index.html', './manifest.webmanifest', './assets/app-icons/icon-180.png', './assets/app-icons/icon-192.png', './assets/app-icons/icon-512.png'];
@@ -39,7 +39,8 @@ self.addEventListener('install', event => {
         if (cacheable(response)) await cache.put(url, response.clone());
       } catch (_) {}
     }));
-    await self.skipWaiting();
+    // Záměrně NEvoláme skipWaiting automaticky. Nová verze zůstane čekat,
+    // aby RaK zobrazilo stejné tlačítko „Aktualizovat“ jako produkční main.
   })());
 });
 

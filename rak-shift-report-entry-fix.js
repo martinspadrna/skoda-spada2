@@ -2,10 +2,20 @@
 (function () {
   'use strict';
 
-  const STYLE_ID = 'rak-shift-report-entry-fix-style-v1';
+  const STYLE_ID = 'rak-shift-report-entry-fix-style-v3';
   const ENTRY_ATTR = 'data-rak-shift-report-entry';
   let opening = false;
   let scheduled = false;
+
+  function clearStaleDevUpdatePromptState() {
+    // Development větev používá stejné produkční APP_VERSION metadata 1.338,
+    // takže produkční ochrana proti opakovanému toastu by jinak mohla nové DEV
+    // aktualizace trvale schovat. Stav čistíme před instalací PWA hooků; po kliknutí
+    // na Aktualizovat si app-pwa-connectivity nastaví nový pending stav znovu.
+    try { sessionStorage.removeItem('rotace_sw_update_notice_v1'); } catch (err) {}
+    try { sessionStorage.removeItem('rotace_sw_update_pending_v1'); } catch (err) {}
+    try { localStorage.removeItem('rotace_sw_update_suppress_v1'); } catch (err) {}
+  }
 
   function canOpenAdminNow() {
     try {
@@ -43,6 +53,7 @@
     const body = document.getElementById('appMenuBody');
     if (!body || body.dataset.rakShiftReportOpen === '1') return;
     const adminButton = body.querySelector('[data-menu-action="admin"]');
+    const nativeReportButton = body.querySelector('[data-admin-action="shift-report"]');
     let button = body.querySelector('[' + ENTRY_ATTR + '="1"]');
     const visible = !!adminButton && shouldShowAdminTools();
     if (!visible) {
@@ -56,13 +67,18 @@
       button.setAttribute(ENTRY_ATTR, '1');
       button.textContent = 'Report směny';
     }
-    if (adminButton.nextElementSibling !== button) adminButton.insertAdjacentElement('afterend', button);
+
+    // Původní skrytý vstup do reportu spravuje rak-shift-report-share.js.
+    // Kotvíme náš stabilní vstup až ZA něj. Tím se oba MutationObservery
+    // nepřetahují o pozici hned za tlačítkem Administrace a nezablokují UI.
+    const anchor = nativeReportButton || adminButton;
+    if (anchor && anchor.nextElementSibling !== button) anchor.insertAdjacentElement('afterend', button);
   }
 
   function scheduleEnsure() {
     if (scheduled) return;
     scheduled = true;
-    if (typeof queueMicrotask === 'function') queueMicrotask(ensureEntry);
+    if (typeof requestAnimationFrame === 'function') requestAnimationFrame(ensureEntry);
     else setTimeout(ensureEntry, 0);
   }
 
@@ -99,6 +115,7 @@
   }
 
   function boot() {
+    clearStaleDevUpdatePromptState();
     ensureStyle();
     ensureEntry();
     document.addEventListener('click', (event) => {
@@ -119,7 +136,7 @@
     });
     window.__rakShiftReportEntryTimer = setInterval(() => {
       if (document.visibilityState !== 'hidden') ensureEntry();
-    }, 1000);
+    }, 2000);
   }
 
   window.rakShiftReportRefreshEntry = ensureEntry;
