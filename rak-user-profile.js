@@ -26,6 +26,7 @@
     if (!next.accountNumber || !next.fullName) return false;
     try { localStorage.setItem(PROFILE_KEY, JSON.stringify(next)); } catch (err) { return false; }
     window.__RAK_USER_PROFILE__ = next;
+    syncSettingsProfileCard(next);
     return true;
   }
 
@@ -46,6 +47,7 @@
         app.gamesProfile = { activeAccountId: '', accounts: {} };
       }
     } catch (err) {}
+    syncSettingsProfileCard(null);
   }
 
   function esc(value) {
@@ -70,6 +72,7 @@
         app.gamesProfile.accounts[accountNumber] = Object.assign({}, app.gamesProfile.accounts[accountNumber] || {}, { id: accountNumber, name: fullName });
       }
     } catch (err) {}
+    syncSettingsProfileCard(window.__RAK_USER_PROFILE__);
   }
 
   async function lookup(last4) {
@@ -91,13 +94,48 @@
     }
   }
 
+  function syncSettingsProfileCard(profile) {
+    const card = document.getElementById('gamesAccountCard');
+    if (!card) return;
+    const safe = profile && typeof profile === 'object' ? profile : get();
+    const top = card.querySelector('#gamesAccountTop');
+    const name = card.querySelector('#gamesAccountName');
+    const entry = card.querySelector('#gamesAccountEntryRow');
+    const clearBtn = card.querySelector('#gamesAccountClearBtn');
+    const label = top ? top.querySelector('.dashboardLabel') : null;
+
+    if (safe && String(safe.accountNumber || '').trim() && String(safe.fullName || '').trim()) {
+      const accountNumber = String(safe.accountNumber).trim();
+      const fullName = String(safe.fullName).trim();
+      if (label && label.textContent !== 'Přihlášený uživatel') label.textContent = 'Přihlášený uživatel';
+      if (name) {
+        const wanted = fullName + ' · OS ' + accountNumber;
+        if (name.textContent !== wanted) name.textContent = wanted;
+      }
+      if (top && top.style.display === 'none') top.style.display = '';
+      if (entry && entry.style.display !== 'none') entry.style.display = 'none';
+      if (clearBtn) {
+        if (clearBtn.textContent !== 'Odhlásit') clearBtn.textContent = 'Odhlásit';
+        clearBtn.onclick = () => {
+          clear();
+          try { if (typeof window.installRakLoginSplash === 'function') window.installRakLoginSplash(true); } catch (err) {}
+        };
+      }
+      return;
+    }
+
+    if (top && top.style.display !== 'none') top.style.display = 'none';
+    if (entry && entry.style.display === 'none') entry.style.display = '';
+    if (name && name.textContent) name.textContent = '';
+  }
+
   function ensureMenuBox(body) {
     if (!body || !body.insertBefore) return;
     let box = document.getElementById('rakUserProfileBox');
     const profile = get();
     const html = profile
-      ? `<div class="rakUserProfileBoxTitle">Prihlaseny uzivatel</div><div class="rakUserProfileBoxName">${esc(profile.fullName)}</div><div class="rakUserProfileBoxNumber">Osobni cislo: ${esc(profile.accountNumber)}</div><div class="rakUserProfileBoxActions"><button type="button" id="rakUserProfileChange">Zmenit ucet</button><button type="button" id="rakUserProfileLogout">Odhlasit</button></div>`
-      : `<div class="rakUserProfileBoxTitle">Uzivatel</div><div class="rakUserProfileBoxName">Nikdo neni prihlasen</div><div class="rakUserProfileBoxActions"><button type="button" id="rakUserProfileLogin">Prihlasit</button></div>`;
+      ? `<div class="rakUserProfileBoxTitle">Přihlášený uživatel</div><div class="rakUserProfileBoxName">${esc(profile.fullName)}</div><div class="rakUserProfileBoxNumber">Osobní číslo: ${esc(profile.accountNumber)}</div><div class="rakUserProfileBoxActions"><button type="button" id="rakUserProfileChange">Změnit účet</button><button type="button" id="rakUserProfileLogout">Odhlásit</button></div>`
+      : `<div class="rakUserProfileBoxTitle">Uživatel</div><div class="rakUserProfileBoxName">Nikdo není přihlášen</div><div class="rakUserProfileBoxActions"><button type="button" id="rakUserProfileLogin">Přihlásit</button></div>`;
     if (!box) {
       box = document.createElement('div');
       box.id = 'rakUserProfileBox';
@@ -116,6 +154,7 @@
   function refreshMenu() {
     const body = document.getElementById('appMenuBody');
     if (body) ensureMenuBox(body);
+    syncSettingsProfileCard(get());
   }
 
   function openLogin(prefill) {
@@ -136,6 +175,13 @@
     const profile = get();
     if (profile) apply(profile);
     refreshMenu();
+    try {
+      if (!window.__rakUserProfileSettingsObserver) {
+        const observer = new MutationObserver(() => syncSettingsProfileCard(get()));
+        observer.observe(document.body, { childList: true, subtree: true });
+        window.__rakUserProfileSettingsObserver = observer;
+      }
+    } catch (err) {}
   }
 
   window.rakUserProfileRead = read;
@@ -147,6 +193,7 @@
   window.rakUserProfileLookup = lookup;
   window.rakUserProfileEnsureMenuBox = ensureMenuBox;
   window.rakUserProfileRefreshMenu = refreshMenu;
+  window.rakUserProfileSyncSettingsCard = syncSettingsProfileCard;
   window.rakUserProfileOpenLogin = openLogin;
   window.rakUserProfileBootstrap = bootstrap;
 
