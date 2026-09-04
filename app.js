@@ -29,7 +29,7 @@ try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleR
 })();
 
 (async () => {
-  const RAK_MODULE_CACHE_VERSION = "1.2.349";
+  const RAK_MODULE_CACHE_VERSION = "1.2.350";
 
   const criticalFiles = [
     "supabase-config.js",
@@ -127,6 +127,17 @@ try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleR
   }
 
   for (const file of deferredFiles) await loadScript(file);
+
+  // core.js vytváří runtime `app` až v odložené fázi. Profil načtený na loginu proto
+  // znovu přeneseme do runtime po načtení celé aplikace, jinak UI/admin vidí prázdný účet.
+  try {
+    const storedProfile = typeof window.rakUserProfileGet === 'function' ? window.rakUserProfileGet() : null;
+    if (storedProfile && typeof window.rakUserProfileApplyToRuntime === 'function') {
+      window.rakUserProfileApplyToRuntime(storedProfile);
+    }
+    if (typeof window.rakUserProfileRefreshMenu === 'function') window.rakUserProfileRefreshMenu();
+  } catch (err) { console.warn('RaK user profile runtime restore failed', err); }
+
   if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleReady('boot-loader', 'ready', { source: 'dynamic-loader' });
 
   if (typeof installPwaAndConnectivityHooks === 'function') installPwaAndConnectivityHooks();
