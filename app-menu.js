@@ -5522,10 +5522,19 @@ function openAppMenu(view) {
       bindAppMenuHandlers(body);
       const prefs = loadUiPrefs();
       const profileCard = buildGamesProfileSettingsHtml();
+      const privacyCard = [
+        '<details class="appMenuCard appMenuSettingsCard">',
+        '  <summary class="appMenuCardTitle">Soukromí a data</summary>',
+        '  <div class="appMenuText">RaK nepoužívá reklamní cookies ani rutinní sledování používání.</div>',
+        '  <div class="appMenuText smallText">V tomto zařízení zůstává jen profil pro zapamatování přihlášení (jméno a osobní číslo), nastavení a poslední data potřebná pro práci bez internetu. Profil smažeš tlačítkem Odhlásit.</div>',
+        '  <div class="appMenuText smallText">Pracovní data se synchronizují do RaK databáze. Pokud odešleš report chyby, přidá se k němu verze aplikace a základní technické údaje nutné k opravě.</div>',
+        '</details>'
+      ].join('');
       const performanceCard = typeof buildRakDevicePerformanceSettingsHtml === 'function' ? buildRakDevicePerformanceSettingsHtml() : '';
       const themeCards = buildThemeSystemSettingsHtml();
       body.innerHTML = [
         profileCard,
+        privacyCard,
         performanceCard,
         '<div class="appMenuCard appMenuSettingsCard appMenuAppSettingsCard">',
         '  <div class="appMenuCardTitle">Nastavení aplikace</div>',
