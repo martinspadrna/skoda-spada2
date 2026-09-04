@@ -130,7 +130,9 @@ try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleR
     });
   }
 
-  for (const file of deferredFiles) await loadScript(file);
+  // Síťově nezdržuj start sekvenčním stahováním desítek nezávislých modulů.
+  // `async = false` v loadScript přitom zachovává jejich pořadí spuštění.
+  await Promise.all(deferredFiles.map(loadScript));
 
   // core.js vytváří runtime `app` až v odložené fázi. Profil načtený na loginu proto
   // znovu přeneseme do runtime po načtení celé aplikace, jinak UI/admin vidí prázdný účet.

@@ -1952,6 +1952,17 @@
     return null;
   }
 
+  function loadCachedRotationState() {
+    const snapshot = readLocalSnapshot();
+    if (!snapshot || !snapshot.rotation || typeof snapshot.rotation !== 'object') return null;
+    return {
+      id: 'main',
+      payload: snapshot.rotation,
+      updatedAt: snapshot.updatedAt || null,
+      meta: { source: 'local-cache' }
+    };
+  }
+
   function queueTaskKey(task) {
     const type = String(task && task.type ? task.type : '').trim();
     if (type === 'rotation_state') return type;
@@ -5290,6 +5301,7 @@
     refreshPublicData,
     sendGomokuWin,
     loadRotationState,
+    loadCachedRotationState,
     saveRotationState,
     listRotationBackups,
     restoreRotationBackup,
