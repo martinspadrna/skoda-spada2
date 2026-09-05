@@ -436,8 +436,8 @@ async function runViewportSmoke(cdpPort, viewport, inlineHtml, liveRotationPaylo
       const input = document.getElementById('rakUserLoginAccountNumber');
       const button = document.getElementById('rakUserLoginSubmit');
       const mascot = brand && brand.querySelector('.rakSplashMascot');
-      const pieces = brand ? Array.from(brand.querySelectorAll('.rakSplashMascotPiece')) : [];
-      const mascotStyles = document.getElementById('rak-login-splash-style-v4')?.textContent || '';
+      const frames = brand ? Array.from(brand.querySelectorAll('.rakSplashMascotFrame')) : [];
+      const mascotStyles = document.getElementById('rak-login-splash-style-v5')?.textContent || '';
       if (!input || !button || !brand || !mascot) return { ok: false, reason: 'login-elements-missing' };
       input.value = '';
       button.click();
@@ -445,7 +445,7 @@ async function runViewportSmoke(cdpPort, viewport, inlineHtml, liveRotationPaylo
       const reject = {
         brandError: brand.classList.contains('error'),
         panelError: !!(panel && panel.classList.contains('error')),
-        mascotTap: mascotStyles.includes('@keyframes rakMascotTap') && mascotStyles.includes('@keyframes rakTapLeft') && mascotStyles.includes('@keyframes rakTapRight')
+        mascotTap: mascotStyles.includes('@keyframes rakMascotTap') && !!brand.querySelector('.rakSplashMascotFrame.tap')
       };
       brand.classList.remove('error');
       if (panel) panel.classList.remove('error');
@@ -457,12 +457,11 @@ async function runViewportSmoke(cdpPort, viewport, inlineHtml, liveRotationPaylo
       await wait(380);
       return {
         ok: true,
-        pieces: pieces.length,
-        mascotAsset: pieces.every((piece) => piece.getAttribute('src') === 'assets/rak-login-crab.png'),
-        hasClaws: !!brand.querySelector('.rakSplashMascotClaw.left') && !!brand.querySelector('.rakSplashMascotClaw.right'),
-        hasLegs: !!brand.querySelector('.rakSplashMascotLegs.left') && !!brand.querySelector('.rakSplashMascotLegs.right'),
+        frames: frames.length,
+        mascotAssets: frames.map((frame) => frame.getAttribute('src')),
+        hasMotion: mascotStyles.includes('@keyframes rakFrameIdle') && mascotStyles.includes('@keyframes rakFrameStep'),
         reject,
-        cutting: brand.classList.contains('cutting'),
+        cutting: brand.classList.contains('success'),
         pageSplit: overlay.classList.contains('pageSplit')
       };
     } finally {
@@ -473,7 +472,7 @@ async function runViewportSmoke(cdpPort, viewport, inlineHtml, liveRotationPaylo
     }
   })()`);
   assert(loginMascotState.ok, `${viewport.name}: login maskot se nenačetl ${JSON.stringify(loginMascotState)}`);
-  assert(loginMascotState.pieces === 5 && loginMascotState.mascotAsset && loginMascotState.hasClaws && loginMascotState.hasLegs, `${viewport.name}: maskot nemá připravené pohyblivé vrstvy ${JSON.stringify(loginMascotState)}`);
+  assert(loginMascotState.frames === 3 && loginMascotState.hasMotion && loginMascotState.mascotAssets.join('|') === 'assets/rak-login-crab.png|assets/rak-login-crab-step.png|assets/rak-login-crab-tap.png', `${viewport.name}: maskot nemá připravené průhledné animační snímky ${JSON.stringify(loginMascotState)}`);
   assert(loginMascotState.reject.brandError && loginMascotState.reject.panelError && loginMascotState.reject.mascotTap, `${viewport.name}: chybné přihlášení nespustilo poklep maskota ${JSON.stringify(loginMascotState)}`);
   assert(loginMascotState.cutting && loginMascotState.pageSplit, `${viewport.name}: úspěšné přihlášení nespustilo střih stránky ${JSON.stringify(loginMascotState)}`);
 
