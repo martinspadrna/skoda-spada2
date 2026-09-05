@@ -423,6 +423,60 @@ async function runViewportSmoke(cdpPort, viewport, inlineHtml, liveRotationPaylo
   assert(bootState.homeCards > 0, `${viewport.name}: Dashboard nemá karty`);
   assert(bootState.bodyBeforePosition === 'fixed', `${viewport.name}: pevné pozadí není fixed`);
 
+  const loginMascotState = await evalInPage(client, `(async () => {
+    const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+    const savedLookup = window.rakUserProfileLookup;
+    const savedWrite = window.rakUserProfileWrite;
+    const savedApply = window.rakUserProfileApplyToRuntime;
+    const overlay = typeof window.installRakLoginSplash === 'function' ? window.installRakLoginSplash('') : null;
+    if (!overlay) return { ok: false, reason: 'login-splash-missing' };
+    try {
+      const brand = document.getElementById('rakSplashBrand');
+      const panel = document.getElementById('rakSplashPanel');
+      const input = document.getElementById('rakUserLoginAccountNumber');
+      const button = document.getElementById('rakUserLoginSubmit');
+      const mascot = brand && brand.querySelector('.rakSplashMascot');
+      const pieces = brand ? Array.from(brand.querySelectorAll('.rakSplashMascotPiece')) : [];
+      const mascotStyles = document.getElementById('rak-login-splash-style-v4')?.textContent || '';
+      if (!input || !button || !brand || !mascot) return { ok: false, reason: 'login-elements-missing' };
+      input.value = '';
+      button.click();
+      await wait(55);
+      const reject = {
+        brandError: brand.classList.contains('error'),
+        panelError: !!(panel && panel.classList.contains('error')),
+        mascotTap: mascotStyles.includes('@keyframes rakMascotTap') && mascotStyles.includes('@keyframes rakTapLeft') && mascotStyles.includes('@keyframes rakTapRight')
+      };
+      brand.classList.remove('error');
+      if (panel) panel.classList.remove('error');
+      window.rakUserProfileLookup = async () => ({ ok: true, accountNumber: '1234', fullName: 'Browser smoke' });
+      window.rakUserProfileWrite = () => {};
+      window.rakUserProfileApplyToRuntime = () => {};
+      input.value = '1234';
+      button.click();
+      await wait(380);
+      return {
+        ok: true,
+        pieces: pieces.length,
+        mascotAsset: pieces.every((piece) => piece.getAttribute('src') === 'assets/rak-login-crab.png'),
+        hasClaws: !!brand.querySelector('.rakSplashMascotClaw.left') && !!brand.querySelector('.rakSplashMascotClaw.right'),
+        hasLegs: !!brand.querySelector('.rakSplashMascotLegs.left') && !!brand.querySelector('.rakSplashMascotLegs.right'),
+        reject,
+        cutting: brand.classList.contains('cutting'),
+        pageSplit: overlay.classList.contains('pageSplit')
+      };
+    } finally {
+      window.rakUserProfileLookup = savedLookup;
+      window.rakUserProfileWrite = savedWrite;
+      window.rakUserProfileApplyToRuntime = savedApply;
+      overlay.remove();
+    }
+  })()`);
+  assert(loginMascotState.ok, `${viewport.name}: login maskot se nenačetl ${JSON.stringify(loginMascotState)}`);
+  assert(loginMascotState.pieces === 5 && loginMascotState.mascotAsset && loginMascotState.hasClaws && loginMascotState.hasLegs, `${viewport.name}: maskot nemá připravené pohyblivé vrstvy ${JSON.stringify(loginMascotState)}`);
+  assert(loginMascotState.reject.brandError && loginMascotState.reject.panelError && loginMascotState.reject.mascotTap, `${viewport.name}: chybné přihlášení nespustilo poklep maskota ${JSON.stringify(loginMascotState)}`);
+  assert(loginMascotState.cutting && loginMascotState.pageSplit, `${viewport.name}: úspěšné přihlášení nespustilo střih stránky ${JSON.stringify(loginMascotState)}`);
+
   const themePropagationState = await evalInPage(client, `(() => {
     if (!Array.isArray(window.RAK_APPEARANCE_DEFS) || typeof window.applyAppearancePreference !== 'function') {
       return { ok: false, reason: 'chybí definice vzhledů nebo jejich aplikace' };
