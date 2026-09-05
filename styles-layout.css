@@ -261,14 +261,14 @@ td.missingCell{background:#4b1f1f;
 .noteDateCell{width:40px;
  min-width:40px;
  font-weight:bold;}
-.noteShiftCell{width:45px;
-min-width:45px;
+.noteShiftCell{width:68px;
+min-width:68px;
  text-align:center;}
 .notePersonCell, .noteReasonCell{white-space:normal;}
-.notePersonCell{min-width:33px;}
-.noteReasonCell{width:44px;
-min-width:44px;
-max-width:58px;
+.notePersonCell{min-width:24px;}
+.noteReasonCell{width:58px;
+min-width:58px;
+max-width:72px;
  text-align:center;}
 .noteTable th.noteSpacer, .noteTable td.noteSpacer{width:7px;
  min-width:7px;

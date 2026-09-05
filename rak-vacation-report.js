@@ -4,6 +4,9 @@
   'use strict';
 
   const MONTHS = ['leden', 'únor', 'březen', 'duben', 'květen', 'červen', 'červenec', 'srpen', 'září', 'říjen', 'listopad', 'prosinec'];
+  const ABSENCE_CALENDAR_URL = String(window.SUPABASE_CONFIG && window.SUPABASE_CONFIG.url || '').replace(/\/$/, '') + '/functions/v1/rak-absence-calendar';
+  const calendarRowsByMonth = new Map();
+  const calendarLoadByMonth = new Map();
 
   function escapeHtml(value) {
     if (typeof window.escapeHtml === 'function') return window.escapeHtml(String(value || ''));
@@ -12,6 +15,23 @@
 
   function canUse() {
     return typeof window.rakAdminCanOpenAdmin === 'function' && window.rakAdminCanOpenAdmin();
+  }
+
+  // Stejná viditelnost jako tlačítko Administrace. Samotné otevření níže stejně
+  // znovu vyžaduje platnou admin relaci, takže zobrazení tlačítka nepřidává práva.
+  function canShowAdminEntry() {
+    try {
+      if (typeof window.appMenuShouldShowAdminEntry === 'function') return !!window.appMenuShouldShowAdminEntry();
+    } catch (err) {}
+    return canUse();
+  }
+
+  async function ensureAdminAccess() {
+    if (canUse()) return true;
+    try {
+      if (typeof window.appMenuEnsureAdminAccessFromMenu === 'function') await window.appMenuEnsureAdminAccessFromMenu();
+    } catch (err) {}
+    return canUse();
   }
 
   function getMonths() {
@@ -33,6 +53,93 @@
     const raw = [entry && entry.code, entry && entry.label, entry && entry.text].filter(Boolean).join(' ');
     const normalized = String(raw).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
     return /dovolena/.test(normalized) || /(^|[^a-z])d($|[^a-z])/i.test(normalized);
+  }
+
+  function normalizeLookup(value) {
+    return String(value || '').toLocaleLowerCase('cs-CZ').normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]/g, '');
+  }
+
+  function decodeIcsText(value) {
+    return String(value || '').replace(/\\n/gi, ' ').replace(/\\,/g, ',').replace(/\\;/g, ';').replace(/\\\\/g, '\\').replace(/\s+/g, ' ').trim();
+  }
+
+  function icsProperty(block, name) {
+    const wanted = String(name || '').toUpperCase();
+    const lines = String(block || '').replace(/\r?\n[ \t]/g, '').split(/\r?\n/);
+    for (const line of lines) {
+      const split = line.indexOf(':');
+      if (split < 0) continue;
+      if (line.slice(0, split).split(';')[0].toUpperCase() === wanted) return { key: line.slice(0, split), value: line.slice(split + 1) };
+    }
+    return { key: '', value: '' };
+  }
+
+  function icsDate(value) {
+    const match = String(value || '').match(/^(\d{4})(\d{2})(\d{2})/);
+    return match ? match[1] + '-' + match[2] + '-' + match[3] : '';
+  }
+
+  function isoDate(value) {
+    const match = String(value || '').match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    if (!match) return null;
+    const date = new Date(Date.UTC(Number(match[1]), Number(match[2]) - 1, Number(match[3])));
+    return Number.isFinite(date.getTime()) ? date : null;
+  }
+
+  function icsDates(start, end) {
+    const startIso = icsDate(start && start.value);
+    const startDate = isoDate(startIso);
+    if (!startDate) return [];
+    const endDate = isoDate(icsDate(end && end.value));
+    if (!endDate || endDate <= startDate) return [startIso];
+    const allDay = /VALUE=DATE/i.test(String(start && start.key || '')) || /^\d{8}$/.test(String(start && start.value || '').trim());
+    const limit = new Date(endDate.getTime());
+    if (allDay) limit.setUTCDate(limit.getUTCDate() - 1);
+    if (limit < startDate) return [startIso];
+    const dates = [];
+    const cursor = new Date(startDate.getTime());
+    while (cursor <= limit && dates.length < 370) {
+      dates.push(cursor.toISOString().slice(0, 10));
+      cursor.setUTCDate(cursor.getUTCDate() + 1);
+    }
+    return dates;
+  }
+
+  function knownNames() {
+    if (typeof window.getKnownStatNames === 'function') return Array.from(window.getKnownStatNames()).map((name) => String(name || '').trim()).filter(Boolean);
+    return [];
+  }
+
+  function nameFromCalendarSummary(summary) {
+    const raw = decodeIcsText(summary);
+    if (!raw || !isVacation({ text: raw })) return '';
+    const names = knownNames();
+    const normalized = normalizeLookup(raw);
+    const exact = names.find((name) => normalized.startsWith(normalizeLookup(name)));
+    if (exact) return exact;
+    const firstPart = raw.split(/[,:;]/)[0].trim().split(/\s+/)[0];
+    return firstPart && firstPart.length < 80 ? firstPart : '';
+  }
+
+  function calendarVacationRows(text, monthKey) {
+    const parsedMonth = typeof window.parseMonthKey === 'function' ? window.parseMonthKey(monthKey) : null;
+    if (!parsedMonth) return [];
+    const wantedPrefix = String(parsedMonth.year) + '-' + String(parsedMonth.month).padStart(2, '0') + '-';
+    const seen = new Set();
+    const rows = [];
+    const events = String(text || '').match(/BEGIN:VEVENT[\s\S]*?END:VEVENT/g) || [];
+    events.forEach((event, index) => {
+      const name = nameFromCalendarSummary(icsProperty(event, 'SUMMARY').value);
+      if (!name) return;
+      icsDates(icsProperty(event, 'DTSTART'), icsProperty(event, 'DTEND')).forEach((date) => {
+        if (!date.startsWith(wantedPrefix)) return;
+        const key = name + '|' + date;
+        if (seen.has(key)) return;
+        seen.add(key);
+        rows.push({ name, date: String(Number(date.slice(8, 10))) + '.' + String(Number(date.slice(5, 7))) + '.', shift: '', day: Number(date.slice(8, 10)), order: 0, noteIndex: index });
+      });
+    });
+    return rows.sort((a, b) => a.name.localeCompare(b.name, 'cs') || a.day - b.day || a.noteIndex - b.noteIndex);
   }
 
   function vacationRows(monthKey) {
@@ -63,15 +170,23 @@
     }).sort((a, b) => a.name.localeCompare(b.name, 'cs') || a.day - b.day || a.order - b.order || a.noteIndex - b.noteIndex);
   }
 
+  function rowsForMonth(monthKey) {
+    return calendarRowsByMonth.has(monthKey) ? calendarRowsByMonth.get(monthKey) : vacationRows(monthKey);
+  }
+
+  function reportSource(monthKey) {
+    return calendarRowsByMonth.has(monthKey) ? 'Google kalendář' : 'Absence v rozpisu';
+  }
+
   function reportText(monthKey) {
-    const rows = vacationRows(monthKey);
+    const rows = rowsForMonth(monthKey);
     const byName = new Map();
     rows.forEach((row) => {
       if (!byName.has(row.name)) byName.set(row.name, []);
       byName.get(row.name).push([row.date, row.shift].filter(Boolean).join(' '));
     });
-    const lines = ['RaK – report dovolených', 'Měsíc: ' + monthLabel(monthKey), ''];
-    if (!byName.size) lines.push('V rozpisu nejsou zapsané žádné dovolené.');
+    const lines = ['RaK – report dovolených', 'Měsíc: ' + monthLabel(monthKey), 'Zdroj: ' + reportSource(monthKey), ''];
+    if (!byName.size) lines.push('Pro vybraný měsíc nejsou zapsané žádné dovolené.');
     else {
       lines.push('Dovolené:');
       byName.forEach((dates, name) => lines.push('- ' + name + ': ' + dates.join(', ')));
@@ -89,6 +204,37 @@
     const select = root && root.querySelector('.rakVacationReportMonth');
     const preview = root && root.querySelector('.rakVacationReportPreview');
     if (preview) preview.textContent = reportText(select && select.value);
+  }
+
+  async function loadCalendar(root, force) {
+    const select = root && root.querySelector('.rakVacationReportMonth');
+    const monthKey = String(select && select.value || '');
+    if (!monthKey) return;
+    if (!force && calendarRowsByMonth.has(monthKey)) { renderPreview(root); return; }
+    if (calendarLoadByMonth.get(monthKey)) return calendarLoadByMonth.get(monthKey);
+    const promise = (async () => {
+      setStatus(root, 'Načítám dovolené z Google kalendáře…');
+      try {
+        const bridge = window.RotationSupabaseBridge;
+        const accessToken = bridge && typeof bridge.getAdminAccessToken === 'function' ? await bridge.getAdminAccessToken() : '';
+        if (!accessToken || !ABSENCE_CALENDAR_URL) throw new Error('admin-auth-required');
+        const response = await fetch(ABSENCE_CALENDAR_URL, {
+          cache: 'no-store',
+          headers: { Authorization: 'Bearer ' + accessToken, apikey: String(window.SUPABASE_CONFIG && window.SUPABASE_CONFIG.publishableKey || '') }
+        });
+        if (!response || !response.ok) throw new Error('HTTP ' + String(response && response.status || ''));
+        calendarRowsByMonth.set(monthKey, calendarVacationRows(await response.text(), monthKey));
+        renderPreview(root);
+        setStatus(root, 'Dovolené byly načtené z Google kalendáře.');
+      } catch (err) {
+        renderPreview(root);
+        setStatus(root, 'Kalendář teď není dostupný – zobrazuji Absence z rozpisu.');
+      } finally {
+        calendarLoadByMonth.delete(monthKey);
+      }
+    })();
+    calendarLoadByMonth.set(monthKey, promise);
+    return promise;
   }
 
   async function share(root) {
@@ -124,41 +270,60 @@
     ensureStyles();
     body.innerHTML = [
       '<div id="rakVacationReport" class="rakVacationReport">',
-      '<div><div class="appMenuSubTitle">Report dovolené</div><div class="smallText">Přehled čerpání dovolené z Absencí ve zvoleném rozpisu.</div></div>',
+      '<div><div class="appMenuSubTitle">Report dovolené</div><div class="smallText">Přehled dovolených z Google kalendáře; při nedostupném připojení bezpečně použije Absence ve zvoleném rozpisu.</div></div>',
       '<label class="rakVacationReportContext">Měsíc<select class="rakVacationReportMonth">',
       months.map((key) => '<option value="' + escapeHtml(key) + '"' + (key === selected ? ' selected' : '') + '>' + escapeHtml(monthLabel(key)) + '</option>').join(''),
       '</select></label><section><div class="appMenuSubTitle">Náhled reportu</div><div class="rakVacationReportPreview"></div></section>',
-      '<div class="rakVacationReportActions"><button type="button" class="appMenuAction" data-vacation-report-action="preview">Obnovit náhled</button><button type="button" class="appMenuAction isActive" data-vacation-report-action="send">Sdílet / kopírovat</button><button type="button" class="appMenuAction" data-vacation-report-action="close">Zpět do Adminu</button></div>',
+      '<div class="rakVacationReportActions"><button type="button" class="appMenuAction" data-vacation-report-action="calendar">Načíst z kalendáře</button><button type="button" class="appMenuAction" data-vacation-report-action="preview">Obnovit náhled</button><button type="button" class="appMenuAction isActive" data-vacation-report-action="send">Sdílet / kopírovat</button><button type="button" class="appMenuAction" data-vacation-report-action="close">Zpět do Adminu</button></div>',
       '<div class="rakVacationReportStatus" aria-live="polite"></div></div>'
     ].join('');
-    renderPreview(body.querySelector('#rakVacationReport'));
+    const root = body.querySelector('#rakVacationReport');
+    renderPreview(root);
+    void loadCalendar(root, false);
   }
 
   function injectAdminEntry() {
     const body = document.getElementById('appMenuBody');
     if (!body || body.dataset.rakVacationReportOpen === '1') return;
     const old = body.querySelector('[data-admin-action="vacation-report"]');
-    if (!canUse()) { if (old) old.remove(); return; }
-    if (old) return;
+    if (!canShowAdminEntry()) { if (old) old.remove(); return; }
+    if (old) {
+      old.hidden = false;
+      old.disabled = false;
+      old.setAttribute('aria-hidden', 'false');
+      return;
+    }
     const adminButton = body.querySelector('[data-menu-action="admin"]');
     if (!adminButton) return;
     const button = document.createElement('button');
     button.type = 'button'; button.className = 'appMenuAction isActive';
     button.dataset.adminAction = 'vacation-report'; button.textContent = 'Report dovolené';
     adminButton.insertAdjacentElement('afterend', button);
-    button.addEventListener('click', () => { body.dataset.rakVacationReportOpen = '1'; build(); });
+    button.addEventListener('click', () => {
+      void ensureAdminAccess().then((allowed) => {
+        if (!allowed) return;
+        body.dataset.rakVacationReportOpen = '1';
+        build();
+      });
+    });
   }
 
   function bindBody() {
     const body = document.getElementById('appMenuBody');
     if (!body || body.dataset.rakVacationReportDelegated === '1') return;
     body.dataset.rakVacationReportDelegated = '1';
-    body.addEventListener('change', (event) => { if (event.target.matches('.rakVacationReportMonth')) renderPreview(event.target.closest('#rakVacationReport')); });
+    body.addEventListener('change', (event) => {
+      if (!event.target.matches('.rakVacationReportMonth')) return;
+      const root = event.target.closest('#rakVacationReport');
+      renderPreview(root);
+      void loadCalendar(root, false);
+    });
     body.addEventListener('click', (event) => {
       const root = event.target.closest('#rakVacationReport');
       if (!root) return;
       const action = event.target.closest('[data-vacation-report-action]')?.dataset.vacationReportAction;
       if (action === 'preview') renderPreview(root);
+      if (action === 'calendar') void loadCalendar(root, true);
       if (action === 'send') void share(root);
       if (action === 'close') { body.dataset.rakVacationReportOpen = '0'; if (typeof window.renderAdminMenuBody === 'function') window.renderAdminMenuBody(body, 'home'); }
     });
@@ -169,6 +334,6 @@
     new MutationObserver(() => { bindBody(); if (document.getElementById('appMenuBody')?.dataset.rakVacationReportOpen !== '1') injectAdminEntry(); }).observe(document.body, { childList: true, subtree: true });
   }
 
-  window.RakVacationReport = { open: () => { const body = document.getElementById('appMenuBody'); if (body && canUse()) { body.dataset.rakVacationReportOpen = '1'; build(); } }, getText: reportText };
+  window.RakVacationReport = { open: () => { const body = document.getElementById('appMenuBody'); if (body) { void ensureAdminAccess().then((allowed) => { if (allowed) { body.dataset.rakVacationReportOpen = '1'; build(); } }); } }, getText: reportText };
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', observe, { once: true }); else observe();
 })();

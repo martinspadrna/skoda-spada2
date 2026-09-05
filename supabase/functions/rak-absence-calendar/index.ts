@@ -4,9 +4,19 @@ const CALENDAR_HOST = "calendar.google.com";
 const ALLOWED_ORIGIN = "https://skoda-spada.vercel.app";
 const MAX_ICS_BYTES = 2 * 1024 * 1024;
 
+function isRaKPreviewOrigin(origin: string) {
+  try {
+    const parsed = new URL(origin);
+    return parsed.protocol === "https:" &&
+      /^skoda-spada-[a-z0-9-]+-martinspadrnas-projects\.vercel\.app$/i.test(parsed.hostname);
+  } catch {
+    return false;
+  }
+}
+
 function originAllowed(req: Request) {
   const origin = String(req.headers.get("origin") || "").trim();
-  return !origin || origin === ALLOWED_ORIGIN;
+  return !origin || origin === ALLOWED_ORIGIN || isRaKPreviewOrigin(origin);
 }
 
 function responseHeaders(req: Request, contentType = "application/json; charset=utf-8") {
@@ -16,8 +26,11 @@ function responseHeaders(req: Request, contentType = "application/json; charset=
     "vary": "Origin",
     "x-content-type-options": "nosniff",
   };
-  if (String(req.headers.get("origin") || "").trim() === ALLOWED_ORIGIN) {
+  const origin = String(req.headers.get("origin") || "").trim();
+  if (origin === ALLOWED_ORIGIN) {
     headers["access-control-allow-origin"] = ALLOWED_ORIGIN;
+  } else if (isRaKPreviewOrigin(origin)) {
+    headers["access-control-allow-origin"] = origin;
   }
   return headers;
 }

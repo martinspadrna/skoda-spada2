@@ -483,6 +483,19 @@ function applyProfileUiPreferencesForActiveAccount(options = {}) {
   const localBg = getLocalBackgroundPreference();
   const defaultTheme = RAK_DEFAULT_APPEARANCE_ID;
   const defaultBg = RAK_DEFAULT_APPEARANCE_ID;
+  const hasStoredAppearance = !!(ui.themeId || ui.backgroundId);
+
+  // Na novém zařízení nejdřív jen dočasně vykreslíme místní volbu. Nesmíme ji
+  // hned označit jako novější a uložit na server, protože by přepsala vzhled,
+  // který už má tentýž účet uložený z mobilu nebo jiného počítače.
+  if (!hasStoredAppearance) {
+    const localAppearance = normalizeThemePreferenceId(localTheme || localBg || defaultTheme, defaultTheme);
+    applyAppearancePreference(localAppearance, true, { skipProfile: true });
+    if (typeof renderThemeSettingsCards === 'function') renderThemeSettingsCards();
+    if (options.loadRemote !== false) void loadActiveAccountUiRemoteSettings(account.id);
+    return true;
+  }
+
   let changed = false;
   // RaK 1.2 (1.155): při aktualizaci nesmí prázdné profilové uiSettings shodit uživatelské pozadí zpět na základ.
   // Local fallback použijeme jen pro aktivní účet a jen jako migraci chybějící hodnoty; zamčené skiny se níže dál normalizují na default.
@@ -500,7 +513,7 @@ function applyProfileUiPreferencesForActiveAccount(options = {}) {
   }
   applyAppearancePreference(appearanceToApply, true, { skipProfile: true });
   if (typeof renderThemeSettingsCards === 'function') renderThemeSettingsCards();
-  if (changed) scheduleActiveAccountUiRemoteSave('profile-ui-initialized-from-local');
+  if (changed) scheduleActiveAccountUiRemoteSave('profile-ui-normalized-local');
   if (options.loadRemote !== false) void loadActiveAccountUiRemoteSettings(account.id);
   return true;
 }

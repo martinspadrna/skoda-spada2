@@ -2,7 +2,7 @@
 (function () {
   'use strict';
 
-  const DEV_BUILD = 'DEV 2026-09-05.36';
+  const DEV_BUILD = 'DEV 2026-09-05.38';
   const STYLE_ID = 'rak-shift-report-entry-fix-style-v4';
   const ENTRY_ATTR = 'data-rak-shift-report-entry';
   const PORTRAIT_OVERLAY_ID = 'rakPortraitOnlyOverlay';
@@ -149,6 +149,9 @@
       button.setAttribute(ENTRY_ATTR, '1');
       button.textContent = 'Report směny';
     }
+    button.hidden = false;
+    button.disabled = false;
+    button.setAttribute('aria-hidden', 'false');
 
     // Původní skrytý vstup do reportu spravuje rak-shift-report-share.js.
     // Kotvíme náš stabilní vstup až ZA něj. Tím se oba MutationObservery

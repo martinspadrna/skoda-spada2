@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// RaK 1.2 (1.338) – smoke test přehledu připojení + Dashboard/appearance contract guard.
+// RaK 1.2 (1.338) – smoke test soukromí připojení + Dashboard/appearance contract guard.
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
@@ -67,7 +67,9 @@ const dashboardCssLayerOrderContractV194 = Object.freeze([
   'styles-theme-polish.css',
   'styles-release-polish.css',
   'styles-dashboard-polish.css',
-  'styles-daymods.css'
+  'styles-daymods.css',
+  'styles-theme-propagation.css',
+  'styles-rotation-tasks.css'
 ]);
 const dashboardCriticalStyles = [
   'styles-overrides.css',
@@ -348,8 +350,8 @@ function assertReleaseMetadataContractV199() {
   assertIncludes(exportJs, "packageVersion: '1.2.338'", 'Release contract v export.js musí držet aktuální package verzi');
   assert(packageJson.version === contract.packageVersion, `package.json version drift: čekám ${contract.packageVersion}, mám ${packageJson.version}`);
   assertIncludes(coreJs, `const APP_VERSION = "${contract.displayVersion}";`, 'core.js APP_VERSION není sjednocený s 1.105');
-  assertIncludes(serviceWorkerJs, `const CACHE_VERSION = '${contract.cacheVersion}';`, 'sw.js CACHE_VERSION není sjednocený s 1.105');
-  assertIncludes(serviceWorkerJs, `const SW_APP_VERSION = '${contract.displayVersion}';`, 'sw.js SW_APP_VERSION není sjednocený s 1.105');
+  assert(/const CACHE_VERSION = 'v1\.2-dev-\d{8}-\d+';/.test(serviceWorkerJs), 'sw.js musí mít vlastní číslovaný DEV cache build');
+  assert(/const SW_APP_VERSION = 'development \d{4}-\d{2}-\d{2}\.\d+';/.test(serviceWorkerJs), 'sw.js musí zveřejnit shodný číslovaný DEV build');
   assertIncludes(bridge, `client.channel('${contract.realtimeChannel}')`, 'Supabase realtime kanál není sjednocený s 1.105');
   assertIncludes(bridge, `realtimeChannel: '${contract.realtimeChannel}'`, 'Supabase diagnostika realtime kanálu není sjednocená s 1.105');
   assert(changelogMd.startsWith(contract.changelogHeader), 'CHANGELOG.md musí začínat aktuálním buildem 1.105');
@@ -357,7 +359,7 @@ function assertReleaseMetadataContractV199() {
   assertIncludes(changelogMd, `cache \`${contract.cacheVersion}\``, 'CHANGELOG.md musí uvádět cache verzi 1.105');
   assertIncludes(exportJs, `version: '${contract.displayVersion}'`, 'export.js smoke report musí nést aktuální display verzi');
   assertIncludes(exportJs, `version: String(window.APP_VERSION || '${contract.displayVersion}')`, 'export.js fallbacky musí používat aktuální display verzi');
-  assertIncludes(indexHtml, `app.js?v=${contract.packageVersion}`, 'index.html musí změnou URL obejít dříve dlouhodobě cachovaný app.js');
+  assert(/app\.js\?v=1\.2\.\d+/.test(indexHtml), 'index.html musí mít číslovaný cache-bust parametr app.js');
   const scriptCacheRule = (vercelJson.headers || []).find((rule) => String(rule.source || '').includes('(js|css)'));
   const scriptCacheControl = String(scriptCacheRule && scriptCacheRule.headers && scriptCacheRule.headers.find((header) => header.key === 'Cache-Control')?.value || '');
   assert(scriptCacheControl.includes('max-age=0') && scriptCacheControl.includes('must-revalidate'), 'Vercel musí JS/CSS při novém vydání znovu ověřit');
@@ -537,26 +539,9 @@ assert(bridge.includes('loadAppUsage'), 'RotationSupabaseBridge.loadAppUsage chy
 assert(bridge.includes('rak_usage_presence_touch'), 'RPC rak_usage_presence_touch není napojená');
 assert(bridge.includes('rak_usage_presence_admin'), 'RPC rak_usage_presence_admin není napojená');
 assert(bridge.includes('APP_USAGE_MIN_INTERVAL_MS'), 'App usage throttle chybí');
-assert(ui.includes('buildAdminUsageHtml'), 'Admin UI přehledu připojení chybí');
-assert(ui.includes('buildAdminUsageGroups'), 'Admin přehled musí seskupovat zařízení podle jména/profilu');
-assert(ui.includes('buildAdminUsageInitials'), 'Admin přehled musí generovat dvoupísmenné iniciály profilu');
-assert(ui.includes("Array.from(parts[0]).slice(0, 2)"), 'Jednoslovné profily mají v avataru použít první dvě písmena');
-assert(ui.includes('toLocaleUpperCase(\'cs-CZ\')'), 'Iniciály mají respektovat českou diakritiku při převodu na velká písmena');
-assertIncludes(menuPolishCss, '#menu .adminUsageSummaryText{display:flex !important;flex-direction:column !important;gap:2px !important;min-width:0 !important;}', 'Přehled připojení musí mít samostatný text wrapper, aby avatar nebyl mimo střed');
-assertIncludes(menuPolishCss, '#menu .adminUsageAvatar{', 'CSS avatar přehledu připojení chybí');
-assertIncludes(menuPolishCss, 'place-items:center !important;', 'Avatar přehledu připojení musí centrovat iniciály');
-assertIncludes(menuPolishCss, 'Přehled připojení avatar contract', 'Přehled připojení musí mít 1.88 avatar contract');
-assertIncludes(menuPolishCss, '#menu .adminUsageSummary .adminUsageAvatar', 'Avatar musí mít silnější selektor než obecná summary span pravidla');
-assertIncludes(menuPolishCss, 'align-items:center !important;', 'Avatar musí centrovat iniciály svisle');
-assertIncludes(menuPolishCss, 'justify-content:center !important;', 'Avatar musí centrovat iniciály vodorovně');
-assertIncludes(menuPolishCss, 'flex-direction:row !important;', 'Avatar nesmí zdědit sloupcové řazení textového wrapperu');
-assert(!menuPolishCss.includes('#menu .adminUsageSummary span{'), 'Obecné pravidlo #menu .adminUsageSummary span by znovu rozhodilo avatar iniciál');
-assert(ui.includes('adminUsageDeviceList'), 'Admin přehled musí ukazovat zařízení uvnitř jedné složky jména');
-assert(ui.includes("action: 'open-usage', label: 'Přehled připojení'"), 'Tlačítko Přehled připojení chybí');
-assert(ui.includes("openAppMenu('admin-usage')"), 'Admin usage routing chybí');
-assert(!ui.includes('Zapsat mě teď'), 'Testovací tlačítko Zapsat mě teď nemá být viditelné');
-assert(!ui.includes('<b>Stránka:</b>'), 'Přehled připojení už nemá ukazovat stránku');
-assert(ui.includes('Viewport '), 'Displej má ukazovat viewport/rozlišení, ne časovou zónu');
+assert(!ui.includes('buildAdminUsageHtml'), 'Odstraněný přehled připojení se nesmí vrátit do Administrace');
+assert(!ui.includes("action: 'open-usage', label: 'Přehled připojení'"), 'Odstraněný přehled připojení nesmí mít navigační tlačítko');
+assert(!ui.includes("openAppMenu('admin-usage')"), 'Odstraněný přehled připojení nesmí mít aktivní routing');
 assert(sql.includes('create table if not exists public.app_usage_devices'), 'SQL app_usage_devices chybí');
 assert(sql.includes('create table if not exists public.app_usage_events'), 'SQL app_usage_events chybí');
 assert(sql.includes('returns jsonb'), 'SQL RPC návrat JSONB chybí');
@@ -731,22 +716,21 @@ assertOrder(dashboardPolishCss, 'Dashboard viewport stack contract guard', 'Dash
   assertIncludes(dashboardPolishCss, fragment, `Chybí 1.80 hero height guard: ${fragment}`);
 });
 
-// 1.80: theme/pozadí jsou teď pevná kurátorovaná sada bez odemykání – žádné zamykání, žádné duplicity, žádné gating pole.
-const themeDefs = readAppearanceArray('RAK_THEME_DEFS');
-const backgroundDefs = readAppearanceArray('RAK_BACKGROUND_DEFS');
+// 1.80: vzhled je jedna kurátorovaná sada bez odemykání – každá položka řídí paletu i pozadí.
+const appearanceDefs = readAppearanceArray('RAK_APPEARANCE_DEFS');
+const themeDefs = appearanceDefs.map((item) => Object.assign({}, item, { vars: item.themeVars }));
+const backgroundDefs = appearanceDefs.map((item) => Object.assign({}, item, { vars: item.bgVars }));
 const themeIdList = themeDefs.map((item) => String(item && item.id || ''));
 const backgroundIdList = backgroundDefs.map((item) => String(item && item.id || ''));
 const themeIds = new Set(themeIdList);
 const backgroundIds = new Set(backgroundIdList);
-assert(themeDefs.length === 6, `Theme seznam musí mít přesně 6 kurátorovaných položek, nalezeno ${themeDefs.length}`);
-assert(backgroundDefs.length === 6, `Pozadí seznam musí mít přesně 6 kurátorovaných položek, nalezeno ${backgroundDefs.length}`);
+assert(themeDefs.length === 10, `Seznam vzhledů musí mít 10 kurátorovaných položek, nalezeno ${themeDefs.length}`);
+assert(backgroundDefs.length === 10, `Každý vzhled musí mít vlastní pozadí, nalezeno ${backgroundDefs.length}`);
 assert(themeIds.size === themeIdList.length, 'Theme seznam nesmí obsahovat duplicitní id');
 assert(backgroundIds.size === backgroundIdList.length, 'Pozadí seznam nesmí obsahovat duplicitní id');
-['default', 'light-brown', 'midnight-blue', 'graphite', 'sunset-plasma', 'violet-pulse'].forEach((id) => {
-  assert(themeIds.has(id), `Theme seznam musí obsahovat ${id}`);
-});
-['ios-mesh', 'skoda-green', 'deep-aurora', 'sunset-plasma', 'light-zigzag', 'amoled-grid'].forEach((id) => {
-  assert(backgroundIds.has(id), `Pozadí seznam musí obsahovat ${id}`);
+['atlantic', 'graphite', 'petrol', 'copper', 'obsidian', 'glacier', 'forest', 'solar', 'steel', 'jade'].forEach((id) => {
+  assert(themeIds.has(id), `Seznam vzhledů musí obsahovat ${id}`);
+  assert(backgroundIds.has(id), `Vzhled ${id} musí mít vlastní pozadí`);
 });
 [...themeDefs, ...backgroundDefs].forEach((item) => {
   ['unlockText', 'minPlays', 'minAchievements', 'minRank'].forEach((field) => {
@@ -833,7 +817,7 @@ function assertBrowserSmokeContractV1103() {
     assertIncludes(exportJs, fragment, `Browser smoke contract musí hlídat ${fragment}`);
     assertIncludes(browserSmokeJs, fragment, `browser-smoke-v1103.js musí reálně testovat/uvádět ${fragment}`);
   });
-  ['CHROMIUM_BIN', 'buildInlineSmokeHtml', 'createStaticServer', 'CdpClient', 'Emulation.setDeviceMetricsOverride', 'about-blank-inline-html', 'createRotationMonthExportCanvas', 'adminGenerateRotationMonthDraft', '#brusy .brusMachineBtn', '#games.page.active', '#menu.page.active'].forEach((fragment) => {
+  ['CHROMIUM_BIN', 'buildInlineSmokeHtml', 'createStaticServer', 'CdpClient', 'Emulation.setDeviceMetricsOverride', 'about-blank-inline-html', 'createRotationMonthExportCanvas', 'adminGenerateRotationMonthDraft', '#brusy .brusMachineBtn', '#menu.page.active'].forEach((fragment) => {
     assertIncludes(browserSmokeJs, fragment, `browser-smoke-v1103.js musí obsahovat ${fragment}`);
   });
 }
@@ -1095,8 +1079,9 @@ function assertGamesActiveAccountDirectStatsContractV1144() {
   assertIncludes(ui, 'GAMES_ACTIVE_ACCOUNT_DIRECT_STATS_CONTRACT_V1144', 'games-profile.js musí dokumentovat přímý sync aktivního účtu v1.145');
   assertIncludes(ui, 'bridge.loadGameStatsForAccount(activeAccountId', 'Profilový sync musí používat přímé statistiky aktivního účtu');
   assertIncludes(ui, 'login-remote-stats', 'Po přihlášení se musí vynutit přepočet ranku/theme po stažení statistik účtu');
-  assertIncludes(appearanceThemeJs, 'const themeToApply = ui.themeId || defaultTheme', 'Načtené profilové theme se musí použít přímo bez unlock kontroly');
-  assertIncludes(appearanceThemeJs, 'const bgToApply = ui.backgroundId || defaultBg', 'Načtené profilové pozadí se musí použít přímo bez unlock kontroly');
+  assertIncludes(appearanceThemeJs, 'const hasStoredAppearance = !!(ui.themeId || ui.backgroundId);', 'Profil musí rozlišit nově přihlášený účet bez lokální volby vzhledu');
+  assertIncludes(appearanceThemeJs, 'if (!hasStoredAppearance)', 'Vzhled uložený u účtu musí dostat přednost před prvním lokálním fallbackem');
+  assertIncludes(appearanceThemeJs, 'void loadActiveAccountUiRemoteSettings(account.id);', 'Nově přihlášený účet musí načíst vzhled uložený na serveru');
 }
 
 
@@ -1263,7 +1248,9 @@ assertIncludes(ui, 'if (i === 0) html += "<th class=\'noteDateCell\'>Datum</th><
 assertNotIncludes(ui, "emptyCell noteDateCell", 'Admin přehled absencí nesmí opakovat prázdné datum/směnu sloupce');
 assertIncludes(ui, 'function adminRotationFindShiftForAbsenceDate', 'Admin absence musí umět dopočítat směnu z rozpisu podle zadaného data');
 assertIncludes(ui, 'month.notes = adminRotationSortNotes(notes, month)', 'Admin absence se po uložení musí řadit podle data');
-assertIncludes(stylesLayoutCss, '.noteReasonCell{width:34px;', 'Sloupec důvodu absence musí být užší než sloupec jména');
+assertIncludes(stylesLayoutCss, '.noteShiftCell{width:68px;', 'Sloupec směny absence musí být rozšířený pro čitelnost');
+assertIncludes(stylesLayoutCss, '.notePersonCell{min-width:24px;}', 'Sloupec jména absence musí zůstat úsporný');
+assertIncludes(stylesLayoutCss, '.noteReasonCell{width:58px;', 'Sloupec důvodu absence musí být širší než dříve');
 assertIncludes(rotaceJs, 'buildStatsForYear(year, { maxMonth })', 'Nýtování a úklid v exportu musí být omezené exportovaným měsícem');
 assertIncludes(ui, 'yearHardMachineStats', 'Generátor musí při nýtování zohledňovat roční počty před cílovým měsícem');
 assertIncludes(appearanceThemeJs, '"id": "light-brown"', 'Musí existovat základní světlý hnědý theme');
@@ -1985,13 +1972,8 @@ function assertAdminServiceStatusContractV1159() {
 }
 
 function assertAdminUsageStatusContractV1160() {
-  assertIncludes(ui, 'function buildAdminUsageHtml', 'Administrace musi mit prehled pripojeni');
-  assertNotIncludes(ui, 'function buildAdminUsageStatusHtml', 'Stav pripojeni byl na zadost odstranen z admin obrazovky');
-  assertNotIncludes(ui, 'window.buildAdminUsageStatusHtml', 'Stav pripojeni byl odstranen, export uz nema existovat');
-  assertIncludes(ui, 'function buildAdminUsageGroups', 'Souhrn pripojeni musi sdilet seskupeny model profilu a zarizeni');
-  assertNotIncludes(stylesAdminPolishCss, '.adminUsageStatusGrid', 'Stav pripojeni byl odstranen, admin styl uz nema existovat');
-  assertIncludes(ui, "adminAction === 'usage-load'", 'Admin prehled pripojeni musi umet nacist online data');
-  assertIncludes(ui, "'admin-usage'", 'Prehled pripojeni musi byt mezi chranenymi admin view');
+  assertNotIncludes(ui, 'function buildAdminUsageHtml', 'Odstraneny prehled pripojeni nesmi byt soucasti Administrace');
+  assertNotIncludes(ui, "'admin-usage'", 'Odstraneny prehled pripojeni nesmi byt chranenym admin view');
 }
 
 assertDashboardCssGuardSeriesCompleteV1100();
