@@ -2,7 +2,7 @@
 (function () {
   'use strict';
 
-  const DEV_BUILD = 'DEV 2026-09-05.38';
+  const DEV_BUILD = 'DEV 2026-09-05.39';
   const STYLE_ID = 'rak-shift-report-entry-fix-style-v4';
   const ENTRY_ATTR = 'data-rak-shift-report-entry';
   const PORTRAIT_OVERLAY_ID = 'rakPortraitOnlyOverlay';
