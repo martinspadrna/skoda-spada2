@@ -11,8 +11,12 @@ html[data-rak-theme] :is(
   #home .dashboardLabel,
   #home .dashboardValue,
   #home .dashboardHeroLine1,
-  #home .dashboardHeroLine2,
   #home .dashboardHeroLine3,
+  .foodTileLive,
+  .rotaceMonthPicker > summary,
+  table.rotTable th,
+  .statsTable th,
+  .noteTable th,
   .headerBar h3,
   .sectionTitle,
   .rotaceTileTitle,
@@ -40,7 +44,8 @@ html[data-rak-theme] :is(
 html[data-rak-theme] :is(
   #home .dashboardMeta,
   #home .dashboardTileMeta,
-  #home .dashboardHeroLine3,
+  #home .dashboardEyebrow,
+  #home .dashboardVersionTag,
   .smallText,
   .calcTileSub,
   .foodTileSub,
@@ -51,11 +56,24 @@ html[data-rak-theme] :is(
   .appMenuThemeSummaryMeta,
   .appMenuThemeInfo .smallText,
   .foodScheduleTitleBlock .smallText,
+  .statsOccupancyBar em,
+  .statsAbsenceLegendRow,
+  .statsOccupancyLineLabels,
+  .statsOccupancyScaleLabel,
+  .statsOccupancyPointInfo,
   #rakShiftReport .rakShiftIntro,
   #rakShiftReport .rakShiftPreviewHint,
   #rakShiftReport .rakShiftStatus
 ){
   color:var(--muted) !important;
+}
+
+html[data-rak-theme] :is(
+  #home .dashboardHeroLine2,
+  .statsAbsenceLegendRow strong,
+  .statsOccupancyPointInfo[data-active="1"]
+){
+  color:var(--soft) !important;
 }
 
 html[data-rak-theme] :is(

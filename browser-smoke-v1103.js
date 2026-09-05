@@ -423,6 +423,103 @@ async function runViewportSmoke(cdpPort, viewport, inlineHtml, liveRotationPaylo
   assert(bootState.homeCards > 0, `${viewport.name}: Dashboard nemá karty`);
   assert(bootState.bodyBeforePosition === 'fixed', `${viewport.name}: pevné pozadí není fixed`);
 
+  const themePropagationState = await evalInPage(client, `(() => {
+    if (!Array.isArray(window.RAK_APPEARANCE_DEFS) || typeof window.applyAppearancePreference !== 'function') {
+      return { ok: false, reason: 'chybí definice vzhledů nebo jejich aplikace' };
+    }
+    const page = document.querySelector('#home') || document.body;
+    const probe = document.createElement('div');
+    probe.id = 'rakThemePropagationProbe';
+    probe.setAttribute('aria-hidden', 'true');
+    probe.style.cssText = 'position:fixed;left:-9999px;top:-9999px;pointer-events:none';
+    probe.innerHTML = [
+      '<div class="dashboardTitle">Nadpis</div>',
+      '<div class="sectionTitle">Sekce</div>',
+      '<div class="dashboardMeta">Doplněk</div>',
+      '<div class="dashboardEyebrow">Záhlaví</div>',
+      '<div class="dashboardVersionTag">Verze</div>',
+      '<div class="dashboardHeroLine2">Doplnění hero</div>',
+      '<div class="smallText">Nápověda</div>',
+      '<button class="appMenuAction">Akce</button>',
+      '<input class="rakThemeProbeInput" value="Vstup">',
+      '<details class="rotaceMonthPicker"><summary>Výběr měsíce</summary></details>',
+      '<table class="rotTable"><thead><tr><th>Tabulka</th></tr></thead></table>',
+      '<div class="statsAbsenceLegendRow">Legenda <strong>Hodnota</strong></div>',
+      '<div class="statsOccupancyScaleLabel">Měřítko</div>',
+      '<button class="bottomNavBtn active"><span class="bottomNavLabel">Aktivní</span></button>',
+      '<button class="bottomNavBtn"><span class="bottomNavLabel">Neaktivní</span></button>'
+    ].join('');
+    page.appendChild(probe);
+    const color = (value) => {
+      const sample = document.createElement('span');
+      sample.style.color = value;
+      probe.appendChild(sample);
+      const resolved = getComputedStyle(sample).color;
+      sample.remove();
+      return resolved;
+    };
+    const read = (selector) => getComputedStyle(probe.querySelector(selector)).color;
+    const previous = document.documentElement.dataset.rakTheme || 'obsidian';
+    const results = [];
+    try {
+      window.RAK_APPEARANCE_DEFS.forEach((theme) => {
+        applyAppearancePreference(theme.id, false, { skipProfile: true, skipRemote: true });
+        const rootStyle = getComputedStyle(document.documentElement);
+        const expected = {
+          text: color(rootStyle.getPropertyValue('--text').trim()),
+          muted: color(rootStyle.getPropertyValue('--muted').trim()),
+          soft: color(rootStyle.getPropertyValue('--soft').trim()),
+          accent: color(rootStyle.getPropertyValue('--rakThemeAccentStrong').trim())
+        };
+        const colors = {
+          dashboardTitle: read('.dashboardTitle'),
+          sectionTitle: read('.sectionTitle'),
+          dashboardMeta: read('.dashboardMeta'),
+          dashboardEyebrow: read('.dashboardEyebrow'),
+          dashboardVersionTag: read('.dashboardVersionTag'),
+          dashboardHeroLine2: read('.dashboardHeroLine2'),
+          smallText: read('.smallText'),
+          appMenuAction: read('.appMenuAction'),
+          input: read('.rakThemeProbeInput'),
+          rotaceMonthPicker: read('.rotaceMonthPicker > summary'),
+          rotationTable: read('.rotTable th'),
+          statsLegend: read('.statsAbsenceLegendRow'),
+          statsLegendValue: read('.statsAbsenceLegendRow strong'),
+          statsScale: read('.statsOccupancyScaleLabel'),
+          activeNav: read('.bottomNavBtn.active'),
+          inactiveNav: read('.bottomNavBtn:not(.active)')
+        };
+        const matches = {
+          dashboardTitle: colors.dashboardTitle === expected.text,
+          sectionTitle: colors.sectionTitle === expected.text,
+          dashboardMeta: colors.dashboardMeta === expected.muted,
+          dashboardEyebrow: colors.dashboardEyebrow === expected.muted,
+          dashboardVersionTag: colors.dashboardVersionTag === expected.muted,
+          dashboardHeroLine2: colors.dashboardHeroLine2 === expected.soft,
+          smallText: colors.smallText === expected.muted,
+          appMenuAction: colors.appMenuAction === expected.text,
+          input: colors.input === expected.text,
+          rotaceMonthPicker: colors.rotaceMonthPicker === expected.text,
+          rotationTable: colors.rotationTable === expected.text,
+          statsLegend: colors.statsLegend === expected.muted,
+          statsLegendValue: colors.statsLegendValue === expected.soft,
+          statsScale: colors.statsScale === expected.muted,
+          activeNav: colors.activeNav === expected.accent,
+          inactiveNav: Boolean(colors.inactiveNav) && colors.inactiveNav !== colors.activeNav
+        };
+        results.push({ id: theme.id, matches, colors, expected });
+      });
+    } finally {
+      applyAppearancePreference(previous, false, { skipProfile: true, skipRemote: true });
+      probe.remove();
+    }
+    const failures = results.filter((result) => Object.values(result.matches).some((match) => !match));
+    return { ok: true, themes: results.length, failures };
+  })()`);
+  assert(themePropagationState.ok, `${viewport.name}: test přepínání textů vzhledů se nespustil ${JSON.stringify(themePropagationState)}`);
+  assert(themePropagationState.themes === 10, `${viewport.name}: nečekaný počet vzhledů ${JSON.stringify(themePropagationState)}`);
+  assert(themePropagationState.failures.length === 0, `${viewport.name}: text se nepropsal pro všechny vzhledy ${JSON.stringify(themePropagationState.failures)}`);
+
   const liveRotationGenerator = liveRotationPayload ? await evalInPage(client, `(() => {
     const originalRotation = JSON.parse(JSON.stringify(app.rotation || {}));
     const originalDrafts = JSON.parse(JSON.stringify(app.adminRotationPendingDrafts || {}));
