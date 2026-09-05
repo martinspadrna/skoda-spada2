@@ -1256,7 +1256,7 @@ body.lightweightMode{
   --rak-lada-blur-px:0px;
   --rak-lada-card-bg:rgba(8,14,11,.86);
   --rak-lada-card-border:rgba(255,255,255,.075);
-  --rak-lada-card-shadow:0 3px 8px rgba(0,0,0,.16);
+  --rak-lada-card-shadow:none;
   text-rendering:optimizeSpeed;
 }
 body.ladaMode .dashboardHeroCard,
@@ -1387,6 +1387,41 @@ body.lightweightMode #games .gameBoard{
   filter:none !important;
   box-shadow:var(--rak-lada-card-shadow) !important;
 }
+/* Stíny a glow textu se přepočítávají při každém scrollu a změně obsahu.
+   V Láďově režimu je nahrazuje kontrast karty a jasný okraj. */
+body.ladaMode .dashboardHeroCard,
+body.ladaMode .dashboardCard,
+body.ladaMode .card,
+body.ladaMode .tile,
+body.ladaMode .listItem,
+body.ladaMode .bbtn,
+body.ladaMode .bottomNav,
+body.ladaMode .appMenuCard,
+body.ladaMode .appMenuAction,
+body.ladaMode .calcTile,
+body.lowEndDevice .dashboardHeroCard,
+body.lowEndDevice .dashboardCard,
+body.lowEndDevice .card,
+body.lowEndDevice .tile,
+body.lowEndDevice .listItem,
+body.lowEndDevice .bbtn,
+body.lowEndDevice .bottomNav,
+body.lowEndDevice .appMenuCard,
+body.lowEndDevice .appMenuAction,
+body.lowEndDevice .calcTile,
+body.lightweightMode .dashboardHeroCard,
+body.lightweightMode .dashboardCard,
+body.lightweightMode .card,
+body.lightweightMode .tile,
+body.lightweightMode .listItem,
+body.lightweightMode .bbtn,
+body.lightweightMode .bottomNav,
+body.lightweightMode .appMenuCard,
+body.lightweightMode .appMenuAction,
+body.lightweightMode .calcTile{
+  box-shadow:none !important;
+  text-shadow:none !important;
+}
 body.ladaTurboMode .dashboardHeroCard,
 body.ladaTurboMode .dashboardCard,
 body.ladaTurboMode .card,
@@ -1468,4 +1503,80 @@ body.lowEndDevice .tttOverlay{
   -webkit-backdrop-filter:none !important;
   backdrop-filter:none !important;
   background:rgba(4,8,6,.82) !important;
+}
+
+/* Vizuální orientace v kalkulačkách: výrobní index musí být poznat na první pohled. */
+html body #brusy.calcPage .bbtn.brusIndexBtn.ad{
+  background:linear-gradient(145deg, rgba(49,166,255,.88), rgba(13,63,127,.96)) !important;
+  border-color:rgba(150,219,255,.96) !important;
+  color:#f5fbff !important;
+  text-shadow:0 1px 1px rgba(0,30,72,.75), 0 0 14px rgba(180,229,255,.62) !important;
+  box-shadow:0 10px 26px rgba(0,0,0,.28), 0 0 24px rgba(50,169,255,.42), inset 0 1px 0 rgba(255,255,255,.34) !important;
+}
+html body #brusy.calcPage .bbtn.brusIndexBtn.ae{
+  background:linear-gradient(145deg, rgba(50,236,132,.86), rgba(10,91,48,.97)) !important;
+  border-color:rgba(153,255,195,.94) !important;
+  color:#f4fff7 !important;
+  text-shadow:0 1px 1px rgba(0,60,27,.78), 0 0 14px rgba(187,255,213,.58) !important;
+  box-shadow:0 10px 26px rgba(0,0,0,.28), 0 0 24px rgba(50,235,132,.40), inset 0 1px 0 rgba(255,255,255,.32) !important;
+}
+html body #brusy.calcPage .bbtn.brusIndexBtn.ah{
+  background:linear-gradient(145deg, rgba(255,183,67,.90), rgba(137,65,11,.98)) !important;
+  border-color:rgba(255,223,150,.94) !important;
+  color:#fffaf0 !important;
+  text-shadow:0 1px 1px rgba(84,37,0,.80), 0 0 14px rgba(255,226,157,.58) !important;
+  box-shadow:0 10px 26px rgba(0,0,0,.28), 0 0 24px rgba(255,171,53,.40), inset 0 1px 0 rgba(255,255,255,.34) !important;
+}
+html body #brusy.calcPage .bbtn.brusFreeIndexBtn.adv{
+  background:linear-gradient(145deg, rgba(68,151,224,.62), rgba(12,42,80,.92)) !important;
+  border-color:rgba(133,199,255,.78) !important;
+  color:#eaf7ff !important;
+}
+html body #brusy.calcPage .bbtn.brusFreeIndexBtn.aev{
+  background:linear-gradient(145deg, rgba(67,190,111,.60), rgba(11,68,37,.92)) !important;
+  border-color:rgba(139,235,171,.74) !important;
+  color:#edfff2 !important;
+}
+html body #brusy.calcPage .bbtn.brusIndexBtn.activeIndex,
+html body #brusy.calcPage .bbtn.brusIndexBtn.activeChoice,
+html body #brusy.calcPage .bbtn.brusFreeIndexBtn.activeIndex,
+html body #brusy.calcPage .bbtn.brusFreeIndexBtn.activeChoice{
+  outline:2px solid rgba(255,255,255,.94) !important;
+  outline-offset:2px !important;
+  filter:saturate(1.18) brightness(1.10) !important;
+}
+
+#korekce-frezky .calcFhbPresetBtn--afag{
+  background:linear-gradient(135deg, rgba(43,151,255,.58), rgba(42,231,132,.48)), rgba(7,37,52,.91) !important;
+  border-color:rgba(113,222,220,.82) !important;
+  box-shadow:0 10px 26px rgba(0,0,0,.26), 0 0 22px rgba(67,184,255,.25), inset 0 1px 0 rgba(255,255,255,.22) !important;
+}
+#korekce-frezky .calcFhbPresetBtn--afag.calcFhbPresetBtn--volne{
+  background:linear-gradient(135deg, rgba(32,111,188,.48), rgba(32,156,92,.40)), rgba(6,28,40,.92) !important;
+}
+#korekce-frezky .calcFhbPresetBtn--ah{
+  background:linear-gradient(135deg, rgba(255,168,51,.62), rgba(171,76,18,.51)), rgba(53,29,9,.92) !important;
+  border-color:rgba(255,203,112,.86) !important;
+  box-shadow:0 10px 26px rgba(0,0,0,.26), 0 0 22px rgba(255,169,55,.25), inset 0 1px 0 rgba(255,255,255,.22) !important;
+}
+#korekce-frezky .calcFhbPresetBtn--ah.calcFhbPresetBtn--volne{
+  background:linear-gradient(135deg, rgba(191,112,40,.49), rgba(113,49,13,.50)), rgba(45,24,8,.93) !important;
+}
+#korekce-frezky .calcFhbPresetBtn .fhbIndexAf{
+  color:#71c7ff !important;
+  text-shadow:0 0 14px rgba(113,199,255,.88) !important;
+}
+#korekce-frezky .calcFhbPresetBtn .fhbIndexAg{
+  color:#7dffad !important;
+  text-shadow:0 0 14px rgba(125,255,173,.86) !important;
+}
+#korekce-frezky .calcFhbPresetBtn .fhbIndexAh{
+  color:#ffd080 !important;
+  text-shadow:0 0 14px rgba(255,208,128,.88) !important;
+}
+#korekce-frezky .calcFhbPresetBtn.activeFhbPreset,
+#korekce-frezky .calcFhbPresetBtn.activeChoice{
+  outline:2px solid rgba(255,255,255,.92) !important;
+  outline-offset:2px !important;
+  filter:saturate(1.18) brightness(1.10) !important;
 }

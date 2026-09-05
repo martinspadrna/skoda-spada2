@@ -2036,3 +2036,17 @@ html body:not(.lightweightMode):not(.lowEndDevice) .foodScheduleOverlay.isVisibl
     min-height:126px !important;
   }
 }
+/* RaK 1.2 (1.156) – poslední dashboardová vrstva musí zachovat odlehčení
+   Láďova režimu i po výraznějším vzhledu vybraném v aplikaci. */
+html body.ladaMode #home .dashboardHeroCard,
+html body.ladaMode #home .dashboardCard,
+html body.ladaMode #home .tile,
+html body.lowEndDevice #home .dashboardHeroCard,
+html body.lowEndDevice #home .dashboardCard,
+html body.lowEndDevice #home .tile,
+html body.lightweightMode #home .dashboardHeroCard,
+html body.lightweightMode #home .dashboardCard,
+html body.lightweightMode #home .tile{
+  box-shadow:none !important;
+  text-shadow:none !important;
+}

@@ -45,6 +45,8 @@ const stylesLayoutCss = read('styles-layout.css');
 const browserSmokeJs = read('browser-smoke-v1103.js');
 const rotationAbsenceCalendarApiJs = read('api/rotation-absence-calendar.js');
 const rotationAbsenceCalendarEdgeTs = read('supabase/functions/rak-absence-calendar/index.ts');
+const vacationReportJs = read('rak-vacation-report.js');
+const appMenuJs = read('app-menu.js');
 const dashboardCss = `${dashboardFitCss}
 ${dashboardPolishCss}`;
 const styleHrefMatches = Array.from(indexHtml.matchAll(/<link[^>]+rel=["']stylesheet["'][^>]+href=["']([^"']+)["'][^>]*>/g));
@@ -1163,6 +1165,9 @@ function assertLadaSmoothPerformanceContractV1144() {
   assertIncludes(stylesReleasePolishCss, 'backdrop-filter:none !important', 'Láďův režim musí vypínat těžký blur');
   assertIncludes(stylesReleasePolishCss, 'transition:none !important', 'Láďův režim musí vypínat přechody');
   assertIncludes(stylesReleasePolishCss, 'animation:none !important', 'Láďův režim musí vypínat animace');
+  assertIncludes(stylesReleasePolishCss, 'box-shadow:none !important', 'Láďův režim musí vypínat nákladné stíny karet');
+  assertIncludes(ui, 'homeRefreshLadaRecoverySkips', 'Láďův režim má druhý dashboard paint přeskočit, když je Home už hotová');
+  assertIncludes(ui, 'if (!needsRecovery) return;', 'Láďův režim má obnovovat Home jen při opravdu prázdném renderu');
 }
 
 function assertStatsPressMachineSplitContractV1123() {
@@ -1254,9 +1259,10 @@ assertIncludes(ui, 'if (i === 0) html += "<th class=\'noteDateCell\'>Datum</th><
 assertNotIncludes(ui, "emptyCell noteDateCell", 'Admin přehled absencí nesmí opakovat prázdné datum/směnu sloupce');
 assertIncludes(ui, 'function adminRotationFindShiftForAbsenceDate', 'Admin absence musí umět dopočítat směnu z rozpisu podle zadaného data');
 assertIncludes(ui, 'month.notes = adminRotationSortNotes(notes, month)', 'Admin absence se po uložení musí řadit podle data');
-assertIncludes(stylesLayoutCss, '.noteShiftCell{width:68px;', 'Sloupec směny absence musí být rozšířený pro čitelnost');
-assertIncludes(stylesLayoutCss, '.notePersonCell{min-width:24px;}', 'Sloupec jména absence musí zůstat úsporný');
-assertIncludes(stylesLayoutCss, '.noteReasonCell{width:58px;', 'Sloupec důvodu absence musí být širší než dříve');
+assertIncludes(stylesLayoutCss, '.noteDateCell{width:12%;', 'Datum absence musí zůstat úsporné');
+assertIncludes(stylesLayoutCss, '.noteShiftCell{width:22%;', 'Sloupec směny absence musí mít dost místa pro čitelnost');
+assertIncludes(stylesLayoutCss, '.notePersonCell{width:45%;', 'Sloupec jména absence musí mít pevně omezený podíl');
+assertIncludes(stylesLayoutCss, '.noteReasonCell{width:21%;', 'Sloupec důvodu absence musí mít dost místa pro čitelnost');
 assertIncludes(rotaceJs, 'buildStatsForYear(year, { maxMonth })', 'Nýtování a úklid v exportu musí být omezené exportovaným měsícem');
 assertIncludes(ui, 'yearHardMachineStats', 'Generátor musí při nýtování zohledňovat roční počty před cílovým měsícem');
 assertIncludes(appearanceThemeJs, '"id": "light-brown"', 'Musí existovat základní světlý hnědý theme');
@@ -1272,6 +1278,11 @@ assertIncludes(appearanceThemeJs, '"id": "light-zigzag"', 'Musí existovat zákl
   assertNotIncludes(coreJs, '"4-3", "4-6"', 'Velikonocni svatky nesmi zustat ve fixnim seznamu startu smen.');
   assertIncludes(coreJs, 'const vacationPeriod = typeof getVacationPeriodForDate', 'getSpecialWorkInfo musi blokovat praci behem nastavene dovolene/odstavky');
   assertIncludes(coreJs, 'function getVacationCountdownTeamShiftCount', 'Odpočet dovolené musí počítat zbývající směny D do cílového období');
+  assertIncludes(vacationReportJs, 'data-vacation-report-action="copy"', 'Report dovolené musí mít samostatné tlačítko pro kopírování');
+  assertIncludes(vacationReportJs, 'data-vacation-report-action="share"', 'Report dovolené musí mít samostatné systémové sdílení');
+  assertIncludes(vacationReportJs, 'data-vacation-report-action="whatsapp"', 'Report dovolené musí mít samostatné tlačítko WhatsApp');
+  assertIncludes(appMenuJs, 'data-admin-action="vacation-report"', 'Report dovolené musí být vykreslený přímo spolu s Administrací');
+  assertIncludes(appMenuJs, 'data-rak-shift-report-entry="1"', 'Report směny musí být vykreslený přímo spolu s Administrací');
   assertIncludes(coreJs, 'function countVacationCountdownRotationScheduledShifts', 'Odpočet směn D musí umět pro vytvořený měsíc použít skutečné řádky rozpisu');
   assertIncludes(coreJs, 'vacationCountdownMonthHasSchedule(monthKey)', 'Odpočet směn D musí přepnout z teoretického cyklu na rozpis, když měsíc existuje');
   assertIncludes(coreJs, 'candidate.end instanceof Date', 'Počet směn D se musí po započtení posouvat podle konce směny, ne zůstat uvnitř aktivní směny');

@@ -237,27 +237,65 @@
     return promise;
   }
 
-  async function share(root) {
+  function getReportText(root) {
     const select = root && root.querySelector('.rakVacationReportMonth');
-    const text = reportText(select && select.value);
+    return reportText(select && select.value);
+  }
+
+  async function copy(root) {
+    const text = getReportText(root);
+    if (!text) return false;
+    try {
+      await navigator.clipboard.writeText(text);
+      setStatus(root, 'Report je zkopírovaný do schránky.');
+      return true;
+    } catch (err) {
+      const area = document.createElement('textarea');
+      area.value = text;
+      area.setAttribute('readonly', '');
+      area.style.position = 'fixed';
+      area.style.opacity = '0';
+      document.body.appendChild(area);
+      area.select();
+      try {
+        const copied = document.execCommand('copy');
+        setStatus(root, copied ? 'Report je zkopírovaný do schránky.' : 'Kopírování se nepodařilo.');
+        return copied;
+      } catch (copyErr) {
+        setStatus(root, 'Kopírování se nepodařilo.');
+        return false;
+      } finally {
+        area.remove();
+      }
+    }
+  }
+
+  async function share(root) {
+    const text = getReportText(root);
     try {
       if (navigator.share) {
         await navigator.share({ title: 'RaK – report dovolených', text });
         setStatus(root, 'Report je připravený k odeslání.');
         return;
       }
-      await navigator.clipboard.writeText(text);
-      setStatus(root, 'Report je zkopírovaný do schránky – můžeš ho poslat přes WhatsApp nebo jinou aplikaci.');
+      await copy(root);
     } catch (err) {
       setStatus(root, 'Odeslání bylo zrušeno nebo se nepovedlo.');
     }
+  }
+
+  function whatsapp(root) {
+    const text = getReportText(root);
+    if (!text) return;
+    window.open('https://wa.me/?text=' + encodeURIComponent(text), '_blank', 'noopener,noreferrer');
+    setStatus(root, 'Otevírám WhatsApp…');
   }
 
   function ensureStyles() {
     if (document.getElementById('rakVacationReportStyles')) return;
     const style = document.createElement('style');
     style.id = 'rakVacationReportStyles';
-    style.textContent = '.rakVacationReport{display:grid;gap:14px}.rakVacationReportContext{display:grid;gap:5px;max-width:250px;font-size:13px}.rakVacationReportMonth{box-sizing:border-box;width:100%;min-height:40px;border:1px solid rgba(255,255,255,.12);border-radius:10px;background:rgba(0,0,0,.22);color:inherit;padding:8px 10px}.rakVacationReportPreview{white-space:pre-wrap;border:1px solid rgba(255,255,255,.09);border-radius:12px;padding:12px;background:rgba(0,0,0,.18);font-family:inherit;font-size:13px}.rakVacationReportActions{display:flex;flex-wrap:wrap;gap:8px}.rakVacationReportStatus{min-height:18px;font-size:13px}';
+    style.textContent = '.rakVacationReport{display:grid;gap:14px}.rakVacationReportContext{display:grid;gap:5px;max-width:250px;font-size:13px}.rakVacationReportMonth{box-sizing:border-box;width:100%;min-height:40px;border:1px solid rgba(255,255,255,.12);border-radius:10px;background:rgba(0,0,0,.22);color:inherit;padding:8px 10px}.rakVacationReportPreview{white-space:pre-wrap;border:1px solid rgba(255,255,255,.09);border-radius:12px;padding:12px;background:rgba(0,0,0,.18);font-family:inherit;font-size:13px}.rakVacationReportActions{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px}.rakVacationReportActions [data-vacation-report-action="copy"],.rakVacationReportActions [data-vacation-report-action="close"]{grid-column:1/-1}.rakVacationReportActions [data-vacation-report-action="whatsapp"]{background:rgba(37,211,102,.14);border-color:rgba(77,221,130,.28)}.rakVacationReportStatus{min-height:18px;font-size:13px}';
     document.head.appendChild(style);
   }
 
@@ -274,12 +312,26 @@
       '<label class="rakVacationReportContext">Měsíc<select class="rakVacationReportMonth">',
       months.map((key) => '<option value="' + escapeHtml(key) + '"' + (key === selected ? ' selected' : '') + '>' + escapeHtml(monthLabel(key)) + '</option>').join(''),
       '</select></label><section><div class="appMenuSubTitle">Náhled reportu</div><div class="rakVacationReportPreview"></div></section>',
-      '<div class="rakVacationReportActions"><button type="button" class="appMenuAction" data-vacation-report-action="calendar">Načíst z kalendáře</button><button type="button" class="appMenuAction" data-vacation-report-action="preview">Obnovit náhled</button><button type="button" class="appMenuAction isActive" data-vacation-report-action="send">Sdílet / kopírovat</button><button type="button" class="appMenuAction" data-vacation-report-action="close">Zpět do Adminu</button></div>',
+      '<div class="rakVacationReportActions"><button type="button" class="appMenuAction" data-vacation-report-action="calendar">Načíst z kalendáře</button><button type="button" class="appMenuAction" data-vacation-report-action="preview">Obnovit náhled</button><button type="button" class="appMenuAction" data-vacation-report-action="copy">Zkopírovat report</button><button type="button" class="appMenuAction isActive" data-vacation-report-action="share">Sdílet</button><button type="button" class="appMenuAction" data-vacation-report-action="whatsapp">WhatsApp</button><button type="button" class="appMenuAction" data-vacation-report-action="close">Zpět do Adminu</button></div>',
       '<div class="rakVacationReportStatus" aria-live="polite"></div></div>'
     ].join('');
     const root = body.querySelector('#rakVacationReport');
     renderPreview(root);
     void loadCalendar(root, false);
+  }
+
+  function bindAdminEntry(button, body) {
+    if (!button || button.dataset.rakVacationReportBound === '1') return;
+    button.dataset.rakVacationReportBound = '1';
+    button.addEventListener('click', (event) => {
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      void ensureAdminAccess().then((allowed) => {
+        if (!allowed) return;
+        body.dataset.rakVacationReportOpen = '1';
+        build();
+      });
+    });
   }
 
   function injectAdminEntry() {
@@ -291,6 +343,7 @@
       old.hidden = false;
       old.disabled = false;
       old.setAttribute('aria-hidden', 'false');
+      bindAdminEntry(old, body);
       return;
     }
     const adminButton = body.querySelector('[data-menu-action="admin"]');
@@ -299,13 +352,7 @@
     button.type = 'button'; button.className = 'appMenuAction isActive';
     button.dataset.adminAction = 'vacation-report'; button.textContent = 'Report dovolené';
     adminButton.insertAdjacentElement('afterend', button);
-    button.addEventListener('click', () => {
-      void ensureAdminAccess().then((allowed) => {
-        if (!allowed) return;
-        body.dataset.rakVacationReportOpen = '1';
-        build();
-      });
-    });
+    bindAdminEntry(button, body);
   }
 
   function bindBody() {
@@ -324,7 +371,9 @@
       const action = event.target.closest('[data-vacation-report-action]')?.dataset.vacationReportAction;
       if (action === 'preview') renderPreview(root);
       if (action === 'calendar') void loadCalendar(root, true);
-      if (action === 'send') void share(root);
+      if (action === 'copy') void copy(root);
+      if (action === 'share') void share(root);
+      if (action === 'whatsapp') whatsapp(root);
       if (action === 'close') { body.dataset.rakVacationReportOpen = '0'; if (typeof window.renderAdminMenuBody === 'function') window.renderAdminMenuBody(body, 'home'); }
     });
   }

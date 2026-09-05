@@ -2,7 +2,7 @@
 (function () {
   'use strict';
 
-  const DEV_BUILD = 'DEV 2026-09-05.40';
+  const DEV_BUILD = 'DEV 2026-09-05.41';
   const STYLE_ID = 'rak-shift-report-entry-fix-style-v4';
   const ENTRY_ATTR = 'data-rak-shift-report-entry';
   const PORTRAIT_OVERLAY_ID = 'rakPortraitOnlyOverlay';
@@ -135,6 +135,7 @@
     const body = document.getElementById('appMenuBody');
     if (!body || body.dataset.rakShiftReportOpen === '1') return;
     const adminButton = body.querySelector('[data-menu-action="admin"]');
+    const vacationReportButton = body.querySelector('[data-admin-action="vacation-report"]');
     const nativeReportButton = body.querySelector('[data-admin-action="shift-report"]');
     let button = body.querySelector('[' + ENTRY_ATTR + '="1"]');
     const visible = !!adminButton && shouldShowAdminTools();
@@ -156,7 +157,7 @@
     // Původní skrytý vstup do reportu spravuje rak-shift-report-share.js.
     // Kotvíme náš stabilní vstup až ZA něj. Tím se oba MutationObservery
     // nepřetahují o pozici hned za tlačítkem Administrace a nezablokují UI.
-    const anchor = nativeReportButton || adminButton;
+    const anchor = nativeReportButton || vacationReportButton || adminButton;
     if (anchor && anchor.nextElementSibling !== button) anchor.insertAdjacentElement('afterend', button);
   }
 

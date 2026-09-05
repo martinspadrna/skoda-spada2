@@ -423,6 +423,35 @@ async function runViewportSmoke(cdpPort, viewport, inlineHtml, liveRotationPaylo
   assert(bootState.homeCards > 0, `${viewport.name}: Dashboard nemá karty`);
   assert(bootState.bodyBeforePosition === 'fixed', `${viewport.name}: pevné pozadí není fixed`);
 
+  const ladaModeState = await evalInPage(client, `(async () => {
+    const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+    if (typeof loadUiPrefs !== 'function' || typeof applyUiPrefs !== 'function' || typeof getLadaPerformanceHealth !== 'function') {
+      return { ok: false, reason: 'lada-helpers-missing' };
+    }
+    const previous = loadUiPrefs();
+    try {
+      applyUiPrefs(Object.assign({}, previous, { lightweight: true, lightweightManual: true }));
+      await wait(40);
+      const card = document.querySelector('.dashboardCard, .dashboardHeroCard, .tile');
+      const style = card ? getComputedStyle(card) : null;
+      const health = getLadaPerformanceHealth();
+      return {
+        ok: !!card,
+        active: health.active,
+        healthOk: health.ok,
+        litePaint: document.documentElement.dataset.rakLadaPaintLite,
+        blur: style ? String(style.backdropFilter || style.webkitBackdropFilter || '') : '',
+        transition: style ? String(style.transitionDuration || '') : '',
+        animation: style ? String(style.animationDuration || '') : '',
+        shadow: style ? String(style.boxShadow || '') : ''
+      };
+    } finally {
+      applyUiPrefs(previous);
+    }
+  })()`);
+  assert(ladaModeState.ok && ladaModeState.active && ladaModeState.healthOk && ladaModeState.litePaint === 'yes', `${viewport.name}: Láďův režim se nezapnul správně ${JSON.stringify(ladaModeState)}`);
+  assert(!/blur\(/i.test(ladaModeState.blur) && /^0s(?:,|$)/.test(ladaModeState.transition) && /^0s(?:,|$)/.test(ladaModeState.animation) && ladaModeState.shadow === 'none', `${viewport.name}: Láďův režim ponechal těžké vykreslování ${JSON.stringify(ladaModeState)}`);
+
   const loginMascotState = await evalInPage(client, `(async () => {
     const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
     const savedLookup = window.rakUserProfileLookup;

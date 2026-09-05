@@ -856,13 +856,23 @@ function scheduleHomeRefresh(reason = 'home-refresh') {
     }
   };
 
-  // Láďův režim: každý běh je plné přestavění dashboardu, na slabém telefonu
-  // stačí jeden okamžitý paint + jedno pozdější potvrzení místo sedmi běhů.
+  // Láďův režim: každý běh je plné přestavění dashboardu. Na slabém telefonu
+  // proto uděláme jeden paint v nejbližším snímku; pozdější běh je pouze
+  // pojistka pro případ, že by Home po startu opravdu zůstala prázdná.
   const ladaLite = !!(document.body && document.body.classList && document.body.classList.contains('ladaMode'));
   if (ladaLite) {
     if (typeof requestAnimationFrame === 'function') requestAnimationFrame(() => run('raf-1'));
     else setTimeout(() => run('timeout-0'), 0);
-    setTimeout(() => { run('timeout-900'); finish(); }, 900);
+    setTimeout(() => {
+      const needsRecovery = typeof homeLooksUnpainted !== 'function' || homeLooksUnpainted();
+      if (needsRecovery) {
+        bumpDataOptimizationCounter('homeRefreshLadaRecoveryRuns');
+        run('recovery-900');
+      } else {
+        bumpDataOptimizationCounter('homeRefreshLadaRecoverySkips');
+      }
+      finish();
+    }, 900);
     return true;
   }
 

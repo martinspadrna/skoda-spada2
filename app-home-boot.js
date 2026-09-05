@@ -36,6 +36,11 @@ function runRakHomeBootRefresh() {
   const keepPingingHome = () => {
     let tries = 0;
     const tick = () => {
+      // Obnova má sloužit jen pro výjimečný stav po startu. Původní varianta
+      // přestavěla Home jednou i tehdy, když už byla hotová, což bylo na
+      // slabším telefonu při spuštění zbytečně znatelné.
+      const needsRecovery = typeof homeLooksUnpainted === "function" ? homeLooksUnpainted() : false;
+      if (!needsRecovery) return;
       tries += 1;
       runHomeRefresh();
       const stillBlank = typeof homeLooksUnpainted === "function" ? homeLooksUnpainted() : false;
@@ -50,8 +55,9 @@ function runRakHomeBootRefresh() {
   // takže pevná kaskáda dalších plných refreshů je na slabém telefonu zbytečná zátěž.
   const ladaLite = !!(document.body && document.body.classList && document.body.classList.contains("ladaMode"));
   if (ladaLite) {
-    if (typeof requestAnimationFrame === "function") requestAnimationFrame(runHomeRefresh);
-    setTimeout(keepPingingHome, 60);
+    // scheduleHomeRefresh už první paint zařadila do requestAnimationFrame.
+    // Zde necháváme jen opožděnou kontrolu prázdného renderu.
+    setTimeout(keepPingingHome, 140);
     return;
   }
 
@@ -70,6 +76,12 @@ function runRakLateHomeBootRefresh() {
   try {
     const activePage = document.querySelector(".page.active")?.id || "";
     if (window.__rotaceManualNavLocked || (window.__rotaceHomeBootLocked && activePage !== "home") || (typeof app !== "undefined" && app.homeBootSuppressed && activePage !== "home") || (window.__rotaceUserNavigated && activePage !== 'home')) {
+      return;
+    }
+    const ladaLite = !!(document.body && document.body.classList && document.body.classList.contains("ladaMode"));
+    // Pozdní refresh je fallback pro normální start. V Láďově režimu by
+    // zbytečně přestavěl již viditelnou Home podruhé a způsobil krátké škubnutí.
+    if (ladaLite && typeof homeLooksUnpainted === "function" && !homeLooksUnpainted()) {
       return;
     }
     if (typeof showPage === "function") showPage("home");

@@ -35,9 +35,9 @@
     width: 100%;}.soustruhModePanel, .soustruhResultCard{margin-top: 8px;}.statsSummary{grid-template-columns: 1fr 1fr;
     gap: 8px;}.statsSummary .tile{min-height: 68px;
     font-size: 14px;}.statsTable th, .statsTable td, .noteTable th, .noteTable td{font-size: 12px;
-    padding: 6px 4px;}table.rotTable{min-width: 384px;}.noteDateCell{width:36px;
-    min-width:36px;}.notePersonCell{min-width:22px;}.noteShiftCell{width:64px;
-    min-width:64px;}.noteReasonCell{width:54px;min-width:54px;max-width:68px;}}
+    padding: 6px 4px;}table.rotTable{min-width: 384px;}.noteDateCell{width:12%;
+    min-width:0;}.notePersonCell{width:45%;min-width:0;}.noteShiftCell{width:22%;
+    min-width:0;}.noteReasonCell{width:21%;min-width:0;max-width:none;}}
 @media (max-width: 700px){.dashboardAppTitle{font-size: 23px;}}
 @media (max-width: 700px){.page{width:min(100%, 430px);}.dashboardShell{padding:14px;
     border-radius:28px;}.dashboardAppTitle{font-size:22px;}.dashboardHeroCard{padding-left:58px;}.dashboardCard{min-height:98px;

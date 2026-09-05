@@ -97,6 +97,46 @@ body.ladaMode #menu .adminUsageMetric{backdrop-filter:none !important;-webkit-ba
   text-decoration:underline !important;
 }
 
+/* Nastavení: servisní volby nejsou běžné uživatelské nastavení; výkon zůstává dostupný, ale neruší obsah. */
+#appMenuBody .rakDevicePerfCard{
+  padding:0 !important;
+  overflow:hidden !important;
+}
+#appMenuBody .rakDevicePerfCard > summary{
+  display:flex !important;
+  align-items:center !important;
+  justify-content:space-between !important;
+  gap:10px !important;
+  min-height:48px !important;
+  margin:0 !important;
+  padding:0 13px !important;
+  list-style:none !important;
+  cursor:pointer !important;
+}
+#appMenuBody .rakDevicePerfCard > summary::-webkit-details-marker{display:none !important;}
+#appMenuBody .rakDevicePerfCard > summary.appMenuCardTitle::after{
+  content:'⌄' !important;
+  display:inline-block !important;
+  margin-left:2px !important;
+  color:var(--rakThemeAccent,#7CFF7C) !important;
+  font-size:17px !important;
+  line-height:1 !important;
+  transition:transform .18s ease !important;
+}
+#appMenuBody .rakDevicePerfCard:not([open]) > summary::after{transform:rotate(-90deg) !important;}
+#appMenuBody .rakDevicePerfSummary{
+  margin-left:auto !important;
+  color:var(--rakThemeAccent,#7CFF7C) !important;
+  font-size:11px !important;
+  font-weight:800 !important;
+  white-space:nowrap !important;
+}
+#appMenuBody .rakDevicePerfBody{
+  padding:0 13px 13px !important;
+  border-top:1px solid rgba(255,255,255,.08) !important;
+}
+#appMenuBody .rakDevicePerfCard:not([open]){min-height:48px !important;}
+
 
 /* RaK 1.2 (1.146) – Přehled připojení jako rozklikávací profily.
    Iniciály v avataru mají vlastní summary text wrapper, aby zůstaly přesně uprostřed ikonky. */

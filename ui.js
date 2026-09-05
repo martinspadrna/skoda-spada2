@@ -167,8 +167,9 @@ function buildRakDevicePerformanceSettingsHtml() {
     ? ('Skóre ' + String(probe.score || 0) + '/100 · ' + String(probe.avgFps || '—') + ' FPS · ' + escapeHtml(formatRakProbeAge(probe)))
     : 'Ještě neměřeno';
   return [
-    '<div class="appMenuCard appMenuSettingsCard rakDevicePerfCard">',
-    '  <div class="appMenuCardTitle">Výkon zařízení</div>',
+    '<details class="appMenuCard appMenuSettingsCard rakDevicePerfCard">',
+    '  <summary class="appMenuCardTitle">Výkon a plynulost <span class="rakDevicePerfSummary">' + escapeHtml(status.manual ? 'ručně' : 'automaticky') + '</span></summary>',
+    '  <div class="rakDevicePerfBody">',
     '  <div class="appMenuText rakDevicePerfText">',
     '    <div>Režim: <b>' + escapeHtml(profileText) + '</b>' + (status.manual ? ' · ručně' : ' · auto') + '</div>',
     '    <div class="smallText">' + (status.lowEndDetected ? 'Slabší zařízení · ' : 'Bez omezení · ') + escapeHtml(probeText) + '</div>',
@@ -178,7 +179,8 @@ function buildRakDevicePerformanceSettingsHtml() {
     '    <button type="button" class="appMenuAction" data-menu-action="device-performance-auto">Automatika</button>',
     '    <button type="button" class="appMenuAction rakLadaModeBtn' + (status.active ? ' isActive' : '') + '" data-ui-pref="lightweight">Láďův režim</button>',
     '  </div>',
-    '</div>'
+    '  </div>',
+    '</details>'
   ].join('');
 }
 

@@ -5534,7 +5534,6 @@ function openAppMenu(view) {
       renderBugReportMenuBody(body);
     } else if (v === 'settings') {
       bindAppMenuHandlers(body);
-      const prefs = loadUiPrefs();
       const profileCard = buildGamesProfileSettingsHtml();
       const privacyCard = [
         '<details class="appMenuCard appMenuSettingsCard">',
@@ -5550,16 +5549,6 @@ function openAppMenu(view) {
         profileCard,
         privacyCard,
         performanceCard,
-        '<div class="appMenuCard appMenuSettingsCard appMenuAppSettingsCard">',
-        '  <div class="appMenuCardTitle">Nastavení aplikace</div>',
-        '  <div class="appMenuSettingsList appMenuSettingsGrid">',
-        '    <button type="button" class="appMenuAction appMenuSettingBtn" data-ui-pref="compact">' + (prefs.compact ? '✓ ' : '') + 'Kompaktní</button>',
-        '    <button type="button" class="appMenuAction appMenuSettingBtn" data-menu-action="clear-cache">Vyčistit cache</button>',
-        '    <button type="button" class="appMenuAction appMenuSettingBtn" data-menu-action="app-diagnostics">Diagnostika</button>',
-        '    <button type="button" class="appMenuAction appMenuSettingBtn" data-ui-reset="1">Výchozí</button>',
-        '    <button type="button" class="appMenuAction appMenuSettingBtn appMenuDangerBtn" data-menu-action="reset-state">Smazat data</button>',
-        '  </div>',
-        '</div>',
         themeCards,
         '<button type="button" class="appMenuAction appMenuBack appMenuStandaloneBack" data-menu-back="1">Zpět</button>'
       ].join('');
@@ -5807,7 +5796,9 @@ function openAppMenu(view) {
         '  <button type="button" class="appMenuAction" data-menu-action="about">O aplikaci</button>',
         '  <button type="button" class="appMenuAction" data-menu-action="contact">Kontakt</button>',
         '  <button type="button" class="appMenuAction" data-menu-action="bug-report">Pošli mi chybu</button>',
-        (appMenuShouldShowAdminEntry() ? '  <button type="button" class="appMenuAction isActive" data-menu-action="admin">Administrace</button>' : ''),
+        (appMenuShouldShowAdminEntry() ? '  <button type="button" class="appMenuAction isActive" data-menu-action="admin">Administrace</button>' +
+          '  <button type="button" class="appMenuAction isActive" data-admin-action="vacation-report">Report dovolené</button>' +
+          '  <button type="button" class="appMenuAction isActive" data-rak-shift-report-entry="1">Report směny</button>' : ''),
         '</div>'
       ].join('');
     }
