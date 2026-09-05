@@ -439,6 +439,8 @@ function buildStatsForYear(year, options = {}) {
     occupancy: { totalSlots: 0, occupiedSlots: 0, freeSlots: 0, percent: 0 },
     machineCleanLeaders: {},
     machineTopWorkers: {},
+    mfkSoloCounts: {},
+    mskPairCounts: {},
     includedMonthKeys: []
   };
 
@@ -507,6 +509,33 @@ function buildStatsForYear(year, options = {}) {
         const shouldSplitPress = shouldStatsSplitPressMachines(monthKey, parsedDate);
 
         const rowNames = new Set();
+
+        // Dvojice frézek i soustruhy se ve statistikách počítají po směně,
+        // ne po jednotlivé obsazené buňce. Díky tomu člověk na obou frézkách
+        // dostane jeden zápočet a dva lidé na soustruhu po jednom zápočtu.
+        if (section === 'soft') {
+          const machineCells = new Map();
+          (sec.machines || []).forEach((machine, idx) => {
+            machineCells.set(String(machine || '').trim(), String((row.cells || [])[idx] || '').trim());
+          });
+
+          const mfkPeople = new Set(['MFKF06', 'MFKF10']
+            .map(machine => machineCells.get(machine) || '')
+            .filter(name => name && knownStatNames.has(name)));
+          if (mfkPeople.size === 1) {
+            const [name] = Array.from(mfkPeople);
+            stats.mfkSoloCounts[name] = (Number(stats.mfkSoloCounts[name]) || 0) + 1;
+          }
+
+          const mskPeople = new Set(['MSKC01', 'MSKC03', 'MSKC04']
+            .map(machine => machineCells.get(machine) || '')
+            .filter(name => name && knownStatNames.has(name)));
+          if (mskPeople.size === 2) {
+            mskPeople.forEach(name => {
+              stats.mskPairCounts[name] = (Number(stats.mskPairCounts[name]) || 0) + 1;
+            });
+          }
+        }
 
         (row.cells || []).forEach((cell, idx) => {
           const name = String(cell || "").trim();
@@ -1133,12 +1162,15 @@ function renderStatsNameViewNodes(person, year, stats, topWork, topClean) {
   return [title].concat(scopeNote ? [scopeNote] : [], [summary, wrap]);
 }
 
-function renderStatsMachineViewNodes(machine, leaderNames, topWorkersText) {
+function renderStatsMachineViewNodes(machine, leaderNames, topWorkersText, specialRankTitle, specialRankText) {
   const title = createStatsTextNode('div', 'sectionTitle', machine);
   const summary = document.createElement('div');
   summary.className = 'statsSummary';
   summary.appendChild(createStatsSummaryTile('Letos nejvíc uklízeli', leaderNames, 'statsMultiLine statsSummaryValueCompact'));
   summary.appendChild(createStatsSummaryTile('Nejvíce tu byl', topWorkersText, 'statsMultiLine statsSummaryValueCompact'));
+  if (specialRankTitle) {
+    summary.appendChild(createStatsSummaryTile(specialRankTitle, specialRankText || '—', 'statsMultiLine statsSummaryValueCompact'));
+  }
   return [title, summary];
 }
 
@@ -1299,13 +1331,27 @@ function renderStatsPanel() {
     const topWorkersText = topWorkers.length
       ? topWorkers.map(([name, value], index) => `${index + 1}. ${name} (${formatMachineCount(value, machine)})`).join('\n')
       : '—';
+    const specialRanks = machine === 'MFK'
+      ? stats.mfkSoloCounts
+      : (machine === 'MSK' ? stats.mskPairCounts : null);
+    const specialRankTitle = machine === 'MFK'
+      ? 'Nejvíce byl sám na obou frézkách'
+      : (machine === 'MSK' ? 'Ve 2 lidech na soustruhu nejvíce byl' : '');
+    const specialRankText = specialRanks
+      ? Object.entries(specialRanks)
+        .filter(([, value]) => Number(value) > 0)
+        .sort((a, b) => Number(b[1]) - Number(a[1]) || a[0].localeCompare(b[0], 'cs'))
+        .slice(0, 3)
+        .map(([name, value], index) => `${index + 1}. ${name} (${value}×)`)
+        .join('\n') || '—'
+      : '';
 
-    const statsMachineViewFingerprint = JSON.stringify({ machine, leaderNames, topWorkersText });
+    const statsMachineViewFingerprint = JSON.stringify({ machine, leaderNames, topWorkersText, specialRankTitle, specialRankText });
     if (typeof setElementChildrenIfChanged === 'function') {
       setElementChildrenIfChanged(
         statsMachineView,
         statsMachineViewFingerprint,
-        () => renderStatsMachineViewNodes(machine, leaderNames, topWorkersText),
+        () => renderStatsMachineViewNodes(machine, leaderNames, topWorkersText, specialRankTitle, specialRankText),
         'statsMachineView'
       );
     } else {
@@ -1314,6 +1360,7 @@ function renderStatsPanel() {
         "<div class='statsSummary'>",
         "<div class='tile'><div class='smallText'>Letos nejvíc uklízeli</div><div class='statsMultiLine statsSummaryValueCompact'>" + escapeHtml(leaderNames) + "</div></div>",
         "<div class='tile'><div class='smallText'>Nejvíce tu byl</div><div class='statsMultiLine statsSummaryValueCompact'>" + escapeHtml(topWorkersText) + "</div></div>",
+        specialRankTitle ? "<div class='tile'><div class='smallText'>" + escapeHtml(specialRankTitle) + "</div><div class='statsMultiLine statsSummaryValueCompact'>" + escapeHtml(specialRankText || '—') + "</div></div>" : "",
         "</div>"
       ].join('');
       if (typeof setElementHtmlIfChanged === 'function') setElementHtmlIfChanged(statsMachineView, statsMachineHtml, 'statsMachineView');

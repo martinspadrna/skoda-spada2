@@ -1185,6 +1185,12 @@ function assertStatsPressMachineMoOnlyExceptionContractV1124() {
   assertIncludes(coreJs, 'function isSpecialOvertimeSundayMoOnly', 'core.js musí mít helper pro MO-only přesčasovou neděli');
   assertIncludes(statsJs, 'function isStatsOvertimeSundayMoOnly', 'Statistiky musí umět rozpoznat přesčas jen MO');
   assertIncludes(statsJs, 'if (isStatsOvertimeSundayMoOnly(monthKey, parsedDate)) return false', 'Statistiky nesmí půlit TNKS01/TPKW01 při přesčasu jen MO');
+  assertIncludes(statsJs, "mfkSoloCounts: {}", 'Statistiky musí pro MFK držet roční počty směn o samotě na obou frézkách');
+  assertIncludes(statsJs, "mskPairCounts: {}", 'Statistiky musí pro MSK držet roční počty směn ve dvojici na soustruhu');
+  assertIncludes(statsJs, "['MFKF06', 'MFKF10']", 'MFK pořadí musí vycházet z obou frézek');
+  assertIncludes(statsJs, "['MSKC01', 'MSKC03', 'MSKC04']", 'MSK pořadí musí vycházet ze všech tří soustruhů');
+  assertIncludes(statsJs, 'Nejvíce byl sám na obou frézkách', 'Karta MFK musí zobrazit žebříček samostatné práce na obou frézkách');
+  assertIncludes(statsJs, 'Ve 2 lidech na soustruhu nejvíce byl', 'Karta MSK musí zobrazit žebříček směn ve dvojici na soustruhu');
   assertIncludes(ui, 'function adminRotationGeneratorIsMoOnlyOvertimeSunday', 'Generátor/kontrolní přehled musí umět rozpoznat přesčas jen MO');
   assertIncludes(ui, 'if (adminRotationGeneratorIsMoOnlyOvertimeSunday(dateLabel, monthKey, month)) return false', 'Kontrolní přehled nesmí půlit TNKS01/TPKW01 při přesčasu jen MO');
 }
