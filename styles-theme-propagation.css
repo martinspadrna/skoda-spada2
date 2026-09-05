@@ -1,0 +1,77 @@
+/* DEV 2026-09-05.26 – text musí používat paletu aktivního vzhledu i v později přidaných částech aplikace. */
+html[data-rak-theme] body,
+html[data-rak-theme] input,
+html[data-rak-theme] select,
+html[data-rak-theme] textarea{
+  color:var(--text) !important;
+}
+
+html[data-rak-theme] :is(
+  #home .dashboardTitle,
+  #home .dashboardLabel,
+  #home .dashboardValue,
+  #home .dashboardHeroLine1,
+  #home .dashboardHeroLine2,
+  #home .dashboardHeroLine3,
+  .headerBar h3,
+  .sectionTitle,
+  .rotaceTileTitle,
+  .rotacePersonTitle,
+  .rotaceMonthTitle,
+  .calcTile,
+  .calcTileText,
+  .calcResultMain,
+  .calcResultText,
+  .calcCorrectionGroupTitle,
+  .appMenuCardTitle,
+  .appMenuSubTitle,
+  .appMenuText,
+  .appMenuAction,
+  .appMenuThemeSummaryTitle,
+  .appMenuTable,
+  .foodScheduleModalTitle,
+  .foodScheduleNowMain,
+  .foodScheduleTitleBlock .sectionTitle,
+  #rakShiftReport
+){
+  color:var(--text) !important;
+}
+
+html[data-rak-theme] :is(
+  #home .dashboardMeta,
+  #home .dashboardTileMeta,
+  #home .dashboardHeroLine3,
+  .smallText,
+  .calcTileSub,
+  .foodTileSub,
+  .foodTileMeta,
+  .rotaceMiniLabel,
+  .rotaceHint,
+  .appMenuHint,
+  .appMenuThemeSummaryMeta,
+  .appMenuThemeInfo .smallText,
+  .foodScheduleTitleBlock .smallText,
+  #rakShiftReport .rakShiftIntro,
+  #rakShiftReport .rakShiftPreviewHint,
+  #rakShiftReport .rakShiftStatus
+){
+  color:var(--muted) !important;
+}
+
+html[data-rak-theme] :is(
+  .bottomNavBtn:not(.active),
+  .bottomNavBtn:not(.active) .bottomNavIcon,
+  .bottomNavBtn:not(.active) .bottomNavLabel,
+  .bottomNavMenuBtn:not(.active) .moreIcon
+){
+  color:color-mix(in srgb, var(--muted) 82%, var(--text)) !important;
+}
+
+html[data-rak-theme] :is(
+  .bottomNavBtn.active,
+  .bottomNavBtn.active .bottomNavIcon,
+  .bottomNavBtn.active .bottomNavLabel,
+  .bottomNavMenuBtn.active .moreIcon
+){
+  color:var(--rakThemeAccentStrong, var(--green2)) !important;
+}
