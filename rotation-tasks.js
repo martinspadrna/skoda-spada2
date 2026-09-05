@@ -4,7 +4,9 @@
   'use strict';
 
   const MACHINE_TASKS = Object.freeze({
-    TNKS01: Object.freeze([]),
+    TNKS01: Object.freeze([
+      Object.freeze({ label: 'O nic se nestarej a jen si užij nýtování.' })
+    ]),
     TPKW01: Object.freeze([
       Object.freeze({ label: 'Kontrola měřidel' }),
       Object.freeze({ label: 'TPM' })
@@ -123,8 +125,6 @@
     body.replaceChildren();
     if (!result.machine) {
       body.appendChild(node('p', 'rotationTaskEmpty', 'Pro toto přidělení zatím není nastavený žádný úkol.'));
-    } else if (!result.tasks.length) {
-      body.appendChild(node('p', 'rotationTaskEmpty', 'Pro TNKS01 nejsou stanovené žádné pravidelné úkoly.'));
     } else {
       const intro = node('p', 'rotationTaskIntro', 'Na této směně zkontroluj:');
       const list = node('ul', 'rotationTaskList');

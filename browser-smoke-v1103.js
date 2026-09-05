@@ -525,7 +525,7 @@ async function runViewportSmoke(cdpPort, viewport, inlineHtml, liveRotationPaylo
       return { ok: false, reason: 'chybí mapování denních úkolů' };
     }
     const expected = {
-      TNKS01: [],
+      TNKS01: [{ label: 'O nic se nestarej a jen si užij nýtování.', place: '' }],
       TPKW01: [{ label: 'Kontrola měřidel', place: '' }, { label: 'TPM', place: '' }],
       TPKW02: [{ label: 'TPM za TNKS01', place: 'KP516' }],
       TBKR01: [{ label: 'Kontrola měřidel a TPM', place: 'KP515' }],
@@ -567,6 +567,44 @@ async function runViewportSmoke(cdpPort, viewport, inlineHtml, liveRotationPaylo
   assert(rotationTasksState.mismatches.length === 0, `${viewport.name}: mapování denních úkolů neodpovídá zadání ${JSON.stringify(rotationTasksState)}`);
   assert(rotationTasksState.sharedMill.machine === 'MFKF06' && rotationTasksState.sharedMill.tasks[0]?.place === 'KP511', `${viewport.name}: společné frézky nepoužily úkol MFKF06 ${JSON.stringify(rotationTasksState)}`);
   assert(rotationTasksState.modalVisible && /Testovací člověk/.test(rotationTasksState.modalText) && /KP518/.test(rotationTasksState.modalText) && /KP512/.test(rotationTasksState.modalText), `${viewport.name}: trojité klepnutí neotevřelo správný úkol ${JSON.stringify(rotationTasksState)}`);
+
+  const crossMonthBoundaryState = await evalInPage(client, `(() => {
+    const originalMonths = JSON.parse(JSON.stringify(app.rotation?.months || {}));
+    try {
+      const known = typeof adminGetKnownNames === 'function' ? adminGetKnownNames() : [];
+      const hardHeaders = typeof HARD_MACHINE_HEADERS !== 'undefined' ? HARD_MACHINE_HEADERS : ['TNKS01', 'TBKR07', 'TPKW01', 'TPKW02', 'TBKR01'];
+      const softHeaders = typeof SOFT_MACHINE_HEADERS !== 'undefined' ? SOFT_MACHINE_HEADERS : ['MSKC01', 'MSKC03', 'MSKC04', 'MFKF06', 'MFKF10'];
+      const blankHard = (date) => ({ date, cells: Array(hardHeaders.length).fill('') });
+      const blankSoft = (date) => ({ date, cells: Array(softHeaders.length).fill('') });
+      const julyHard = blankHard('31.7. R');
+      const julySoft = blankSoft('31.7. R');
+      julyHard.cells[0] = 'Kříž';
+      julySoft.cells[4] = 'Blažek';
+      const augustHard = blankHard('1.8. R');
+      const augustSoft = blankSoft('1.8. R');
+      augustHard.cells[0] = 'Kříž';
+      augustSoft.cells[4] = 'Blažek';
+      app.rotation.months = {
+        '7/26': { hard: { machines: hardHeaders, rows: [julyHard] }, soft: { machines: softHeaders, rows: [julySoft] }, notes: [] },
+        '8/26': { hard: { machines: hardHeaders, rows: [augustHard] }, soft: { machines: softHeaders, rows: [augustSoft] }, notes: [] }
+      };
+      const boundary = adminRotationGeneratorGetPreviousMonthBoundary('8/26', known);
+      const issues = adminRotationValidateMonthRules(app.rotation.months['8/26'], '8/26', { source: 'generator' }).issues || [];
+      return {
+        ok: true,
+        boundary,
+        canUsePress: adminRotationGeneratorCanUseHardMachine(app.rotation.months['8/26'], 0, 'TNKS01', 'Kříž', known, '8/26'),
+        canUseSoloMill: adminRotationGeneratorCanUseSoloMill(app.rotation.months['8/26'], 0, 'Blažek', known, '8/26'),
+        issueTypes: issues.map((issue) => issue.type)
+      };
+    } finally {
+      app.rotation.months = originalMonths;
+    }
+  })()`);
+  assert(crossMonthBoundaryState.ok, `${viewport.name}: kontrola přelomu měsíců se nespustila ${JSON.stringify(crossMonthBoundaryState)}`);
+  assert(crossMonthBoundaryState.boundary.monthKey === '7/26' && crossMonthBoundaryState.boundary.pressNames.includes('Kříž') && crossMonthBoundaryState.boundary.soloMillName === 'Blažek', `${viewport.name}: generátor nenačetl poslední pracovní směnu minulého měsíce ${JSON.stringify(crossMonthBoundaryState)}`);
+  assert(!crossMonthBoundaryState.canUsePress && !crossMonthBoundaryState.canUseSoloMill, `${viewport.name}: generátor dovolil stejné nýtování nebo samostatné frézky přes přelom měsíce ${JSON.stringify(crossMonthBoundaryState)}`);
+  assert(crossMonthBoundaryState.issueTypes.includes('boundary-consecutive-tnks') && crossMonthBoundaryState.issueTypes.includes('boundary-consecutive-solo-mill'), `${viewport.name}: validace neoznačila porušení přes přelom měsíce ${JSON.stringify(crossMonthBoundaryState)}`);
 
   const liveRotationGenerator = liveRotationPayload ? await evalInPage(client, `(() => {
     const originalRotation = JSON.parse(JSON.stringify(app.rotation || {}));
