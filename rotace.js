@@ -526,10 +526,10 @@ function renderUpcomingShiftsPreview(limit = 10) {
     '<div class="rotacePersonHeader rotaceOverviewHeader">',
     '  <div class="rotacePersonTitle">' + escapeHtml(headerText) + '</div>',
     '</div>',
-    '<div class="rotacePersonMeta rotaceOverviewMeta">Přítomno ' + String(presentCount) + ' z ' + String(totalPeople) + ' lidí · ' + escapeHtml(missingText) + '</div>',
+    '<div class="rotacePersonMeta rotaceOverviewMeta">Přítomno ' + String(presentCount) + ' z ' + String(totalPeople) + ' lidí · ' + escapeHtml(missingText) + '<br><span class="rotaceTaskHint">3× klepni na kartu člověka pro jeho úkol.</span></div>',
     '<div class="rotaceQuickCards rotacePreviewGrid rotaceOverviewGrid">',
     presentEntries.length ? presentEntries.map(entry => [
-      '<div class="rotaceMiniCard rotaceOverviewCard">',
+      '<div class="rotaceMiniCard rotaceOverviewCard rotaceShiftTaskCard" role="button" tabindex="0" data-rotation-task-person="' + escapeHtml(entry.name || '') + '" data-rotation-task-date="' + escapeHtml(entry.dateLabel || '') + '" data-rotation-task-shift="' + escapeHtml(entry.shift || '') + '" data-rotation-task-machine="' + escapeHtml(entry.target || '') + '" aria-label="3× klepni pro úkol: ' + escapeHtml(entry.name || '') + '">',
       '  <div class="rotaceMiniTarget rotaceOverviewName">' + escapeHtml(entry.name || '') + '</div>',
       entry.target ? '  <div class="rotaceMiniDate rotaceOverviewTarget">' + escapeHtml(entry.target || '') + '</div>' : '',
       '</div>'
@@ -557,7 +557,7 @@ function renderPerson(name) {
   const visibleEntries = previousEntry ? [previousEntry, ...forwardEntries] : forwardEntries;
 
   const formatEntry = (entry, isCurrent) => [
-    '<div class="rotaceMiniCard rotaceShiftCard' + (isCurrent ? ' current' : '') + '">',
+    '<div class="rotaceMiniCard rotaceShiftCard rotaceShiftTaskCard' + (isCurrent ? ' current' : '') + '" role="button" tabindex="0" data-rotation-task-person="' + escapeHtml(name || '') + '" data-rotation-task-date="' + escapeHtml(entry.dateLabel || '') + '" data-rotation-task-shift="' + escapeHtml(entry.shift || '') + '" data-rotation-task-machine="' + escapeHtml(entry.target || '') + '" aria-label="3× klepni pro úkol: ' + escapeHtml(entry.target || '') + '">',
     '  <div class="rotaceShiftLine">',
     '    <span class="rotaceShiftDate">' + escapeHtml(entry.dateLabel || "") + '</span>',
     '    <span class="rotaceShiftName">' + escapeHtml(entry.shift || "") + '</span>',
@@ -569,7 +569,7 @@ function renderPerson(name) {
   setRotaceHtmlIfChanged(personView, [
     '<div class="rotacePersonHeader">',
     '  <div class="rotacePersonTitle">' + escapeHtml(name) + '</div>',
-    '  <div class="rotacePersonMeta">3× rychle klepni na jméno pro QR kód.</div>',
+    '  <div class="rotacePersonMeta">3× rychle klepni na jméno pro QR kód. 3× na směnu pro úkol.</div>',
     '</div>',
     '<div class="rotaceQuickCards rotaceQuickStack">',
     visibleEntries.map((entry) => formatEntry(entry, entry === entries[currentIdx])).join(''),

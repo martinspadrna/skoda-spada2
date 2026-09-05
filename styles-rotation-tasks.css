@@ -1,0 +1,16 @@
+/* Denní úkoly v Rotaci: používají proměnné aktivního vzhledu aplikace. */
+.rotaceTaskHint{opacity:.86;font-size:.92em;}
+.rotaceShiftTaskCard{cursor:pointer;touch-action:manipulation;}
+.rotaceShiftTaskCard:focus-visible{outline:2px solid var(--rakThemeAccentStrong,var(--green2));outline-offset:2px;}
+.rotationTaskModal{color:var(--text);}
+.rotationTaskTitle{margin:0 36px 7px 0;font-size:1.2rem;line-height:1.2;color:var(--text);}
+.rotationTaskMeta{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:0 0 16px;color:var(--muted);font-weight:700;}
+.rotationTaskMachine,.rotationTaskPlace{display:inline-flex;align-items:center;border:1px solid color-mix(in srgb,var(--rakThemeAccentStrong,var(--green2)) 45%,transparent);background:color-mix(in srgb,var(--rakThemeAccentStrong,var(--green2)) 13%,transparent);color:var(--rakThemeAccentStrong,var(--green2));border-radius:999px;padding:4px 9px;font-size:.85rem;font-weight:800;letter-spacing:.02em;}
+.rotationTaskShift{font-size:.92rem;}
+.rotationTaskBody{color:var(--text);}
+.rotationTaskIntro,.rotationTaskEmpty{margin:0 0 10px;color:var(--muted);line-height:1.45;}
+.rotationTaskList{list-style:none;margin:0;padding:0;display:grid;gap:9px;}
+.rotationTaskItem{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 13px;border:1px solid color-mix(in srgb,var(--text) 16%,transparent);border-radius:14px;background:color-mix(in srgb,var(--panel2) 74%,transparent);}
+.rotationTaskLabel{font-weight:800;line-height:1.3;color:var(--text);}
+.rotationTaskPlace{flex:0 0 auto;font-size:.78rem;}
+@media (max-width:380px){.rotationTaskItem{align-items:flex-start;flex-direction:column;gap:7px;}.rotationTaskPlace{align-self:flex-start;}}

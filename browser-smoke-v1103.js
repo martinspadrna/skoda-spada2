@@ -520,6 +520,54 @@ async function runViewportSmoke(cdpPort, viewport, inlineHtml, liveRotationPaylo
   assert(themePropagationState.themes === 10, `${viewport.name}: nečekaný počet vzhledů ${JSON.stringify(themePropagationState)}`);
   assert(themePropagationState.failures.length === 0, `${viewport.name}: text se nepropsal pro všechny vzhledy ${JSON.stringify(themePropagationState.failures)}`);
 
+  const rotationTasksState = await evalInPage(client, `(() => {
+    if (typeof window.getRotationMachineTasksForAssignment !== 'function') {
+      return { ok: false, reason: 'chybí mapování denních úkolů' };
+    }
+    const expected = {
+      TNKS01: [],
+      TPKW01: [{ label: 'Kontrola měřidel', place: '' }, { label: 'TPM', place: '' }],
+      TPKW02: [{ label: 'TPM za TNKS01', place: 'KP516' }],
+      TBKR01: [{ label: 'Kontrola měřidel a TPM', place: 'KP515' }],
+      TBKR07: [{ label: 'Kontrola měřidel a TPM', place: 'KP516' }],
+      MSKC01: [{ label: 'Kontrola měřidel', place: 'KP518' }, { label: 'TPM', place: 'KP512' }],
+      MSKC03: [{ label: 'Kontrola měřidel a TPM', place: 'KP512' }],
+      MSKC04: [{ label: 'TPM', place: 'KP512' }],
+      MFKF06: [{ label: 'Kontrola měřidel a TPM', place: 'KP511' }],
+      MFKF10: [{ label: 'TPM', place: 'KP511' }]
+    };
+    const mismatches = Object.entries(expected).filter(([machine, tasks]) => {
+      const actual = getRotationMachineTasksForAssignment(machine);
+      return actual.machine !== machine || JSON.stringify(actual.tasks) !== JSON.stringify(tasks);
+    }).map(([machine]) => machine);
+    const sharedMill = getRotationMachineTasksForAssignment('MFKF10 (+ MFKF06)');
+    const card = document.createElement('button');
+    card.type = 'button';
+    card.className = 'rotaceShiftTaskCard';
+    card.dataset.rotationTaskPerson = 'Testovací člověk';
+    card.dataset.rotationTaskDate = '5. 9. 2026';
+    card.dataset.rotationTaskShift = 'R';
+    card.dataset.rotationTaskMachine = 'MSKC01';
+    document.body.appendChild(card);
+    card.click(); card.click(); card.click();
+    const modal = document.getElementById('rotationTaskModal');
+    const modalText = modal ? modal.textContent : '';
+    const modalVisible = !!(modal && modal.classList.contains('isVisible'));
+    if (typeof window.hideRotationTaskModal === 'function') window.hideRotationTaskModal();
+    card.remove();
+    return {
+      ok: true,
+      mismatches,
+      sharedMill,
+      modalVisible,
+      modalText
+    };
+  })()`);
+  assert(rotationTasksState.ok, `${viewport.name}: denní úkoly se nenačetly ${JSON.stringify(rotationTasksState)}`);
+  assert(rotationTasksState.mismatches.length === 0, `${viewport.name}: mapování denních úkolů neodpovídá zadání ${JSON.stringify(rotationTasksState)}`);
+  assert(rotationTasksState.sharedMill.machine === 'MFKF06' && rotationTasksState.sharedMill.tasks[0]?.place === 'KP511', `${viewport.name}: společné frézky nepoužily úkol MFKF06 ${JSON.stringify(rotationTasksState)}`);
+  assert(rotationTasksState.modalVisible && /Testovací člověk/.test(rotationTasksState.modalText) && /KP518/.test(rotationTasksState.modalText) && /KP512/.test(rotationTasksState.modalText), `${viewport.name}: trojité klepnutí neotevřelo správný úkol ${JSON.stringify(rotationTasksState)}`);
+
   const liveRotationGenerator = liveRotationPayload ? await evalInPage(client, `(() => {
     const originalRotation = JSON.parse(JSON.stringify(app.rotation || {}));
     const originalDrafts = JSON.parse(JSON.stringify(app.adminRotationPendingDrafts || {}));
