@@ -55,6 +55,7 @@ var EXPORT_SOURCE_IDS = {
   "app-rotation-sync.js": "src-app-rotation-sync-js",
   "app-rotation-controls.js": "src-app-rotation-controls-js",
   "app-init.js": "src-app-init-js",
+  "rak-vacation-report.js": "src-rak-vacation-report-js",
   "supabase-config.js": "src-supabase-config-js",
   "supabase-bridge.js": "src-supabase-bridge-js",
   "gomoku-ai-smoke-v966.js": "src-gomoku-ai-smoke-v966-js",

@@ -72,6 +72,24 @@
         app.gamesProfile.accounts[accountNumber] = Object.assign({}, app.gamesProfile.accounts[accountNumber] || {}, { id: accountNumber, name: fullName });
       }
     } catch (err) {}
+    // Vzhled je navázaný na herní/profilové úložiště. Rychlé přihlášení proto
+    // musí založit stejný aktivní účet i zde, jinak se na jiném zařízení použije výchozí vzhled.
+    try {
+      if (typeof gamesGetProfile === 'function') {
+        const gamesProfile = gamesGetProfile();
+        if (gamesProfile && gamesProfile.accounts) {
+          const makeAccount = typeof gamesMakeAccountEntry === 'function'
+            ? gamesMakeAccountEntry(accountNumber, fullName)
+            : { id: accountNumber, name: fullName, uiSettings: { themeId: '', backgroundId: '', updatedAt: 0 } };
+          gamesProfile.accounts[accountNumber] = Object.assign({}, makeAccount, gamesProfile.accounts[accountNumber] || {}, { id: accountNumber, name: fullName });
+          gamesProfile.activeAccountId = accountNumber;
+          if (typeof GAMES_PROFILE_RESET_VERSION !== 'undefined') gamesProfile.profileVersion = GAMES_PROFILE_RESET_VERSION;
+          if (typeof gamesSaveProfile === 'function') gamesSaveProfile(gamesProfile);
+          if (typeof app === 'object' && app) app.gamesProfile = gamesProfile;
+          if (typeof applyProfileUiPreferencesForActiveAccount === 'function') applyProfileUiPreferencesForActiveAccount({ loadRemote: true, source: 'rak-user-login' });
+        }
+      }
+    } catch (err) { console.warn('RaK profile appearance sync failed', err); }
     syncSettingsProfileCard(window.__RAK_USER_PROFILE__);
   }
 

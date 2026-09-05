@@ -36,8 +36,8 @@
     gap: 8px;}.statsSummary .tile{min-height: 68px;
     font-size: 14px;}.statsTable th, .statsTable td, .noteTable th, .noteTable td{font-size: 12px;
     padding: 6px 4px;}table.rotTable{min-width: 384px;}.noteDateCell{width:36px;
-    min-width:36px;}.notePersonCell{min-width:99px;}.noteShiftCell{width:28px;
-    min-width:28px;}}
+    min-width:36px;}.notePersonCell{min-width:30px;}.noteShiftCell{width:42px;
+    min-width:42px;}.noteReasonCell{width:44px;min-width:44px;max-width:58px;}}
 @media (max-width: 700px){.dashboardAppTitle{font-size: 23px;}}
 @media (max-width: 700px){.page{width:min(100%, 430px);}.dashboardShell{padding:14px;
     border-radius:28px;}.dashboardAppTitle{font-size:22px;}.dashboardHeroCard{padding-left:58px;}.dashboardCard{min-height:98px;

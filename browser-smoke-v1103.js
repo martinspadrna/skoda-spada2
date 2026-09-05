@@ -437,6 +437,7 @@ async function runViewportSmoke(cdpPort, viewport, inlineHtml, liveRotationPaylo
       const button = document.getElementById('rakUserLoginSubmit');
       const mascot = brand && brand.querySelector('.rakSplashMascot');
       const frames = brand ? Array.from(brand.querySelectorAll('.rakSplashMascotFrame')) : [];
+      const parts = brand ? Array.from(brand.querySelectorAll('.rakSplashMascotPart')) : [];
       const mascotStyles = document.getElementById('rak-login-splash-style-v5')?.textContent || '';
       if (!input || !button || !brand || !mascot) return { ok: false, reason: 'login-elements-missing' };
       input.value = '';
@@ -454,12 +455,15 @@ async function runViewportSmoke(cdpPort, viewport, inlineHtml, liveRotationPaylo
       window.rakUserProfileApplyToRuntime = () => {};
       input.value = '1234';
       button.click();
-      await wait(380);
+      // Úvodní pohyb maskota má dostat krátký náskok před pomalejším trhaným přechodem.
+      await wait(620);
       return {
         ok: true,
         frames: frames.length,
         mascotAssets: frames.map((frame) => frame.getAttribute('src')),
-        hasMotion: mascotStyles.includes('@keyframes rakFrameIdle') && mascotStyles.includes('@keyframes rakFrameStep'),
+        parts: parts.length,
+        partAssets: parts.map((part) => part.getAttribute('src')),
+        hasMotion: mascotStyles.includes('@keyframes rakCrabClawLeft') && mascotStyles.includes('@keyframes rakCrabLegsRight'),
         reject,
         cutting: brand.classList.contains('success'),
         pageSplit: overlay.classList.contains('pageSplit')
@@ -472,7 +476,7 @@ async function runViewportSmoke(cdpPort, viewport, inlineHtml, liveRotationPaylo
     }
   })()`);
   assert(loginMascotState.ok, `${viewport.name}: login maskot se nenačetl ${JSON.stringify(loginMascotState)}`);
-  assert(loginMascotState.frames === 3 && loginMascotState.hasMotion && loginMascotState.mascotAssets.join('|') === 'assets/rak-login-crab.png|assets/rak-login-crab-step.png|assets/rak-login-crab-tap.png', `${viewport.name}: maskot nemá připravené průhledné animační snímky ${JSON.stringify(loginMascotState)}`);
+  assert(loginMascotState.frames === 2 && loginMascotState.parts === 4 && loginMascotState.hasMotion && loginMascotState.mascotAssets.join('|') === 'assets/rak-login-crab.png|assets/rak-login-crab-tap.png' && loginMascotState.partAssets.every((src) => src === 'assets/rak-login-crab.png'), `${viewport.name}: maskot nemá připravené pohyblivé průhledné části ${JSON.stringify(loginMascotState)}`);
   assert(loginMascotState.reject.brandError && loginMascotState.reject.panelError && loginMascotState.reject.mascotTap, `${viewport.name}: chybné přihlášení nespustilo poklep maskota ${JSON.stringify(loginMascotState)}`);
   assert(loginMascotState.cutting && loginMascotState.pageSplit, `${viewport.name}: úspěšné přihlášení nespustilo střih stránky ${JSON.stringify(loginMascotState)}`);
 
@@ -620,6 +624,13 @@ async function runViewportSmoke(cdpPort, viewport, inlineHtml, liveRotationPaylo
   assert(rotationTasksState.mismatches.length === 0, `${viewport.name}: mapování denních úkolů neodpovídá zadání ${JSON.stringify(rotationTasksState)}`);
   assert(rotationTasksState.sharedMill.machine === 'MFKF06' && rotationTasksState.sharedMill.tasks[0]?.place === 'KP511', `${viewport.name}: společné frézky nepoužily úkol MFKF06 ${JSON.stringify(rotationTasksState)}`);
   assert(rotationTasksState.modalVisible && /Testovací člověk/.test(rotationTasksState.modalText) && /KP518/.test(rotationTasksState.modalText) && /KP512/.test(rotationTasksState.modalText), `${viewport.name}: trojité klepnutí neotevřelo správný úkol ${JSON.stringify(rotationTasksState)}`);
+
+  const vacationReportState = await evalInPage(client, `(() => {
+    const text = window.RakVacationReport && typeof window.RakVacationReport.getText === 'function'
+      ? window.RakVacationReport.getText('1/25') : '';
+    return { available: !!text, hasTitle: /report dovolených/i.test(text), hasName: /Pech/.test(text), hasPartialVacation: /Kmínek/.test(text) };
+  })()`);
+  assert(vacationReportState.available && vacationReportState.hasTitle && vacationReportState.hasName && vacationReportState.hasPartialVacation, `${viewport.name}: report dovolené nečte dovolené z kalendáře správně ${JSON.stringify(vacationReportState)}`);
 
   const crossMonthBoundaryState = await evalInPage(client, `(() => {
     const originalMonths = JSON.parse(JSON.stringify(app.rotation?.months || {}));

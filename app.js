@@ -79,6 +79,7 @@ try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleR
     "app-admin-unlock.js",
     "app-home-boot.js",
     "app-init.js",
+    "rak-vacation-report.js",
     "rak-shift-report.js",
     "rak-shift-report-entry-fix.js",
     "rak-shift-report-share.js"
