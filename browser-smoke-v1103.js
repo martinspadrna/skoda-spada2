@@ -57,15 +57,23 @@ function readLocalText(relPath) {
 
 function getAppLoaderFiles() {
   const appJs = readLocalText('app.js');
-  const match = appJs.match(/const files = \[(.*?)\];/s);
-  assert(match, 'browser smoke nedokázal najít app.js files list');
-  return Array.from(match[1].matchAll(/"([^"]+\.js)"/g)).map(item => item[1]);
+  const legacyMatch = appJs.match(/const files = \[(.*?)\];/s);
+  if (legacyMatch) return Array.from(legacyMatch[1].matchAll(/"([^"]+\.js)"/g)).map(item => item[1]);
+  const groups = ['criticalFiles', 'deferredFiles'];
+  const files = groups.flatMap((group) => {
+    const match = appJs.match(new RegExp('const\\s+' + group + '\\s*=\\s*\\[(.*?)\\];', 's'));
+    return match ? Array.from(match[1].matchAll(/"([^"]+\.js)"/g)).map(item => item[1]) : [];
+  });
+  assert(files.length > 0, 'browser smoke nedokázal najít app.js files list');
+  return files;
 }
 
 function buildInlineBootScript() {
   return `
 try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleReady('app.js', 'loaded', { source: 'browser-smoke-inline' }); } catch (err) {}
 function rakBrowserSmokeBoot(){
+  // Development větev schovává Hry již v app.js; inline smoke musí testovat stejný stav.
+  document.querySelectorAll('#games, [data-action="games"], [data-page="games"], .bottomNavGamesBtn').forEach((el) => el.remove());
   try { if (typeof installPwaAndConnectivityHooks === 'function') installPwaAndConnectivityHooks(); } catch (err) { console.warn('PWA hooks smoke skip', err); }
   try { if (typeof installBottomNavBindings === 'function') installBottomNavBindings(); } catch (err) { console.warn('Bottom nav smoke skip', err); }
   try { if (typeof applyBottomNavMoreHardFix === 'function') applyBottomNavMoreHardFix(); } catch (err) { console.warn('Bottom nav Více hard-fix smoke skip', err); }
@@ -400,7 +408,7 @@ async function runViewportSmoke(cdpPort, viewport, inlineHtml, liveRotationPaylo
   })()`;
   await evalInPage(client, inlineWriteExpression);
   await waitForPageCondition(client, `document.readyState === 'complete' || document.readyState === 'interactive'`, 'DOM ready po inline about:blank injection', 10000);
-  await waitForPageCondition(client, `window.APP_VERSION === ${JSON.stringify(EXPECTED_APP_VERSION)} && document.querySelectorAll('.bottomNavBtn').length >= 5 && document.documentElement.dataset.rakBrowserSmokeBoot === 'ready'`, 'app boot + verze + spodní navigace', 18000);
+  await waitForPageCondition(client, `window.APP_VERSION === ${JSON.stringify(EXPECTED_APP_VERSION)} && document.querySelectorAll('.bottomNavBtn').length >= 4 && document.documentElement.dataset.rakBrowserSmokeBoot === 'ready'`, 'app boot + verze + spodní navigace', 18000);
 
   const bootState = await evalInPage(client, `(() => ({
     appVersion: window.APP_VERSION || '',
@@ -411,7 +419,7 @@ async function runViewportSmoke(cdpPort, viewport, inlineHtml, liveRotationPaylo
     bodyBeforePointerEvents: getComputedStyle(document.body, '::before').pointerEvents
   }))()`);
   assert(bootState.appVersion === EXPECTED_APP_VERSION, `${viewport.name}: špatná verze ${bootState.appVersion}`);
-  assert(bootState.bottomNavCount >= 5, `${viewport.name}: chybí spodní navigace`);
+  assert(bootState.bottomNavCount >= 4, `${viewport.name}: chybí spodní navigace`);
   assert(bootState.homeCards > 0, `${viewport.name}: Dashboard nemá karty`);
   assert(bootState.bodyBeforePosition === 'fixed', `${viewport.name}: pevné pozadí není fixed`);
 
@@ -1160,12 +1168,7 @@ async function runViewportSmoke(cdpPort, viewport, inlineHtml, liveRotationPaylo
   assert(brusState.minHeight >= 44, `${viewport.name}: Brusy volby jsou moc nízké (${brusState.minHeight}px)`);
   assert(Math.abs(brusState.minHeight - frezkyState.minPresetHeight) <= 2, `${viewport.name}: Brusy volby (${brusState.minHeight}px) nesedí k Frézky presetům (${frezkyState.minPresetHeight}px); debug ${JSON.stringify(brusState)}`);
 
-  await clickAndWait(client, 'games', '#games.page.active');
-  const gamesState = await evalInPage(client, `(() => ({
-    tiles: document.querySelectorAll('#gamesGrid .gamesLaunchTile, #gamesGrid .calcTile').length,
-    hasStage: Boolean(document.querySelector('#gamesStage'))
-  }))()`);
-  assert(gamesState.tiles >= 4 && gamesState.hasStage, `${viewport.name}: Hry nenaběhly`);
+  const gamesState = { tiles: 0, hasStage: false, disabledInDevelopment: true };
 
   await clickAndWait(client, 'menu', '#menu.page.active');
   const menuState = await evalInPage(client, `(() => ({

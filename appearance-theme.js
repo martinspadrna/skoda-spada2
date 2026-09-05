@@ -11,7 +11,7 @@ const RAK_THEME_BASE_VARS = {
   '--muted': '#777',
   '--soft': '#ccc'
 };
-const RAK_THEME_DEFS = [
+const RAK_LEGACY_THEME_DEFS = [
   {
     "id": "default",
     "label": "Zelená",
@@ -80,7 +80,7 @@ const RAK_THEME_DEFS = [
     }
   }
 ];
-window.RAK_THEME_DEFS = RAK_THEME_DEFS;
+window.RAK_LEGACY_THEME_DEFS = RAK_LEGACY_THEME_DEFS;
 
 const RAK_BACKGROUND_STORAGE_KEY = APP_KEY + ':background_v1';
 const RAK_BACKGROUND_BASE_VARS = {
@@ -90,7 +90,7 @@ const RAK_BACKGROUND_BASE_VARS = {
   '--rakAppBackgroundLite': 'linear-gradient(160deg, #050816 0%, #08111f 52%, #0f172a 100%)',
   '--rakBgAccent': 'rgba(56,189,248,.24)'
 };
-const RAK_BACKGROUND_DEFS = [
+const RAK_LEGACY_BACKGROUND_DEFS = [
   {
     "id": "ios-mesh",
     "label": "Tmavé sklo",
@@ -177,6 +177,23 @@ const RAK_BACKGROUND_DEFS = [
   }
 ];
 
+window.RAK_LEGACY_BACKGROUND_DEFS = RAK_LEGACY_BACKGROUND_DEFS;
+
+// Jednotný vzhled vždy obsahuje paletu, karty i pozadí. Staré samostatné volby
+// zůstávají pouze v legacy mapě, aby se uživatelům bezpečně převedlo nastavení.
+const RAK_DEFAULT_APPEARANCE_ID = 'atlantic';
+const RAK_APPEARANCE_DEFS = [
+  { id:'atlantic', label:'Atlantský', subtitle:'Námořní modř, švestkový stín a limetkový akcent', color:'#9CF06A', swatch:'radial-gradient(circle at 18% 18%,#0d8c9a,transparent 38%),radial-gradient(circle at 84% 22%,#68216d,transparent 42%),linear-gradient(145deg,#051728,#170d32)', themeVars:{'--bg':'#071525','--panel':'rgba(12,25,42,.82)','--panel2':'rgba(21,30,55,.76)','--green':'#7FE04F','--green2':'#D9FFC2','--text':'#F4F8FF','--muted':'#9EACC3','--soft':'#E6EEFF','--rakThemeGlow':'rgba(127,224,79,.24)','--rakThemeBorder':'rgba(159,210,255,.22)'}, bgVars:{'--rakBgBase':'#061425','--rakAppBackground':'radial-gradient(circle at 10% 12%,rgba(11,139,151,.28),transparent 33%),radial-gradient(circle at 92% 20%,rgba(105,32,115,.30),transparent 39%),linear-gradient(155deg,#061425 0%,#0b1c31 48%,#1c1033 100%)','--rakAppBackgroundOverlay':'linear-gradient(90deg,rgba(2,10,20,.35),transparent 32%,rgba(255,255,255,.018) 54%,transparent 74%,rgba(15,4,25,.35))','--rakAppBackgroundLite':'linear-gradient(155deg,#061425,#0b1c31 52%,#1c1033)','--rakBgAccent':'rgba(11,139,151,.26)'} },
+  { id:'graphite', label:'Grafitový', subtitle:'Tmavý kov a bezpečnostní zelený akcent', color:'#C8F06B', swatch:'radial-gradient(circle at 22% 18%,#394039,transparent 40%),linear-gradient(145deg,#111311,#292b27)', themeVars:{'--bg':'#10120f','--panel':'rgba(26,29,25,.88)','--panel2':'rgba(42,45,39,.78)','--green':'#B9E65D','--green2':'#E7FFC0','--text':'#FAFCF7','--muted':'#AEB5A8','--soft':'#E9EEE3','--rakThemeGlow':'rgba(185,230,93,.18)','--rakThemeBorder':'rgba(229,235,218,.19)'}, bgVars:{'--rakBgBase':'#10120f','--rakAppBackground':'radial-gradient(circle at 12% 8%,rgba(137,151,123,.12),transparent 33%),radial-gradient(circle at 88% 15%,rgba(94,103,91,.16),transparent 36%),linear-gradient(155deg,#0d0f0d,#1a1d19 52%,#292b27)','--rakAppBackgroundOverlay':'linear-gradient(135deg,rgba(255,255,255,.018),transparent 42%,rgba(0,0,0,.24))','--rakAppBackgroundLite':'linear-gradient(155deg,#0d0f0d,#1a1d19 55%,#292b27)','--rakBgAccent':'rgba(185,230,93,.14)'} },
+  { id:'petrol', label:'Petrolejový', subtitle:'Klidný přístrojový vzhled s mátovým akcentem', color:'#78E6C2', swatch:'radial-gradient(circle at 18% 18%,#0d6370,transparent 42%),linear-gradient(145deg,#03171d,#052b31)', themeVars:{'--bg':'#05181d','--panel':'rgba(8,31,37,.84)','--panel2':'rgba(13,48,55,.76)','--green':'#62D6B4','--green2':'#C6FFEB','--text':'#F1FCFC','--muted':'#A0C0C2','--soft':'#E2F4F3','--rakThemeGlow':'rgba(98,214,180,.22)','--rakThemeBorder':'rgba(128,212,216,.21)'}, bgVars:{'--rakBgBase':'#04171c','--rakAppBackground':'radial-gradient(circle at 50% 14%,rgba(31,130,139,.18),transparent 31%),radial-gradient(circle at 12% 78%,rgba(12,72,84,.25),transparent 38%),linear-gradient(160deg,#04171c,#062a31 50%,#071c28)','--rakAppBackgroundOverlay':'repeating-radial-gradient(circle at 50% 12%,rgba(139,218,221,.035) 0 1px,transparent 1px 12px)','--rakAppBackgroundLite':'linear-gradient(160deg,#04171c,#062a31 55%,#071c28)','--rakBgAccent':'rgba(98,214,180,.20)'} },
+  { id:'copper', label:'Měděný', subtitle:'Teplý tmavý vzhled s jantarovým akcentem', color:'#FFC27A', swatch:'radial-gradient(circle at 18% 18%,#7f3f22,transparent 42%),linear-gradient(145deg,#1c0e0b,#3b2118)', themeVars:{'--bg':'#1b0f0d','--panel':'rgba(41,24,19,.86)','--panel2':'rgba(64,35,25,.77)','--green':'#F2AD63','--green2':'#FFE1B9','--text':'#FFF8F2','--muted':'#D0B5A0','--soft':'#FBE8D8','--rakThemeGlow':'rgba(242,173,99,.20)','--rakThemeBorder':'rgba(255,205,151,.22)'}, bgVars:{'--rakBgBase':'#1b0f0d','--rakAppBackground':'radial-gradient(circle at 12% 12%,rgba(159,70,36,.25),transparent 35%),radial-gradient(circle at 86% 20%,rgba(109,54,30,.21),transparent 38%),linear-gradient(160deg,#1b0f0d,#321914 52%,#21110f)','--rakAppBackgroundOverlay':'linear-gradient(90deg,rgba(0,0,0,.24),transparent 45%,rgba(255,216,164,.024),transparent 62%,rgba(0,0,0,.25))','--rakAppBackgroundLite':'linear-gradient(160deg,#1b0f0d,#321914 55%,#21110f)','--rakBgAccent':'rgba(242,173,99,.18)'} },
+  { id:'plum', label:'Švestkový', subtitle:'Tmavá fialová s jemným levandulovým akcentem', color:'#D8B6FF', swatch:'radial-gradient(circle at 82% 18%,#6b357e,transparent 42%),linear-gradient(145deg,#160b23,#33133f)', themeVars:{'--bg':'#170c24','--panel':'rgba(38,19,54,.86)','--panel2':'rgba(61,28,78,.76)','--green':'#CC9EFF','--green2':'#F0DDFF','--text':'#FDF7FF','--muted':'#CBB5D4','--soft':'#F2E5F7','--rakThemeGlow':'rgba(204,158,255,.22)','--rakThemeBorder':'rgba(222,190,255,.22)'}, bgVars:{'--rakBgBase':'#170c24','--rakAppBackground':'radial-gradient(circle at 88% 14%,rgba(118,48,141,.30),transparent 37%),radial-gradient(circle at 12% 78%,rgba(41,65,113,.20),transparent 42%),linear-gradient(155deg,#150a22,#291236 52%,#21152f)','--rakAppBackgroundOverlay':'linear-gradient(135deg,rgba(255,255,255,.02),transparent 44%,rgba(0,0,0,.18))','--rakAppBackgroundLite':'linear-gradient(155deg,#150a22,#291236 55%,#21152f)','--rakBgAccent':'rgba(204,158,255,.20)'} },
+  { id:'obsidian', label:'Obsidián', subtitle:'Čistá černá pro OLED, ledově bílý akcent', color:'#D9E6F2', swatch:'radial-gradient(circle at 82% 18%,#17354a,transparent 34%),linear-gradient(145deg,#000,#071018)', themeVars:{'--bg':'#020304','--panel':'rgba(10,14,18,.90)','--panel2':'rgba(20,27,34,.82)','--green':'#C5E6FF','--green2':'#F2FAFF','--text':'#F8FCFF','--muted':'#AAB8C4','--soft':'#E5EEF5','--rakThemeGlow':'rgba(197,230,255,.15)','--rakThemeBorder':'rgba(210,230,246,.18)'}, bgVars:{'--rakBgBase':'#000000','--rakAppBackground':'radial-gradient(circle at 86% 16%,rgba(32,88,121,.20),transparent 28%),radial-gradient(circle at 16% 82%,rgba(21,49,67,.16),transparent 36%),linear-gradient(180deg,#000000,#03070a 62%,#071018)','--rakAppBackgroundOverlay':'repeating-linear-gradient(0deg,rgba(194,226,242,.022) 0 1px,transparent 1px 18px)','--rakAppBackgroundLite':'linear-gradient(180deg,#000,#03070a 62%,#071018)','--rakBgAccent':'rgba(197,230,255,.14)'} }
+];
+const RAK_THEME_DEFS = RAK_APPEARANCE_DEFS.map(item => ({ id:item.id, label:item.label, subtitle:item.subtitle, color:item.color, vars:item.themeVars }));
+const RAK_BACKGROUND_DEFS = RAK_APPEARANCE_DEFS.map(item => ({ id:item.id, label:item.label, subtitle:item.subtitle, color:item.color, swatch:item.swatch, vars:item.bgVars }));
+window.RAK_APPEARANCE_DEFS = RAK_APPEARANCE_DEFS;
+window.RAK_THEME_DEFS = RAK_THEME_DEFS;
 window.RAK_BACKGROUND_DEFS = RAK_BACKGROUND_DEFS;
 
 const RAK_PROFILE_UI_REMOTE_DEBOUNCE_MS = 650;
@@ -225,32 +242,40 @@ function getProfileUiSyncStatus() {
 }
 window.getProfileUiSyncStatus = getProfileUiSyncStatus;
 
-function normalizeThemePreferenceId(themeId, fallback = 'default') {
-  const id = String(themeId || '').trim();
-  if (id && RAK_THEME_DEFS.some(theme => theme.id === id)) return id;
-  const fb = String(fallback || '').trim();
-  return RAK_THEME_DEFS.some(theme => theme.id === fb) ? fb : 'default';
+function resolveLegacyAppearanceId(value, kind) {
+  const id = String(value || '').trim();
+  if (RAK_APPEARANCE_DEFS.some(item => item.id === id)) return id;
+  const themeMap = { 'default':'atlantic', 'light-brown':'atlantic', 'midnight-blue':'petrol', 'graphite':'graphite', 'sunset-plasma':'copper', 'violet-pulse':'plum' };
+  const backgroundMap = { 'ios-mesh':'atlantic', 'skoda-green':'petrol', 'deep-aurora':'petrol', 'sunset-plasma':'copper', 'light-zigzag':'atlantic', 'amoled-grid':'obsidian' };
+  return (kind === 'background' ? backgroundMap : themeMap)[id] || '';
 }
 
-function normalizeBackgroundPreferenceId(bgId, fallback = 'ios-mesh') {
-  const id = String(bgId || '').trim();
-  if (id && RAK_BACKGROUND_DEFS.some(bg => bg.id === id)) return id;
-  const fb = String(fallback || '').trim();
-  return RAK_BACKGROUND_DEFS.some(bg => bg.id === fb) ? fb : 'ios-mesh';
+function normalizeThemePreferenceId(themeId, fallback = RAK_DEFAULT_APPEARANCE_ID) {
+  const normalized = resolveLegacyAppearanceId(themeId, 'theme');
+  if (normalized) return normalized;
+  if (!String(fallback || '').trim()) return '';
+  return resolveLegacyAppearanceId(fallback, 'theme') || RAK_DEFAULT_APPEARANCE_ID;
+}
+
+function normalizeBackgroundPreferenceId(bgId, fallback = RAK_DEFAULT_APPEARANCE_ID) {
+  const normalized = resolveLegacyAppearanceId(bgId, 'background');
+  if (normalized) return normalized;
+  if (!String(fallback || '').trim()) return '';
+  return resolveLegacyAppearanceId(fallback, 'background') || RAK_DEFAULT_APPEARANCE_ID;
 }
 
 function getLocalThemePreference() {
   try {
-    const raw = typeof getLocalStorageCached === 'function' ? getLocalStorageCached(RAK_THEME_STORAGE_KEY, 'default') : (localStorage.getItem(RAK_THEME_STORAGE_KEY) || 'default');
-    return normalizeThemePreferenceId(raw || 'default', 'default');
-  } catch (err) { return 'default'; }
+    const raw = typeof getLocalStorageCached === 'function' ? getLocalStorageCached(RAK_THEME_STORAGE_KEY, RAK_DEFAULT_APPEARANCE_ID) : (localStorage.getItem(RAK_THEME_STORAGE_KEY) || RAK_DEFAULT_APPEARANCE_ID);
+    return normalizeThemePreferenceId(raw || RAK_DEFAULT_APPEARANCE_ID, RAK_DEFAULT_APPEARANCE_ID);
+  } catch (err) { return RAK_DEFAULT_APPEARANCE_ID; }
 }
 
 function getLocalBackgroundPreference() {
   try {
-    const raw = typeof getLocalStorageCached === 'function' ? getLocalStorageCached(RAK_BACKGROUND_STORAGE_KEY, 'ios-mesh') : (localStorage.getItem(RAK_BACKGROUND_STORAGE_KEY) || 'ios-mesh');
-    return normalizeBackgroundPreferenceId(raw || 'ios-mesh', 'ios-mesh');
-  } catch (err) { return 'ios-mesh'; }
+    const raw = typeof getLocalStorageCached === 'function' ? getLocalStorageCached(RAK_BACKGROUND_STORAGE_KEY, RAK_DEFAULT_APPEARANCE_ID) : (localStorage.getItem(RAK_BACKGROUND_STORAGE_KEY) || RAK_DEFAULT_APPEARANCE_ID);
+    return normalizeBackgroundPreferenceId(raw || RAK_DEFAULT_APPEARANCE_ID, RAK_DEFAULT_APPEARANCE_ID);
+  } catch (err) { return RAK_DEFAULT_APPEARANCE_ID; }
 }
 
 function getActiveProfileUiAccount() {
@@ -397,7 +422,8 @@ async function loadActiveAccountUiRemoteSettings(accountId) {
       }
       const remoteTheme = normalizeThemePreferenceId(remote.theme_id || remote.themeId || remote.theme || '', '');
       const remoteBg = normalizeBackgroundPreferenceId(remote.background_id || remote.backgroundId || remote.background || '', '');
-      if (!remoteTheme && !remoteBg) return null;
+      const remoteAppearance = remoteTheme || remoteBg;
+      if (!remoteAppearance) return null;
       const profile = typeof gamesGetProfile === 'function' ? gamesGetProfile() : null;
       const account = profile && profile.accounts ? profile.accounts[id] : null;
       const ui = ensureAccountUiSettings(account);
@@ -411,8 +437,8 @@ async function loadActiveAccountUiRemoteSettings(accountId) {
         return Object.assign({ ok: true, skipped: true, reason: 'remote-older' }, remote);
       }
       let changed = false;
-      if (remoteTheme && ui.themeId !== remoteTheme) { ui.themeId = remoteTheme; changed = true; }
-      if (remoteBg && ui.backgroundId !== remoteBg) { ui.backgroundId = remoteBg; changed = true; }
+      if (ui.themeId !== remoteAppearance) { ui.themeId = remoteAppearance; changed = true; }
+      if (ui.backgroundId !== remoteAppearance) { ui.backgroundId = remoteAppearance; changed = true; }
       ui.updatedAt = Math.max(localTs, remoteTs || Date.now());
       if (changed) {
         rakProfileUiSyncGuard.remoteApplies += 1;
@@ -421,14 +447,13 @@ async function loadActiveAccountUiRemoteSettings(accountId) {
         profile.profileVersion = GAMES_PROFILE_RESET_VERSION;
         gamesSaveProfile(profile);
         app.gamesProfile = profile;
-        applyThemePreference(ui.themeId || 'default', true, { skipProfile: true });
-        applyBackgroundPreference(ui.backgroundId || 'ios-mesh', true, { skipProfile: true });
-        if (ui.themeId !== remoteTheme || ui.backgroundId !== remoteBg) scheduleActiveAccountUiRemoteSave('profile-ui-locked-remote-normalized');
+        applyAppearancePreference(ui.themeId || RAK_DEFAULT_APPEARANCE_ID, true, { skipProfile: true });
+        if (remoteTheme !== remoteAppearance || remoteBg !== remoteAppearance) scheduleActiveAccountUiRemoteSave('profile-ui-locked-remote-normalized');
         if (typeof renderThemeSettingsCards === 'function') renderThemeSettingsCards();
       } else {
         rakProfileUiSyncGuard.remoteSameSkips += 1;
         if (remoteTheme || remoteBg) {
-          rakProfileUiLastRemoteSaveSignature = getProfileUiPayloadSignature({ account_number: id, theme_id: remoteTheme || ui.themeId, background_id: remoteBg || ui.backgroundId });
+          rakProfileUiLastRemoteSaveSignature = getProfileUiPayloadSignature({ account_number: id, theme_id: remoteAppearance, background_id: remoteAppearance });
         }
       }
       return remote;
@@ -452,15 +477,16 @@ function applyProfileUiPreferencesForActiveAccount(options = {}) {
   if (!profile || !account || !ui) return false;
   const localTheme = getLocalThemePreference();
   const localBg = getLocalBackgroundPreference();
-  const defaultTheme = normalizeThemePreferenceId('default', 'default');
-  const defaultBg = normalizeBackgroundPreferenceId('ios-mesh', 'ios-mesh');
+  const defaultTheme = RAK_DEFAULT_APPEARANCE_ID;
+  const defaultBg = RAK_DEFAULT_APPEARANCE_ID;
   let changed = false;
   // RaK 1.2 (1.155): při aktualizaci nesmí prázdné profilové uiSettings shodit uživatelské pozadí zpět na základ.
   // Local fallback použijeme jen pro aktivní účet a jen jako migraci chybějící hodnoty; zamčené skiny se níže dál normalizují na default.
   if (!ui.themeId) { ui.themeId = localTheme || defaultTheme; changed = true; }
   if (!ui.backgroundId) { ui.backgroundId = localBg || defaultBg; changed = true; }
-  const themeToApply = ui.themeId || defaultTheme;
-  const bgToApply = ui.backgroundId || defaultBg;
+  const appearanceToApply = normalizeThemePreferenceId(ui.themeId || ui.backgroundId || localTheme || localBg || RAK_DEFAULT_APPEARANCE_ID, RAK_DEFAULT_APPEARANCE_ID);
+  if (ui.themeId !== appearanceToApply) { ui.themeId = appearanceToApply; changed = true; }
+  if (ui.backgroundId !== appearanceToApply) { ui.backgroundId = appearanceToApply; changed = true; }
   if (changed || !ui.updatedAt) {
     ui.updatedAt = Date.now();
     account.updatedAt = Math.max(Number(account.updatedAt || 0) || 0, ui.updatedAt);
@@ -468,8 +494,7 @@ function applyProfileUiPreferencesForActiveAccount(options = {}) {
     gamesSaveProfile(profile);
     app.gamesProfile = profile;
   }
-  applyThemePreference(themeToApply || localTheme, true, { skipProfile: true });
-  applyBackgroundPreference(bgToApply || localBg, true, { skipProfile: true });
+  applyAppearancePreference(appearanceToApply, true, { skipProfile: true });
   if (typeof renderThemeSettingsCards === 'function') renderThemeSettingsCards();
   if (changed) scheduleActiveAccountUiRemoteSave('profile-ui-initialized-from-local');
   if (options.loadRemote !== false) void loadActiveAccountUiRemoteSettings(account.id);
@@ -546,7 +571,7 @@ window.applyBackgroundPreference = applyBackgroundPreference;
 window.RAK_BACKGROUND_STORAGE_KEY = RAK_BACKGROUND_STORAGE_KEY;
 
 (function initBackgroundPreference() {
-  try { applyBackgroundPreference(getBackgroundPreference(), false); } catch (err) {}
+  try { applyAppearancePreference(getAppearancePreference(), false); } catch (err) {}
 })();
 
 (function installAppearancePreferenceGuards() {
@@ -554,8 +579,7 @@ window.RAK_BACKGROUND_STORAGE_KEY = RAK_BACKGROUND_STORAGE_KEY;
   window.__rakAppearancePreferenceGuardV556 = true;
   const syncAppearance = () => {
     try {
-      applyThemePreference(getThemePreference(), false);
-      applyBackgroundPreference(getBackgroundPreference(), false);
+      applyAppearancePreference(getAppearancePreference(), false);
       if (typeof renderThemeSettingsCards === 'function') renderThemeSettingsCards();
     } catch (err) {}
   };
@@ -592,8 +616,7 @@ function applyThemePreference(themeId, persist = true, options = {}) {
 
 (function initThemePreference() {
   try {
-    applyThemePreference(getThemePreference(), false);
-    if (typeof applyBackgroundPreference === 'function') applyBackgroundPreference(getBackgroundPreference(), false);
+    applyAppearancePreference(getAppearancePreference(), false);
   } catch (err) {}
 })();
 
@@ -718,6 +741,76 @@ function renderThemeSettingsCards() {
     const nextThemeHint = '';
     if (typeof setElementTextIfChanged === 'function') setElementTextIfChanged(hint, nextThemeHint, 'themeHintSummary');
     else hint.textContent = nextThemeHint;
+  }
+}
+
+function getAppearancePreference() {
+  const themeId = getThemePreference();
+  const backgroundId = getBackgroundPreference();
+  if (themeId && RAK_APPEARANCE_DEFS.some(item => item.id === themeId)) return themeId;
+  if (backgroundId && RAK_APPEARANCE_DEFS.some(item => item.id === backgroundId)) return backgroundId;
+  return RAK_DEFAULT_APPEARANCE_ID;
+}
+
+function applyAppearancePreference(appearanceId, persist = true, options = {}) {
+  const id = normalizeThemePreferenceId(appearanceId, RAK_DEFAULT_APPEARANCE_ID);
+  applyThemePreference(id, persist, Object.assign({}, options, { skipProfile:true }));
+  applyBackgroundPreference(id, persist, Object.assign({}, options, { skipProfile:true }));
+  if (persist && !options.skipProfile) saveActiveAccountUiSettings({ themeId:id, backgroundId:id }, { reason:'appearance-change', skipRemote:!!options.skipRemote });
+  return id;
+}
+
+window.getAppearancePreference = getAppearancePreference;
+window.applyAppearancePreference = applyAppearancePreference;
+
+// Přepis starého dvoustupňového UI: uživatel vždy volí jeden kompletní vzhled.
+function buildThemeSystemSettingsHtml() {
+  const currentId = getAppearancePreference();
+  const current = RAK_APPEARANCE_DEFS.find(item => item.id === currentId) || RAK_APPEARANCE_DEFS[0];
+  const cards = RAK_APPEARANCE_DEFS.map(item => [
+    '<button type="button" class="appMenuThemeCard appMenuAppearanceCard" data-appearance-id="' + escapeHtml(item.id) + '">',
+    '<div class="appMenuThemeSwatch" style="--theme-swatch:' + escapeHtml(item.swatch) + '"></div>',
+    '<div class="appMenuThemeInfo"><div class="appMenuThemeTitle">' + escapeHtml(item.label) + '</div><div class="smallText">' + escapeHtml(item.subtitle) + '</div></div>',
+    '</button>'
+  ].join('')).join('');
+  return [
+    '<div class="appMenuCard appMenuSettingsCard appMenuThemeCardWrap">',
+    '<div class="appMenuCardTitle">Vzhled aplikace</div>',
+    '<details class="appMenuThemeAccordion" id="appMenuThemeAccordion">',
+    '<summary class="appMenuAction appMenuSettingBtn appMenuThemeSummary">',
+    '<span class="appMenuThemeSummaryLeft"><span class="appMenuThemeSummaryTitle">Vzhled aplikace</span><span class="appMenuThemeSummaryMeta" id="appMenuThemeSummaryMeta">Aktivní: ' + escapeHtml(current.label) + '</span></span>',
+    '<span class="appMenuThemeSummaryChevron" aria-hidden="true">⌄</span>',
+    '</summary>',
+    '<div class="appMenuThemeAccordionBody"><div class="appMenuThemeGrid" id="appMenuThemeGrid">' + cards + '</div><div class="appMenuThemeHint">Vzhled mění barvy, karty i pozadí najednou.</div></div>',
+    '</details>',
+    '</div>'
+  ].join('');
+}
+
+function renderThemeSettingsCards() {
+  const grid = document.getElementById('appMenuThemeGrid');
+  const summaryMeta = document.getElementById('appMenuThemeSummaryMeta');
+  if (!grid) return;
+  const currentId = getAppearancePreference();
+  Array.from(grid.querySelectorAll('.appMenuAppearanceCard')).forEach(card => {
+    const id = String(card.dataset.appearanceId || '').trim();
+    const active = id === currentId;
+    card.classList.toggle('isActive', active);
+    card.setAttribute('aria-pressed', active ? 'true' : 'false');
+    if (!card.dataset.bound) {
+      card.dataset.bound = '1';
+      card.addEventListener('click', () => {
+        if (!RAK_APPEARANCE_DEFS.some(item => item.id === id)) return;
+        applyAppearancePreference(id, true);
+        renderThemeSettingsCards();
+      });
+    }
+  });
+  if (summaryMeta) {
+    const label = (RAK_APPEARANCE_DEFS.find(item => item.id === currentId) || RAK_APPEARANCE_DEFS[0]).label;
+    const value = 'Aktivní: ' + label;
+    if (typeof setElementTextIfChanged === 'function') setElementTextIfChanged(summaryMeta, value, 'appearanceSummaryMeta');
+    else summaryMeta.textContent = value;
   }
 }
 

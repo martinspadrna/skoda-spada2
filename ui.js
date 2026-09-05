@@ -1208,7 +1208,7 @@ if (!window.__tttHashInviteBound) {
   window.__tttHashInviteBound = true;
   const openGameInviteFromUrl = async () => {
     const shipsOpened = await shipsAutoOpenFromHash();
-    if (!shipsOpened) await tttAutoOpenFromHash();
+    if (!shipsOpened && typeof tttAutoOpenFromHash === 'function') await tttAutoOpenFromHash();
   };
   window.addEventListener('load', () => { void openGameInviteFromUrl(); }, { once: true });
   window.addEventListener('hashchange', () => { void openGameInviteFromUrl(); });
