@@ -749,8 +749,17 @@ function buildDashboardPersonalHeroHtml(now, esc) {
     title = 'Dnes máš ' + String(state.absence.target || 'volno') + '.';
     status = 'Další směna zatím není v rozpisu';
   } else {
-    title = 'Směna D';
     status = 'Přehled směn';
+    const teamD = typeof getDashboardTeamDStatus === 'function'
+      ? getDashboardTeamDStatus(now)
+      : { active: null, next: null };
+    if (teamD.active && teamD.active.end instanceof Date && typeof formatDuration === 'function') {
+      title = 'Směna D končí za ' + formatDuration(Math.max(0, teamD.active.end.getTime() - now.getTime()));
+    } else if (teamD.next && teamD.next.start instanceof Date && typeof formatDuration === 'function') {
+      title = 'Směna D začíná za ' + formatDuration(Math.max(0, teamD.next.start.getTime() - now.getTime()));
+    } else {
+      title = 'Směna D';
+    }
     accessOverview = getDashboardAccessOverview(now);
     if (!accessOverview.length) detail = 'Další směna zatím není k dispozici.';
   }

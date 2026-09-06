@@ -1533,11 +1533,15 @@ function adminRenderRotationAvailabilitySummary(root) {
   }
 
   const freeOverall = summary.freeOverall.length ? summary.freeOverall.join(', ') : '—';
+  const consecutiveRivetingIssues = adminRotationValidateMonthRules(summary.month, monthKey, { source: 'month-check' }).issues
+    .filter((issue) => issue && (issue.type === 'consecutive-tnks' || issue.type === 'boundary-consecutive-tnks'))
+    .map((issue) => String(issue.message || '').trim())
+    .filter(Boolean);
   const missingRows = summary.missingByDate.map((item) => ({
     label: String(item && item.label ? item.label : ''),
     missing: Array.isArray(item && item.missing) ? item.missing.join(', ') : ''
   }));
-  const fingerprint = JSON.stringify({ monthKey: monthKey || '', freeOverall, missingRows });
+  const fingerprint = JSON.stringify({ monthKey: monthKey || '', freeOverall, missingRows, consecutiveRivetingIssues });
 
   const buildContent = () => {
     const list = makeEl('div', 'appMenuMonthCheckList');
@@ -1556,6 +1560,14 @@ function adminRenderRotationAvailabilitySummary(root) {
 
     return [
       makeEl('div', 'appMenuFreeNamesTitle', 'Kontrola měsíce ' + String(monthKey || '')),
+      appendStrongLine(
+        'appMenuFreeNamesText ' + (consecutiveRivetingIssues.length ? 'isError' : 'isOk'),
+        'Nýtování dva dny po sobě:',
+        consecutiveRivetingIssues.length ? ' nalezen problém' : ' v pořádku'
+      ),
+      ...(consecutiveRivetingIssues.length
+        ? consecutiveRivetingIssues.map((message) => makeEl('div', 'appMenuMonthCheckRow isError', message))
+        : []),
       appendStrongLine('appMenuFreeNamesText', 'V celém měsíci nikde nejsou:', ' ' + freeOverall),
       appendStrongLine('appMenuFreeNamesText uMt8', 'Chybějící jména podle dnů:', null),
       list

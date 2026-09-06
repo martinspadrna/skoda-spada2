@@ -524,9 +524,15 @@ async function runViewportSmoke(cdpPort, viewport, inlineHtml, liveRotationPaylo
       const mascot = brand && brand.querySelector('.rakSplashMascot');
       const frames = brand ? Array.from(brand.querySelectorAll('.rakSplashMascotFrame')) : [];
       const parts = brand ? Array.from(brand.querySelectorAll('.rakSplashMascotPart')) : [];
-      const mascotStyles = document.getElementById('rak-login-splash-style-v5')?.textContent || '';
+      const mascotStyles = document.getElementById('rak-login-splash-style-v6')?.textContent || '';
       if (!input || !button || !brand || !mascot) return { ok: false, reason: 'login-elements-missing' };
+      input.focus();
+      input.dispatchEvent(new Event('focus'));
+      input.value = '1234';
+      input.dispatchEvent(new Event('input', { bubbles: true }));
+      const attention = { listening: brand.classList.contains('listening'), ready: brand.classList.contains('ready') };
       input.value = '';
+      input.dispatchEvent(new Event('input', { bubbles: true }));
       button.click();
       await wait(55);
       const reject = {
@@ -540,6 +546,7 @@ async function runViewportSmoke(cdpPort, viewport, inlineHtml, liveRotationPaylo
       window.rakUserProfileWrite = () => {};
       window.rakUserProfileApplyToRuntime = () => {};
       input.value = '1234';
+      input.dispatchEvent(new Event('input', { bubbles: true }));
       button.click();
       // Úvodní pohyb maskota má dostat krátký náskok před pomalejším trhaným přechodem.
       await wait(620);
@@ -549,7 +556,8 @@ async function runViewportSmoke(cdpPort, viewport, inlineHtml, liveRotationPaylo
         mascotAssets: frames.map((frame) => frame.getAttribute('src')),
         parts: parts.length,
         partAssets: parts.map((part) => part.getAttribute('src')),
-        hasMotion: mascotStyles.includes('@keyframes rakCrabClawLeft') && mascotStyles.includes('@keyframes rakCrabLegsRight'),
+        hasMotion: mascotStyles.includes('@keyframes rakCrabIdlePose') && mascotStyles.includes('@keyframes rakCrabStepPose'),
+        attention,
         reject,
         cutting: brand.classList.contains('success'),
         pageSplit: overlay.classList.contains('pageSplit')
@@ -562,9 +570,25 @@ async function runViewportSmoke(cdpPort, viewport, inlineHtml, liveRotationPaylo
     }
   })()`);
   assert(loginMascotState.ok, `${viewport.name}: login maskot se nenačetl ${JSON.stringify(loginMascotState)}`);
-  assert(loginMascotState.frames === 2 && loginMascotState.parts === 4 && loginMascotState.hasMotion && loginMascotState.mascotAssets.join('|') === 'assets/rak-login-crab.png|assets/rak-login-crab-tap.png' && loginMascotState.partAssets.every((src) => src === 'assets/rak-login-crab.png'), `${viewport.name}: maskot nemá připravené pohyblivé průhledné části ${JSON.stringify(loginMascotState)}`);
+  assert(loginMascotState.frames === 3 && loginMascotState.parts === 0 && loginMascotState.hasMotion && loginMascotState.mascotAssets.join('|') === 'assets/rak-login-crab.png|assets/rak-login-crab-step.png|assets/rak-login-crab-tap.png', `${viewport.name}: maskot nemá připravené tři průhledné animační pózy ${JSON.stringify(loginMascotState)}`);
+  assert(loginMascotState.attention?.listening && loginMascotState.attention?.ready, `${viewport.name}: maskot nereaguje na zaměření a vyplnění osobního čísla ${JSON.stringify(loginMascotState)}`);
   assert(loginMascotState.reject.brandError && loginMascotState.reject.panelError && loginMascotState.reject.mascotTap, `${viewport.name}: chybné přihlášení nespustilo poklep maskota ${JSON.stringify(loginMascotState)}`);
   assert(loginMascotState.cutting && loginMascotState.pageSplit, `${viewport.name}: úspěšné přihlášení nespustilo střih stránky ${JSON.stringify(loginMascotState)}`);
+
+  const accessCountdownState = await evalInPage(client, `(() => {
+    if (typeof buildDashboardPersonalHeroHtml !== 'function' || typeof getDashboardPersonalShiftStatus !== 'function') return { ok: false };
+    const savedStatus = getDashboardPersonalShiftStatus;
+    const escapeValue = (value) => String(value == null ? '' : value);
+    try {
+      window.getDashboardPersonalShiftStatus = () => ({ name: 'Přístup', active: null, next: null, absence: null });
+      const before = buildDashboardPersonalHeroHtml(new Date('2026-09-06T12:00:00+02:00'), escapeValue);
+      const during = buildDashboardPersonalHeroHtml(new Date('2026-09-07T08:00:00+02:00'), escapeValue);
+      return { ok: true, before, during };
+    } finally {
+      window.getDashboardPersonalShiftStatus = savedStatus;
+    }
+  })()`);
+  assert(accessCountdownState.ok && accessCountdownState.before.includes('Směna D začíná za') && accessCountdownState.during.includes('Směna D končí za'), `${viewport.name}: přístupový účet neukazuje začátek/konec směny D ${JSON.stringify(accessCountdownState)}`);
 
   const themePropagationState = await evalInPage(client, `(() => {
     if (!Array.isArray(window.RAK_APPEARANCE_DEFS) || typeof window.applyAppearancePreference !== 'function') {
@@ -796,12 +820,20 @@ async function runViewportSmoke(cdpPort, viewport, inlineHtml, liveRotationPaylo
       };
       const boundary = adminRotationGeneratorGetPreviousMonthBoundary('8/26', known);
       const issues = adminRotationValidateMonthRules(app.rotation.months['8/26'], '8/26', { source: 'generator' }).issues || [];
+      const root = document.createElement('div');
+      root.dataset.adminView = 'rotation';
+      root.innerHTML = '<select id="adminMonthSelect"><option value="8/26" selected>8/26</option></select><div id="adminRotationFreeNamesSummary"></div>';
+      document.body.appendChild(root);
+      adminRenderRotationAvailabilitySummary(root);
+      const monthCheckText = root.querySelector('#adminRotationFreeNamesSummary')?.textContent || '';
+      root.remove();
       return {
         ok: true,
         boundary,
         canUsePress: adminRotationGeneratorCanUseHardMachine(app.rotation.months['8/26'], 0, 'TNKS01', 'Kříž', known, '8/26'),
         canUseSoloMill: adminRotationGeneratorCanUseSoloMill(app.rotation.months['8/26'], 0, 'Blažek', known, '8/26'),
-        issueTypes: issues.map((issue) => issue.type)
+        issueTypes: issues.map((issue) => issue.type),
+        monthCheckText
       };
     } finally {
       app.rotation.months = originalMonths;
@@ -811,6 +843,7 @@ async function runViewportSmoke(cdpPort, viewport, inlineHtml, liveRotationPaylo
   assert(crossMonthBoundaryState.boundary.monthKey === '7/26' && crossMonthBoundaryState.boundary.pressNames.includes('Kříž') && crossMonthBoundaryState.boundary.soloMillName === 'Blažek', `${viewport.name}: generátor nenačetl poslední pracovní směnu minulého měsíce ${JSON.stringify(crossMonthBoundaryState)}`);
   assert(!crossMonthBoundaryState.canUsePress && !crossMonthBoundaryState.canUseSoloMill, `${viewport.name}: generátor dovolil stejné nýtování nebo samostatné frézky přes přelom měsíce ${JSON.stringify(crossMonthBoundaryState)}`);
   assert(crossMonthBoundaryState.issueTypes.includes('boundary-consecutive-tnks') && crossMonthBoundaryState.issueTypes.includes('boundary-consecutive-solo-mill'), `${viewport.name}: validace neoznačila porušení přes přelom měsíce ${JSON.stringify(crossMonthBoundaryState)}`);
+  assert(crossMonthBoundaryState.monthCheckText.includes('Nýtování dva dny po sobě:') && crossMonthBoundaryState.monthCheckText.includes('Kříž nesmí nýtovat dvě směny po sobě'), `${viewport.name}: Kontrola měsíce nezobrazuje porušení zákazu dvojího nýtování ${JSON.stringify(crossMonthBoundaryState)}`);
 
   const liveRotationGenerator = liveRotationPayload ? await evalInPage(client, `(() => {
     const originalRotation = JSON.parse(JSON.stringify(app.rotation || {}));

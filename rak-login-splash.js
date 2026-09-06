@@ -2,7 +2,7 @@
 // The crab is intentionally separate from the app icon so its claws and legs can move.
 (function () {
   const OVERLAY_ID = 'rakUserLoginOverlay';
-  const STYLE_ID = 'rak-login-splash-style-v5';
+  const STYLE_ID = 'rak-login-splash-style-v6';
   const MASCOT_IDLE = 'assets/rak-login-crab.png';
   const MASCOT_STEP = 'assets/rak-login-crab-step.png';
   const MASCOT_TAP = 'assets/rak-login-crab-tap.png';
@@ -93,25 +93,50 @@
       @keyframes rakPaperTearLeft{0%{transform:translateX(0) rotate(0)}100%{transform:translateX(-106%) rotate(-3deg)}}
       @keyframes rakPaperTearRight{0%{transform:translateX(0) rotate(0)}100%{transform:translateX(106%) rotate(3deg)}}
     `));
+    s.append(document.createTextNode(`
+      /* v6: skutečné střídání dvou póz místo jedné statické vrstvy rozřezané clip-path. */
+      .rakSplashMascotPart{display:none!important}
+      .rakSplashMascotFrame{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;pointer-events:none;will-change:opacity,transform,filter}
+      .rakSplashMascotFrame.idle{opacity:1;animation:rakCrabIdlePose 1.72s ease-in-out infinite}
+      .rakSplashMascotFrame.step{opacity:0;animation:rakCrabStepPose 1.72s ease-in-out infinite}
+      .rakSplashMascotFrame.tap{opacity:0}
+      .rakSplashMascot{animation:rakCrabWalk 1.72s ease-in-out infinite}
+      .rakSplashBrand:before{bottom:8%;height:18%;width:72%;filter:blur(18px);animation:rakCrabGround 1.72s ease-in-out infinite}
+      .rakSplashBrand.listening:after{border-color:rgba(126,255,190,.34);box-shadow:0 0 0 10px rgba(91,230,255,.035),0 0 52px rgba(69,245,177,.18)}
+      .rakSplashBrand.ready .rakSplashMascot{animation-duration:1.05s;filter:drop-shadow(0 13px 16px rgba(0,0,0,.38)) drop-shadow(0 0 34px rgba(99,255,173,.38))}
+      .rakSplashPanel{border-color:rgba(151,255,201,.32);background:radial-gradient(circle at 50% -20%,rgba(126,255,191,.14),transparent 45%),linear-gradient(145deg,rgba(16,39,38,.94),rgba(3,15,17,.97));box-shadow:0 30px 90px rgba(0,0,0,.48),0 0 0 1px rgba(83,220,255,.035),inset 0 1px rgba(255,255,255,.10),inset 0 -24px 48px rgba(0,0,0,.18)}
+      .rakSplashInput{background:linear-gradient(180deg,rgba(2,11,13,.72),rgba(5,25,24,.62));box-shadow:inset 0 1px rgba(255,255,255,.035),inset 0 -12px 24px rgba(0,0,0,.14)}
+      .rakSplashButton{position:relative;overflow:hidden;isolation:isolate}
+      .rakSplashButton:before{content:"";position:absolute;z-index:0;inset:-2px auto -2px -45%;width:38%;transform:skewX(-20deg);background:linear-gradient(90deg,transparent,rgba(255,255,255,.48),transparent);animation:rakLoginButtonSweep 4.5s 1.1s ease-in-out infinite}
+      .rakSplashBrand.error .rakSplashMascotFrame.idle,.rakSplashBrand.error .rakSplashMascotFrame.step,.rakSplashBrand.success .rakSplashMascotFrame.idle,.rakSplashBrand.success .rakSplashMascotFrame.step{opacity:0!important;animation:none!important}
+      .rakSplashBrand.error .rakSplashMascotFrame.tap{opacity:1!important;animation:rakMascotTap .84s cubic-bezier(.19,.85,.28,1) both!important}
+      .rakSplashBrand.success .rakSplashMascotFrame.tap{opacity:1!important;animation:rakMascotCut .32s cubic-bezier(.13,.9,.25,1) forwards!important}
+      @keyframes rakCrabWalk{0%,100%{transform:translate3d(-3px,0,0) rotate(-.35deg)}25%{transform:translate3d(0,-3px,0) rotate(0)}50%{transform:translate3d(3px,1px,0) rotate(.35deg)}75%{transform:translate3d(0,-2px,0) rotate(0)}}
+      @keyframes rakCrabIdlePose{0%,38%,100%{opacity:1;transform:translateY(0) scale(1)}48%,88%{opacity:0;transform:translateY(2px) scale(.992)}}
+      @keyframes rakCrabStepPose{0%,38%,100%{opacity:0;transform:translateY(2px) scale(.992)}48%,88%{opacity:1;transform:translateY(0) scale(1)}}
+      @keyframes rakCrabGround{0%,100%{opacity:.52;transform:scaleX(1.12)}50%{opacity:.9;transform:scaleX(1.34)}}
+      @keyframes rakLoginButtonSweep{0%,62%{left:-45%;opacity:0}70%{opacity:.7}86%,100%{left:112%;opacity:0}}
+      @media(prefers-reduced-motion:reduce){.rakSplashMascotFrame.idle{opacity:1!important}.rakSplashMascotFrame.step,.rakSplashMascotFrame.tap{opacity:0!important}.rakSplashMascot,.rakSplashBrand:before,.rakSplashButton:before{animation:none!important}}
+    `));
   }
 
   function build() {
     const old=document.getElementById(OVERLAY_ID); if(old)old.remove();
     const overlay=document.createElement('div'); overlay.id=OVERLAY_ID; overlay.className='rakSplash'; overlay.setAttribute('role','dialog'); overlay.setAttribute('aria-modal','true');
     overlay.innerHTML=`<div class="rakSplashPageHalf left"></div><div class="rakSplashPageHalf right"></div><div class="rakSplashCut"></div><div class="rakSplashNoise"></div><div class="rakSplashContent">
-      <div class="rakSplashBrand" id="rakSplashBrand" aria-hidden="true"><div class="rakSplashMascot"><img class="rakSplashMascotPart legs left" src="${MASCOT_IDLE}" alt=""><img class="rakSplashMascotPart legs right" src="${MASCOT_IDLE}" alt=""><img class="rakSplashMascotFrame body" src="${MASCOT_IDLE}" alt=""><img class="rakSplashMascotPart claw left" src="${MASCOT_IDLE}" alt=""><img class="rakSplashMascotPart claw right" src="${MASCOT_IDLE}" alt=""><img class="rakSplashMascotFrame tap" src="${MASCOT_TAP}" alt=""></div></div>
+      <div class="rakSplashBrand" id="rakSplashBrand" aria-hidden="true"><div class="rakSplashMascot"><img class="rakSplashMascotFrame idle" src="${MASCOT_IDLE}" alt=""><img class="rakSplashMascotFrame step" src="${MASCOT_STEP}" alt=""><img class="rakSplashMascotFrame tap" src="${MASCOT_TAP}" alt=""></div></div>
       <div class="rakSplashPanel" id="rakSplashPanel"><div class="rakSplashEyebrow">RaK</div><p class="rakSplashHint">Přihlásíš se zadáním posledních 4 číslic osobního čísla.</p><input class="rakSplashInput" id="rakUserLoginAccountNumber" inputmode="numeric" autocomplete="off" maxlength="4" minlength="4" placeholder="Osobní číslo" aria-label="Poslední 4 číslice osobního čísla"><div class="rakSplashStatus" id="rakUserLoginStatus" aria-live="polite"></div><button class="rakSplashButton" id="rakUserLoginSubmit" type="button"><span>Přihlásit</span></button><div class="rakSplashFoot">Číslo slouží pouze k nalezení tvého účtu v RaK.</div></div>
     </div>`;
     document.body.appendChild(overlay);
-    const input=overlay.querySelector('#rakUserLoginAccountNumber'), button=overlay.querySelector('#rakUserLoginSubmit');
-    input?.addEventListener('input',()=>{input.value=input.value.replace(/\D/g,'').slice(0,4)}); input?.addEventListener('keydown',e=>{if(e.key==='Enter')button?.click()}); button?.addEventListener('click',submit); setTimeout(()=>input?.focus(),120); return overlay;
+    const input=overlay.querySelector('#rakUserLoginAccountNumber'), button=overlay.querySelector('#rakUserLoginSubmit'), brand=overlay.querySelector('#rakSplashBrand');
+    input?.addEventListener('input',()=>{input.value=input.value.replace(/\D/g,'').slice(0,4);brand?.classList.toggle('ready',input.value.length===4)}); input?.addEventListener('focus',()=>brand?.classList.add('listening')); input?.addEventListener('blur',()=>brand?.classList.remove('listening')); input?.addEventListener('keydown',e=>{if(e.key==='Enter')button?.click()}); button?.addEventListener('click',submit); setTimeout(()=>input?.focus(),120); return overlay;
   }
   function status(text,error){const el=document.getElementById('rakUserLoginStatus');if(!el)return;el.textContent=text||'';el.classList.toggle('error',!!error)}
   async function submit(){
     const overlay=document.getElementById(OVERLAY_ID), input=overlay?.querySelector('#rakUserLoginAccountNumber'), button=overlay?.querySelector('#rakUserLoginSubmit'), brand=document.getElementById('rakSplashBrand'), panel=document.getElementById('rakSplashPanel');
-    const last4=String(input?.value||'').replace(/\D/g,''); const reject=msg=>{brand?.classList.remove('error');panel?.classList.remove('error');void brand?.offsetWidth;void panel?.offsetWidth;brand?.classList.add('error');panel?.classList.add('error');status(msg,true)};
+    const last4=String(input?.value||'').replace(/\D/g,''); const reject=msg=>{brand?.classList.remove('error','ready','listening');panel?.classList.remove('error');void brand?.offsetWidth;void panel?.offsetWidth;brand?.classList.add('error');panel?.classList.add('error');status(msg,true)};
     if(!/^\d{4}$/.test(last4)){reject('Zadej 4 číslice.');return} if(button)button.disabled=true;status('Ověřuji…',false);
-    try{if(typeof rakUserProfileLookup!=='function')throw new Error('lookup unavailable');const result=await rakUserProfileLookup(last4);if(!result?.ok){reject(result?.reason==='not-found'?'Účet nebyl nalezen.':result?.reason==='ambiguous'?'Číslo není jednoznačné. Obrať se na správce.':'Ověření se nepodařilo. Zkus to znovu.');return}if(typeof rakUserProfileWrite==='function')rakUserProfileWrite(result);if(typeof rakUserProfileApplyToRuntime==='function')rakUserProfileApplyToRuntime(result);brand?.classList.remove('error');panel?.classList.remove('error');brand?.classList.add('success');setTimeout(()=>overlay?.classList.add('pageSplit'),480);setTimeout(()=>{overlay?.remove();active=false;try{if(typeof rakUserProfileRefreshMenu==='function')rakUserProfileRefreshMenu()}catch(e){}},1820)}catch(e){reject('Ověření se nepodařilo. Zkus to znovu.')}finally{if(button)button.disabled=false}
+    try{if(typeof rakUserProfileLookup!=='function')throw new Error('lookup unavailable');const result=await rakUserProfileLookup(last4);if(!result?.ok){reject(result?.reason==='not-found'?'Účet nebyl nalezen.':result?.reason==='ambiguous'?'Číslo není jednoznačné. Obrať se na správce.':'Ověření se nepodařilo. Zkus to znovu.');return}if(typeof rakUserProfileWrite==='function')rakUserProfileWrite(result);if(typeof rakUserProfileApplyToRuntime==='function')rakUserProfileApplyToRuntime(result);brand?.classList.remove('error','ready','listening');panel?.classList.remove('error');brand?.classList.add('success');setTimeout(()=>overlay?.classList.add('pageSplit'),480);setTimeout(()=>{overlay?.remove();active=false;try{if(typeof rakUserProfileRefreshMenu==='function')rakUserProfileRefreshMenu()}catch(e){}},1820)}catch(e){reject('Ověření se nepodařilo. Zkus to znovu.')}finally{if(button)button.disabled=false}
   }
   function install(prefill=''){style();if(active)return document.getElementById(OVERLAY_ID);active=true;const overlay=build();const input=overlay?.querySelector('#rakUserLoginAccountNumber'),digits=String(prefill||'').replace(/\D/g,'');if(input)input.value=digits.length>4?digits.slice(-4):digits;return overlay}
   window.installRakLoginSplash=install; window.rakLoginSplashOpen=install;

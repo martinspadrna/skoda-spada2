@@ -1042,6 +1042,8 @@ body.reduceMotion *, body.reduceMotion *::before, body.reduceMotion *::after{ani
   line-height:1.35;
   color:rgba(242,248,245,.88);
   word-break:break-word;}
+.appMenuFreeNamesText.isOk{color:#baffc8;}
+.appMenuFreeNamesText.isError,.appMenuMonthCheckRow.isError{color:#ffb5ae;}
 .appMenuLabel{display:block;
   font-size:12px;
   font-weight:700;
