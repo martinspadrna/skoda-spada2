@@ -3,6 +3,58 @@
   'use strict';
 
   const PROFILE_KEY = 'rotace_kalkulacky:user_profile_v1';
+  const ACCOUNT_UI_PROFILE_KEY = 'rotace_kalkulacky:games_profile_v1';
+  const ACCOUNT_UI_MIGRATION_KEY = 'rotace_kalkulacky:account_ui_migration_v1';
+  const ACCOUNT_UI_PROFILE_VERSION = 912;
+
+  // Vzhled účtu dříve sdílel úložiště s modulem Hry. Hry už se v RaK nenačítají,
+  // proto tu ponecháváme jen malou kompatibilní profilovou vrstvu pro vzhled.
+  function makeAccountUiEntry(accountId, name) {
+    const id = String(accountId || '').trim();
+    return {
+      id,
+      name: String(name || id).trim() || id,
+      uiSettings: { themeId: '', backgroundId: '', updatedAt: 0 },
+      updatedAt: 0
+    };
+  }
+
+  function loadAccountUiProfile() {
+    try {
+      const parsed = JSON.parse(localStorage.getItem(ACCOUNT_UI_PROFILE_KEY) || 'null');
+      if (!parsed || typeof parsed !== 'object') return { activeAccountId: '', accounts: {}, profileVersion: ACCOUNT_UI_PROFILE_VERSION };
+      parsed.accounts = parsed.accounts && typeof parsed.accounts === 'object' ? parsed.accounts : {};
+      parsed.activeAccountId = String(parsed.activeAccountId || '').trim();
+      parsed.profileVersion = ACCOUNT_UI_PROFILE_VERSION;
+      return parsed;
+    } catch (err) {
+      return { activeAccountId: '', accounts: {}, profileVersion: ACCOUNT_UI_PROFILE_VERSION };
+    }
+  }
+
+  function saveAccountUiProfile(profile) {
+    const safe = profile && typeof profile === 'object' ? profile : { activeAccountId: '', accounts: {} };
+    safe.accounts = safe.accounts && typeof safe.accounts === 'object' ? safe.accounts : {};
+    safe.profileVersion = ACCOUNT_UI_PROFILE_VERSION;
+    try { localStorage.setItem(ACCOUNT_UI_PROFILE_KEY, JSON.stringify(safe)); } catch (err) {}
+    try { if (typeof app === 'object' && app) app.gamesProfile = safe; } catch (err) {}
+  }
+
+  function getAccountUiProfile() {
+    try {
+      if (typeof app === 'object' && app && app.gamesProfile && typeof app.gamesProfile === 'object') return app.gamesProfile;
+    } catch (err) {}
+    const profile = loadAccountUiProfile();
+    try { if (typeof app === 'object' && app) app.gamesProfile = profile; } catch (err) {}
+    return profile;
+  }
+
+  // Zachováme názvy API, které už používá appearance-theme.js. Pokud se někdy
+  // vrátí plný profil Her, jeho implementace může tyto lehké funkce nahradit.
+  if (typeof window.gamesMakeAccountEntry !== 'function') window.gamesMakeAccountEntry = makeAccountUiEntry;
+  if (typeof window.gamesSaveProfile !== 'function') window.gamesSaveProfile = saveAccountUiProfile;
+  if (typeof window.gamesGetProfile !== 'function') window.gamesGetProfile = getAccountUiProfile;
+  if (typeof window.GAMES_PROFILE_RESET_VERSION === 'undefined') window.GAMES_PROFILE_RESET_VERSION = ACCOUNT_UI_PROFILE_VERSION;
 
   function read() {
     try {
@@ -44,8 +96,17 @@
       if (typeof app === 'object' && app) {
         app.activeAccountId = '';
         app.activeAccountName = '';
-        app.gamesProfile = { activeAccountId: '', accounts: {} };
+        const gamesProfile = typeof gamesGetProfile === 'function'
+          ? gamesGetProfile()
+          : (app.gamesProfile && typeof app.gamesProfile === 'object' ? app.gamesProfile : { activeAccountId: '', accounts: {} });
+        gamesProfile.activeAccountId = '';
+        if (typeof GAMES_PROFILE_RESET_VERSION !== 'undefined') gamesProfile.profileVersion = GAMES_PROFILE_RESET_VERSION;
+        if (typeof gamesSaveProfile === 'function') gamesSaveProfile(gamesProfile);
+        app.gamesProfile = gamesProfile;
       }
+    } catch (err) {}
+    try {
+      if (typeof applyAppearancePreference === 'function') applyAppearancePreference('obsidian', true, { skipProfile: true, skipRemote: true });
     } catch (err) {}
     syncSettingsProfileCard(null);
   }
@@ -55,7 +116,7 @@
     return String(value || '').replace(/[&<>"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
   }
 
-  function apply(profile) {
+  function apply(profile, options = {}) {
     const safe = profile && typeof profile === 'object' ? profile : get();
     if (!safe) return;
     const accountNumber = String(safe.accountNumber || '').trim();
@@ -66,7 +127,9 @@
       if (typeof app === 'object' && app) {
         app.activeAccountId = accountNumber;
         app.activeAccountName = fullName;
-        app.gamesProfile = app.gamesProfile && typeof app.gamesProfile === 'object' ? app.gamesProfile : { activeAccountId: '', accounts: {} };
+        app.gamesProfile = typeof gamesGetProfile === 'function'
+          ? gamesGetProfile()
+          : (app.gamesProfile && typeof app.gamesProfile === 'object' ? app.gamesProfile : { activeAccountId: '', accounts: {} });
         app.gamesProfile.activeAccountId = accountNumber;
         app.gamesProfile.accounts = app.gamesProfile.accounts && typeof app.gamesProfile.accounts === 'object' ? app.gamesProfile.accounts : {};
         app.gamesProfile.accounts[accountNumber] = Object.assign({}, app.gamesProfile.accounts[accountNumber] || {}, { id: accountNumber, name: fullName });
@@ -82,6 +145,21 @@
             ? gamesMakeAccountEntry(accountNumber, fullName)
             : { id: accountNumber, name: fullName, uiSettings: { themeId: '', backgroundId: '', updatedAt: 0 } };
           gamesProfile.accounts[accountNumber] = Object.assign({}, makeAccount, gamesProfile.accounts[accountNumber] || {}, { id: accountNumber, name: fullName });
+          const accountUi = gamesProfile.accounts[accountNumber].uiSettings && typeof gamesProfile.accounts[accountNumber].uiSettings === 'object'
+            ? gamesProfile.accounts[accountNumber].uiSettings
+            : (gamesProfile.accounts[accountNumber].uiSettings = { themeId: '', backgroundId: '', updatedAt: 0 });
+          if (options.migrateLegacyAppearance === true && localStorage.getItem(ACCOUNT_UI_MIGRATION_KEY) !== '1') {
+            const legacyTheme = String(localStorage.getItem('rotace_kalkulacky:theme_v1') || '').trim();
+            const legacyBackground = String(localStorage.getItem('rotace_kalkulacky:background_v1') || '').trim();
+            const legacyAppearance = legacyTheme || legacyBackground;
+            if (!accountUi.themeId && !accountUi.backgroundId && legacyAppearance && legacyAppearance !== 'obsidian') {
+              accountUi.themeId = legacyAppearance;
+              accountUi.backgroundId = legacyAppearance;
+              accountUi.updatedAt = Date.now();
+              gamesProfile.accounts[accountNumber].updatedAt = Math.max(Number(gamesProfile.accounts[accountNumber].updatedAt || 0) || 0, accountUi.updatedAt);
+            }
+            localStorage.setItem(ACCOUNT_UI_MIGRATION_KEY, '1');
+          }
           gamesProfile.activeAccountId = accountNumber;
           if (typeof GAMES_PROFILE_RESET_VERSION !== 'undefined') gamesProfile.profileVersion = GAMES_PROFILE_RESET_VERSION;
           if (typeof gamesSaveProfile === 'function') gamesSaveProfile(gamesProfile);
@@ -191,7 +269,7 @@
 
   function bootstrap() {
     const profile = get();
-    if (profile) apply(profile);
+    if (profile) apply(profile, { migrateLegacyAppearance: true });
     refreshMenu();
     try {
       if (!window.__rakUserProfileSettingsObserver) {

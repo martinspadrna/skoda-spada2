@@ -1,9 +1,9 @@
 // RaK development PWA service worker – update-safe build.
-const CACHE_VERSION = 'v1.2-dev-20260906-55';
-const SW_APP_VERSION = 'development 2026-09-06.55';
+const CACHE_VERSION = 'v1.2-dev-20260906-56';
+const SW_APP_VERSION = 'development 2026-09-06.56';
 const STATIC_CACHE = `rotace-static-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `rotace-runtime-${CACHE_VERSION}`;
-const CORE = ['./', './index.html', './manifest.webmanifest', './assets/app-icons/icon-180.png?v=20260906-55', './assets/app-icons/icon-32.png?v=20260906-55', './assets/app-icons/icon-192.png?v=20260906-55', './assets/app-icons/icon-512.png?v=20260906-55', './assets/rak-login-crab.png', './assets/rak-login-crab-step.png', './assets/rak-login-crab-tap.png'];
+const CORE = ['./', './index.html', './manifest.webmanifest', './assets/app-icons/icon-180.png?v=20260906-56', './assets/app-icons/icon-32.png?v=20260906-56', './assets/app-icons/icon-192.png?v=20260906-56', './assets/app-icons/icon-512.png?v=20260906-56', './assets/rak-login-crab.png', './assets/rak-login-crab-step.png', './assets/rak-login-crab-tap.png'];
 const STATIC_EXT = /\.(?:js|css|png|jpg|jpeg|webp|svg|ico|json|webmanifest)$/i;
 
 function cacheable(response) {

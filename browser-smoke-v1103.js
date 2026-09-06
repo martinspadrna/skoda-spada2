@@ -698,6 +698,97 @@ async function runViewportSmoke(cdpPort, viewport, inlineHtml, liveRotationPaylo
   assert(themePropagationState.themes === 10, `${viewport.name}: nečekaný počet vzhledů ${JSON.stringify(themePropagationState)}`);
   assert(themePropagationState.failures.length === 0, `${viewport.name}: text se nepropsal pro všechny vzhledy ${JSON.stringify(themePropagationState.failures)}`);
 
+  const accountAppearanceState = await evalInPage(client, `(() => {
+    if (typeof gamesGetProfile !== 'function' || typeof gamesSaveProfile !== 'function' || typeof applyProfileUiPreferencesForActiveAccount !== 'function') {
+      return { ok: false, reason: 'chybí profilové funkce vzhledu' };
+    }
+    const previousProfile = JSON.parse(JSON.stringify(gamesGetProfile()));
+    const previousAppearance = typeof getAppearancePreference === 'function' ? getAppearancePreference() : 'obsidian';
+    const profile = {
+      activeAccountId: 'smoke-theme-a',
+      profileVersion: typeof GAMES_PROFILE_RESET_VERSION === 'number' ? GAMES_PROFILE_RESET_VERSION : 912,
+      accounts: {
+        'smoke-theme-a': { id: 'smoke-theme-a', name: 'Účet A', uiSettings: { themeId: 'atlantic', backgroundId: 'atlantic', updatedAt: Date.now() - 1000 }, updatedAt: Date.now() - 1000 },
+        'smoke-theme-b': { id: 'smoke-theme-b', name: 'Účet B', uiSettings: { themeId: '', backgroundId: '', updatedAt: 0 }, updatedAt: 0 }
+      }
+    };
+    try {
+      app.gamesProfile = profile;
+      gamesSaveProfile(profile);
+      applyAppearancePreference('atlantic', true, { skipProfile: true, skipRemote: true });
+      applyProfileUiPreferencesForActiveAccount({ loadRemote: false, source: 'browser-smoke-a' });
+      const firstA = document.documentElement.dataset.rakTheme;
+
+      profile.activeAccountId = 'smoke-theme-b';
+      gamesSaveProfile(profile);
+      applyProfileUiPreferencesForActiveAccount({ loadRemote: false, source: 'browser-smoke-b-empty' });
+      const emptyB = document.documentElement.dataset.rakTheme;
+
+      applyAppearancePreference('jade', true, { skipRemote: true });
+      const storedB = profile.accounts['smoke-theme-b'].uiSettings.themeId;
+      profile.activeAccountId = 'smoke-theme-a';
+      gamesSaveProfile(profile);
+      applyProfileUiPreferencesForActiveAccount({ loadRemote: false, source: 'browser-smoke-a-return' });
+      const returnA = document.documentElement.dataset.rakTheme;
+      profile.activeAccountId = 'smoke-theme-b';
+      gamesSaveProfile(profile);
+      applyProfileUiPreferencesForActiveAccount({ loadRemote: false, source: 'browser-smoke-b-return' });
+      const returnB = document.documentElement.dataset.rakTheme;
+      return { ok: true, firstA, emptyB, storedB, returnA, returnB };
+    } finally {
+      app.gamesProfile = previousProfile;
+      gamesSaveProfile(previousProfile);
+      applyAppearancePreference(previousAppearance, true, { skipProfile: true, skipRemote: true });
+      if (previousProfile && previousProfile.activeAccountId) applyProfileUiPreferencesForActiveAccount({ loadRemote: false, source: 'browser-smoke-restore' });
+    }
+  })()`);
+  assert(accountAppearanceState.ok && accountAppearanceState.firstA === 'atlantic' && accountAppearanceState.emptyB === 'obsidian' && accountAppearanceState.storedB === 'jade' && accountAppearanceState.returnA === 'atlantic' && accountAppearanceState.returnB === 'jade', `${viewport.name}: vzhled se přenáší mezi účty ${JSON.stringify(accountAppearanceState)}`);
+
+  const delayedAppearanceState = await evalInPage(client, `(async () => {
+    if (typeof loadActiveAccountUiRemoteSettings !== 'function') return { ok: false, reason: 'chybí vzdálené načtení vzhledu' };
+    const previousProfile = JSON.parse(JSON.stringify(gamesGetProfile()));
+    const previousAppearance = typeof getAppearancePreference === 'function' ? getAppearancePreference() : 'obsidian';
+    const previousBridge = window.RotationSupabaseBridge;
+    let resolveLoad = null;
+    const profile = {
+      activeAccountId: 'smoke-delay-a',
+      profileVersion: typeof GAMES_PROFILE_RESET_VERSION === 'number' ? GAMES_PROFILE_RESET_VERSION : 912,
+      accounts: {
+        'smoke-delay-a': { id: 'smoke-delay-a', name: 'Pomalý A', uiSettings: { themeId: '', backgroundId: '', updatedAt: 0 }, updatedAt: 0 },
+        'smoke-delay-b': { id: 'smoke-delay-b', name: 'Aktivní B', uiSettings: { themeId: 'jade', backgroundId: 'jade', updatedAt: Date.now() }, updatedAt: Date.now() }
+      }
+    };
+    try {
+      window.RotationSupabaseBridge = Object.assign({}, previousBridge || {}, {
+        loadGameAccountUiSettings: () => new Promise((resolve) => { resolveLoad = resolve; }),
+        saveGameAccountUiSettings: async () => ({ ok: true })
+      });
+      app.gamesProfile = profile;
+      gamesSaveProfile(profile);
+      applyProfileUiPreferencesForActiveAccount({ loadRemote: false, source: 'browser-smoke-delay-a' });
+      const pending = loadActiveAccountUiRemoteSettings('smoke-delay-a');
+      profile.activeAccountId = 'smoke-delay-b';
+      gamesSaveProfile(profile);
+      applyProfileUiPreferencesForActiveAccount({ loadRemote: false, source: 'browser-smoke-delay-b' });
+      resolveLoad({ theme_id: 'atlantic', background_id: 'atlantic', updated_at: new Date(Date.now() + 1000).toISOString() });
+      const result = await pending;
+      return {
+        ok: true,
+        activeTheme: document.documentElement.dataset.rakTheme,
+        activeAccount: profile.activeAccountId,
+        delayedAccountTheme: profile.accounts['smoke-delay-a'].uiSettings.themeId,
+        skipped: result && result.reason
+      };
+    } finally {
+      window.RotationSupabaseBridge = previousBridge;
+      app.gamesProfile = previousProfile;
+      gamesSaveProfile(previousProfile);
+      applyAppearancePreference(previousAppearance, true, { skipProfile: true, skipRemote: true });
+      if (previousProfile && previousProfile.activeAccountId) applyProfileUiPreferencesForActiveAccount({ loadRemote: false, source: 'browser-smoke-delay-restore' });
+    }
+  })()`);
+  assert(delayedAppearanceState.ok && delayedAppearanceState.activeTheme === 'jade' && delayedAppearanceState.activeAccount === 'smoke-delay-b' && delayedAppearanceState.delayedAccountTheme === '' && delayedAppearanceState.skipped === 'account-switched', `${viewport.name}: pozdní vzhled účtu A přepsal účet B ${JSON.stringify(delayedAppearanceState)}`);
+
   const liteAppearanceState = await evalInPage(client, `(() => {
     const previousPrefs = loadUiPrefs();
     const previousTheme = document.documentElement.dataset.rakTheme;

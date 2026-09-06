@@ -28,6 +28,7 @@ const adminMachineTasksJs = read('admin-machine-tasks.js');
 const adminFhbCalibrationJs = read('admin-fhb-calibration.js');
 const adminServiceJs = read('admin-service-usage.js');
 const appearanceThemeJs = read('appearance-theme.js');
+const rakUserProfileJs = read('rak-user-profile.js');
 const ui = read('ui.js') + '\n' + read('app-runtime-guards.js') + '\n' + read('app-health-audits.js') + '\n' + read('app-postload-audits.js') + '\n' + read('app-pwa-connectivity.js') + '\n' + read('games-engine.js') + '\n' + read('games-profile.js') + '\n' + appearanceThemeJs + '\n' + read('admin-service-usage.js') + '\n' + read('admin-rotation.js') + '\n' + read('app-navigation.js') + '\n' + read('app-bottom-nav.js') + '\n' + read('app-menu.js') + '\n' + read('app-actions.js') + '\n' + read('app-boot-selftest.js') + '\n' + read('app-rotation-sync.js') + '\n' + read('app-excel-import.js') + '\n' + read('app-rotation-controls.js') + '\n' + read('app-admin-unlock.js') + '\n' + read('app-home-boot.js') + '\n' + read('app-init.js');
 const sql = read('assets/docs/sql/supabase_app_usage_v963.sql');
 const indexHtml = read('index.html');
@@ -805,9 +806,12 @@ function assertAppearanceUpdatePersistenceContractV1105() {
   assertIncludes(exportJs, 'RAK_APPEARANCE_UPDATE_PERSISTENCE_CONTRACT_V1105', 'export.js musí dokumentovat appearance update persistence contract v1.105');
   assertIncludes(appearanceThemeJs, 'RAK_APPEARANCE_UPDATE_PERSISTENCE_CONTRACT_V1105', 'appearance-theme.js musí obsahovat update persistence contract v1.105');
   assertIncludes(appearanceThemeJs, 'nevracet vybrané pozadí po aktualizaci na základní', 'Appearance contract musí popsat problém resetu pozadí při aktualizaci');
-  assertIncludes(appearanceThemeJs, 'if (!ui.backgroundId) { ui.backgroundId = localBg || defaultBg; changed = true; }', 'Chybějící profilové pozadí se musí migrovat z localStorage fallbacku');
-  assertIncludes(appearanceThemeJs, 'if (!ui.themeId) { ui.themeId = localTheme || defaultTheme; changed = true; }', 'Chybějící profilové theme se musí migrovat z localStorage fallbacku');
-  assert(!appearanceThemeJs.includes('if (!ui.backgroundId) { ui.backgroundId = defaultBg; changed = true; }'), 'Aktualizace se nesmí vrátit k okamžitému resetu pozadí na defaultBg');
+  assertIncludes(appearanceThemeJs, 'Účet bez vlastního nastavení nikdy nesmí zdědit vzhled předchozího účtu', 'Nový účet musí být izolovaný od device-global localStorage vzhledu');
+  assertIncludes(appearanceThemeJs, 'applyAppearancePreference(defaultTheme, true, { skipProfile: true });', 'Účet bez lokální volby musí do načtení serveru použít Noční laser');
+  assertIncludes(appearanceThemeJs, 'if (!isProfileUiAccountActive(id))', 'Pozdní serverová odpověď se nesmí aplikovat po přepnutí účtu');
+  assertIncludes(appearanceThemeJs, 'const rakProfileUiRemoteSavePromises = new Map();', 'Vzdálené ukládání vzhledu musí být izolované podle účtu');
+  assertIncludes(rakUserProfileJs, "gamesProfile.activeAccountId = '';", 'Odhlášení musí zrušit aktivní účet bez smazání uložených účtů');
+  assert(!rakUserProfileJs.includes("app.gamesProfile = { activeAccountId: '', accounts: {} };"), 'Odhlášení nesmí zahodit lokální vzhledy ostatních účtů');
 }
 
 function assertBrowserSmokeContractV1103() {

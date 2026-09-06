@@ -201,11 +201,10 @@ window.RAK_THEME_DEFS = RAK_THEME_DEFS;
 window.RAK_BACKGROUND_DEFS = RAK_BACKGROUND_DEFS;
 
 const RAK_PROFILE_UI_REMOTE_DEBOUNCE_MS = 650;
-let rakProfileUiRemoteSaveTimer = null;
-let rakProfileUiRemoteSavePromise = null;
-let rakProfileUiRemoteLoadAccount = '';
-let rakProfileUiRemoteLoadPromise = null;
-let rakProfileUiLastRemoteSaveSignature = '';
+const rakProfileUiRemoteSaveTimers = new Map();
+const rakProfileUiRemoteSavePromises = new Map();
+const rakProfileUiRemoteLoadPromises = new Map();
+const rakProfileUiLastRemoteSaveSignatures = new Map();
 const rakProfileUiSyncGuard = {
   remoteLoads: 0,
   remoteApplies: 0,
@@ -239,8 +238,8 @@ function getProfileUiSyncStatus() {
     account: account ? String(account.name || account.id || '').trim() : '',
     themeId: ui && ui.themeId ? ui.themeId : getLocalThemePreference(),
     backgroundId: ui && ui.backgroundId ? ui.backgroundId : getLocalBackgroundPreference(),
-    remoteLoadActive: !!rakProfileUiRemoteLoadPromise,
-    remoteSaveActive: !!rakProfileUiRemoteSavePromise,
+    remoteLoadActive: rakProfileUiRemoteLoadPromises.size > 0,
+    remoteSaveActive: rakProfileUiRemoteSavePromises.size > 0,
     guard: Object.assign({}, rakProfileUiSyncGuard)
   };
 }
@@ -340,16 +339,22 @@ function saveActiveAccountUiSettings(partial, options = {}) {
   return true;
 }
 
-function getActiveAccountUiRemotePayload() {
-  const account = getActiveProfileUiAccount();
+function getAccountUiRemotePayload(accountId) {
+  const account = getProfileUiAccountById(accountId);
   const ui = ensureAccountUiSettings(account);
   if (!account || !ui) return null;
+  const appearance = normalizeThemePreferenceId(ui.themeId || ui.backgroundId || RAK_DEFAULT_APPEARANCE_ID, RAK_DEFAULT_APPEARANCE_ID);
   return {
     account_number: String(account.id || '').trim(),
-    theme_id: normalizeThemePreferenceId(ui.themeId || getLocalThemePreference(), 'default'),
-    background_id: normalizeBackgroundPreferenceId(ui.backgroundId || getLocalBackgroundPreference(), 'ios-mesh'),
+    theme_id: appearance,
+    background_id: appearance,
     updated_at: new Date(Number(ui.updatedAt || Date.now()) || Date.now()).toISOString()
   };
+}
+
+function getActiveAccountUiRemotePayload() {
+  const account = getActiveProfileUiAccount();
+  return account ? getAccountUiRemotePayload(account.id) : null;
 }
 
 function scheduleActiveAccountUiRemoteSave(reason) {
@@ -357,37 +362,43 @@ function scheduleActiveAccountUiRemoteSave(reason) {
   if (!bridge || typeof bridge.saveGameAccountUiSettings !== 'function') return false;
   const payload = getActiveAccountUiRemotePayload();
   if (!payload || !payload.account_number) return false;
+  const accountId = payload.account_number;
   const signature = getProfileUiPayloadSignature(payload);
-  if (signature && signature === rakProfileUiLastRemoteSaveSignature && !rakProfileUiRemoteSavePromise) {
+  if (signature && signature === rakProfileUiLastRemoteSaveSignatures.get(accountId) && !rakProfileUiRemoteSavePromises.has(accountId)) {
     rakProfileUiSyncGuard.saveSameSkips += 1;
     return false;
   }
-  if (rakProfileUiRemoteSaveTimer) clearTimeout(rakProfileUiRemoteSaveTimer);
-  rakProfileUiRemoteSaveTimer = setTimeout(() => {
-    rakProfileUiRemoteSaveTimer = null;
-    void pushActiveAccountUiRemoteSettings(reason || 'profile-ui-debounced');
+  const previousTimer = rakProfileUiRemoteSaveTimers.get(accountId);
+  if (previousTimer) clearTimeout(previousTimer);
+  const timer = setTimeout(() => {
+    rakProfileUiRemoteSaveTimers.delete(accountId);
+    void pushAccountUiRemoteSettings(accountId, reason || 'profile-ui-debounced');
   }, RAK_PROFILE_UI_REMOTE_DEBOUNCE_MS);
+  rakProfileUiRemoteSaveTimers.set(accountId, timer);
   return true;
 }
 
-async function pushActiveAccountUiRemoteSettings(reason) {
+async function pushAccountUiRemoteSettings(accountId, reason) {
+  const id = String(accountId || '').trim();
   const bridge = window.RotationSupabaseBridge;
-  if (!bridge || typeof bridge.saveGameAccountUiSettings !== 'function') return null;
-  const payload = getActiveAccountUiRemotePayload();
+  if (!id || !bridge || typeof bridge.saveGameAccountUiSettings !== 'function') return null;
+  const payload = getAccountUiRemotePayload(id);
   if (!payload || !payload.account_number) return null;
   const signature = getProfileUiPayloadSignature(payload);
-  if (signature && signature === rakProfileUiLastRemoteSaveSignature && !rakProfileUiRemoteSavePromise) {
+  if (signature && signature === rakProfileUiLastRemoteSaveSignatures.get(id) && !rakProfileUiRemoteSavePromises.has(id)) {
     rakProfileUiSyncGuard.saveSameSkips += 1;
     return { ok: true, skipped: true, reason: 'same-profile-ui' };
   }
-  if (rakProfileUiRemoteSavePromise) {
+  if (rakProfileUiRemoteSavePromises.has(id)) {
     rakProfileUiSyncGuard.saveInFlightJoins += 1;
-    return await rakProfileUiRemoteSavePromise;
+    await rakProfileUiRemoteSavePromises.get(id);
+    return await pushAccountUiRemoteSettings(id, reason);
   }
-  rakProfileUiRemoteSavePromise = bridge.saveGameAccountUiSettings(Object.assign({ reason: reason || 'profile-ui-save' }, payload))
+  let savePromise;
+  savePromise = bridge.saveGameAccountUiSettings(Object.assign({ reason: reason || 'profile-ui-save' }, payload))
     .then((result) => {
       if (result && result.ok !== false) {
-        rakProfileUiLastRemoteSaveSignature = signature;
+        rakProfileUiLastRemoteSaveSignatures.set(id, signature);
         rakProfileUiSyncGuard.remoteSaves += 1;
         rakProfileUiSyncGuard.lastSaveAt = Date.now();
         if (result.queued || result.deferred) rakProfileUiSyncGuard.remoteSaveQueued += 1;
@@ -401,33 +412,56 @@ async function pushActiveAccountUiRemoteSettings(reason) {
       console.warn('Profile UI remote save failed', err);
       return { ok: false, error: err };
     })
-    .finally(() => { rakProfileUiRemoteSavePromise = null; });
-  return await rakProfileUiRemoteSavePromise;
+    .finally(() => {
+      if (rakProfileUiRemoteSavePromises.get(id) === savePromise) rakProfileUiRemoteSavePromises.delete(id);
+    });
+  rakProfileUiRemoteSavePromises.set(id, savePromise);
+  return await savePromise;
+}
+
+async function pushActiveAccountUiRemoteSettings(reason) {
+  const payload = getActiveAccountUiRemotePayload();
+  return payload && payload.account_number ? await pushAccountUiRemoteSettings(payload.account_number, reason) : null;
 }
 
 async function loadActiveAccountUiRemoteSettings(accountId) {
   const id = String(accountId || '').trim();
   const bridge = window.RotationSupabaseBridge;
   if (!id || !bridge || typeof bridge.loadGameAccountUiSettings !== 'function') return null;
-  if (rakProfileUiRemoteLoadAccount === id && rakProfileUiRemoteLoadPromise) {
+  if (rakProfileUiRemoteLoadPromises.has(id)) {
     rakProfileUiSyncGuard.loadInFlightJoins += 1;
-    return await rakProfileUiRemoteLoadPromise;
+    return await rakProfileUiRemoteLoadPromises.get(id);
   }
-  rakProfileUiRemoteLoadAccount = id;
-  rakProfileUiRemoteLoadPromise = (async () => {
+  const loadPromise = (async () => {
     try {
       rakProfileUiSyncGuard.remoteLoads += 1;
       rakProfileUiSyncGuard.lastLoadAt = Date.now();
       const remote = await bridge.loadGameAccountUiSettings(id);
       if (!remote || typeof remote !== 'object') {
         rakProfileUiSyncGuard.remoteMissingCreates += 1;
-        void pushActiveAccountUiRemoteSettings('profile-ui-create-missing-remote');
+        if (!isProfileUiAccountActive(id)) return { ok: true, skipped: true, reason: 'account-switched' };
+        const profile = typeof gamesGetProfile === 'function' ? gamesGetProfile() : null;
+        const account = profile && profile.accounts ? profile.accounts[id] : null;
+        const ui = ensureAccountUiSettings(account);
+        if (!profile || !account || !ui) return null;
+        if (!ui.themeId && !ui.backgroundId) {
+          ui.themeId = RAK_DEFAULT_APPEARANCE_ID;
+          ui.backgroundId = RAK_DEFAULT_APPEARANCE_ID;
+          ui.updatedAt = Date.now();
+          account.updatedAt = Math.max(Number(account.updatedAt || 0) || 0, ui.updatedAt);
+          profile.profileVersion = GAMES_PROFILE_RESET_VERSION;
+          gamesSaveProfile(profile);
+          app.gamesProfile = profile;
+          applyAppearancePreference(RAK_DEFAULT_APPEARANCE_ID, true, { skipProfile: true });
+        }
+        void pushAccountUiRemoteSettings(id, 'profile-ui-create-missing-remote');
         return null;
       }
       const remoteTheme = normalizeThemePreferenceId(remote.theme_id || remote.themeId || remote.theme || '', '');
       const remoteBg = normalizeBackgroundPreferenceId(remote.background_id || remote.backgroundId || remote.background || '', '');
       const remoteAppearance = remoteTheme || remoteBg;
       if (!remoteAppearance) return null;
+      if (!isProfileUiAccountActive(id)) return { ok: true, skipped: true, reason: 'account-switched' };
       const profile = typeof gamesGetProfile === 'function' ? gamesGetProfile() : null;
       const account = profile && profile.accounts ? profile.accounts[id] : null;
       const ui = ensureAccountUiSettings(account);
@@ -437,7 +471,7 @@ async function loadActiveAccountUiRemoteSettings(accountId) {
       const remoteIsOlder = localTs > 0 && remoteTs > 0 && remoteTs + 1000 < localTs;
       if (remoteIsOlder) {
         rakProfileUiSyncGuard.remoteOlderSkips += 1;
-        void pushActiveAccountUiRemoteSettings('profile-ui-remote-older-push-local');
+        void pushAccountUiRemoteSettings(id, 'profile-ui-remote-older-push-local');
         return Object.assign({ ok: true, skipped: true, reason: 'remote-older' }, remote);
       }
       let changed = false;
@@ -457,7 +491,7 @@ async function loadActiveAccountUiRemoteSettings(accountId) {
       } else {
         rakProfileUiSyncGuard.remoteSameSkips += 1;
         if (remoteTheme || remoteBg) {
-          rakProfileUiLastRemoteSaveSignature = getProfileUiPayloadSignature({ account_number: id, theme_id: remoteAppearance, background_id: remoteAppearance });
+          rakProfileUiLastRemoteSaveSignatures.set(id, getProfileUiPayloadSignature({ account_number: id, theme_id: remoteAppearance, background_id: remoteAppearance }));
         }
       }
       return remote;
@@ -466,11 +500,11 @@ async function loadActiveAccountUiRemoteSettings(accountId) {
       return null;
     }
   })();
+  rakProfileUiRemoteLoadPromises.set(id, loadPromise);
   try {
-    return await rakProfileUiRemoteLoadPromise;
+    return await loadPromise;
   } finally {
-    rakProfileUiRemoteLoadAccount = '';
-    rakProfileUiRemoteLoadPromise = null;
+    if (rakProfileUiRemoteLoadPromises.get(id) === loadPromise) rakProfileUiRemoteLoadPromises.delete(id);
   }
 }
 
@@ -479,29 +513,22 @@ function applyProfileUiPreferencesForActiveAccount(options = {}) {
   const account = profile && profile.activeAccountId && profile.accounts ? profile.accounts[profile.activeAccountId] : null;
   const ui = ensureAccountUiSettings(account);
   if (!profile || !account || !ui) return false;
-  const localTheme = getLocalThemePreference();
-  const localBg = getLocalBackgroundPreference();
   const defaultTheme = RAK_DEFAULT_APPEARANCE_ID;
-  const defaultBg = RAK_DEFAULT_APPEARANCE_ID;
   const hasStoredAppearance = !!(ui.themeId || ui.backgroundId);
 
-  // Na novém zařízení nejdřív jen dočasně vykreslíme místní volbu. Nesmíme ji
-  // hned označit jako novější a uložit na server, protože by přepsala vzhled,
-  // který už má tentýž účet uložený z mobilu nebo jiného počítače.
+  // Účet bez vlastního nastavení nikdy nesmí zdědit vzhled předchozího účtu ze
+  // společného localStorage. Do načtení serverové volby zobrazíme Noční laser.
   if (!hasStoredAppearance) {
-    const localAppearance = normalizeThemePreferenceId(localTheme || localBg || defaultTheme, defaultTheme);
-    applyAppearancePreference(localAppearance, true, { skipProfile: true });
+    applyAppearancePreference(defaultTheme, true, { skipProfile: true });
     if (typeof renderThemeSettingsCards === 'function') renderThemeSettingsCards();
     if (options.loadRemote !== false) void loadActiveAccountUiRemoteSettings(account.id);
     return true;
   }
 
   let changed = false;
-  // RaK 1.2 (1.155): při aktualizaci nesmí prázdné profilové uiSettings shodit uživatelské pozadí zpět na základ.
-  // Local fallback použijeme jen pro aktivní účet a jen jako migraci chybějící hodnoty; zamčené skiny se níže dál normalizují na default.
-  if (!ui.themeId) { ui.themeId = localTheme || defaultTheme; changed = true; }
-  if (!ui.backgroundId) { ui.backgroundId = localBg || defaultBg; changed = true; }
-  const appearanceToApply = normalizeThemePreferenceId(ui.themeId || ui.backgroundId || localTheme || localBg || RAK_DEFAULT_APPEARANCE_ID, RAK_DEFAULT_APPEARANCE_ID);
+  const appearanceToApply = normalizeThemePreferenceId(ui.themeId || ui.backgroundId || defaultTheme, defaultTheme);
+  if (!ui.themeId) { ui.themeId = appearanceToApply; changed = true; }
+  if (!ui.backgroundId) { ui.backgroundId = appearanceToApply; changed = true; }
   if (ui.themeId !== appearanceToApply) { ui.themeId = appearanceToApply; changed = true; }
   if (ui.backgroundId !== appearanceToApply) { ui.backgroundId = appearanceToApply; changed = true; }
   if (changed || !ui.updatedAt) {
@@ -523,15 +550,19 @@ window.pushActiveAccountUiRemoteSettings = pushActiveAccountUiRemoteSettings;
 window.loadActiveAccountUiRemoteSettings = loadActiveAccountUiRemoteSettings;
 
 function getThemePreference() {
+  const account = getActiveProfileUiAccount();
   const profileTheme = getProfileThemePreference();
   if (profileTheme) return profileTheme;
+  if (account) return getProfileBackgroundPreference() || RAK_DEFAULT_APPEARANCE_ID;
   return getLocalThemePreference();
 }
 
 
 function getBackgroundPreference() {
+  const account = getActiveProfileUiAccount();
   const profileBg = getProfileBackgroundPreference();
   if (profileBg) return profileBg;
+  if (account) return getProfileThemePreference() || RAK_DEFAULT_APPEARANCE_ID;
   return getLocalBackgroundPreference();
 }
 
@@ -767,6 +798,27 @@ function getAppearancePreference() {
   if (themeId && RAK_APPEARANCE_DEFS.some(item => item.id === themeId)) return themeId;
   if (backgroundId && RAK_APPEARANCE_DEFS.some(item => item.id === backgroundId)) return backgroundId;
   return RAK_DEFAULT_APPEARANCE_ID;
+}
+
+function getProfileUiAccountById(accountId) {
+  try {
+    const id = String(accountId || '').trim();
+    const profile = typeof gamesGetProfile === 'function' ? gamesGetProfile() : null;
+    if (!id || !profile || !profile.accounts) return null;
+    return profile.accounts[id] || null;
+  } catch (err) {
+    return null;
+  }
+}
+
+function isProfileUiAccountActive(accountId) {
+  try {
+    const id = String(accountId || '').trim();
+    const profile = typeof gamesGetProfile === 'function' ? gamesGetProfile() : null;
+    return !!(id && profile && String(profile.activeAccountId || '').trim() === id && profile.accounts && profile.accounts[id]);
+  } catch (err) {
+    return false;
+  }
 }
 
 function applyAppearancePreference(appearanceId, persist = true, options = {}) {
