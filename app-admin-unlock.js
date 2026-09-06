@@ -724,7 +724,7 @@ function buildAdminAccountsRoleOverviewHtml(settings) {
     '  <div class="adminAccountsRoleCard">',
     '    <span>Nizsi admini</span>',
     '    <b>' + String(enabledAdmins) + ' aktivni</b>',
-    '    <small>Muzou spravovat pracovni casti administrace, ale nemuzou menit hesla ani dalsi adminy.</small>',
+    '    <small>Muzou spravovat pracovni casti administrace a zmenit vlastni heslo, ale nemuzou menit dalsi adminy ani heslo hlavniho admina.</small>',
     '  </div>',
     '  <div class="adminAccountsRoleCard isInfo">',
     '    <span>Prihlaseni</span>',
@@ -903,12 +903,30 @@ function buildAdminAccountsStatusHtml(source) {
 
 function buildAdminAccountsSettingsHtml() {
   if (!rakAdminCanManageAdmins()) {
+    const settings = rakAdminGetAccountsSettings();
+    const rows = (settings.admins || []).map((entry) => [
+      '<tr>',
+      '  <td><b>' + escapeHtml(entry.accountId || '') + '</b></td>',
+      '  <td>' + escapeHtml(entry.label || 'Správce') + '</td>',
+      '  <td><span class="adminAccountsMaskedPassword" aria-label="Heslo je skryté">****</span></td>',
+      '  <td>' + (entry.enabled === false ? 'Vypnutý' : 'Aktivní') + '</td>',
+      '</tr>'
+    ].join('')).join('') || '<tr><td colspan="4"><span class="smallText">Seznam správců se načte po připojení.</span></td></tr>';
     return [
-      buildAdminAccountsStatusHtml(rakAdminGetAccountsSettings()),
+      buildAdminAccountsStatusHtml(settings),
+      buildAdminAccountsRoleOverviewHtml(settings),
       '<div class="adminAccountsReadonlyNotice">',
-      '  <b>Seznam spravcu muze menit jen hlavni admin.</b>',
-      '  <span>Nizsi admin muze spravovat provoz, rozpisy, absence, zalohy, exporty a nastaveni aplikace, ale nemuze pridavat dalsi adminy ani menit hesla.</span>',
-      '</div>'
+      '  <b>Správce může změnit pouze svoje heslo.</b>',
+      '  <span>Hesla všech účtů jsou z bezpečnostních důvodů vždy skrytá. Seznam správců, jejich přístupy i heslo hlavního admina může měnit jen účet 9811.</span>',
+      '</div>',
+      '<div class="tableWrap appMenuTableWrap uMt8">',
+      '  <div class="appMenuSubTitle">Ostatní správci</div>',
+      '  <table class="appMenuTable appMenuAdminTable appMenuAdminTableDense adminAccountsTable">',
+      '    <thead><tr><th>Účet</th><th>Popis</th><th>Heslo</th><th>Stav</th></tr></thead>',
+      '    <tbody>' + rows + '</tbody>',
+      '  </table>',
+      '</div>',
+      buildAdminOwnPasswordHtml()
     ].join('');
   }
   const settings = rakAdminGetAccountsSettings();
@@ -953,6 +971,23 @@ function buildAdminOwnerPasswordHtml() {
   ].join('');
 }
 
+function buildAdminOwnPasswordHtml() {
+  if (!rakAdminCanOpenAdmin() || rakAdminCanManageAdmins()) return '';
+  const accountId = rakAdminGetActiveAccountId();
+  return [
+    '<div class="adminOwnerPasswordPanel adminOwnPasswordPanel">',
+    '  <div class="appMenuSubTitle">Změna mého hesla</div>',
+    '  <div class="smallText">Měníš heslo pouze pro svůj admin účet ' + escapeHtml(accountId) + '.</div>',
+    '  <div class="adminOwnerPasswordGrid">',
+    '    <label><span>Současné heslo</span><input class="appMenuInlineInput" type="password" autocomplete="current-password" data-admin-own-password="current"></label>',
+    '    <label><span>Nové heslo</span><input class="appMenuInlineInput" type="password" autocomplete="new-password" data-admin-own-password="new"></label>',
+    '    <label><span>Nové heslo znovu</span><input class="appMenuInlineInput" type="password" autocomplete="new-password" data-admin-own-password="confirm"></label>',
+    '  </div>',
+    '  <button type="button" class="appMenuAction isActive" data-admin-action="change-own-admin-password">Změnit moje heslo</button>',
+    '</div>'
+  ].join('');
+}
+
 async function rakAdminChangeOwnerPassword(root) {
   if (!rakAdminCanManageAdmins() || typeof app === 'undefined' || !app || app.adminAuthVersion !== 2) return { ok: false, reason: 'not-allowed' };
   const scope = root && root.querySelector ? root : document;
@@ -986,6 +1021,53 @@ async function rakAdminChangeOwnerPassword(root) {
     return { ok: false, reason: signInResult.reason || 'reauthentication-failed', error: signInResult.error };
   }
   return { ok: true };
+}
+
+async function rakAdminChangeOwnPassword(root) {
+  if (!rakAdminCanOpenAdmin() || rakAdminCanManageAdmins() || typeof app === 'undefined' || !app || app.adminAuthVersion !== 2) return { ok: false, reason: 'not-allowed' };
+  const accountId = rakAdminGetActiveAccountId();
+  const scope = root && root.querySelector ? root : document;
+  const currentPassword = String(scope.querySelector('[data-admin-own-password="current"]')?.value || '');
+  const newPassword = String(scope.querySelector('[data-admin-own-password="new"]')?.value || '');
+  const confirmation = String(scope.querySelector('[data-admin-own-password="confirm"]')?.value || '');
+  if (!accountId || !currentPassword || newPassword.length < 6) return { ok: false, reason: 'password-too-short' };
+  if (newPassword !== confirmation) return { ok: false, reason: 'password-mismatch' };
+  if (newPassword === currentPassword) return { ok: false, reason: 'password-unchanged' };
+  const bridge = window.RotationSupabaseBridge;
+  const accessToken = bridge && typeof bridge.getAdminAccessToken === 'function' ? await bridge.getAdminAccessToken() : '';
+  if (!accessToken) return { ok: false, reason: 'missing-session' };
+  const adminUsersUrl = String(window.SUPABASE_CONFIG && window.SUPABASE_CONFIG.url || '').replace(/\/$/, '') + '/functions/v1/rak-admin-users';
+  const response = await fetch(adminUsersUrl, {
+    method: 'POST', cache: 'no-store',
+    headers: { Authorization: 'Bearer ' + accessToken, apikey: String(window.SUPABASE_CONFIG && window.SUPABASE_CONFIG.publishableKey || ''), 'Content-Type': 'application/json' },
+    body: JSON.stringify({ action: 'change-own-password', currentPassword, newPassword })
+  });
+  const payload = await response.json().catch(() => ({}));
+  if (!response.ok || !payload.ok) return { ok: false, reason: payload.error || 'password-update-failed' };
+  const signInResult = bridge && typeof bridge.signInAdminAccount === 'function'
+    ? await bridge.signInAdminAccount(accountId, newPassword, rakAdminSecureDevicePayload())
+    : { ok: false, reason: 'missing-bridge' };
+  const capabilities = await rakAdminGetSecureCapabilities(true);
+  if (!signInResult.ok || !rakAdminApplySecureContext(signInResult.context, capabilities)) return { ok: false, reason: signInResult.reason || 'reauthentication-failed', error: signInResult.error };
+  return { ok: true };
+}
+
+async function rakAdminLoadAccountsDirectoryForViewer() {
+  if (!rakAdminCanOpenAdmin()) return { ok: false, reason: 'not-allowed' };
+  if (rakAdminCanManageAdmins()) return rakAdminLoadSecureDirectory();
+  const bridge = window.RotationSupabaseBridge;
+  const accessToken = bridge && typeof bridge.getAdminAccessToken === 'function' ? await bridge.getAdminAccessToken() : '';
+  if (!accessToken) return { ok: false, reason: 'missing-session' };
+  const adminUsersUrl = String(window.SUPABASE_CONFIG && window.SUPABASE_CONFIG.url || '').replace(/\/$/, '') + '/functions/v1/rak-admin-users';
+  const response = await fetch(adminUsersUrl, {
+    method: 'POST', cache: 'no-store',
+    headers: { Authorization: 'Bearer ' + accessToken, apikey: String(window.SUPABASE_CONFIG && window.SUPABASE_CONFIG.publishableKey || ''), 'Content-Type': 'application/json' },
+    body: JSON.stringify({ action: 'list-admin-directory' })
+  });
+  const payload = await response.json().catch(() => ({}));
+  if (!response.ok || !payload.ok || !Array.isArray(payload.profiles)) return { ok: false, reason: payload.error || 'admin-directory-load-failed' };
+  app.adminProfilesV2 = payload.profiles;
+  return { ok: true, profiles: payload.profiles };
 }
 
 function readAdminAccountsDraftRowsFromDom(root) {
@@ -1088,6 +1170,8 @@ try {
   window.rakAdminRevokePersistentSession = rakAdminRevokePersistentSession;
   window.rakAdminLock = rakAdminLock;
   window.rakAdminCanOpenAdmin = rakAdminCanOpenAdmin;
+  window.rakAdminLoadAccountsDirectoryForViewer = rakAdminLoadAccountsDirectoryForViewer;
+  window.rakAdminChangeOwnPassword = rakAdminChangeOwnPassword;
   window.rakAdminCanManageAdmins = rakAdminCanManageAdmins;
   window.buildAdminAccountsRoleOverviewHtml = buildAdminAccountsRoleOverviewHtml;
   window.buildAdminAccountsStatusHtml = buildAdminAccountsStatusHtml;

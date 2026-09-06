@@ -38,6 +38,19 @@
     ])
   });
 
+  // Úkoly navíc platné jen pro konkrétní směnu. Základní úkoly stroje
+  // zůstávají vždy stejné; tyto se pouze doplní do okna po trojitém klepnutí.
+  const MACHINE_SHIFT_TASKS = Object.freeze({
+    TPKW01: Object.freeze({
+      N: Object.freeze([
+        Object.freeze({ label: 'ALMEN' })
+      ]),
+      R: Object.freeze([
+        Object.freeze({ label: 'Odebrat jeden kus na RTG' })
+      ])
+    })
+  });
+
   const TAP_WINDOW_MS = 1100;
   let lastCard = null;
   let tapCount = 0;
@@ -52,11 +65,19 @@
     return match ? match[0] : '';
   }
 
-  function getTasksForAssignment(value) {
+  function assignmentShift(value) {
+    const shift = String(value || '').trim().toUpperCase();
+    return /^N/.test(shift) || /NOČN/.test(shift) ? 'N' : ( /^R/.test(shift) || /RANN/.test(shift) ? 'R' : '');
+  }
+
+  function getTasksForAssignment(value, shift) {
     const machine = assignmentMachine(value);
+    const normalizedShift = assignmentShift(shift);
+    const baseTasks = MACHINE_TASKS[machine] || [];
+    const shiftTasks = (MACHINE_SHIFT_TASKS[machine] && MACHINE_SHIFT_TASKS[machine][normalizedShift]) || [];
     return {
       machine,
-      tasks: (MACHINE_TASKS[machine] || []).map((task) => ({ label: task.label, place: task.place || '' }))
+      tasks: baseTasks.concat(shiftTasks).map((task) => ({ label: task.label, place: task.place || '' }))
     };
   }
 
@@ -108,7 +129,7 @@
 
   function showRotationTaskModal(details) {
     const input = details || {};
-    const result = getTasksForAssignment(input.machine);
+    const result = getTasksForAssignment(input.machine, input.shift);
     const overlay = ensureRotationTaskModal();
     const title = overlay.querySelector('#rotationTaskModalTitle');
     const meta = overlay.querySelector('.rotationTaskMeta');

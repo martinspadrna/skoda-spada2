@@ -3,7 +3,7 @@
 const APP_KEY = "rotace_kalkulacky_state_v123";
 const APP_VERSION = "1.2 (1.338)";
 window.APP_VERSION = APP_VERSION;
-const RAK_DEV_BUILD = "DEV 2026-09-05.41";
+const RAK_DEV_BUILD = "DEV 2026-09-06.42";
 window.RAK_DEV_BUILD = RAK_DEV_BUILD;
 const ROTATION_BUILD = "2026-06-03-" + APP_VERSION;
 window.ROTATION_BUILD = ROTATION_BUILD;

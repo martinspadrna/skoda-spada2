@@ -1875,7 +1875,7 @@ function adminPermissionStatusSnapshot() {
   const roleLabel = unlocked ? (owner ? 'Hlavní admin' : 'Nižší admin') : 'Zamčeno';
   const stateLabel = unlocked ? 'Odemčeno' : 'Zamčeno';
   const detail = unlocked
-    ? (owner ? 'Můžeš měnit správce a všechny admin sekce.' : 'Můžeš spravovat provoz, rozpisy a nastavení, ale ne hesla ani další adminy.')
+    ? (owner ? 'Můžeš měnit správce a všechny admin sekce.' : 'Můžeš spravovat provoz, rozpisy a nastavení a změnit své heslo, ale ne hesla dalších správců ani hlavního admina.')
     : 'Admin akce jsou vypnuté, dokud se účet neověří heslem.';
   return {
     activeAccountId,
@@ -3103,7 +3103,7 @@ function buildAdminSettingsMapText() {
     '- Tenhle soubor je jen mapa administrace. Nic sám nemění ani neukládá.',
     '- Změny dělej jen v administraci a ukládej v konkrétní sekci.',
     '- Běžný uživatel nemá mít možnost měnit rozpis, provoz ani nastavení.',
-    '- Správci: ' + (ownerAccess ? 'hlavní admin může měnit další správce.' : 'nižší admin nemůže měnit seznam správců ani hesla.'),
+    '- Správci: ' + (ownerAccess ? 'hlavní admin může měnit další správce.' : 'nižší admin nemůže měnit seznam správců ani jejich hesla; může změnit pouze vlastní heslo.'),
     '',
     'Oblasti'
   );
@@ -3429,18 +3429,19 @@ function renderAdminMenuBody(body, section) {
     '</div>'
   ].join('');
 
+  const adminAccountsCanManage = typeof rakAdminCanManageAdmins === 'function' && rakAdminCanManageAdmins();
   const adminAccountsHtml = [
     '<div class="appMenuCard appMenuAdminCard adminAccountsCard">',
     '  <div class="appMenuCardTitle">Správci</div>',
     '  <div class="appMenuText">',
-    '    <div>Tady hlavní admin nastaví další admin účty. Běžní uživatelé tuhle sekci neuvidí.</div>',
-    '    <div class="smallText" id="adminOnlineSaveStatus">Heslo nech prázdné, pokud ho nechceš měnit. Pro odebrání správce klikni na × u řádku a ulož.</div>',
+    '    <div>' + (adminAccountsCanManage ? 'Tady hlavní admin nastaví další admin účty.' : 'Tady můžeš zkontrolovat správce a změnit pouze svoje heslo.') + ' Běžní uživatelé tuhle sekci neuvidí.</div>',
+    '    <div class="smallText" id="adminOnlineSaveStatus">' + (adminAccountsCanManage ? 'Heslo nech prázdné, pokud ho nechceš měnit. Pro odebrání správce klikni na × u řádku a ulož.' : 'Hesla jsou v přehledu vždy skrytá. Hlavní admin a ostatní účty nejdou z tohoto účtu měnit.') + '</div>',
     '  </div>',
     buildAdminAccountsSettingsHtml(),
     (typeof buildAdminOwnerPasswordHtml === 'function' ? buildAdminOwnerPasswordHtml() : ''),
     '  <div class="appMenuActionRow">',
     '    <button type="button" class="appMenuAction" data-admin-action="load-admin-accounts">Načíst online</button>',
-    '    <button type="button" class="appMenuAction isActive" data-admin-action="save-admin-accounts">Uložit správce</button>',
+    (adminAccountsCanManage ? '    <button type="button" class="appMenuAction isActive" data-admin-action="save-admin-accounts">Uložit správce</button>' : ''),
     '    <button type="button" class="appMenuAction" data-admin-action="back-admin">Zpět</button>',
     '  </div>',
     '</div>'
@@ -5043,8 +5044,8 @@ function bindAppMenuHandlers(body) {
         return;
       }
       if (adminAction === 'load-admin-accounts') {
-        if (typeof app !== 'undefined' && app && app.adminAuthVersion === 2 && typeof rakAdminLoadSecureDirectory === 'function') {
-          const loaded = await rakAdminLoadSecureDirectory();
+        if (typeof app !== 'undefined' && app && app.adminAuthVersion === 2 && typeof rakAdminLoadAccountsDirectoryForViewer === 'function') {
+          const loaded = await rakAdminLoadAccountsDirectoryForViewer();
           if (!loaded.ok) throw (loaded.profileError || loaded.deviceError || new Error('Načtení správců selhalo.'));
           renderAdminMenuBody(body, 'admin-accounts');
           return;
@@ -5114,6 +5115,20 @@ function bindAppMenuHandlers(body) {
         renderAdminMenuBody(body, 'admin-accounts');
         const nextStatus = document.getElementById('adminOnlineSaveStatus');
         if (nextStatus) nextStatus.textContent = 'Heslo hlavního admina bylo změněno.';
+        return;
+      }
+      if (adminAction === 'change-own-admin-password') {
+        if (!(typeof rakAdminCanOpenAdmin === 'function' && rakAdminCanOpenAdmin()) || (typeof rakAdminCanManageAdmins === 'function' && rakAdminCanManageAdmins())) return;
+        const statusEl = document.getElementById('adminOnlineSaveStatus');
+        if (statusEl) statusEl.textContent = 'Měním moje heslo…';
+        const result = typeof rakAdminChangeOwnPassword === 'function' ? await rakAdminChangeOwnPassword(body) : { ok: false, reason: 'missing-handler' };
+        if (!result || result.ok === false) {
+          const messages = { 'password-too-short': 'Nové heslo musí mít alespoň 6 znaků a současné nesmí být prázdné.', 'password-mismatch': 'Nová hesla se neshodují.', 'password-unchanged': 'Nové heslo je stejné jako současné.', 'invalid_current_password': 'Současné heslo není správné.' };
+          throw (result && result.error ? result.error : new Error(messages[result && result.reason] || 'Změna hesla selhala.'));
+        }
+        renderAdminMenuBody(body, 'admin-accounts');
+        const nextStatus = document.getElementById('adminOnlineSaveStatus');
+        if (nextStatus) nextStatus.textContent = 'Moje heslo bylo změněno.';
         return;
       }
       if (adminAction === 'load-external-links') {
@@ -5474,16 +5489,6 @@ function openAppMenu(view) {
       ].join('');
       return;
     }
-    if (v === 'admin-accounts' && !(typeof rakAdminCanManageAdmins === 'function' && rakAdminCanManageAdmins())) {
-      body.innerHTML = [
-        '<div class="appMenuCard appMenuAdminCard">',
-        '  <div class="appMenuCardTitle">Správci</div>',
-        '  <div class="appMenuText">Seznam správců může měnit jen hlavní admin. Nižší admin může spravovat provoz, rozpisy, absence, zálohy, exporty a nastavení aplikace, ale nemůže přidávat další adminy ani měnit hesla.</div>',
-        '  <button type="button" class="appMenuAction appMenuBack" data-menu-back="1">Zpět</button>',
-        '</div>'
-      ].join('');
-      return;
-    }
     if (v === 'admin-settings-backups' && !(typeof rakAdminCanManageAdmins === 'function' && rakAdminCanManageAdmins())) {
       body.innerHTML = [
         '<div class="appMenuCard appMenuAdminCard">',
@@ -5707,6 +5712,9 @@ function openAppMenu(view) {
       void (async () => {
         try {
           await loadAdminMachineSettingsFromSupabase();
+          if (typeof app !== 'undefined' && app && app.adminAuthVersion === 2 && typeof rakAdminLoadAccountsDirectoryForViewer === 'function') {
+            await rakAdminLoadAccountsDirectoryForViewer();
+          }
           renderAdminMenuBody(body, 'admin-accounts');
         } catch (err) {
           console.warn('Admin accounts preload failed', err);

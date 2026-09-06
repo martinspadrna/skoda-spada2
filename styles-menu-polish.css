@@ -137,6 +137,16 @@ body.ladaMode #menu .adminUsageMetric{backdrop-filter:none !important;-webkit-ba
 }
 #appMenuBody .rakDevicePerfCard:not([open]){min-height:48px !important;}
 
+/* Nastavení: jednotlivé oblasti musí být na první pohled oddělené.
+   Profil, soukromí, výkon a vzhled jsou samostatné volby, ne jedna karta. */
+#appMenuBody > .appMenuProfileCard + .appMenuSettingsCard,
+#appMenuBody > .appMenuSettingsCard + .rakDevicePerfCard,
+#appMenuBody > .appMenuSettingsCard + .appMenuThemeCardWrap,
+#appMenuBody > .rakDevicePerfCard + .appMenuThemeCardWrap,
+#appMenuBody > .appMenuThemeCardWrap + .appMenuStandaloneBack{
+  margin-top:10px !important;
+}
+
 
 /* RaK 1.2 (1.146) – Přehled připojení jako rozklikávací profily.
    Iniciály v avataru mají vlastní summary text wrapper, aby zůstaly přesně uprostřed ikonky. */

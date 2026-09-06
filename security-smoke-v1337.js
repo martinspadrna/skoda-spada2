@@ -42,6 +42,10 @@ includes(adminUsersEdge, 'withSupabase({ auth: "user" }', 'Sprava adminu musi ov
 includes(adminUsersEdge, 'owner.role !== "owner"', 'Sprava adminu musi vyzadovat hlavniho admina.');
 includes(adminUsersEdge, 'ctx.supabaseAdmin.auth.admin.createUser', 'Auth uzivatele smi vytvaret jen interni Edge Function.');
 includes(adminUsersEdge, 'change-owner-password', 'Hlavni admin musi mit chranenou zmenu vlastniho hesla.');
+includes(adminUsersEdge, 'change-own-password', 'Nizsi admin musi mit samostatnou serverovou zmenu vlastniho hesla.');
+includes(adminUsersEdge, 'list-admin-directory', 'Nizsi admin smi nacist pouze bezpecny adresar spravcu.');
+includes(adminUsersEdge, '.select("account_id,display_name,role,enabled")', 'Adresar spravcu nesmi vracet hesla, tokeny ani interni ID uzivatelu.');
+includes(adminUsersEdge, 'String(verified && verified.user && verified.user.id || "") !== String(owner.user_id || "")', 'Zmena vlastniho hesla musi overit, ze prihlaseni patri aktualnimu adminovi.');
 includes(adminUsersEdge, 'invalid_current_password', 'Zmena hesla musi overit soucasne heslo.');
 includes(adminUsersEdge, 'ALLOWED_ORIGIN = "https://skoda-spada.vercel.app"', 'Sprava adminu smi povolit jen produkcni origin.');
 includes(calendarApi, "'Cache-Control', 'no-store, max-age=0'", 'ICS odpoved se nesmi cachovat.');

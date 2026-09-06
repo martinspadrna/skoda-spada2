@@ -452,6 +452,26 @@ async function runViewportSmoke(cdpPort, viewport, inlineHtml, liveRotationPaylo
   assert(ladaModeState.ok && ladaModeState.active && ladaModeState.healthOk && ladaModeState.litePaint === 'yes', `${viewport.name}: Láďův režim se nezapnul správně ${JSON.stringify(ladaModeState)}`);
   assert(!/blur\(/i.test(ladaModeState.blur) && /^0s(?:,|$)/.test(ladaModeState.transition) && /^0s(?:,|$)/.test(ladaModeState.animation) && ladaModeState.shadow === 'none', `${viewport.name}: Láďův režim ponechal těžké vykreslování ${JSON.stringify(ladaModeState)}`);
 
+  const settingsSpacingState = await evalInPage(client, `(async () => {
+    const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+    if (typeof openAppMenu !== 'function' || typeof hideAppMenu !== 'function') return { ok: false, reason: 'menu-helpers-missing' };
+    try {
+      openAppMenu('settings');
+      await wait(30);
+      const body = document.getElementById('appMenuBody');
+      const profile = body && body.querySelector(':scope > .appMenuProfileCard');
+      const privacy = body && body.querySelector(':scope > .appMenuProfileCard + .appMenuSettingsCard');
+      const performance = body && body.querySelector(':scope > .rakDevicePerfCard');
+      const appearance = body && body.querySelector(':scope > .appMenuThemeCardWrap');
+      const pairs = [[profile, privacy], [privacy, performance], [performance, appearance]];
+      const gaps = pairs.map(([before, after]) => before && after ? Math.round(after.getBoundingClientRect().top - before.getBoundingClientRect().bottom) : -1);
+      return { ok: !!(profile && privacy && performance && appearance), gaps };
+    } finally {
+      hideAppMenu();
+    }
+  })()`);
+  assert(settingsSpacingState.ok && settingsSpacingState.gaps.every((gap) => gap >= 9), `${viewport.name}: karty nastavení nemají čitelné mezery ${JSON.stringify(settingsSpacingState)}`);
+
   const loginMascotState = await evalInPage(client, `(async () => {
     const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
     const savedLookup = window.rakUserProfileLookup;
@@ -627,6 +647,8 @@ async function runViewportSmoke(cdpPort, viewport, inlineHtml, liveRotationPaylo
       return actual.machine !== machine || JSON.stringify(actual.tasks) !== JSON.stringify(tasks);
     }).map(([machine]) => machine);
     const sharedMill = getRotationMachineTasksForAssignment('MFKF10 (+ MFKF06)');
+    const nightWash = getRotationMachineTasksForAssignment('TPKW01', 'N');
+    const morningWash = getRotationMachineTasksForAssignment('TPKW01', 'R');
     const card = document.createElement('button');
     card.type = 'button';
     card.className = 'rotaceShiftTaskCard';
@@ -645,6 +667,8 @@ async function runViewportSmoke(cdpPort, viewport, inlineHtml, liveRotationPaylo
       ok: true,
       mismatches,
       sharedMill,
+      nightWash,
+      morningWash,
       modalVisible,
       modalText
     };
@@ -652,6 +676,7 @@ async function runViewportSmoke(cdpPort, viewport, inlineHtml, liveRotationPaylo
   assert(rotationTasksState.ok, `${viewport.name}: denní úkoly se nenačetly ${JSON.stringify(rotationTasksState)}`);
   assert(rotationTasksState.mismatches.length === 0, `${viewport.name}: mapování denních úkolů neodpovídá zadání ${JSON.stringify(rotationTasksState)}`);
   assert(rotationTasksState.sharedMill.machine === 'MFKF06' && rotationTasksState.sharedMill.tasks[0]?.place === 'KP511', `${viewport.name}: společné frézky nepoužily úkol MFKF06 ${JSON.stringify(rotationTasksState)}`);
+  assert(rotationTasksState.nightWash.tasks.some((task) => task.label === 'ALMEN') && !rotationTasksState.morningWash.tasks.some((task) => task.label === 'ALMEN') && rotationTasksState.morningWash.tasks.some((task) => task.label === 'Odebrat jeden kus na RTG'), `${viewport.name}: úkoly TPKW01 pro ranní/noční směnu neodpovídají zadání ${JSON.stringify(rotationTasksState)}`);
   assert(rotationTasksState.modalVisible && /Testovací člověk/.test(rotationTasksState.modalText) && /KP518/.test(rotationTasksState.modalText) && /KP512/.test(rotationTasksState.modalText), `${viewport.name}: trojité klepnutí neotevřelo správný úkol ${JSON.stringify(rotationTasksState)}`);
 
   const vacationReportState = await evalInPage(client, `(() => {
