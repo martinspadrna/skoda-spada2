@@ -29,7 +29,7 @@ try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleR
 })();
 
 (async () => {
-  const RAK_MODULE_CACHE_VERSION = "1.2.362";
+  const RAK_MODULE_CACHE_VERSION = "1.2.363";
 
   const criticalFiles = [
     "supabase-config.js",
@@ -59,6 +59,7 @@ try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleR
     "appearance-theme.js",
     "changelog.js",
     "admin-rotation.js",
+    "admin-machine-tasks.js",
     "admin-food.js",
     "admin-reports.js",
     "admin-service-usage.js",

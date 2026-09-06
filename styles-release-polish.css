@@ -1611,3 +1611,39 @@ html body #brusy.calcPage .bbtn.brusFreeIndexBtn.activeChoice{
 #korekce-frezky .calcFhbPresetBtn--lis .fhbIndexAf{color:#d7f5ff !important;text-shadow:0 1px 1px #003d8f,0 0 20px #bdeeff !important}
 #korekce-frezky .calcFhbPresetBtn--lis .fhbIndexAg{color:#dbffed !important;text-shadow:0 1px 1px #00562f,0 0 20px #c7ffdd !important}
 #korekce-frezky .calcFhbPresetBtn--lis .fhbIndexAh{color:#fff7d0 !important;text-shadow:0 1px 1px #943000,0 0 20px #fff0a5 !important}
+
+/* Brusy používají přesně stejnou paletu jako Korekce frézek.  Tento selector
+   vědomě přebíjí starší glass variantu, která měla vyšší specificitu. */
+html body:not(.lightweightMode):not(.lowEndDevice) #brusy.calcPage .indexGrid .bbtn.brusIndexBtn.ad{
+  background:linear-gradient(145deg,#067dff 0%,#00aaff 100%) !important;
+  border-color:#b3efff !important;
+  color:#fff !important;
+  text-shadow:0 1px 1px #003d8f,0 0 20px #bdeeff !important;
+  box-shadow:0 10px 26px rgba(0,0,0,.30),0 0 30px rgba(0,164,255,.72),inset 0 1px 0 rgba(255,255,255,.54) !important;
+}
+html body:not(.lightweightMode):not(.lowEndDevice) #brusy.calcPage .indexGrid .bbtn.brusIndexBtn.ae{
+  background:linear-gradient(145deg,#00b966 0%,#00ee87 100%) !important;
+  border-color:#b5ffe0 !important;
+  color:#fff !important;
+  text-shadow:0 1px 1px #00562f,0 0 20px #c7ffdd !important;
+  box-shadow:0 10px 26px rgba(0,0,0,.30),0 0 30px rgba(0,237,135,.68),inset 0 1px 0 rgba(255,255,255,.54) !important;
+}
+html body:not(.lightweightMode):not(.lowEndDevice) #brusy.calcPage .indexGrid .bbtn.brusIndexBtn.ah{
+  background:linear-gradient(145deg,#ffe12b 0%,#ffae00 52%,#f55c00 100%) !important;
+  border-color:#fff0ad !important;
+  color:#fff !important;
+  text-shadow:0 1px 1px #943000,0 0 20px #fff0a5 !important;
+  box-shadow:0 10px 26px rgba(0,0,0,.30),0 0 32px rgba(255,163,0,.76),inset 0 1px 0 rgba(255,255,255,.54) !important;
+}
+html body:not(.lightweightMode):not(.lowEndDevice) #brusy.calcPage .indexGrid .bbtn.brusFreeIndexBtn.adv{
+  background:linear-gradient(145deg,#235183 0%,#286b8c 100%) !important;
+  border-color:rgba(151,208,196,.64) !important;
+  color:#e8f5f1 !important;
+  box-shadow:0 9px 22px rgba(0,0,0,.26),inset 0 1px 0 rgba(255,255,255,.26) !important;
+}
+html body:not(.lightweightMode):not(.lowEndDevice) #brusy.calcPage .indexGrid .bbtn.brusFreeIndexBtn.aev{
+  background:linear-gradient(145deg,#235c4a 0%,#287b5a 100%) !important;
+  border-color:rgba(151,208,196,.64) !important;
+  color:#e8f5f1 !important;
+  box-shadow:0 9px 22px rgba(0,0,0,.26),inset 0 1px 0 rgba(255,255,255,.26) !important;
+}

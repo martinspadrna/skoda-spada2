@@ -3250,6 +3250,7 @@ function renderAdminMenuBody(body, section) {
       { action: 'open-rotation', label: 'Rozpisy' },
       { action: 'open-workers', label: 'Pracovníci' },
       { action: 'open-generator-settings', label: 'Pravidla generátoru' },
+      { action: 'open-machine-tasks', label: 'Úkoly podle stroje' },
       { action: 'open-change-log', label: 'Historie změn' },
       { action: 'open-backups', label: 'Zálohy rozpisů' },
       { action: 'open-export', label: 'Export / import' }
@@ -3393,6 +3394,22 @@ function renderAdminMenuBody(body, section) {
     '  <div class="appMenuActionRow">',
     '    <button type="button" class="appMenuAction" data-admin-action="load-generator-settings">Načíst online</button>',
     '    <button type="button" class="appMenuAction isActive" data-admin-action="save-generator-settings">Uložit pravidla</button>',
+    '    <button type="button" class="appMenuAction" data-admin-action="back-admin">Zpět</button>',
+    '  </div>',
+    '</div>'
+  ].join('');
+
+  const machineTasksHtml = [
+    '<div class="appMenuCard appMenuAdminCard adminMachineTasksCard">',
+    '  <div class="appMenuCardTitle">Úkoly podle stroje</div>',
+    '  <div class="appMenuText">',
+    '    <div>Tady nastavíš, co se zobrazí pracovníkovi po trojkliku na jeho stroj v příští směně v Rotacích.</div>',
+    '    <div class="smallText" id="adminOnlineSaveStatus">Běžné úkoly platí vždy; ranní a noční se k nim pouze přidají.</div>',
+    '  </div>',
+    (typeof buildAdminMachineTasksSettingsHtml === 'function' ? buildAdminMachineTasksSettingsHtml() : '<div class="smallText">Nastavení úkolů se načítá…</div>'),
+    '  <div class="appMenuActionRow">',
+    '    <button type="button" class="appMenuAction" data-admin-action="load-machine-tasks">Načíst online</button>',
+    '    <button type="button" class="appMenuAction isActive" data-admin-action="save-machine-tasks">Uložit úkoly</button>',
     '    <button type="button" class="appMenuAction" data-admin-action="back-admin">Zpět</button>',
     '  </div>',
     '</div>'
@@ -3675,6 +3692,8 @@ function renderAdminMenuBody(body, section) {
     body.innerHTML = overtimeHtml;
   } else if (mode === 'generator-settings') {
     body.innerHTML = generatorSettingsHtml;
+  } else if (mode === 'machine-tasks') {
+    body.innerHTML = machineTasksHtml;
   } else if (mode === 'workers') {
     body.innerHTML = workersHtml;
   } else if (mode === 'change-log') {
@@ -3888,6 +3907,7 @@ function appMenuAdminModeSet() {
     'rotation',
     'overtime',
     'generator-settings',
+    'machine-tasks',
     'workers',
     'change-log',
     'monthly-workflow',
@@ -4639,6 +4659,10 @@ function bindAppMenuHandlers(body) {
         openAppMenu('admin-generator-settings');
         return;
       }
+      if (adminAction === 'open-machine-tasks') {
+        openAppMenu('admin-machine-tasks');
+        return;
+      }
       if (adminAction === 'open-workers') {
         openAppMenu('admin-workers');
         return;
@@ -4994,6 +5018,23 @@ function bindAppMenuHandlers(body) {
             ? 'Pravidla uložená lokálně - po připojení se synchronizují'
             : 'Pravidla generátoru uložená online';
         }
+        return;
+      }
+      if (adminAction === 'load-machine-tasks') {
+        await loadAdminMachineSettingsFromSupabase();
+        renderAdminMenuBody(body, 'machine-tasks');
+        return;
+      }
+      if (adminAction === 'save-machine-tasks') {
+        const taskSettings = typeof readAdminMachineTasksSettingsFromDom === 'function' ? readAdminMachineTasksSettingsFromDom(body) : null;
+        const rows = typeof mergeAdminMachineTasksSettingsRows === 'function' ? mergeAdminMachineTasksSettingsRows(taskSettings) : null;
+        if (!taskSettings || !Array.isArray(rows) || !(window.RotationSupabaseBridge && typeof window.RotationSupabaseBridge.saveMachineSettings === 'function')) throw new Error('Nastavení úkolů není dostupné. Zkus aplikaci obnovit.');
+        const result = await window.RotationSupabaseBridge.saveMachineSettings(rows);
+        if (result && result.ok === false) throw (result.error || new Error('Uložení úkolů selhalo.'));
+        app.machineSettingsRows = rows;
+        renderAdminMenuBody(body, 'machine-tasks');
+        const statusEl = document.getElementById('adminOnlineSaveStatus');
+        if (statusEl) statusEl.textContent = result && result.queued ? 'Úkoly uložené lokálně ✓ · po připojení se synchronizují' : 'Úkoly uložené online ✓';
         return;
       }
       if (adminAction === 'load-workers') {
@@ -5467,7 +5508,7 @@ function openAppMenu(view) {
   page.classList.add('active');
   const body = page.querySelector('#appMenuBody');
   const v = view || 'menu';
-  const adminViews = new Set(['admin', 'admin-machines', 'admin-food', 'admin-vacation', 'admin-special-days', 'admin-rotation', 'admin-overtime', 'admin-generator-settings', 'admin-workers', 'admin-change-log', 'admin-monthly-workflow', 'admin-handover', 'admin-manual', 'admin-settings-map', 'admin-accounts', 'admin-external-links', 'admin-app-contact', 'admin-payroll-settings', 'admin-backups', 'admin-settings-backups', 'admin-announcement', 'admin-export', 'admin-reports', 'admin-service']);
+  const adminViews = new Set(['admin', 'admin-machines', 'admin-food', 'admin-vacation', 'admin-special-days', 'admin-rotation', 'admin-overtime', 'admin-generator-settings', 'admin-machine-tasks', 'admin-workers', 'admin-change-log', 'admin-monthly-workflow', 'admin-handover', 'admin-manual', 'admin-settings-map', 'admin-accounts', 'admin-external-links', 'admin-app-contact', 'admin-payroll-settings', 'admin-backups', 'admin-settings-backups', 'admin-announcement', 'admin-export', 'admin-reports', 'admin-service']);
 
   const versionText = (typeof app !== 'undefined' && app.version) || (typeof APP_VERSION !== 'undefined' ? APP_VERSION : '');
   const contact = typeof getRakAppContactSettings === 'function'
@@ -5646,6 +5687,16 @@ function openAppMenu(view) {
         } catch (err) {
           console.warn('Admin generator settings preload failed', err);
           renderAdminMenuBody(body, 'generator-settings');
+        }
+      })();
+    } else if (v === 'admin-machine-tasks') {
+      void (async () => {
+        try {
+          await loadAdminMachineSettingsFromSupabase();
+          renderAdminMenuBody(body, 'machine-tasks');
+        } catch (err) {
+          console.warn('Admin machine tasks preload failed', err);
+          renderAdminMenuBody(body, 'machine-tasks');
         }
       })();
     } else if (v === 'admin-workers') {

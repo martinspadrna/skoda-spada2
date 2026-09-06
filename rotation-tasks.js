@@ -73,8 +73,11 @@
   function getTasksForAssignment(value, shift) {
     const machine = assignmentMachine(value);
     const normalizedShift = assignmentShift(shift);
-    const baseTasks = MACHINE_TASKS[machine] || [];
-    const shiftTasks = (MACHINE_SHIFT_TASKS[machine] && MACHINE_SHIFT_TASKS[machine][normalizedShift]) || [];
+    const configuredTasks = typeof window.getRotationMachineTasksForMachine === 'function'
+      ? window.getRotationMachineTasksForMachine(machine, normalizedShift)
+      : null;
+    const baseTasks = configuredTasks || (MACHINE_TASKS[machine] || []);
+    const shiftTasks = configuredTasks ? [] : ((MACHINE_SHIFT_TASKS[machine] && MACHINE_SHIFT_TASKS[machine][normalizedShift]) || []);
     return {
       machine,
       tasks: baseTasks.concat(shiftTasks).map((task) => ({ label: task.label, place: task.place || '' }))
@@ -198,6 +201,7 @@
   });
 
   window.RAK_ROTATION_MACHINE_TASKS = MACHINE_TASKS;
+  window.RAK_ROTATION_MACHINE_SHIFT_TASKS = MACHINE_SHIFT_TASKS;
   window.getRotationMachineTasksForAssignment = getTasksForAssignment;
   window.showRotationTaskModal = showRotationTaskModal;
   window.hideRotationTaskModal = hideRotationTaskModal;

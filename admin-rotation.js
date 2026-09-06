@@ -1938,6 +1938,7 @@ function adminMachineIsEditableMachineRow(row) {
     && cat !== 'food_schedule'
     && !(typeof adminIsFoodScheduleRow === 'function' && adminIsFoodScheduleRow(row))
     && cat !== 'rotation_save_backup'
+    && cat !== 'rotation_machine_tasks_settings'
     && !(typeof isRotationSaveBackupRow === 'function' && isRotationSaveBackupRow(row))
     && cat !== 'admin_change_log'
     && !(typeof isRakChangeLogRow === 'function' && isRakChangeLogRow(row))
@@ -1948,6 +1949,7 @@ function adminMachineIsEditableMachineRow(row) {
     && key !== 'ADMIN_ACCOUNTS_SETTINGS'
     && key.indexOf('ADMIN_FULL_SETTINGS_BACKUP_') !== 0
     && key !== 'VACATION_COUNTDOWN_SETTINGS'
+    && key !== 'ROTATION_MACHINE_TASKS_SETTINGS'
     && cat !== ADMIN_ROTATION_OVERTIME_SETTINGS_CATEGORY
     && !(typeof rakAdminIsAccountsSettingsRow === 'function' && rakAdminIsAccountsSettingsRow(row))
     && !(typeof isRakExternalLinksSettingsRow === 'function' && isRakExternalLinksSettingsRow(row))
