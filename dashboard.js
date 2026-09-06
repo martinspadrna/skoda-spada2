@@ -687,9 +687,13 @@ function getDashboardAccessOverview(now) {
     ? getDashboardTeamDStatus(now)
     : { active: null, next: typeof getDashboardNextTeamShift === 'function' ? getDashboardNextTeamShift(now, 'D') : null };
   const shift = teamD.active || teamD.next || null;
-  const shiftLabel = (shift) => shift
-    ? ('Směna ' + String(shift.team || '—') + (shift.label ? (' · ' + String(shift.label)) : ''))
-    : 'další směna';
+  const shiftLabel = (item, current, following) => {
+    const date = item.start;
+    const day = date instanceof Date && !Number.isNaN(date.getTime())
+      ? date.getDate() + '.' + (date.getMonth() + 1) + '.'
+      : '';
+    return [current ? 'Dnes' : (following && teamD.active ? 'Další · ' + day : day), item.label || ''].filter(Boolean).join(' · ');
+  };
   const absenceText = (date) => {
     try {
       const names = typeof getAbsenceNamesForDate === 'function' ? getAbsenceNamesForDate(date) : [];
@@ -700,10 +704,19 @@ function getDashboardAccessOverview(now) {
     }
   };
   if (!shift) return [];
-  return [{
-    label: (teamD.active ? 'Dnes' : 'Příští') + ' · ' + shiftLabel(shift),
+  const rows = [{
+    label: shiftLabel(shift, !!teamD.active, false),
     value: absenceText(shift.start || now)
   }];
+  // Hledáme až za začátkem první směny, aby se aktuální/nejbližší směna
+  // neopakovala a fungovala i noční směna nebo přelom měsíce.
+  const next = shift.start instanceof Date && typeof getDashboardNextTeamShift === 'function'
+    ? getDashboardNextTeamShift(new Date(shift.start.getTime() + 1), 'D')
+    : null;
+  if (next && next.start && next.start > shift.start) {
+    rows.push({ label: shiftLabel(next, false, true), value: absenceText(next.start) });
+  }
+  return rows;
 }
 
 function buildDashboardPersonalHeroHtml(now, esc) {
@@ -736,9 +749,10 @@ function buildDashboardPersonalHeroHtml(now, esc) {
     title = 'Dnes máš ' + String(state.absence.target || 'volno') + '.';
     status = 'Další směna zatím není v rozpisu';
   } else {
-    title = 'Dnes nemáš směnu v rozpisu.';
-    status = 'Přehled pro dnešek';
+    title = 'Směna D';
+    status = 'Přehled směn';
     accessOverview = getDashboardAccessOverview(now);
+    if (!accessOverview.length) detail = 'Další směna zatím není k dispozici.';
   }
 
   const isRivetingDay = /^o nic se nestarej/i.test(task);

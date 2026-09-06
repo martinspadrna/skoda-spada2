@@ -29,7 +29,7 @@ try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleR
 })();
 
 (async () => {
-  const RAK_MODULE_CACHE_VERSION = "1.2.372";
+  const RAK_MODULE_CACHE_VERSION = "1.2.373";
 
   const criticalFiles = [
     "supabase-config.js",
