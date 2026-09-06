@@ -73,20 +73,18 @@
     const rows = ORDER.map((machine) => {
       const item = settings.tasks[machine] || { base: [], R: [], N: [] };
       return [
-        '<tr data-machine-task-row="' + esc(machine) + '">',
-        '<td><b>' + esc(machine) + '</b></td>',
-        '<td><textarea class="appMenuTextarea" rows="2" data-machine-task-base placeholder="např. Kontrola měřidel @ KP518">' + esc(taskLines(item.base)) + '</textarea></td>',
-        '<td><textarea class="appMenuTextarea" rows="2" data-machine-task-r placeholder="jen ranní směna">' + esc(taskLines(item.R)) + '</textarea></td>',
-        '<td><textarea class="appMenuTextarea" rows="2" data-machine-task-n placeholder="jen noční směna">' + esc(taskLines(item.N)) + '</textarea></td>',
-        '</tr>'
+        '<section class="adminMachineTaskItem" data-machine-task-row="' + esc(machine) + '">',
+        '<div class="adminMachineTaskName">' + esc(machine) + '</div>',
+        '<label class="adminMachineTaskField"><span>Vždy</span><textarea class="appMenuTextarea" rows="2" data-machine-task-base placeholder="např. Kontrola měřidel @ KP518">' + esc(taskLines(item.base)) + '</textarea></label>',
+        '<label class="adminMachineTaskField"><span>Ranní směna</span><textarea class="appMenuTextarea" rows="2" data-machine-task-r placeholder="jen ranní směna">' + esc(taskLines(item.R)) + '</textarea></label>',
+        '<label class="adminMachineTaskField"><span>Noční směna</span><textarea class="appMenuTextarea" rows="2" data-machine-task-n placeholder="jen noční směna">' + esc(taskLines(item.N)) + '</textarea></label>',
+        '</section>'
       ].join('');
     }).join('');
     return [
       '<div class="appMenuSettingsList">',
       '<div class="smallText">Jeden úkol napiš na samostatný řádek. Místnost nebo KP přidej za <b>@</b>, například <b>Kontrola měřidel @ KP518</b>. Prázdné pole znamená žádný úkol.</div>',
-      '<div class="tableWrap appMenuTableWrap uMt12"><table class="appMenuTable appMenuAdminTable adminMachineTasksTable">',
-      '<thead><tr><th>Stroj</th><th>Vždy</th><th>Ranní</th><th>Noční</th></tr></thead><tbody>' + rows + '</tbody>',
-      '</table></div></div>'
+      '<div class="adminMachineTasksList uMt12">' + rows + '</div></div>'
     ].join('');
   }
   function readFromDom(root) {

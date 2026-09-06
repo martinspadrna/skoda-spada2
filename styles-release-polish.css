@@ -1647,3 +1647,35 @@ html body:not(.lightweightMode):not(.lowEndDevice) #brusy.calcPage .indexGrid .b
   color:#e8f5f1 !important;
   box-shadow:0 9px 22px rgba(0,0,0,.26),inset 0 1px 0 rgba(255,255,255,.26) !important;
 }
+
+/* Nastavení úkolů: mobilní karty bez vodorovného posouvání. */
+.adminMachineTasksList{
+  display:grid;
+  gap:12px;
+}
+.adminMachineTaskItem{
+  display:grid;
+  gap:9px;
+  padding:12px;
+  border:1px solid rgba(255,255,255,.14);
+  border-radius:16px;
+  background:linear-gradient(145deg,rgba(255,255,255,.07),rgba(9,14,20,.10));
+}
+.adminMachineTaskName{
+  color:var(--rakAccentYellow,#fff36b);
+  font-size:15px;
+  font-weight:900;
+}
+.adminMachineTaskField{
+  display:grid;
+  gap:5px;
+}
+.adminMachineTaskField > span{
+  color:rgba(255,255,255,.84);
+  font-size:12px;
+  font-weight:800;
+}
+.adminMachineTaskItem .appMenuTextarea{
+  min-height:68px;
+  resize:vertical;
+}
