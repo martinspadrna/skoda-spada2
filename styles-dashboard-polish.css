@@ -2050,3 +2050,13 @@ html body.lightweightMode #home .tile{
   box-shadow:none !important;
   text-shadow:none !important;
 }
+
+/* Úsporné vykreslování zachovává vybraný vzhled celé osobní stránky. */
+html body:is(.ladaMode,.lowEndDevice,.lightweightMode) #home.page.active .dashboardShell{
+  background:var(--panel) !important;
+  border-color:var(--rakThemeBorder) !important;
+}
+html body:is(.ladaMode,.lowEndDevice,.lightweightMode) #home.page.active .dashboardCard{
+  background:var(--panel2) !important;
+  border-color:var(--rakThemeBorder) !important;
+}

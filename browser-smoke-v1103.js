@@ -637,6 +637,46 @@ async function runViewportSmoke(cdpPort, viewport, inlineHtml, liveRotationPaylo
   assert(themePropagationState.themes === 10, `${viewport.name}: nečekaný počet vzhledů ${JSON.stringify(themePropagationState)}`);
   assert(themePropagationState.failures.length === 0, `${viewport.name}: text se nepropsal pro všechny vzhledy ${JSON.stringify(themePropagationState.failures)}`);
 
+  const liteAppearanceState = await evalInPage(client, `(() => {
+    const previousPrefs = loadUiPrefs();
+    const previousTheme = document.documentElement.dataset.rakTheme;
+    const sample = document.createElement('div');
+    document.body.appendChild(sample);
+    const failures = [];
+    const resolved = (background) => {
+      sample.style.background = background;
+      const style = getComputedStyle(sample);
+      return [style.backgroundColor, style.backgroundImage].join('|');
+    };
+    const painted = (element) => {
+      const style = getComputedStyle(element);
+      return [style.backgroundColor, style.backgroundImage].join('|');
+    };
+    try {
+      applyUiPrefs(Object.assign({}, previousPrefs, { lightweight: true, lightweightManual: true }));
+      openAppMenu('settings');
+      for (const theme of window.RAK_APPEARANCE_DEFS) {
+        applyAppearancePreference(theme.id, false, { skipProfile: true, skipRemote: true });
+        const root = getComputedStyle(document.documentElement);
+        const checks = {
+          background: painted(document.body) === resolved(root.getPropertyValue('--rakAppBackgroundLite') + ' ' + root.getPropertyValue('--rakBgBase')),
+          shell: painted(document.querySelector('#home .dashboardShell')) === resolved(theme.themeVars['--panel']),
+          card: painted(document.querySelector('#home .dashboardCard')) === resolved(theme.themeVars['--panel2']),
+          navigation: painted(document.querySelector('nav.bottomNav')) === resolved(theme.themeVars['--bg']),
+          menu: painted(document.querySelector('.appMenuProfileCard')) === resolved(theme.themeVars['--panel2'])
+        };
+        if (Object.values(checks).some((ok) => !ok)) failures.push({ id: theme.id, checks });
+      }
+    } finally {
+      hideAppMenu();
+      sample.remove();
+      applyAppearancePreference(previousTheme, false, { skipProfile: true, skipRemote: true });
+      applyUiPrefs(previousPrefs);
+    }
+    return { themes: window.RAK_APPEARANCE_DEFS.length, failures };
+  })()`);
+  assert(liteAppearanceState.failures.length === 0, `${viewport.name}: úsporný režim přepsal vzhled ${JSON.stringify(liteAppearanceState)}`);
+
   const rotationTasksState = await evalInPage(client, `(() => {
     if (typeof window.getRotationMachineTasksForAssignment !== 'function') {
       return { ok: false, reason: 'chybí mapování denních úkolů' };

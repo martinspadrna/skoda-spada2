@@ -1236,9 +1236,8 @@ html body #brusy.calcPage .brusFreeWrap > .bbtn.brusFreeIndexBtn{
    těžkých blurů, glow filtrů a dlouhých animací. Ruční vypnutí z 1.142 zůstává beze změny. */
 html.rakLadaPaintLite,
 html.rakLadaPaintLite body{
-  background:#050b09 !important;
-  background-color:#050b09 !important;
-  background-image:linear-gradient(160deg, #050b09 0%, #07110d 54%, #0a1712 100%) !important;
+  background:var(--rakAppBackgroundLite, var(--bg, #050b09)) !important;
+  background-color:var(--rakBgBase, var(--bg, #050b09)) !important;
   background-attachment:scroll !important;
 }
 html.rakLadaPaintLite body::before,
@@ -1254,10 +1253,23 @@ body.ladaMode,
 body.lowEndDevice,
 body.lightweightMode{
   --rak-lada-blur-px:0px;
-  --rak-lada-card-bg:rgba(8,14,11,.86);
-  --rak-lada-card-border:rgba(255,255,255,.075);
+  --rak-lada-card-bg:var(--panel2);
+  --rak-lada-card-border:var(--rakThemeBorder);
   --rak-lada-card-shadow:none;
+  /* Výkonový režim omezuje efekty; paleta zůstává podle účtu. Přepisuje
+     historické pevně zelené glass proměnné deklarované přímo na body. */
+  --rakGlassPanelBg:var(--panel) !important;
+  --rakGlassCardBg:var(--panel2) !important;
+  --rakGlassSoftBg:var(--panel) !important;
   text-rendering:optimizeSpeed;
+}
+html body:is(.ladaMode,.lowEndDevice,.lightweightMode) nav.bottomNav{
+  background:var(--bg) !important;
+  border-color:var(--rakThemeBorder) !important;
+}
+html body:is(.ladaMode,.lowEndDevice,.lightweightMode) nav.bottomNav::before,
+html body:is(.ladaMode,.lowEndDevice,.lightweightMode) nav.bottomNav::after{
+  background:transparent !important;
 }
 body.ladaMode .dashboardHeroCard,
 body.ladaMode .dashboardCard,
