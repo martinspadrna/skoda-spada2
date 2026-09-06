@@ -1528,14 +1528,16 @@ html body #brusy.calcPage .bbtn.brusIndexBtn.ah{
   box-shadow:0 10px 26px rgba(0,0,0,.30), 0 0 30px rgba(255,150,0,.70), inset 0 1px 0 rgba(255,255,255,.50) !important;
 }
 html body #brusy.calcPage .bbtn.brusFreeIndexBtn.adv{
-  background:linear-gradient(145deg, rgba(68,151,224,.62), rgba(12,42,80,.92)) !important;
-  border-color:rgba(133,199,255,.78) !important;
-  color:#eaf7ff !important;
+  background:linear-gradient(145deg,#235183 0%,#286b8c 100%) !important;
+  border-color:rgba(151,208,196,.64) !important;
+  color:#e8f5f1 !important;
+  box-shadow:0 9px 22px rgba(0,0,0,.26),inset 0 1px 0 rgba(255,255,255,.26) !important;
 }
 html body #brusy.calcPage .bbtn.brusFreeIndexBtn.aev{
-  background:linear-gradient(145deg, rgba(67,190,111,.60), rgba(11,68,37,.92)) !important;
-  border-color:rgba(139,235,171,.74) !important;
-  color:#edfff2 !important;
+  background:linear-gradient(145deg,#235c4a 0%,#287b5a 100%) !important;
+  border-color:rgba(151,208,196,.64) !important;
+  color:#e8f5f1 !important;
+  box-shadow:0 9px 22px rgba(0,0,0,.26),inset 0 1px 0 rgba(255,255,255,.26) !important;
 }
 html body #brusy.calcPage .bbtn.brusIndexBtn.activeIndex,
 html body #brusy.calcPage .bbtn.brusIndexBtn.activeChoice,
@@ -1580,3 +1582,32 @@ html body #brusy.calcPage .bbtn.brusFreeIndexBtn.activeChoice{
   outline-offset:2px !important;
   filter:saturate(1.18) brightness(1.10) !important;
 }
+
+/* Výrobní indexy mají plnou sytost; volné varianty jsou záměrně klidnější.  Přesná kombinace tříd přebíjí starší vzhled korekcí. */
+#korekce-frezky .calcFhbPresetBtn--afag.calcFhbPresetBtn--lis{
+  background:linear-gradient(100deg,#067dff 0%,#00aaff 48%,#00b966 52%,#00ee87 100%) !important;
+  border-color:#b3fff1 !important;
+  color:#ffffff !important;
+  box-shadow:0 10px 26px rgba(0,0,0,.30),0 0 30px rgba(0,164,255,.72),0 0 30px rgba(0,237,135,.66),inset 0 1px 0 rgba(255,255,255,.54) !important;
+}
+#korekce-frezky .calcFhbPresetBtn--ah.calcFhbPresetBtn--lis{
+  background:linear-gradient(135deg,#ffe12b 0%,#ffae00 48%,#f55c00 100%) !important;
+  border-color:#fff0ad !important;
+  color:#ffffff !important;
+  box-shadow:0 10px 26px rgba(0,0,0,.30),0 0 32px rgba(255,163,0,.76),inset 0 1px 0 rgba(255,255,255,.54) !important;
+}
+#korekce-frezky .calcFhbPresetBtn--afag.calcFhbPresetBtn--volne{
+  background:linear-gradient(100deg,#235183 0%,#286b8c 48%,#235c4a 52%,#287b5a 100%) !important;
+  border-color:rgba(151,208,196,.64) !important;
+  color:#e8f5f1 !important;
+  box-shadow:0 9px 22px rgba(0,0,0,.26),inset 0 1px 0 rgba(255,255,255,.26) !important;
+}
+#korekce-frezky .calcFhbPresetBtn--ah.calcFhbPresetBtn--volne{
+  background:linear-gradient(135deg,#875e1e 0%,#895515 52%,#613014 100%) !important;
+  border-color:rgba(233,186,107,.62) !important;
+  color:#fff1d6 !important;
+  box-shadow:0 9px 22px rgba(0,0,0,.26),inset 0 1px 0 rgba(255,255,255,.24) !important;
+}
+#korekce-frezky .calcFhbPresetBtn--lis .fhbIndexAf{color:#d7f5ff !important;text-shadow:0 1px 1px #003d8f,0 0 20px #bdeeff !important}
+#korekce-frezky .calcFhbPresetBtn--lis .fhbIndexAg{color:#dbffed !important;text-shadow:0 1px 1px #00562f,0 0 20px #c7ffdd !important}
+#korekce-frezky .calcFhbPresetBtn--lis .fhbIndexAh{color:#fff7d0 !important;text-shadow:0 1px 1px #943000,0 0 20px #fff0a5 !important}
