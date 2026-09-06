@@ -571,6 +571,7 @@ async function runViewportSmoke(cdpPort, viewport, inlineHtml, liveRotationPaylo
       window.RAK_APPEARANCE_DEFS.forEach((theme) => {
         applyAppearancePreference(theme.id, false, { skipProfile: true, skipRemote: true });
         const rootStyle = getComputedStyle(document.documentElement);
+        const personalHero = document.querySelector('#home.page.active #dashHero.dashboardHeroCard--personal');
         const expected = {
           text: color(rootStyle.getPropertyValue('--text').trim()),
           muted: color(rootStyle.getPropertyValue('--muted').trim()),
@@ -593,7 +594,11 @@ async function runViewportSmoke(cdpPort, viewport, inlineHtml, liveRotationPaylo
           statsLegendValue: read('.statsAbsenceLegendRow strong'),
           statsScale: read('.statsOccupancyScaleLabel'),
           activeNav: read('.bottomNavBtn.active'),
-          inactiveNav: read('.bottomNavBtn:not(.active)')
+          inactiveNav: read('.bottomNavBtn:not(.active)'),
+          dashboardPersonalGreeting: personalHero ? getComputedStyle(personalHero.querySelector('.dashboardPersonalGreeting')).color : '',
+          dashboardPersonalStatus: personalHero ? getComputedStyle(personalHero.querySelector('.dashboardPersonalStatus')).color : '',
+          dashboardPersonalTitle: personalHero ? getComputedStyle(personalHero.querySelector('.dashboardPersonalTitle')).color : '',
+          dashboardPersonalBackground: personalHero ? getComputedStyle(personalHero).backgroundImage : ''
         };
         const matches = {
           dashboardTitle: colors.dashboardTitle === expected.text,
@@ -611,7 +616,11 @@ async function runViewportSmoke(cdpPort, viewport, inlineHtml, liveRotationPaylo
           statsLegendValue: colors.statsLegendValue === expected.soft,
           statsScale: colors.statsScale === expected.muted,
           activeNav: colors.activeNav === expected.accent,
-          inactiveNav: Boolean(colors.inactiveNav) && colors.inactiveNav !== colors.activeNav
+          inactiveNav: Boolean(colors.inactiveNav) && colors.inactiveNav !== colors.activeNav,
+          dashboardPersonalGreeting: colors.dashboardPersonalGreeting === expected.accent,
+          dashboardPersonalStatus: colors.dashboardPersonalStatus === expected.muted,
+          dashboardPersonalTitle: colors.dashboardPersonalTitle === expected.text,
+          dashboardPersonalBackground: Boolean(colors.dashboardPersonalBackground)
         };
         results.push({ id: theme.id, matches, colors, expected });
       });
@@ -620,6 +629,8 @@ async function runViewportSmoke(cdpPort, viewport, inlineHtml, liveRotationPaylo
       probe.remove();
     }
     const failures = results.filter((result) => Object.values(result.matches).some((match) => !match));
+    const personalHeroBackgrounds = new Set(results.map((result) => result.colors.dashboardPersonalBackground).filter(Boolean));
+    if (personalHeroBackgrounds.size !== results.length) failures.push({ id: 'dashboard-personal-background', matches: { dashboardPersonalBackground: false } });
     return { ok: true, themes: results.length, failures };
   })()`);
   assert(themePropagationState.ok, `${viewport.name}: test přepínání textů vzhledů se nespustil ${JSON.stringify(themePropagationState)}`);

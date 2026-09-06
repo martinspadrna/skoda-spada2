@@ -1780,7 +1780,9 @@ html body:not(.lightweightMode):not(.lowEndDevice) #brusy.calcPage .indexGrid .b
   min-height:142px !important;
   padding:14px 15px !important;
   text-align:left !important;
-  background:linear-gradient(135deg,rgba(42,117,255,.30),rgba(132,40,185,.34) 55%,rgba(255,163,40,.16)) !important;
+  border-color:var(--rakThemeBorder,rgba(255,255,255,.22)) !important;
+  background:linear-gradient(135deg,var(--panel2,rgba(30,45,76,.74)),var(--panel,rgba(14,27,49,.82))) !important;
+  box-shadow:0 0 22px var(--rakThemeGlow,rgba(110,190,255,.20));
 }
 #home.page.active #dashHero .dashboardPersonalHero{
   display:grid;
@@ -1788,19 +1790,19 @@ html body:not(.lightweightMode):not(.lowEndDevice) #brusy.calcPage .indexGrid .b
   width:100%;
 }
 #home.page.active #dashHero .dashboardPersonalGreeting{
-  color:var(--rakAccentYellow,#fff36b);
+  color:var(--rakThemeAccentStrong,var(--green,#fff36b));
   font-size:clamp(19px,5.5vw,25px);
   font-weight:950;
   line-height:1.02;
   letter-spacing:-.025em;
 }
 #home.page.active #dashHero .dashboardPersonalStatus{
-  color:rgba(235,255,244,.80);
+  color:var(--muted,rgba(235,255,244,.80));
   font-size:12px;
   font-weight:800;
 }
 #home.page.active #dashHero .dashboardPersonalTitle{
-  color:#fff;
+  color:var(--text,#fff);
   font-size:clamp(16px,4.5vw,20px);
   font-weight:900;
   line-height:1.15;
@@ -1810,16 +1812,16 @@ html body:not(.lightweightMode):not(.lowEndDevice) #brusy.calcPage .indexGrid .b
   align-items:baseline;
   gap:6px;
   padding:7px 9px;
-  border:1px solid rgba(151,255,185,.36);
+  border:1px solid var(--rakThemeBorder,rgba(151,255,185,.36));
   border-radius:12px;
-  background:rgba(12,50,34,.28);
-  color:rgba(241,255,246,.92);
+  background:var(--panel,rgba(12,50,34,.28));
+  color:var(--text,rgba(241,255,246,.92));
   font-size:12px;
   line-height:1.24;
 }
 #home.page.active #dashHero .dashboardPersonalTask span{
   flex:0 0 auto;
-  color:#baffd0;
+  color:var(--green2,#baffd0);
   font-weight:900;
 }
 #home.page.active #dashHero .dashboardPersonalTask b{font-weight:850;}
@@ -1827,9 +1829,9 @@ html body:not(.lightweightMode):not(.lowEndDevice) #brusy.calcPage .indexGrid .b
   display:grid;
   gap:4px;
   padding:7px 9px;
-  border:1px solid rgba(133,205,255,.30);
+  border:1px solid var(--rakThemeBorder,rgba(133,205,255,.30));
   border-radius:12px;
-  background:rgba(16,38,84,.24);
+  background:var(--panel,rgba(16,38,84,.24));
 }
 #home.page.active #dashHero .dashboardPersonalOverview > div{
   display:flex;
@@ -1842,18 +1844,18 @@ html body:not(.lightweightMode):not(.lowEndDevice) #brusy.calcPage .indexGrid .b
 }
 #home.page.active #dashHero .dashboardPersonalOverview span{
   flex:0 0 auto;
-  color:rgba(206,235,255,.78);
+  color:var(--muted,rgba(206,235,255,.78));
   font-weight:800;
 }
 #home.page.active #dashHero .dashboardPersonalOverview b{
   min-width:0;
-  color:#fff;
+  color:var(--text,#fff);
   font-weight:850;
   text-align:right;
   overflow-wrap:anywhere;
 }
 #home.page.active #dashHero .dashboardPersonalTiming{
-  color:rgba(255,255,255,.86);
+  color:var(--soft,rgba(255,255,255,.86));
   font-size:12px;
   font-weight:800;
 }
@@ -1869,7 +1871,7 @@ html body:not(.lightweightMode):not(.lowEndDevice) #brusy.calcPage .indexGrid .b
   height:6px;
   overflow:hidden;
   border-radius:999px;
-  background:rgba(255,255,255,.13);
+  background:var(--panel2,rgba(255,255,255,.13));
 }
 #home.page.active #dashHero .dashboardPersonalBar span::after{
   content:"";
@@ -1877,11 +1879,11 @@ html body:not(.lightweightMode):not(.lowEndDevice) #brusy.calcPage .indexGrid .b
   width:var(--fill,0%);
   height:100%;
   border-radius:inherit;
-  background:linear-gradient(90deg,#64ff9e,#6fffed);
-  box-shadow:0 0 12px rgba(89,255,163,.75);
+  background:linear-gradient(90deg,var(--green,#64ff9e),var(--green2,#6fffed));
+  box-shadow:0 0 12px var(--rakThemeGlow,rgba(89,255,163,.75));
 }
 #home.page.active #dashHero .dashboardPersonalBar b{
-  color:rgba(255,255,255,.9);
+  color:var(--soft,rgba(255,255,255,.9));
   font-size:11px;
 }
 

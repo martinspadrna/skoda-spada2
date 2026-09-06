@@ -681,8 +681,12 @@ function dashboardPersonalDateLabel(entry) {
 }
 
 function getDashboardAccessOverview(now) {
-  const active = typeof getDashboardActiveWorkShift === 'function' ? getDashboardActiveWorkShift(now) : null;
-  const next = typeof getDashboardNextWorkShift === 'function' ? getDashboardNextWorkShift(now) : null;
+  // Účet mimo Rotace nepatří k žádné pracovní směně. Má proto vidět pouze
+  // nepřítomnost své referenční směny D, ne průběžný přehled všech směn.
+  const teamD = typeof getDashboardTeamDStatus === 'function'
+    ? getDashboardTeamDStatus(now)
+    : { active: null, next: typeof getDashboardNextTeamShift === 'function' ? getDashboardNextTeamShift(now, 'D') : null };
+  const shift = teamD.active || teamD.next || null;
   const shiftLabel = (shift) => shift
     ? ('Směna ' + String(shift.team || '—') + (shift.label ? (' · ' + String(shift.label)) : ''))
     : 'další směna';
@@ -695,12 +699,11 @@ function getDashboardAccessOverview(now) {
       return 'Absence nejsou k dispozici.';
     }
   };
-  const rows = [];
-  if (active) rows.push({ label: 'Dnes · ' + shiftLabel(active), value: absenceText(active.start || now) });
-  if (next && (!active || !active.start || !next.start || next.start.getTime() !== active.start.getTime())) {
-    rows.push({ label: 'Další · ' + shiftLabel(next), value: absenceText(next.start || now) });
-  }
-  return rows.slice(0, 2);
+  if (!shift) return [];
+  return [{
+    label: (teamD.active ? 'Dnes' : 'Příští') + ' · ' + shiftLabel(shift),
+    value: absenceText(shift.start || now)
+  }];
 }
 
 function buildDashboardPersonalHeroHtml(now, esc) {
