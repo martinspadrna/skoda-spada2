@@ -600,8 +600,8 @@ const DASHBOARD_FRIENDLY_NAME_OVERRIDES = Object.freeze({
   ladislav: 'Láďo',
   lukáš: 'Lukáši',
   marek: 'Máro',
-  martin: 'Marťo',
-  michal: 'Míšo',
+  martin: 'Martine',
+  michal: 'Michale',
   miroslav: 'Míro',
   pavel: 'Pavle'
 });
@@ -680,6 +680,29 @@ function dashboardPersonalDateLabel(entry) {
   return String(entry.dateLabel || '').trim();
 }
 
+function getDashboardAccessOverview(now) {
+  const active = typeof getDashboardActiveWorkShift === 'function' ? getDashboardActiveWorkShift(now) : null;
+  const next = typeof getDashboardNextWorkShift === 'function' ? getDashboardNextWorkShift(now) : null;
+  const shiftLabel = (shift) => shift
+    ? ('Směna ' + String(shift.team || '—') + (shift.label ? (' · ' + String(shift.label)) : ''))
+    : 'další směna';
+  const absenceText = (date) => {
+    try {
+      const names = typeof getAbsenceNamesForDate === 'function' ? getAbsenceNamesForDate(date) : [];
+      const list = Array.isArray(names) ? names.filter(Boolean) : [];
+      return list.length ? list.join(', ') : 'Nikdo nechybí.';
+    } catch (err) {
+      return 'Absence nejsou k dispozici.';
+    }
+  };
+  const rows = [];
+  if (active) rows.push({ label: 'Dnes · ' + shiftLabel(active), value: absenceText(active.start || now) });
+  if (next && (!active || !active.start || !next.start || next.start.getTime() !== active.start.getTime())) {
+    rows.push({ label: 'Další · ' + shiftLabel(next), value: absenceText(next.start || now) });
+  }
+  return rows.slice(0, 2);
+}
+
 function buildDashboardPersonalHeroHtml(now, esc) {
   const state = getDashboardPersonalShiftStatus(now);
   const friendlyName = getDashboardFriendlyName(state.name);
@@ -694,6 +717,7 @@ function buildDashboardPersonalHeroHtml(now, esc) {
   let title = '';
   let detail = '';
   let progress = null;
+  let accessOverview = [];
 
   if (isActive) {
     title = machine ? ('Dnes jsi na ' + machine + '.') : 'Dnes máš směnu.';
@@ -710,7 +734,8 @@ function buildDashboardPersonalHeroHtml(now, esc) {
     status = 'Další směna zatím není v rozpisu';
   } else {
     title = 'Dnes nemáš směnu v rozpisu.';
-    status = 'Až bude další směna vyplněná, ukáže se tady.';
+    status = 'Přehled pro dnešek';
+    accessOverview = getDashboardAccessOverview(now);
   }
 
   const isRivetingDay = /^o nic se nestarej/i.test(task);
@@ -722,6 +747,7 @@ function buildDashboardPersonalHeroHtml(now, esc) {
     '<div class="dashboardPersonalStatus">' + esc(status) + '</div>',
     '<div class="dashboardPersonalTitle">' + esc(title) + '</div>',
     task ? '<div class="dashboardPersonalTask"><span>' + esc(taskCaption) + '</span><b>' + esc(task) + '</b></div>' : '',
+    accessOverview.length ? '<div class="dashboardPersonalOverview">' + accessOverview.map((item) => '<div><span>' + esc(item.label) + '</span><b>' + esc(item.value) + '</b></div>').join('') + '</div>' : '',
     detail ? '<div class="dashboardPersonalTiming">' + esc(detail) + '</div>' : '',
     progress !== null ? '<div class="dashboardPersonalBar"><span style="--fill:' + progress.toFixed(1) + '%"></span><b>' + esc(String(Math.round(progress)) + ' %') + '</b></div>' : '',
     '</div>'

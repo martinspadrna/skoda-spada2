@@ -1823,6 +1823,35 @@ html body:not(.lightweightMode):not(.lowEndDevice) #brusy.calcPage .indexGrid .b
   font-weight:900;
 }
 #home.page.active #dashHero .dashboardPersonalTask b{font-weight:850;}
+#home.page.active #dashHero .dashboardPersonalOverview{
+  display:grid;
+  gap:4px;
+  padding:7px 9px;
+  border:1px solid rgba(133,205,255,.30);
+  border-radius:12px;
+  background:rgba(16,38,84,.24);
+}
+#home.page.active #dashHero .dashboardPersonalOverview > div{
+  display:flex;
+  align-items:baseline;
+  justify-content:space-between;
+  gap:8px;
+  min-width:0;
+  font-size:11px;
+  line-height:1.2;
+}
+#home.page.active #dashHero .dashboardPersonalOverview span{
+  flex:0 0 auto;
+  color:rgba(206,235,255,.78);
+  font-weight:800;
+}
+#home.page.active #dashHero .dashboardPersonalOverview b{
+  min-width:0;
+  color:#fff;
+  font-weight:850;
+  text-align:right;
+  overflow-wrap:anywhere;
+}
 #home.page.active #dashHero .dashboardPersonalTiming{
   color:rgba(255,255,255,.86);
   font-size:12px;
@@ -1855,9 +1884,23 @@ html body:not(.lightweightMode):not(.lowEndDevice) #brusy.calcPage .indexGrid .b
   color:rgba(255,255,255,.9);
   font-size:11px;
 }
+
+/* Nastavení: samostatné bloky musí mít fyzickou mezeru i po pozdějších
+   kompaktních stylech. Používáme jednotný spodní okraj, ne dva okraje proti sobě. */
+#appMenuBody > .appMenuProfileCard,
+#appMenuBody > .appMenuSettingsCard:not(.appMenuProfileCard),
+#appMenuBody > .rakDevicePerfCard{
+  margin-bottom:10px !important;
+}
+#appMenuBody > .appMenuProfileCard + .appMenuSettingsCard,
+#appMenuBody > .appMenuSettingsCard + .rakDevicePerfCard,
+#appMenuBody > .rakDevicePerfCard + .appMenuThemeCardWrap{
+  margin-top:0 !important;
+}
 @media (max-width:370px) and (max-height:820px){
   #home.page.active #dashHero.dashboardHeroCard.dashboardHeroCard--personal{min-height:128px !important;padding:11px 12px !important;}
   #home.page.active #dashHero .dashboardPersonalHero{gap:4px;}
   #home.page.active #dashHero .dashboardPersonalGreeting{font-size:18px;}
   #home.page.active #dashHero .dashboardPersonalTask{padding:5px 7px;font-size:11px;}
+  #home.page.active #dashHero .dashboardPersonalOverview{padding:5px 7px;}
 }
