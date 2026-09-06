@@ -25,6 +25,7 @@ const gamesProfileJs = read('games-profile.js');
 const adminUnlockJs = read('app-admin-unlock.js');
 const adminRotationJs = read('admin-rotation.js');
 const adminMachineTasksJs = read('admin-machine-tasks.js');
+const adminFhbCalibrationJs = read('admin-fhb-calibration.js');
 const adminServiceJs = read('admin-service-usage.js');
 const appearanceThemeJs = read('appearance-theme.js');
 const ui = read('ui.js') + '\n' + read('app-runtime-guards.js') + '\n' + read('app-health-audits.js') + '\n' + read('app-postload-audits.js') + '\n' + read('app-pwa-connectivity.js') + '\n' + read('games-engine.js') + '\n' + read('games-profile.js') + '\n' + appearanceThemeJs + '\n' + read('admin-service-usage.js') + '\n' + read('admin-rotation.js') + '\n' + read('app-navigation.js') + '\n' + read('app-bottom-nav.js') + '\n' + read('app-menu.js') + '\n' + read('app-actions.js') + '\n' + read('app-boot-selftest.js') + '\n' + read('app-rotation-sync.js') + '\n' + read('app-excel-import.js') + '\n' + read('app-rotation-controls.js') + '\n' + read('app-admin-unlock.js') + '\n' + read('app-home-boot.js') + '\n' + read('app-init.js');
@@ -2012,6 +2013,19 @@ function assertAdminMachineTasksContractV1165() {
   assertIncludes(adminRotationJs, "key !== 'ROTATION_MACHINE_TASKS_SETTINGS'", 'Nastaveni ukolu nesmi omylem skoncit v bezne tabulce stroju');
 }
 
+function assertAdminFhbCalibrationContractV1166() {
+  assertIncludes(read('app.js'), '"admin-fhb-calibration.js"', 'Kalibrace FHB musi byt nactena jako modul aplikace');
+  assertIncludes(adminFhbCalibrationJs, "const KEY = 'FHB_CORRECTION_CALIBRATION_SETTINGS'", 'Kalibrace FHB musi mit vlastni settings klic');
+  assertIncludes(adminFhbCalibrationJs, 'const MIN_SAMPLES = 3', 'Doporuceni nesmi vzniknout z jednoho mereni');
+  assertIncludes(adminFhbCalibrationJs, 'function applyRecommendation', 'Model se musi menit jen pres rucne potvrzene doporuceni');
+  assertIncludes(appMenuJs, "action: 'open-correction-settings', label: 'Nastavení korekcí'", 'Administrace musi nabidnout nastaveni korekci');
+  assertIncludes(appMenuJs, "adminAction === 'save-fhb-calibration-record'", 'Mereni FHB se musi umet bezpecne ulozit');
+  assertIncludes(appMenuJs, "adminAction === 'apply-fhb-calibration'", 'Doporuceni FHB musi vyzadovat samostatne potvrzeni');
+  assertIncludes(appMenuJs, "'admin-correction-settings'", 'Nastaveni korekci musi byt chranene admin view');
+  assertIncludes(bridge, "category === 'fhb_correction_calibration_settings'", 'Specialni kalibrace musi projit pres zabezpecene ulozeni nastaveni');
+  assertIncludes(read('soustruhy.js'), 'window.getFhbCorrectionModel', 'Kalkulacka frezek musi cist az potvrzeny model korekci');
+}
+
 assertDashboardCssGuardSeriesCompleteV1100();
 assertReleaseMetadataContractV199();
 assertBrusyChoiceSizeContractV1101();
@@ -2053,6 +2067,7 @@ assertAdminReportsStatusContractV1158();
 assertAdminServiceStatusContractV1159();
 assertAdminUsageStatusContractV1160();
 assertAdminMachineTasksContractV1165();
+assertAdminFhbCalibrationContractV1166();
 
 console.log('app-usage-smoke-v963 OK + rotation-generator-wizard-v1108-guard + rotation-generator-absence-state-v1109-guard + rotation-generator-wizard-run-v1110-guard + rotation-generator-wizard-state-v1111-guard + rotation-generator-month-balance-v1112-guard + rotation-generator-rules-v1113-guard + rotation-generator-rules-v1114-guard + rotation-generator-rules-v1115-guard + rotation-generator-rules-v1116-guard + rotation-generator-rules-v1117-guard + dashboard-percent-empty-cells-v1119-guard + stats-press-machine-split-v1123-guard + rotation-overtime-shift-filter-v1128-guard + admin-food-status-v1163-guard + admin-settings-map-status-v1164-guard + admin-special-days-v1148-guard + admin-menu-sections-v1149-guard + admin-handover-runbook-v1150-guard + admin-handover-audit-v1151-guard + admin-manual-v1152-guard + admin-manual-download-v1154-guard + admin-handover-status-download-v1155-guard + admin-settings-map-v1156-guard + admin-announcement-status-v1157-guard + admin-reports-status-v1158-guard + admin-service-status-v1159-guard + admin-usage-status-v1160-guard + admin-accounts-status-v1161-guard + admin-generator-status-v1162-guard + rotation-overtime-defaults-2025-v1129-guard + rotation-absence-export-ytd-generator-theme-v1130-guard + light-pattern-theme-v1131-guard + admin-account-login-v1141-guard + admin-handover-guide-v1142-guard + admin-generator-settings-v1143-guard + admin-external-links-v1144-guard + admin-calendar-link-v1147-guard + admin-app-contact-v1145-guard + admin-payroll-settings-v1146-guard + rotation-generator-excel-copy-v1138-guard + games-active-account-direct-stats-v1144-guard + sudoku-completion-save-v1148-guard + sudoku-random-puzzle-v1148-guard + game-time-format-v1144-guard + lada-manual-override-v1144-guard + lada-smooth-performance-v1144-guard + dashboard-css-contract-guard + appearance-reward-contract + rotation-export-summary-simple-guard + rotation-export-glass-guard + appearance-readability-guard + css-layer-order-v194-guard + dashboard-owner-registry-v195-guard + dashboard-overrides-selector-lock-v196-guard + dashboard-scope-v197-guard + dashboard-release-isolation-v198-guard + dashboard-css-guard-series-v1100-complete + release-metadata-v199-guard + brusy-choice-size-v1101-guard + fixed-app-background-v1101-guard + name-choice-fit-v1102-guard + browser-smoke-v1103-guard + dashboard-empty-absence-text-v1104-guard + rotace-empty-absence-text-v1105-guard + appearance-update-persistence-v1105-guard + rotation-generator-v1106-guard + rotation-generator-rules-v1107-guard + memory-8x8-square-fit-v1153-guard + memory-total-time-no-5s-v1153-guard + no-visual-owner-drift-guard OK');
 

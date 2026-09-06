@@ -1507,9 +1507,12 @@ function calcFrezkyFhbCorrection() {
     };
   });
 
-  const downSensitivityPer001 = 1.8;
-  const upSensitivityPer001 = 1.45;
-  const shiftSensitivityPer001 = 1.6;
+  // Správce může po ověřených protokolech potvrdit kalibraci. Bez ní zůstávají
+  // původní bezpečné hodnoty, takže samotné zapisování měření výpočet nemění.
+  const activeFhbModel = typeof window.getFhbCorrectionModel === 'function' ? window.getFhbCorrectionModel() : null;
+  const downSensitivityPer001 = Number(activeFhbModel && activeFhbModel.taperDownSensitivityPer001) || 1.8;
+  const upSensitivityPer001 = Number(activeFhbModel && activeFhbModel.taperUpSensitivityPer001) || 1.45;
+  const shiftSensitivityPer001 = Number(activeFhbModel && activeFhbModel.shiftSensitivityPer001) || 1.6;
   const correctionStep = 0.001;
 
   function buildExpected(shiftMoveValue, taperMoveValue) {

@@ -1700,3 +1700,77 @@ html body:not(.lightweightMode):not(.lowEndDevice) #brusy.calcPage .indexGrid .b
 .appMenuAdminQuickLinks .appMenuGrid{
   gap:8px;
 }
+
+/* Nastavení korekcí FHB: pracovní zápis protokolu i doporučení se vejdou na mobil. */
+.adminFhbCalibration{
+  gap:14px;
+}
+.adminFhbCalibrationForm,
+.adminFhbCalibrationModel,
+.adminFhbCalibrationHistory{
+  display:grid;
+  gap:10px;
+  padding:12px;
+  border:1px solid rgba(255,255,255,.14);
+  border-radius:16px;
+  background:linear-gradient(145deg,rgba(255,255,255,.07),rgba(9,14,20,.10));
+}
+.adminFhbCalibrationFieldset{
+  display:grid;
+  gap:7px;
+}
+.adminFhbCalibrationFieldset > b,
+.adminFhbCalibrationNote{
+  color:rgba(255,255,255,.9);
+  font-size:12px;
+  font-weight:850;
+}
+.adminFhbCalibrationTwo{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:8px;
+}
+.adminFhbCalibrationTwo label,
+.adminFhbCalibrationNote{
+  display:grid;
+  gap:5px;
+}
+.adminFhbCalibration .appMenuInput{
+  min-width:0;
+  min-height:42px;
+}
+.adminFhbCalibrationMetrics{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:7px;
+}
+.adminFhbCalibrationMetric{
+  display:grid;
+  gap:3px;
+  min-width:0;
+  padding:9px 7px;
+  border:1px solid rgba(255,255,255,.12);
+  border-radius:12px;
+  background:rgba(255,255,255,.045);
+}
+.adminFhbCalibrationMetric span{font-size:11px;font-weight:850;color:rgba(255,255,255,.82);}
+.adminFhbCalibrationMetric b{color:var(--rakAccentYellow,#fff36b);font-size:16px;}
+.adminFhbCalibrationMetric small{font-size:10px;line-height:1.25;color:rgba(255,255,255,.67);}
+.adminFhbCalibrationRecord{
+  position:relative;
+  display:grid;
+  gap:3px;
+  padding:9px 34px 9px 10px;
+  border:1px solid rgba(255,255,255,.1);
+  border-radius:12px;
+  background:rgba(255,255,255,.04);
+  font-size:12px;
+}
+.adminFhbCalibrationRecord > div{display:flex;gap:6px;flex-wrap:wrap;}
+.adminFhbCalibrationRecord small{color:rgba(255,255,255,.68);}
+.adminFhbCalibrationRecord .appMenuInlineClearBtn{position:absolute;right:7px;top:7px;}
+.adminFhbCalibrationSoon{display:grid;gap:4px;padding:12px;}
+.adminFhbCalibrationSoon span{font-size:12px;color:rgba(255,255,255,.72);}
+@media (max-width:360px){
+  .adminFhbCalibrationMetrics{grid-template-columns:1fr;}
+}

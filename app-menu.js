@@ -3241,6 +3241,7 @@ function renderAdminMenuBody(body, section) {
     '  <div class="adminMenuSections">',
     buildAdminMenuSectionHtml('1. Provoz', 'Stroje, provozní doby a absence – vstupy pro tvorbu rozpisu.', [
       { action: 'open-machines', label: 'Nastavení strojů' },
+      { action: 'open-correction-settings', label: 'Nastavení korekcí' },
       { action: 'open-food', label: 'Kantýna / jídelna' },
       { action: 'open-overtime', label: 'Přesčasy' },
       { action: 'open-vacation', label: 'Dovolená / odstávky' },
@@ -3412,6 +3413,18 @@ function renderAdminMenuBody(body, section) {
     '    <button type="button" class="appMenuAction isActive" data-admin-action="save-machine-tasks">Uložit úkoly</button>',
     '    <button type="button" class="appMenuAction" data-admin-action="back-admin">Zpět</button>',
     '  </div>',
+    '</div>'
+  ].join('');
+
+  const correctionSettingsHtml = [
+    '<div class="appMenuCard appMenuAdminCard adminFhbCalibrationCard">',
+    '  <div class="appMenuCardTitle">Nastavení korekcí</div>',
+    '  <div class="appMenuText">',
+    '    <div>MFK / FHB: z měření před a po korekci ověříš, jestli kalkulačka odpovídá skutečné reakci stroje.</div>',
+    '    <div class="smallText" id="adminOnlineSaveStatus">Výpočet se změní až po ručním potvrzení doporučení.</div>',
+    '  </div>',
+    (typeof buildAdminFhbCorrectionCalibrationHtml === 'function' ? buildAdminFhbCorrectionCalibrationHtml() : '<div class="smallText">Nastavení korekcí se načítá…</div>'),
+    '  <button type="button" class="appMenuAction appMenuBack" data-admin-action="back-admin">Zpět</button>',
     '</div>'
   ].join('');
 
@@ -3694,6 +3707,8 @@ function renderAdminMenuBody(body, section) {
     body.innerHTML = generatorSettingsHtml;
   } else if (mode === 'machine-tasks') {
     body.innerHTML = machineTasksHtml;
+  } else if (mode === 'correction-settings') {
+    body.innerHTML = correctionSettingsHtml;
   } else if (mode === 'workers') {
     body.innerHTML = workersHtml;
   } else if (mode === 'change-log') {
@@ -4663,6 +4678,10 @@ function bindAppMenuHandlers(body) {
         openAppMenu('admin-machine-tasks');
         return;
       }
+      if (adminAction === 'open-correction-settings') {
+        openAppMenu('admin-correction-settings');
+        return;
+      }
       if (adminAction === 'open-workers') {
         openAppMenu('admin-workers');
         return;
@@ -5035,6 +5054,54 @@ function bindAppMenuHandlers(body) {
         renderAdminMenuBody(body, 'machine-tasks');
         const statusEl = document.getElementById('adminOnlineSaveStatus');
         if (statusEl) statusEl.textContent = result && result.queued ? 'Úkoly uložené lokálně ✓ · po připojení se synchronizují' : 'Úkoly uložené online ✓';
+        return;
+      }
+      if (adminAction === 'save-fhb-calibration-record') {
+        await loadAdminMachineSettingsFromSupabase();
+        const current = typeof getAdminFhbCorrectionCalibrationSettings === 'function' ? getAdminFhbCorrectionCalibrationSettings() : null;
+        const record = typeof readAdminFhbCorrectionCalibrationRecord === 'function' ? readAdminFhbCorrectionCalibrationRecord(body) : null;
+        const added = typeof addAdminFhbCorrectionCalibrationRecord === 'function' ? addAdminFhbCorrectionCalibrationRecord(current, record) : { ok: false };
+        if (!added || !added.ok) throw new Error('Doplň levý i pravý údaj před a po korekci a zapiš alespoň jednu změnu korekce.');
+        const rows = typeof mergeAdminFhbCorrectionCalibrationRows === 'function' ? mergeAdminFhbCorrectionCalibrationRows(added.settings) : null;
+        if (!Array.isArray(rows) || !(window.RotationSupabaseBridge && typeof window.RotationSupabaseBridge.saveMachineSettings === 'function')) throw new Error('Nastavení korekcí není dostupné. Zkus aplikaci obnovit.');
+        const result = await window.RotationSupabaseBridge.saveMachineSettings(rows);
+        if (result && result.ok === false) throw (result.error || new Error('Uložení měření selhalo.'));
+        app.machineSettingsRows = rows;
+        renderAdminMenuBody(body, 'correction-settings');
+        const statusEl = document.getElementById('adminOnlineSaveStatus');
+        if (statusEl) statusEl.textContent = 'Měření uložené online ✓';
+        return;
+      }
+      if (adminAction === 'apply-fhb-calibration') {
+        await loadAdminMachineSettingsFromSupabase();
+        const current = typeof getAdminFhbCorrectionCalibrationSettings === 'function' ? getAdminFhbCorrectionCalibrationSettings() : null;
+        const applied = typeof applyAdminFhbCorrectionCalibration === 'function' ? applyAdminFhbCorrectionCalibration(current) : { ok: false };
+        if (!applied || !applied.ok) throw new Error('Ještě není dost ověřených měření, nebo aktivní výpočet už doporučení odpovídá.');
+        const rows = typeof mergeAdminFhbCorrectionCalibrationRows === 'function' ? mergeAdminFhbCorrectionCalibrationRows(applied.settings) : null;
+        if (!Array.isArray(rows) || !(window.RotationSupabaseBridge && typeof window.RotationSupabaseBridge.saveMachineSettings === 'function')) throw new Error('Nastavení korekcí není dostupné. Zkus aplikaci obnovit.');
+        const result = await window.RotationSupabaseBridge.saveMachineSettings(rows);
+        if (result && result.ok === false) throw (result.error || new Error('Potvrzení doporučení selhalo.'));
+        app.machineSettingsRows = rows;
+        try { if (typeof refreshFhbSettingsUi === 'function') refreshFhbSettingsUi(); } catch (err) {}
+        renderAdminMenuBody(body, 'correction-settings');
+        const statusEl = document.getElementById('adminOnlineSaveStatus');
+        if (statusEl) statusEl.textContent = 'Doporučené nastavení je aktivní v kalkulačce Korekce · Frézky ✓';
+        return;
+      }
+      if (adminAction === 'remove-fhb-calibration-record') {
+        const id = String(target.getAttribute('data-fhb-calibration-remove') || target.closest('[data-fhb-calibration-remove]')?.getAttribute('data-fhb-calibration-remove') || '');
+        if (!id) return;
+        await loadAdminMachineSettingsFromSupabase();
+        const current = typeof getAdminFhbCorrectionCalibrationSettings === 'function' ? getAdminFhbCorrectionCalibrationSettings() : null;
+        const next = typeof removeAdminFhbCorrectionCalibrationRecord === 'function' ? removeAdminFhbCorrectionCalibrationRecord(current, id) : null;
+        const rows = typeof mergeAdminFhbCorrectionCalibrationRows === 'function' ? mergeAdminFhbCorrectionCalibrationRows(next) : null;
+        if (!Array.isArray(rows) || !(window.RotationSupabaseBridge && typeof window.RotationSupabaseBridge.saveMachineSettings === 'function')) throw new Error('Nastavení korekcí není dostupné. Zkus aplikaci obnovit.');
+        const result = await window.RotationSupabaseBridge.saveMachineSettings(rows);
+        if (result && result.ok === false) throw (result.error || new Error('Smazání měření selhalo.'));
+        app.machineSettingsRows = rows;
+        renderAdminMenuBody(body, 'correction-settings');
+        const statusEl = document.getElementById('adminOnlineSaveStatus');
+        if (statusEl) statusEl.textContent = 'Záznam byl smazán.';
         return;
       }
       if (adminAction === 'load-workers') {
@@ -5508,7 +5575,7 @@ function openAppMenu(view) {
   page.classList.add('active');
   const body = page.querySelector('#appMenuBody');
   const v = view || 'menu';
-  const adminViews = new Set(['admin', 'admin-machines', 'admin-food', 'admin-vacation', 'admin-special-days', 'admin-rotation', 'admin-overtime', 'admin-generator-settings', 'admin-machine-tasks', 'admin-workers', 'admin-change-log', 'admin-monthly-workflow', 'admin-handover', 'admin-manual', 'admin-settings-map', 'admin-accounts', 'admin-external-links', 'admin-app-contact', 'admin-payroll-settings', 'admin-backups', 'admin-settings-backups', 'admin-announcement', 'admin-export', 'admin-reports', 'admin-service']);
+  const adminViews = new Set(['admin', 'admin-machines', 'admin-food', 'admin-vacation', 'admin-special-days', 'admin-rotation', 'admin-overtime', 'admin-generator-settings', 'admin-machine-tasks', 'admin-correction-settings', 'admin-workers', 'admin-change-log', 'admin-monthly-workflow', 'admin-handover', 'admin-manual', 'admin-settings-map', 'admin-accounts', 'admin-external-links', 'admin-app-contact', 'admin-payroll-settings', 'admin-backups', 'admin-settings-backups', 'admin-announcement', 'admin-export', 'admin-reports', 'admin-service']);
 
   const versionText = (typeof app !== 'undefined' && app.version) || (typeof APP_VERSION !== 'undefined' ? APP_VERSION : '');
   const contact = typeof getRakAppContactSettings === 'function'
@@ -5697,6 +5764,16 @@ function openAppMenu(view) {
         } catch (err) {
           console.warn('Admin machine tasks preload failed', err);
           renderAdminMenuBody(body, 'machine-tasks');
+        }
+      })();
+    } else if (v === 'admin-correction-settings') {
+      void (async () => {
+        try {
+          await loadAdminMachineSettingsFromSupabase();
+          renderAdminMenuBody(body, 'correction-settings');
+        } catch (err) {
+          console.warn('Admin correction settings preload failed', err);
+          renderAdminMenuBody(body, 'correction-settings');
         }
       })();
     } else if (v === 'admin-workers') {

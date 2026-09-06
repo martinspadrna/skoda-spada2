@@ -1939,6 +1939,7 @@ function adminMachineIsEditableMachineRow(row) {
     && !(typeof adminIsFoodScheduleRow === 'function' && adminIsFoodScheduleRow(row))
     && cat !== 'rotation_save_backup'
     && cat !== 'rotation_machine_tasks_settings'
+    && cat !== 'fhb_correction_calibration_settings'
     && !(typeof isRotationSaveBackupRow === 'function' && isRotationSaveBackupRow(row))
     && cat !== 'admin_change_log'
     && !(typeof isRakChangeLogRow === 'function' && isRakChangeLogRow(row))
@@ -1950,6 +1951,7 @@ function adminMachineIsEditableMachineRow(row) {
     && key.indexOf('ADMIN_FULL_SETTINGS_BACKUP_') !== 0
     && key !== 'VACATION_COUNTDOWN_SETTINGS'
     && key !== 'ROTATION_MACHINE_TASKS_SETTINGS'
+    && key !== 'FHB_CORRECTION_CALIBRATION_SETTINGS'
     && cat !== ADMIN_ROTATION_OVERTIME_SETTINGS_CATEGORY
     && !(typeof rakAdminIsAccountsSettingsRow === 'function' && rakAdminIsAccountsSettingsRow(row))
     && !(typeof isRakExternalLinksSettingsRow === 'function' && isRakExternalLinksSettingsRow(row))
@@ -2312,6 +2314,17 @@ function readAdminMachineSettingsFromDom() {
   }
   if (Array.isArray(app.machineSettingsRows)) {
     app.machineSettingsRows.filter(adminIsRotationGeneratorSettingsRow).forEach((row) => rows.push(row));
+  }
+  if (Array.isArray(app.machineSettingsRows)) {
+    app.machineSettingsRows.filter((row) => {
+      const settings = row && row.settings_json && typeof row.settings_json === 'object' ? row.settings_json : {};
+      const key = String(row && row.machine_key || '');
+      const category = String(row && row.category || settings.stored_category || '');
+      return key === 'ROTATION_MACHINE_TASKS_SETTINGS'
+        || key === 'FHB_CORRECTION_CALIBRATION_SETTINGS'
+        || category === 'rotation_machine_tasks_settings'
+        || category === 'fhb_correction_calibration_settings';
+    }).forEach((row) => rows.push(row));
   }
   if (Array.isArray(app.machineSettingsRows) && typeof isRakExternalLinksSettingsRow === 'function') {
     app.machineSettingsRows.filter(isRakExternalLinksSettingsRow).forEach((row) => rows.push(row));

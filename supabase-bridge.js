@@ -2281,6 +2281,10 @@
       || key === 'ROTATION_OVERTIME_SETTINGS'
       || category === 'rotation_generator_settings'
       || key === 'ROTATION_GENERATOR_SETTINGS'
+      || category === 'rotation_machine_tasks_settings'
+      || key === 'ROTATION_MACHINE_TASKS_SETTINGS'
+      || category === 'fhb_correction_calibration_settings'
+      || key === 'FHB_CORRECTION_CALIBRATION_SETTINGS'
       || category === 'external_links_settings'
       || key === 'EXTERNAL_LINKS_SETTINGS'
       || category === 'app_contact_settings'
@@ -2322,11 +2326,14 @@
 
   function makeMachineSettingsRpcPayload(payload) {
     if (!isSpecialAdminMachineSettingsPayload(payload)) return payload;
+    const settings = payload && payload.settings_json && typeof payload.settings_json === 'object' ? payload.settings_json : {};
+    const storedCategory = String(settings.stored_category || settings.type || payload && payload.category || '');
+    const storedKey = String(settings.admin_settings_key || payload && payload.machine_key || '');
     return Object.assign({}, payload, {
       category: 'frezka',
-      settings_json: Object.assign({}, payload && payload.settings_json && typeof payload.settings_json === 'object' ? payload.settings_json : {}, {
-        stored_category: String(payload && payload.category || ''),
-        admin_settings_key: String(payload && payload.machine_key || '')
+      settings_json: Object.assign({}, settings, {
+        stored_category: storedCategory,
+        admin_settings_key: storedKey
       })
     });
   }
