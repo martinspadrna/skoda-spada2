@@ -923,7 +923,9 @@ function homeLooksUnpainted() {
   const count = document.getElementById('dashCountdown');
   const kantyna = document.getElementById('dashKantyna');
   const jidelna = document.getElementById('dashJidelna');
-  const heroText = hero?.querySelector('.dashboardHeroLine1Text')?.textContent?.trim() || '';
+  const heroText = hero?.querySelector('.dashboardPersonalGreeting')?.textContent?.trim()
+    || hero?.querySelector('.dashboardHeroLine1Text')?.textContent?.trim()
+    || '';
   const calValue = cal?.querySelector('.dashboardValue')?.textContent?.trim() || '';
   const countValue = count?.querySelector('.dashboardValue')?.textContent?.trim() || '';
   const kantynaValue = kantyna?.querySelector('.dashboardValue')?.textContent?.trim() || '';
