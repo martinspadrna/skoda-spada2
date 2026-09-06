@@ -423,6 +423,43 @@ async function runViewportSmoke(cdpPort, viewport, inlineHtml, liveRotationPaylo
   assert(bootState.homeCards > 0, `${viewport.name}: Dashboard nemá karty`);
   assert(bootState.bodyBeforePosition === 'fixed', `${viewport.name}: pevné pozadí není fixed`);
 
+  const manualLadaState = await evalInPage(client, `(async () => {
+    const previousPrefs = loadUiPrefs();
+    const originalDetection = getLowEndDeviceInfo;
+    const originalClassify = classifyRakDevicePerformance;
+    const checks = {};
+    const normal = () => !document.body.matches('.ladaMode,.lightweightMode,.lowEndDevice')
+      && !document.documentElement.classList.contains('rakLadaPaintLite') && getRakPerformanceDprMax() === 2;
+    const reloadPrefs = () => {
+      if (typeof clearLocalStorageJsonCache === 'function') clearLocalStorageJsonCache(UI_PREFS_KEY);
+      applyUiPrefs(loadUiPrefs());
+    };
+    try {
+      getLowEndDeviceInfo = () => ({ lowEnd: true, reasons: ['test-low-memory'], memory: 2, cores: 2, dpr: 3, width: 360 });
+      localStorage.removeItem(UI_PREFS_KEY);
+      reloadPrefs();
+      checks.firstStart = normal();
+      saveUiPrefs({ lightweight: true, lightweightManual: false });
+      reloadPrefs();
+      checks.oldAutomaticChoice = normal();
+      classifyRakDevicePerformance = () => ({ score: 10, profile: 'turbo', label: 'test', recommendsLightweight: true });
+      await runRakDevicePerformanceProbe({ durationMs: 420 });
+      checks.slowMeasurement = normal();
+      toggleUiPref('lightweight');
+      reloadPrefs();
+      checks.manualOnPersists = document.body.classList.contains('ladaMode') && getRakPerformanceDprMax() === 1;
+      toggleUiPref('lightweight');
+      reloadPrefs();
+      checks.manualOffPersists = normal();
+    } finally {
+      getLowEndDeviceInfo = originalDetection;
+      classifyRakDevicePerformance = originalClassify;
+      applyUiPrefs(previousPrefs);
+    }
+    return checks;
+  })()`);
+  assert(Object.values(manualLadaState).every(Boolean), `${viewport.name}: Láďův režim musí být ruční a pamatovat volbu ${JSON.stringify(manualLadaState)}`);
+
   const ladaModeState = await evalInPage(client, `(async () => {
     const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
     if (typeof loadUiPrefs !== 'function' || typeof applyUiPrefs !== 'function' || typeof getLadaPerformanceHealth !== 'function') {

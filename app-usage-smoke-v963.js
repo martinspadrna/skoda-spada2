@@ -1145,12 +1145,11 @@ function assertSudokuRandomPuzzleContractV1145() {
 
 function assertLadaManualOverrideContractV1144() {
   assertIncludes(ui, 'RAK_LADA_MANUAL_OVERRIDE_CONTRACT_V1144', 'ui.js musí dokumentovat ruční vypnutí Láďova režimu na slabém zařízení v1.145');
-  assertIncludes(ui, 'const autoLowEndActive = lowEndDetected && !next.lightweightManual', 'Ruční volba musí mít přednost před lowEnd automatikou');
+  assertIncludes(ui, 'const autoLowEndActive = false', 'Detekce zařízení nesmí zapnout Láďův režim');
   assertIncludes(ui, "document.body.classList.toggle('lowEndDevice', autoLowEndActive)", 'lowEndDevice CSS třída se nesmí držet aktivní po ručním vypnutí');
   assertIncludes(ui, 'document.documentElement.dataset.rakLowEndAutoActive', 'Diagnostika musí rozlišit detekci slabého zařízení a aktivní automatiku');
-  assertIncludes(ui, "dataset.rakPerformanceMode = ladaMode ? (autoLowEndActive ? 'lada-auto-low-end-turbo' : 'lada-manual-turbo') : 'normal'", 'Performance mode musí po ručním vypnutí spadnout na normal');
-  assertIncludes(ui, 'prefs && prefs.lightweightManual && !prefs.lightweight) return 2', 'DPR limit se po ručním vypnutí nesmí dál držet na 1 jen kvůli lowEnd detekci');
-  assertIncludes(ui, 'data-menu-action="device-performance-auto"', 'Tlačítko Automatika musí zůstat dostupné pro návrat k automatickému režimu');
+  assertIncludes(ui, "dataset.rakPerformanceMode = ladaMode ? 'lada-manual-turbo' : 'normal'", 'Režim má být pouze normální nebo ručně zapnutý');
+  assert(!ui.includes('data-menu-action="device-performance-auto"'), 'Nastavení už nesmí nabízet automatické zapnutí');
 }
 
 

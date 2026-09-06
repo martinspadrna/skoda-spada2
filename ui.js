@@ -57,7 +57,7 @@ function classifyRakDevicePerformance(avgFps, worstFrameMs, droppedRatio) {
     score,
     profile,
     label: profile === 'turbo' ? 'Láďův turbo režim' : (profile === 'lite' ? 'odlehčený režim' : 'normální režim'),
-    shouldAutoLightweight: profile !== 'normal'
+    recommendsLightweight: profile !== 'normal'
   };
 }
 
@@ -130,16 +130,7 @@ async function runRakDevicePerformanceProbe(options) {
     lowEndReasons: Array.isArray(lowEndInfo && lowEndInfo.reasons) ? lowEndInfo.reasons.slice(0, 8) : []
   }));
 
-  if (classification.shouldAutoLightweight) {
-    try {
-      const current = loadUiPrefs();
-      if (!current.lightweightManual && !current.lightweight) {
-        applyUiPrefs(Object.assign({}, current, { lightweight: true, lightweightManual: false }));
-      } else {
-        applyUiPrefs(current);
-      }
-    } catch (err) {}
-  }
+  // Měření pouze doporučuje režim; zapnutí patří výhradně uživateli.
   try {
     if (typeof app !== 'undefined') app.lastDevicePerformanceProbe = result;
   } catch (err) {}
@@ -168,15 +159,15 @@ function buildRakDevicePerformanceSettingsHtml() {
     : 'Ještě neměřeno';
   return [
     '<details class="appMenuCard appMenuSettingsCard rakDevicePerfCard">',
-    '  <summary class="appMenuCardTitle">Výkon a plynulost <span class="rakDevicePerfSummary">' + escapeHtml(status.manual ? 'ručně' : 'automaticky') + '</span></summary>',
+    '  <summary class="appMenuCardTitle">Výkon a plynulost <span class="rakDevicePerfSummary">' + (status.active ? 'Láďův režim zapnutý' : 'normální režim') + '</span></summary>',
     '  <div class="rakDevicePerfBody">',
     '  <div class="appMenuText rakDevicePerfText">',
-    '    <div>Režim: <b>' + escapeHtml(profileText) + '</b>' + (status.manual ? ' · ručně' : ' · auto') + '</div>',
+    '    <div>Režim: <b>' + escapeHtml(profileText) + '</b></div>',
+    '    <div class="smallText">Láďův režim se zapíná pouze ručně. Tvoje volba se na tomto zařízení uloží.</div>',
     '    <div class="smallText">' + (status.lowEndDetected ? 'Slabší zařízení · ' : 'Bez omezení · ') + escapeHtml(probeText) + '</div>',
     '  </div>',
     '  <div class="appMenuActionRow rakDevicePerfActions">',
     '    <button type="button" class="appMenuAction isActive" data-menu-action="device-performance-test">Změřit</button>',
-    '    <button type="button" class="appMenuAction" data-menu-action="device-performance-auto">Automatika</button>',
     '    <button type="button" class="appMenuAction rakLadaModeBtn' + (status.active ? ' isActive' : '') + '" data-ui-pref="lightweight">Láďův režim</button>',
     '  </div>',
     '  </div>',
@@ -249,25 +240,21 @@ function isLowEndDevice() {
 
 function loadUiPrefs() {
   try {
-    const autoLightweight = isLowEndDevice();
     const parsed = typeof parseLocalStorageJsonCached === 'function'
       ? parseLocalStorageJsonCached(UI_PREFS_KEY, null)
       : JSON.parse(localStorage.getItem(UI_PREFS_KEY) || 'null');
-    if (!parsed || typeof parsed !== 'object') return { compact: false, reduceMotion: false, lightweight: autoLightweight, lightweightManual: false };
-    const oldManualMotion = parsed.reduceMotion === true;
-    const lightweightManual = parsed.lightweightManual === true || oldManualMotion;
-    const storedLightweight = !!parsed.lightweight || oldManualMotion;
+    if (!parsed || typeof parsed !== 'object') return { compact: false, reduceMotion: false, lightweight: false, lightweightManual: false };
+    const lightweightManual = parsed.lightweightManual === true;
     return {
       compact: !!parsed.compact,
-      reduceMotion: false,
-      // Když zařízení samo vypadá jako slabší, Láďův režim se má zapnout i po starším uloženém nastavení.
-      // Vypnout ho může jen ruční volba v nastavení.
-      lightweight: lightweightManual ? storedLightweight : autoLightweight,
+      reduceMotion: !!parsed.reduceMotion,
+      // Staré automatické zapnutí se nepřenáší; zachová se jen ruční volba.
+      lightweight: lightweightManual && parsed.lightweight === true,
       lightweightManual
     };
   } catch (err) {
     console.warn(err);
-    return { compact: false, reduceMotion: false, lightweight: isLowEndDevice(), lightweightManual: false };
+    return { compact: false, reduceMotion: false, lightweight: false, lightweightManual: false };
   }
 }
 
@@ -338,14 +325,12 @@ function applyUiPrefs(prefs) {
   const lowEndInfo = getLowEndDeviceInfo();
   const lowEndDetected = !!lowEndInfo.lowEnd;
   const incoming = Object.assign({}, prefs || loadUiPrefs());
-  if (lowEndDetected && !incoming.lightweightManual) incoming.lightweight = true;
+  incoming.lightweight = incoming.lightweightManual === true && incoming.lightweight === true;
   const next = saveUiPrefs(incoming);
   const lightweight = !!next.lightweight;
-  // RaK 1.2 (1.155): slabé zařízení dál zapíná Láďův režim automaticky,
-  // ale ruční volba má přednost. Když ho uživatel vypne, nesmí ho lowEndDevice
-  // třída ani výkonová detekce okamžitě držet aktivní přes CSS a DPR limity.
-  const autoLowEndActive = lowEndDetected && !next.lightweightManual;
-  const ladaMode = lightweight || autoLowEndActive;
+  // Detekce zařízení slouží jen pro diagnostiku a doporučení.
+  const autoLowEndActive = false;
+  const ladaMode = lightweight;
   const profile = buildRakLadaPerformanceProfile(ladaMode, lowEndInfo, next);
   document.body.classList.toggle('compactUI', !!next.compact);
   document.body.classList.toggle('reduceMotion', !!next.reduceMotion || ladaMode);
@@ -359,7 +344,7 @@ function applyUiPrefs(prefs) {
     document.documentElement.dataset.rakLowEndDevice = lowEndDetected ? 'yes' : 'no';
     document.documentElement.dataset.rakLowEndAutoActive = autoLowEndActive ? 'yes' : 'no';
     document.documentElement.dataset.rakLowEndReason = lowEndDetected ? lowEndInfo.reasons.join(', ') : '';
-    document.documentElement.dataset.rakPerformanceMode = ladaMode ? (autoLowEndActive ? 'lada-auto-low-end-turbo' : 'lada-manual-turbo') : 'normal';
+    document.documentElement.dataset.rakPerformanceMode = ladaMode ? 'lada-manual-turbo' : 'normal';
     document.documentElement.classList.toggle('rakLadaPaintLite', !!ladaMode);
     document.documentElement.dataset.rakLadaPaintLite = ladaMode ? 'yes' : 'no';
     document.documentElement.dataset.rakLadaProfile = ladaMode ? profile.level : 'normal';
@@ -404,12 +389,6 @@ function getRakPerformanceDprMax() {
     const body = document.body;
     const lite = !!(body && body.classList && (body.classList.contains('lightweightMode') || body.classList.contains('lowEndDevice') || body.classList.contains('ladaMode')));
     if (lite) return 1;
-    const info = typeof getLowEndDeviceInfo === 'function' ? getLowEndDeviceInfo() : null;
-    if (info && info.lowEnd) {
-      const prefs = (typeof app !== 'undefined' && app && app.uiPrefs) ? app.uiPrefs : (typeof loadUiPrefs === 'function' ? loadUiPrefs() : null);
-      if (prefs && prefs.lightweightManual && !prefs.lightweight) return 2;
-      return 1;
-    }
   } catch (err) {}
   return 2;
 }
@@ -418,7 +397,7 @@ try { window.getRakPerformanceDprMax = getRakPerformanceDprMax; } catch (err) {}
 
 const RAK_LADA_MANUAL_OVERRIDE_CONTRACT_V1144 = Object.freeze({
   version: '1.2 (1.155)',
-  behavior: 'auto-low-end-can-be-manually-disabled',
+  behavior: 'lightweight-mode-requires-explicit-manual-opt-in',
   manualOffKeepsDetectionButDisablesEffects: true,
   autoButtonRestoresLowEndAutomation: true
 });

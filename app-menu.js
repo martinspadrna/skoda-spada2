@@ -4306,16 +4306,6 @@ function bindAppMenuHandlers(body) {
         openAppMenu('settings');
         return;
       }
-      if (menuAction === 'device-performance-auto') {
-        try {
-          localStorage.removeItem(DEVICE_PERFORMANCE_PROBE_KEY);
-          if (typeof clearLocalStorageJsonCache === 'function') clearLocalStorageJsonCache(DEVICE_PERFORMANCE_PROBE_KEY);
-        } catch (err) {}
-        const current = loadUiPrefs();
-        applyUiPrefs(Object.assign({}, current, { lightweight: false, lightweightManual: false }));
-        openAppMenu('settings');
-        return;
-      }
       if (menuAction === 'clear-cache') {
         if (!confirm('Vyčistit cache a tvrdě obnovit aplikaci?')) return;
         try {
