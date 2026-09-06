@@ -576,6 +576,158 @@ try {
   window.getRakDashboardAnnouncementHealth = getRakDashboardAnnouncementHealth;
 } catch (err) {}
 
+function getDashboardGreeting(now) {
+  const hour = Number(now && now.getHours ? now.getHours() : new Date().getHours());
+  if (hour >= 5 && hour < 11) return 'Dobré ráno';
+  if (hour >= 11 && hour < 18) return 'Ahoj';
+  if (hour >= 18 && hour < 23) return 'Dobrý večer';
+  return 'Ahoj';
+}
+
+function getDashboardActiveProfile() {
+  try {
+    const profile = typeof window.rakUserProfileGet === 'function' ? window.rakUserProfileGet() : null;
+    if (profile && profile.fullName) return profile;
+  } catch (err) {}
+  try {
+    if (app && app.activeAccountName) return { fullName: app.activeAccountName, accountNumber: app.activeAccountId || '' };
+  } catch (err) {}
+  return null;
+}
+
+const DASHBOARD_FRIENDLY_NAME_OVERRIDES = Object.freeze({
+  jan: 'Honzo',
+  ladislav: 'Láďo',
+  lukáš: 'Lukáši',
+  marek: 'Máro',
+  martin: 'Marťo',
+  michal: 'Míšo',
+  miroslav: 'Míro',
+  pavel: 'Pavle'
+});
+
+function getDashboardFriendlyName(fullName) {
+  const parts = String(fullName || '').trim().split(/\s+/).filter(Boolean);
+  if (!parts.length) return '';
+  const knownPart = parts.find((part) => Object.prototype.hasOwnProperty.call(DASHBOARD_FRIENDLY_NAME_OVERRIDES, part.toLocaleLowerCase('cs-CZ')));
+  if (knownPart) return DASHBOARD_FRIENDLY_NAME_OVERRIDES[knownPart.toLocaleLowerCase('cs-CZ')];
+  // Účty mají zpravidla tvar „Příjmení Jméno“. Dokud správce nepotvrdí
+  // přezdívku, raději nepřevádíme jméno do nejistého českého vokativu.
+  return parts.length > 1 ? parts[parts.length - 1] : parts[0];
+}
+
+function getDashboardScheduleName(fullName) {
+  const wanted = String(fullName || '').trim();
+  if (!wanted || typeof buildNameIndex !== 'function') return wanted;
+  try {
+    const availableNames = Object.keys(buildNameIndex(app.rotation) || {});
+    const exact = availableNames.find((name) => name === wanted);
+    if (exact) return exact;
+    const words = wanted.split(/\s+/).map((part) => part.toLocaleLowerCase('cs-CZ'));
+    // Uživatelský účet obsahuje celé jméno, rozpis zatím jen příjmení.
+    // Při shodě celého slova tedy bezpečně použijeme příjmení z rozpisu.
+    return availableNames.find((name) => words.includes(String(name).toLocaleLowerCase('cs-CZ'))) || wanted;
+  } catch (err) {
+    return wanted;
+  }
+}
+
+function getDashboardPersonalShiftStatus(now) {
+  const profile = getDashboardActiveProfile();
+  const name = String(profile && profile.fullName || '').trim();
+  if (!name || typeof getPersonScheduleEntries !== 'function' || typeof getPersonScheduleEntryWindow !== 'function') {
+    return { name, active: null, next: null, absence: null };
+  }
+  try {
+    const model = getPersonScheduleEntries(getDashboardScheduleName(name));
+    const entries = Array.isArray(model && model.entries) ? model.entries : [];
+    const nowMs = now.getTime();
+    const active = entries.find((entry) => {
+      if (!entry || entry.absence) return false;
+      const window = getPersonScheduleEntryWindow(entry);
+      return window && window.start.getTime() <= nowMs && nowMs < window.end.getTime();
+    }) || null;
+    const next = entries.find((entry) => {
+      if (!entry || entry.absence) return false;
+      const window = getPersonScheduleEntryWindow(entry);
+      return window && window.start.getTime() > nowMs;
+    }) || null;
+    const todayKey = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');
+    const absence = entries.find((entry) => entry && entry.absence && String(entry.sortDate || '').slice(0, 10) === todayKey) || null;
+    return { name, active, next, absence };
+  } catch (err) {
+    return { name, active: null, next: null, absence: null };
+  }
+}
+
+function dashboardPersonalTaskText(entry) {
+  if (!entry || !entry.target || typeof window.getRotationMachineTasksForAssignment !== 'function') return '';
+  try {
+    const result = window.getRotationMachineTasksForAssignment(entry.target, entry.shift);
+    const tasks = Array.isArray(result && result.tasks) ? result.tasks : [];
+    return tasks.map((task) => [String(task && task.label || '').trim(), String(task && task.place || '').trim()].filter(Boolean).join(' · ')).filter(Boolean).join('  ·  ');
+  } catch (err) {
+    return '';
+  }
+}
+
+function dashboardPersonalDateLabel(entry) {
+  if (!entry) return '';
+  const date = new Date(entry.sortDate || '');
+  if (!Number.isNaN(date.getTime())) {
+    try { return new Intl.DateTimeFormat('cs-CZ', { weekday: 'long', day: 'numeric', month: 'numeric' }).format(date); } catch (err) {}
+  }
+  return String(entry.dateLabel || '').trim();
+}
+
+function buildDashboardPersonalHeroHtml(now, esc) {
+  const state = getDashboardPersonalShiftStatus(now);
+  const friendlyName = getDashboardFriendlyName(state.name);
+  const greeting = getDashboardGreeting(now) + (friendlyName ? ', ' + friendlyName : '');
+  const entry = state.active || state.next;
+  const isActive = !!state.active;
+  const machine = String(entry && entry.target || '').trim();
+  const shift = String(entry && entry.shift || '').trim();
+  const task = dashboardPersonalTaskText(entry);
+  const window = entry && typeof getPersonScheduleEntryWindow === 'function' ? getPersonScheduleEntryWindow(entry) : null;
+  let status = '';
+  let title = '';
+  let detail = '';
+  let progress = null;
+
+  if (isActive) {
+    title = machine ? ('Dnes jsi na ' + machine + '.') : 'Dnes máš směnu.';
+    status = shift ? ('Právě v práci · ' + shift) : 'Právě v práci';
+    detail = window && window.end && typeof formatDuration === 'function' ? ('Končí za ' + formatDuration(Math.max(0, window.end.getTime() - now.getTime()))) : '';
+    if (window && window.start && window.end) progress = Math.max(0, Math.min(100, ((now.getTime() - window.start.getTime()) / (window.end.getTime() - window.start.getTime())) * 100));
+  } else if (entry) {
+    const dateLabel = dashboardPersonalDateLabel(entry);
+    title = machine ? ('Příští směnu jdeš na ' + machine + '.') : 'Příští směnu máš v rozpisu.';
+    status = dateLabel + (shift ? (' · ' + shift) : '');
+    detail = window && window.start && typeof formatDuration === 'function' ? ('Začíná za ' + formatDuration(Math.max(0, window.start.getTime() - now.getTime()))) : '';
+  } else if (state.absence) {
+    title = 'Dnes máš ' + String(state.absence.target || 'volno') + '.';
+    status = 'Další směna zatím není v rozpisu';
+  } else {
+    title = 'Dnes nemáš směnu v rozpisu.';
+    status = 'Až bude další směna vyplněná, ukáže se tady.';
+  }
+
+  const isRivetingDay = /^o nic se nestarej/i.test(task);
+  const taskCaption = isRivetingDay ? 'Dnes máš klid' : 'Nezapomeň';
+
+  return [
+    '<div class="dashboardPersonalHero">',
+    '<div class="dashboardPersonalGreeting">' + esc(greeting) + '</div>',
+    '<div class="dashboardPersonalStatus">' + esc(status) + '</div>',
+    '<div class="dashboardPersonalTitle">' + esc(title) + '</div>',
+    task ? '<div class="dashboardPersonalTask"><span>' + esc(taskCaption) + '</span><b>' + esc(task) + '</b></div>' : '',
+    detail ? '<div class="dashboardPersonalTiming">' + esc(detail) + '</div>' : '',
+    progress !== null ? '<div class="dashboardPersonalBar"><span style="--fill:' + progress.toFixed(1) + '%"></span><b>' + esc(String(Math.round(progress)) + ' %') + '</b></div>' : '',
+    '</div>'
+  ].join('');
+}
+
 function updateDashboard() {
   const now = typeof getPragueNow === 'function' ? getPragueNow(new Date()) : new Date();
   const active = typeof getDashboardActiveWorkShift === 'function' ? getDashboardActiveWorkShift(now) : null;
@@ -613,35 +765,8 @@ function updateDashboard() {
 
   const hero = document.getElementById('dashHero');
   if (hero) {
-    const activeShiftLabel = active && active.label ? active.label : '';
-    const nextShiftLabel = nextWorkShift && nextWorkShift.label ? nextWorkShift.label : '';
-    const heroLine1Text = active
-      ? 'Směna ' + String(active.team || '—') + ' je právě v práci' + (activeShiftLabel ? ': ' + activeShiftLabel : '')
-      : (nextWorkShift
-        ? 'Další směna v práci: ' + String(nextWorkShift.team || '—') + (nextShiftLabel ? ' · ' + nextShiftLabel : '')
-        : (special ? 'Dnes se nepracuje' : '—'));
-    const heroLine1 = '<span class="dashboardHeroLine1Text">' + esc(heroLine1Text) + '</span>';
-    const heroLine2 = active
-      ? (active.end ? 'Končí za: ' + formatDuration(Math.max(0, active.end - now)) : '')
-      : (nextWorkShift
-        ? 'Začíná za: ' + formatDuration(Math.max(0, nextWorkShift.start - now))
-        : '');
-    const heroLine3 = typeof renderDashboardTeamDLine === 'function'
-      ? renderDashboardTeamDLine(now, teamDStatus, esc)
-      : (typeof formatDashboardTeamDLine === 'function' ? esc(formatDashboardTeamDLine(now, teamDStatus)) : '');
-    const heroProgress = active && active.start && active.end
-      ? Math.max(0, Math.min(100, ((now.getTime() - active.start.getTime()) / (active.end.getTime() - active.start.getTime())) * 100))
-      : 0;
-    const heroProgressText = active ? Math.round(heroProgress) + ' %' : '';
-    setDashboardHtmlIfChanged(hero, [
-      '<div class="dashboardHeroLine1">' + heroLine1 + '</div>',
-      heroLine2 ? '<div class="dashboardHeroLine2">' + esc(heroLine2) + '</div>' : '',
-      heroLine3 ? '<div class="dashboardHeroLine3"><span class="dashboardHeroLine3Pill">' + heroLine3 + '</span></div>' : '',
-      '<div class="dashboardHeroBarRow">',
-      '<div class="dashboardHeroBar"><span style="--fill:' + heroProgress.toFixed(1) + '%"></span></div>',
-      heroProgressText ? '<div class="dashboardHeroBarPercent">' + esc(heroProgressText) + '</div>' : '',
-      '</div>'
-    ].join(''), 'dashboardHero');
+    hero.classList.add('dashboardHeroCard--personal');
+    setDashboardHtmlIfChanged(hero, buildDashboardPersonalHeroHtml(now, esc), 'dashboardPersonalHero');
   }
 
   const setCard = (id, title, value, meta, dotClass, clickable, iconHtml) => {
