@@ -5855,10 +5855,16 @@ function openAppMenu(view) {
         '  <button type="button" class="appMenuAction" data-menu-action="about">O aplikaci</button>',
         '  <button type="button" class="appMenuAction" data-menu-action="contact">Kontakt</button>',
         '  <button type="button" class="appMenuAction" data-menu-action="bug-report">Pošli mi chybu</button>',
-        (appMenuShouldShowAdminEntry() ? '  <button type="button" class="appMenuAction isActive" data-menu-action="admin">Administrace</button>' +
-          '  <button type="button" class="appMenuAction isActive" data-admin-action="vacation-report">Report dovolené</button>' +
-          '  <button type="button" class="appMenuAction isActive" data-rak-shift-report-entry="1">Report směny</button>' : ''),
-        '</div>'
+        '</div>',
+        (appMenuShouldShowAdminEntry() ?
+          '<section class="appMenuAdminQuickLinks" aria-label="Správce">' +
+            '<div class="appMenuAdminQuickLinksTitle">Správce</div>' +
+            '<div class="appMenuGrid">' +
+              '<button type="button" class="appMenuAction isActive" data-menu-action="admin">Administrace</button>' +
+              '<button type="button" class="appMenuAction isActive" data-admin-action="vacation-report">Report dovolené</button>' +
+              '<button type="button" class="appMenuAction isActive" data-rak-shift-report-entry="1">Report směny</button>' +
+            '</div>' +
+          '</section>' : '')
       ].join('');
     }
 

@@ -1679,3 +1679,24 @@ html body:not(.lightweightMode):not(.lowEndDevice) #brusy.calcPage .indexGrid .b
   min-height:68px;
   resize:vertical;
 }
+
+/* Nabídka Více: admin nástroje mají vlastní klidně oddělený blok. */
+.appMenuAdminQuickLinks{
+  display:grid;
+  gap:9px;
+  margin-top:18px;
+  padding:12px;
+  border:1px solid rgba(255,229,93,.34);
+  border-radius:18px;
+  background:linear-gradient(145deg,rgba(255,228,85,.10),rgba(94,39,155,.14));
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.14),0 12px 28px rgba(0,0,0,.12);
+}
+.appMenuAdminQuickLinksTitle{
+  color:var(--rakAccentYellow,#fff36b);
+  font-size:13px;
+  font-weight:900;
+  letter-spacing:.03em;
+}
+.appMenuAdminQuickLinks .appMenuGrid{
+  gap:8px;
+}

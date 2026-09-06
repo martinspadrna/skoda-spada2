@@ -1459,7 +1459,8 @@ function assertAdminAccountLoginContractV1141() {
   assertIncludes(ui, 'const adminReady = await appMenuEnsureAdminAccessFromMenu()', 'Klik na administraci nesmi zustat bez odezvy pri ulozenem admin prihlaseni');
   assertIncludes(ui, 'function appMenuShouldShowAdminEntry', 'Menu musi ukazat vstup do administrace i admin uctu pred dokoncenym obnovenim session');
   assertIncludes(ui, 'function appMenuPersistentAdminSessionMatches', 'Menu musi mit kompatibilni kontrolu starsi admin session bez jejiho pouziti k opravneni');
-  assertIncludes(ui, 'appMenuShouldShowAdminEntry() ? \'  <button type="button" class="appMenuAction isActive" data-menu-action="admin">Administrace</button>\'', 'Tlacitko Administrace musi pouzivat admin-entry helper');
+  assertIncludes(ui, "appMenuShouldShowAdminEntry() ?", 'Tlacitko Administrace musi pouzivat admin-entry helper');
+  assertIncludes(ui, 'data-menu-action="admin">Administrace</button>', 'Tlacitko Administrace musi zustat dostupne v oddelenem bloku spravce');
   assertIncludes(ui, "buildAdminMenuSectionHtml('1. Provoz'", 'Admin menu musi byt rozdelene do prehlednych provoznich skupin');
   assertIncludes(ui, 'buildAdminMenuSectionHtml', 'Admin menu musi skladat prehledne skupiny pres spolecny helper');
   assertIncludes(ui, 'adminMenuSections', 'Admin uvod musi mit zabalitelne skupiny spravcovskych oblasti');
