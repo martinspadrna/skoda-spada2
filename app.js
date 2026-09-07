@@ -29,7 +29,7 @@ try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleR
 })();
 
 (async () => {
-  const RAK_MODULE_CACHE_VERSION = "1.5.1";
+  const RAK_MODULE_CACHE_VERSION = "1.5.2";
 
   const criticalFiles = [
     "supabase-config.js",
@@ -149,6 +149,14 @@ try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleR
   } catch (err) { console.warn('RaK user profile runtime restore failed', err); }
 
   if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleReady('boot-loader', 'ready', { source: 'dynamic-loader' });
+
+  // Testovací development buildy zůstávají na APP_VERSION 1.5. Staré potvrzení stejné
+  // app verze proto nesmí schovat nového waiting service workera z dalšího testovacího buildu.
+  try {
+    sessionStorage.removeItem('rotace_sw_update_notice_v1');
+    sessionStorage.removeItem('rotace_sw_update_pending_v1');
+    localStorage.removeItem('rotace_sw_update_suppress_v1');
+  } catch (err) {}
 
   if (typeof installPwaAndConnectivityHooks === 'function') installPwaAndConnectivityHooks();
   if (typeof installBottomNavBindings === 'function') installBottomNavBindings();
