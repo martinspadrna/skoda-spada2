@@ -204,4 +204,16 @@ html.rakStableBootViewport{
     max-height:none !important;
     margin-bottom:8px !important;
   }
+
+  /* Skutečná příčina spodního přeřezu: poslední karty Výplata/Dovolená mají v dashboard-polish
+     větší vlastní výšku než jednotný grid-auto-row. Grid proto hlásil menší výšku než jeho obsah.
+     Čtyři explicitní auto řádky nechají každý řádek převzít výšku nejvyšší karty a shell se už nemůže
+     uzavřít o několik px dřív. Funguje zároveň pro 428×926, 390×844 i menší Androidy. */
+  html body #home.page.active .dashboardShell > .dashboardGrid,
+  html body #home.page.active .dashboardShell > #dashHero + .dashboardGrid,
+  html body #home.page.active .dashboardShell > #dashboardAnnouncementBar:not([hidden]) + #dashHero + .dashboardGrid{
+    grid-template-rows:repeat(4, auto) !important;
+    grid-auto-rows:auto !important;
+    align-content:start !important;
+  }
 }
