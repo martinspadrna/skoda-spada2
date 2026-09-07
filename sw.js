@@ -1,10 +1,22 @@
-// RaK 1.5 production PWA service worker – update-safe build.
-const CACHE_VERSION = 'v1.5.15';
+// RaK 1.5.16 – update-safe PWA service worker.
+const CACHE_VERSION = 'v1.5.16';
 const SW_APP_VERSION = '1.5';
 const STATIC_CACHE = `rotace-static-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `rotace-runtime-${CACHE_VERSION}`;
-const CORE = ['./', './index.html', './manifest.webmanifest', './assets/app-icons/icon-180.png?v=1.5.1', './assets/app-icons/icon-32.png?v=1.5.1', './assets/app-icons/icon-192.png?v=1.5.1', './assets/app-icons/icon-512.png?v=1.5.1', './assets/rak-login-crab.png', './assets/rak-login-crab-step.png', './assets/rak-login-crab-tap.png'];
+
+// Precache držíme záměrně malý. Velké login obrázky (přes 6 MB dohromady)
+// se uloží až při prvním skutečném použití, ne při každé aktualizaci aplikace.
+const CORE = [
+  './',
+  './index.html',
+  './manifest.webmanifest',
+  './assets/app-icons/icon-180.png?v=1.5.16',
+  './assets/app-icons/icon-32.png?v=1.5.16',
+  './assets/app-icons/icon-192.png?v=1.5.16',
+  './assets/app-icons/icon-512.png?v=1.5.16'
+];
 const STATIC_EXT = /\.(?:js|css|png|jpg|jpeg|webp|svg|ico|json|webmanifest)$/i;
+const IMAGE_EXT = /\.(?:png|jpg|jpeg|webp|svg|ico)$/i;
 let approvedUpdateClientId = '';
 
 function cacheable(response) {
@@ -20,11 +32,15 @@ async function put(cacheName, request, response) {
   } catch (_) {}
 }
 
-async function cached(request) {
+async function exactCached(request) {
+  try { return await caches.match(request, { ignoreSearch: false }); }
+  catch (_) { return null; }
+}
+
+async function imageCached(request) {
   try {
-    const hit = await caches.match(request, { ignoreSearch: false });
-    if (hit) return hit;
-    return await caches.match(request, { ignoreSearch: true });
+    return (await caches.match(request, { ignoreSearch: false }))
+      || (await caches.match(request, { ignoreSearch: true }));
   } catch (_) {
     return null;
   }
@@ -41,15 +57,16 @@ self.addEventListener('install', event => {
         if (cacheable(response)) await cache.put(url, response.clone());
       } catch (_) {}
     }));
-    // Záměrně NEvoláme skipWaiting automaticky. Nová verze zůstane čekat,
-    // aby RaK zobrazilo stejné tlačítko „Aktualizovat“ jako produkční main.
+    // Nová verze zůstane waiting, dokud uživatel nepotvrdí tlačítko Aktualizovat.
   })());
 });
 
 self.addEventListener('activate', event => {
   event.waitUntil((async () => {
     const keys = await caches.keys();
-    await Promise.all(keys.filter(k => /^rotace-(?:static|runtime)-/.test(k) && k !== STATIC_CACHE && k !== RUNTIME_CACHE).map(k => caches.delete(k)));
+    await Promise.all(keys
+      .filter(k => /^rotace-(?:static|runtime)-/.test(k) && k !== STATIC_CACHE && k !== RUNTIME_CACHE)
+      .map(k => caches.delete(k)));
     if (self.registration.navigationPreload) {
       try { await self.registration.navigationPreload.enable(); } catch (_) {}
     }
@@ -84,12 +101,43 @@ self.addEventListener('message', event => {
 
 async function networkFirst(request, fallback) {
   try {
-    const response = await fetch(new Request(request, { cache: 'no-store' }));
-    put(RUNTIME_CACHE, request, response);
+    // no-cache dovolí HTTP cache použít ETag/304, ale vždy ověří čerstvost.
+    const response = await fetch(new Request(request, { cache: 'no-cache' }));
+    void put(RUNTIME_CACHE, request, response);
     return response;
   } catch (_) {
-    return (await cached(request)) || fallback;
+    return (await exactCached(request)) || fallback;
   }
+}
+
+async function cacheFirstImage(request) {
+  const hit = await imageCached(request);
+  if (hit) return hit;
+  try {
+    const response = await fetch(request);
+    void put(RUNTIME_CACHE, request, response);
+    return response;
+  } catch (_) {
+    return Response.error();
+  }
+}
+
+async function staleWhileRevalidateVersioned(request, event) {
+  const hit = await exactCached(request);
+  const refresh = (async () => {
+    try {
+      const response = await fetch(request);
+      await put(RUNTIME_CACHE, request, response);
+      return response;
+    } catch (_) {
+      return null;
+    }
+  })();
+  if (hit) {
+    if (event) event.waitUntil(refresh);
+    return hit;
+  }
+  return (await refresh) || Response.error();
 }
 
 async function navigationResponse(request, event) {
@@ -97,12 +145,12 @@ async function navigationResponse(request, event) {
     if (event && event.preloadResponse) {
       const preload = await event.preloadResponse;
       if (cacheable(preload)) {
-        put(RUNTIME_CACHE, request, preload);
+        void put(RUNTIME_CACHE, request, preload);
         return preload;
       }
     }
   } catch (_) {}
-  const fallback = (await cached('./index.html')) || (await cached('./')) || Response.error();
+  const fallback = (await exactCached('./index.html')) || (await exactCached('./')) || Response.error();
   return networkFirst(request, fallback);
 }
 
@@ -111,6 +159,7 @@ self.addEventListener('fetch', event => {
   if (!request || request.method !== 'GET') return;
   const url = new URL(request.url);
   if (url.origin !== self.location.origin) return;
+
   // Citlivé API odpovědi nikdy neobsluhujeme z PWA cache.
   if (url.pathname.startsWith('/api/')) return;
 
@@ -119,8 +168,20 @@ self.addEventListener('fetch', event => {
     return;
   }
 
-  if (STATIC_EXT.test(url.pathname)) {
-    event.respondWith(networkFirst(request, (async () => (await cached(request)) || Response.error())()));
+  if (IMAGE_EXT.test(url.pathname)) {
+    event.respondWith(cacheFirstImage(request));
     return;
+  }
+
+  if (STATIC_EXT.test(url.pathname)) {
+    // Dynamické moduly app.js mají build query ?v=...; ty můžeme po prvním načtení
+    // vracet okamžitě z přesné cache a čerstvost ověřit na pozadí.
+    if (url.searchParams.has('v')) {
+      event.respondWith(staleWhileRevalidateVersioned(request, event));
+    } else {
+      // Neversionované CSS/boot soubory raději pokaždé revalidujeme, aby update
+      // nikdy nevrátil starou podobu aplikace jen kvůli cache-first strategii.
+      event.respondWith(networkFirst(request, (async () => (await exactCached(request)) || Response.error())()));
+    }
   }
 });
