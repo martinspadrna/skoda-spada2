@@ -2,10 +2,13 @@
 (function () {
   'use strict';
 
-  const DEV_BUILD = '';
+  const DEV_BUILD = 'v1.5.11';
   const STYLE_ID = 'rak-shift-report-entry-fix-style-v4';
   const ENTRY_ATTR = 'data-rak-shift-report-entry';
   const PORTRAIT_OVERLAY_ID = 'rakPortraitOnlyOverlay';
+  const SHIFT_REPORT_DRAFT_PREFIX = 'rak:shiftReportDraft:v1';
+  const SHIFT_REPORT_RETENTION_VERSION = 1;
+  const SHIFT_REPORT_TEAM = 'D';
   let opening = false;
   let scheduled = false;
 
@@ -13,13 +16,150 @@
 
   function clearStaleDevUpdatePromptState() {
     if (!DEV_BUILD) return;
-    // Development větev může používat stejné produkční APP_VERSION metadata,
-    // takže produkční ochrana proti opakovanému toastu by jinak mohla nové DEV
-    // aktualizace trvale schovat. Stav čistíme před instalací PWA hooků; po kliknutí
-    // na Aktualizovat si app-pwa-connectivity nastaví nový pending stav znovu.
-    try { sessionStorage.removeItem('rotace_sw_update_notice_v1'); } catch (err) {}
-    try { sessionStorage.removeItem('rotace_sw_update_pending_v1'); } catch (err) {}
-    try { localStorage.removeItem('rotace_sw_update_suppress_v1'); } catch (err) {}
+    // Každý DEV build smaže staré potlačení nabídky jen jednou. Po kliknutí na
+    // Aktualizovat už při reloadu stav znovu nemažeme, takže nevznikne update smyčka.
+    try {
+      const key = 'rak_dev_entry_prompt_reset_build';
+      if (localStorage.getItem(key) === DEV_BUILD) return;
+      sessionStorage.removeItem('rotace_sw_update_notice_v1');
+      sessionStorage.removeItem('rotace_sw_update_pending_v1');
+      localStorage.removeItem('rotace_sw_update_suppress_v1');
+      localStorage.setItem(key, DEV_BUILD);
+    } catch (err) {}
+  }
+
+  function shiftReportDraftStorageKey() {
+    let account = '';
+    try {
+      const profile = typeof window.rakUserProfileGet === 'function' ? window.rakUserProfileGet() : null;
+      account = String(profile && profile.accountNumber || '').trim();
+      if (!account && typeof window.app === 'object' && window.app && window.app.gamesProfile) {
+        account = String(window.app.gamesProfile.activeAccountId || '').trim();
+      }
+    } catch (err) {}
+    return SHIFT_REPORT_DRAFT_PREFIX + ':' + (account || 'local');
+  }
+
+  function safeDate(value) {
+    const date = value instanceof Date ? new Date(value.getTime()) : new Date(value || Date.now());
+    return Number.isNaN(date.getTime()) ? new Date() : date;
+  }
+
+  function nextTeamShiftStartAfter(anchor) {
+    const base = safeDate(anchor);
+    try {
+      if (typeof window.getDashboardNextTeamShift === 'function') {
+        const next = window.getDashboardNextTeamShift(base, SHIFT_REPORT_TEAM);
+        if (next && next.start instanceof Date && !Number.isNaN(next.start.getTime()) && next.start > base) {
+          return new Date(next.start.getTime());
+        }
+      }
+    } catch (err) {}
+
+    // Fallback přes stejný směnový engine, kdyby dashboard helper ještě nebyl načtený.
+    try {
+      if (typeof window.getTeamShiftState !== 'function') return null;
+      const candidates = [];
+      const collect = (probe) => {
+        const state = window.getTeamShiftState(probe, SHIFT_REPORT_TEAM);
+        if (!state) return;
+        if (state.active && state.start instanceof Date && state.start > base) candidates.push(state.start);
+        if (state.next && state.next.start instanceof Date && state.next.start > base) candidates.push(state.next.start);
+      };
+      collect(base);
+      if (!candidates.length) {
+        for (let hours = 6; hours <= 60 * 24; hours += 6) {
+          collect(new Date(base.getTime() + hours * 60 * 60 * 1000));
+          if (candidates.length) break;
+        }
+      }
+      candidates.sort((a, b) => a - b);
+      return candidates.length ? new Date(candidates[0].getTime()) : null;
+    } catch (err) {
+      return null;
+    }
+  }
+
+  function readShiftReportDraftEnvelope() {
+    try {
+      const raw = localStorage.getItem(shiftReportDraftStorageKey());
+      if (!raw) return null;
+      const saved = JSON.parse(raw);
+      return saved && saved.draft && typeof saved.draft === 'object' ? saved : null;
+    } catch (err) {
+      return null;
+    }
+  }
+
+  function writeShiftReportDraftEnvelope(saved) {
+    try {
+      if (saved && saved.draft && typeof saved.draft === 'object') {
+        localStorage.setItem(shiftReportDraftStorageKey(), JSON.stringify(saved));
+      }
+    } catch (err) {}
+  }
+
+  function calculateDraftRetentionDeadline(saved) {
+    if (!saved) return null;
+    const explicit = safeDate(saved.retainUntil || '');
+    if (saved.retainUntil && !Number.isNaN(explicit.getTime())) return explicit;
+    const anchor = saved.updatedAt ? safeDate(saved.updatedAt) : new Date();
+    return nextTeamShiftStartAfter(anchor);
+  }
+
+  function expireShiftReportDraftIfDue(now) {
+    const saved = readShiftReportDraftEnvelope();
+    if (!saved) return false;
+    const deadline = calculateDraftRetentionDeadline(saved);
+    if (!deadline) return false;
+    if (safeDate(now || Date.now()).getTime() >= deadline.getTime()) {
+      try { localStorage.removeItem(shiftReportDraftStorageKey()); } catch (err) {}
+      return true;
+    }
+    if (!saved.retainUntil) {
+      saved.retainUntil = deadline.toISOString();
+      saved.retentionVersion = SHIFT_REPORT_RETENTION_VERSION;
+      saved.retentionTeam = SHIFT_REPORT_TEAM;
+      writeShiftReportDraftEnvelope(saved);
+    }
+    return false;
+  }
+
+  function stampShiftReportDraftRetention() {
+    const saved = readShiftReportDraftEnvelope();
+    if (!saved) return;
+    const anchor = saved.updatedAt ? safeDate(saved.updatedAt) : new Date();
+    const deadline = nextTeamShiftStartAfter(anchor);
+    if (!deadline) return;
+    saved.retainUntil = deadline.toISOString();
+    saved.retentionVersion = SHIFT_REPORT_RETENTION_VERSION;
+    saved.retentionTeam = SHIFT_REPORT_TEAM;
+    writeShiftReportDraftEnvelope(saved);
+  }
+
+  function scheduleShiftReportRetentionStamp() {
+    const run = () => stampShiftReportDraftRetention();
+    if (typeof queueMicrotask === 'function') queueMicrotask(run);
+    else setTimeout(run, 0);
+  }
+
+  function installShiftReportRetention() {
+    expireShiftReportDraftIfDue(new Date());
+    document.addEventListener('input', (event) => {
+      if (event.target && event.target.closest && event.target.closest('#rakShiftReport')) {
+        scheduleShiftReportRetentionStamp();
+      }
+    });
+    document.addEventListener('change', (event) => {
+      if (event.target && event.target.closest && event.target.closest('#rakShiftReport')) {
+        scheduleShiftReportRetentionStamp();
+      }
+    });
+    document.addEventListener('click', (event) => {
+      if (event.target && event.target.closest && event.target.closest('#rakShiftReport')) {
+        scheduleShiftReportRetentionStamp();
+      }
+    });
   }
 
   function isStandalonePwa() {
@@ -193,6 +333,9 @@
     try {
       const ready = await ensureAdminAccess();
       if (!ready) return;
+      // Rozepsaný report zůstává uložený přes volno, ale na začátku další směny D
+      // se před otevřením automaticky zahodí. Např. 7. 9. R zůstane do 8. 9. 06:00.
+      expireShiftReportDraftIfDue(new Date());
       const body = document.getElementById('appMenuBody');
       if (body) body.dataset.rakShiftReportOpen = '1';
       if (window.RakShiftReport && typeof window.RakShiftReport.open === 'function') window.RakShiftReport.open();
@@ -204,6 +347,7 @@
 
   function boot() {
     clearStaleDevUpdatePromptState();
+    installShiftReportRetention();
     ensureStyle();
     installPortraitOnlyMode();
     ensureEntry();
@@ -219,17 +363,32 @@
       observer.observe(document.body, { childList: true, subtree: true });
       window.__rakShiftReportEntryObserver = observer;
     } catch (err) {}
-    window.addEventListener('focus', scheduleEnsure);
+    window.addEventListener('focus', () => {
+      expireShiftReportDraftIfDue(new Date());
+      scheduleEnsure();
+    });
     document.addEventListener('visibilitychange', () => {
-      if (document.visibilityState !== 'hidden') scheduleEnsure();
+      if (document.visibilityState !== 'hidden') {
+        expireShiftReportDraftIfDue(new Date());
+        scheduleEnsure();
+      }
     });
     window.__rakShiftReportEntryTimer = setInterval(() => {
-      if (document.visibilityState !== 'hidden') ensureEntry();
+      if (document.visibilityState !== 'hidden') {
+        expireShiftReportDraftIfDue(new Date());
+        ensureEntry();
+      }
     }, 2000);
   }
 
   window.rakShiftReportRefreshEntry = ensureEntry;
   window.rakRefreshDevBuildInfo = ensureAboutBuildInfo;
+  window.rakExpireShiftReportDraftIfDue = expireShiftReportDraftIfDue;
+  window.rakGetShiftReportRetentionDeadline = () => {
+    const saved = readShiftReportDraftEnvelope();
+    const deadline = calculateDraftRetentionDeadline(saved);
+    return deadline ? new Date(deadline.getTime()) : null;
+  };
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot, { once: true });
   else boot();
 })();
