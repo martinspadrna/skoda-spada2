@@ -29,8 +29,8 @@ try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleR
 })();
 
 (async () => {
-  const RAK_MODULE_CACHE_VERSION = "1.5.13";
-  const RAK_DEV_UPDATE_BUILD = "v1.5.13";
+  const RAK_MODULE_CACHE_VERSION = "1.5.14";
+  const RAK_DEV_UPDATE_BUILD = "v1.5.14";
   window.RAK_PWA_BUILD = RAK_DEV_UPDATE_BUILD;
 
   const criticalFiles = [
@@ -172,9 +172,9 @@ try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleR
   if (typeof installPwaAndConnectivityHooks === 'function') installPwaAndConnectivityHooks();
   if (typeof installBottomNavBindings === 'function') installBottomNavBindings();
   try { if (typeof applyBottomNavMoreHardFix === 'function') applyBottomNavMoreHardFix(); } catch (err) { console.warn('Bottom nav Více hard-fix failed', err); }
-  try { if (typeof applyRakFixedBottomNavMetrics === 'function') applyRakFixedBottomNavMetrics(); } catch (err) { console.warn('Bottom nav fixed metrics failed', err); }
+  try { if (typeof applyRakFixedBottomNavMetrics === 'function') window.applyRakFixedBottomNavMetrics ? window.applyRakFixedBottomNavMetrics() : applyRakFixedBottomNavMetrics(); } catch (err) { console.warn('Bottom nav fixed metrics failed', err); }
   if (typeof installDelegatedAppActions === 'function') installDelegatedAppActions();
-  try { if (typeof runRakPostLoadAudits === 'function') runRakPostLoadAudits(); } catch (err) { console.warn('Post-load audit orchestrace failed', err); }
+  try { if (typeof runRakPostLoadAudits === 'function') window.runRakPostLoadAudits ? window.runRakPostLoadAudits() : runRakPostLoadAudits(); } catch (err) { console.warn('Post-load audit orchestrace failed', err); }
 
   try {
     if (typeof window.__rotaceBootHomeRefreshLate === 'function') window.__rotaceBootHomeRefreshLate();
