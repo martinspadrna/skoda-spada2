@@ -178,3 +178,30 @@ html.rakStableBootViewport{
     overflow:visible !important;
   }
 }
+
+/* RaK 1.5 – mobilní Dashboard musí být vždy svisle posouvatelný.
+   Na menších Android displejích (např. Xiaomi/Poco) starý viewport-fit režim zamykal #home přes overflow:hidden,
+   takže poslední řádek karet nebylo možné vůbec odrolovat nad pevnou spodní navigaci.
+   Scroll držíme přímo na aktivní stránce, protože iOS/PWA může mít body výškově uzamčené. */
+@media (max-width:700px){
+  html body #home.page.active{
+    display:block !important;
+    box-sizing:border-box !important;
+    height:100dvh !important;
+    min-height:100dvh !important;
+    max-height:100dvh !important;
+    overflow-x:hidden !important;
+    overflow-y:auto !important;
+    -webkit-overflow-scrolling:touch !important;
+    touch-action:pan-y !important;
+    overscroll-behavior-y:contain;
+    padding-bottom:calc(var(--bottom-nav-h, 64px) + env(safe-area-inset-bottom) + 34px) !important;
+    scroll-padding-bottom:calc(var(--bottom-nav-h, 64px) + env(safe-area-inset-bottom) + 34px) !important;
+  }
+  html body #home.page.active .dashboardShell{
+    min-height:0 !important;
+    height:auto !important;
+    max-height:none !important;
+    margin-bottom:8px !important;
+  }
+}
