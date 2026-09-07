@@ -1,4 +1,4 @@
-// RaK 1.5.8 – Brusy/FHB: zjednodušené popisky, výrazné indexy a prázdná pole nejsou nula.
+// RaK 1.5.9 – Brusy/FHB: zjednodušené popisky, výrazné indexy a spolehlivé ignorování prázdných polí.
 (function installBrusFhbV158() {
   'use strict';
 
@@ -67,23 +67,43 @@ html body #korekce-brusy .brus157ChoiceGroup[data-brus157-select="index"] .brus1
     });
   }
 
-  // V původní 1.5.7 Number('') vracelo 0, takže prázdné pole se vyhodnotilo jako skutečná nula.
-  // Zachytíme klik už na window capture, prázdná pole na dobu výpočtu označíme nečíselně a hned poté vrátíme zpět.
+  function blankResultKeys() {
+    const result = new Set();
+    const slots = [
+      ['brus157_c1_left', 'C1|vlevo'],
+      ['brus157_c1_right', 'C1|vpravo'],
+      ['brus157_c2_left', 'C2|vlevo'],
+      ['brus157_c2_right', 'C2|vpravo']
+    ];
+    slots.forEach(([id, key]) => {
+      const input = document.getElementById(id);
+      if (!input || String(input.value || '').trim() === '') result.add(key);
+    });
+    return result;
+  }
+
+  function pruneBlankResults(blankKeys) {
+    if (!blankKeys || !blankKeys.size) return;
+    document.querySelectorAll('#korekce-brusy .brus157ResultSide').forEach((card) => {
+      const label = String(card.querySelector('.brus157ResultTop > span')?.textContent || '').trim();
+      const m = /^(C1|C2)\s*·\s*FHB\s*(vlevo|vpravo)$/i.exec(label);
+      if (!m) return;
+      const key = m[1].toUpperCase() + '|' + m[2].toLowerCase();
+      if (blankKeys.has(key)) card.remove();
+    });
+  }
+
+  // Původní výpočet převádí Number('') na 0. Před výpočtem si proto zapamatujeme
+  // skutečně prázdná pole a po vyrenderování výsledku jejich karty vždy odstraníme.
+  // Funguje to i na iOS, kde se pořadí capture handlerů může lišit.
   window.addEventListener('click', (event) => {
     const target = event.target && event.target.closest ? event.target.closest('#brus157Evaluate') : null;
     if (!target) return;
-    const changed = [];
-    document.querySelectorAll('#korekce-brusy input[id^="brus157_"]').forEach((input) => {
-      if (String(input.value || '').trim() === '') {
-        changed.push(input);
-        input.value = '__RAK_EMPTY__';
-      }
-    });
-    if (changed.length) {
-      queueMicrotask(() => changed.forEach((input) => {
-        if (input.value === '__RAK_EMPTY__') input.value = '';
-      }));
-    }
+    const blanks = blankResultKeys();
+    window.__rakBrusFhbBlankKeys = blanks;
+    queueMicrotask(() => pruneBlankResults(blanks));
+    setTimeout(() => pruneBlankResults(blanks), 0);
+    setTimeout(() => pruneBlankResults(blanks), 50);
   }, true);
 
   installStyles();
@@ -93,6 +113,7 @@ html body #korekce-brusy .brus157ChoiceGroup[data-brus157-select="index"] .brus1
   const observer = new MutationObserver(() => {
     removeDevelopmentBadge();
     cleanResultText();
+    pruneBlankResults(window.__rakBrusFhbBlankKeys);
   });
   observer.observe(document.documentElement, { childList: true, subtree: true });
 })();
