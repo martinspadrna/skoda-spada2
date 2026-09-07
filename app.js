@@ -77,6 +77,7 @@ try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleR
     "rak-shift-report.js",
     "rak-shift-report-entry-fix.js",
     "rak-shift-report-share.js",
+    "rak-shift-report-history.js",
     "rak-maintenance-v1516.js"
   ];
 
