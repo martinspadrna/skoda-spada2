@@ -29,8 +29,8 @@ try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleR
 })();
 
 (async () => {
-  const RAK_MODULE_CACHE_VERSION = "1.5.6";
-  const RAK_DEV_UPDATE_BUILD = "v1.5.6";
+  const RAK_MODULE_CACHE_VERSION = "1.5.7";
+  const RAK_DEV_UPDATE_BUILD = "v1.5.7";
   window.RAK_PWA_BUILD = RAK_DEV_UPDATE_BUILD;
 
   const criticalFiles = [
@@ -60,6 +60,7 @@ try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleR
     "rotation-tasks.js",
     "admin-fhb-calibration.js",
     "brusy-fhb-correction.js",
+    "brusy-fhb-v157.js",
     "appearance-theme.js",
     "changelog.js",
     "admin-rotation.js",
