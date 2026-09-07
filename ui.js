@@ -716,6 +716,16 @@ function buildSupabaseKeepaliveStatusHtml(options) {
 function buildAppHistoryHtml(versionText) {
   const sections = [
     {
+      range: 'RaK 1.5',
+      title: 'Osobní směna, reporty a rychlejší aplikace',
+      lines: [
+        'Přihlášení si pamatuje uživatele, vzhled je uložený ke konkrétnímu účtu a hlavní stránka ukazuje osobní směnu i úkoly na stroji.',
+        'Rotace nejdřív zobrazí poslední uložená data a online synchronizaci dokončí na pozadí; generátor navíc kontroluje návaznosti mezi měsíci.',
+        'Přibyly reporty směny a dovolených, nastavitelné úkoly strojů, nastavení korekcí FHB a bezpečnější správa účtů i administrátorů.',
+        'Mobilní vzhled má nové motivy, logo a animované přihlášení; PWA aktualizace, rozložení a Láďův režim jsou stabilnější.'
+      ]
+    },
+    {
       range: 'v.1.2 1.297–1.338',
       title: 'Generátor, správci a bezpečné ukládání',
       lines: [

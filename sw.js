@@ -5,6 +5,7 @@ const STATIC_CACHE = `rotace-static-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `rotace-runtime-${CACHE_VERSION}`;
 const CORE = ['./', './index.html', './manifest.webmanifest', './assets/app-icons/icon-180.png?v=1.5.0', './assets/app-icons/icon-32.png?v=1.5.0', './assets/app-icons/icon-192.png?v=1.5.0', './assets/app-icons/icon-512.png?v=1.5.0', './assets/rak-login-crab.png', './assets/rak-login-crab-step.png', './assets/rak-login-crab-tap.png'];
 const STATIC_EXT = /\.(?:js|css|png|jpg|jpeg|webp|svg|ico|json|webmanifest)$/i;
+let approvedUpdateClientId = '';
 
 function cacheable(response) {
   const cacheControl = response && response.headers ? String(response.headers.get('cache-control') || '') : '';
@@ -54,15 +55,21 @@ self.addEventListener('activate', event => {
     }
     await self.clients.claim();
     const clients = await self.clients.matchAll({ includeUncontrolled: true, type: 'window' });
+    const navigations = [];
     clients.forEach(client => {
       try { client.postMessage({ type: 'sw-activated', version: CACHE_VERSION, appVersion: SW_APP_VERSION }); } catch (_) {}
+      if (approvedUpdateClientId && client.id === approvedUpdateClientId && typeof client.navigate === 'function') {
+        navigations.push(client.navigate(client.url).catch(() => null));
+      }
     });
+    if (navigations.length) await Promise.all(navigations);
   })());
 });
 
 self.addEventListener('message', event => {
   const data = event.data || {};
   if (data.type === 'SKIP_WAITING') {
+    approvedUpdateClientId = String(event.source && event.source.id || '');
     self.skipWaiting();
     return;
   }

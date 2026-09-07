@@ -532,6 +532,7 @@ function installPwaAndConnectivityHooks() {
     swUpdateButtonEl.addEventListener('click', async () => {
       const registration = swRegistrationInstance;
       const version = getAppVersionTag();
+      let waitingForActivation = false;
       setStoredUpdateNoticeVersion(version);
       setPendingUpdateVersion(version);
       setSuppressUpdateToast(getAppVersionTag());
@@ -539,6 +540,7 @@ function installPwaAndConnectivityHooks() {
       swUpdateButtonEl.textContent = 'Aktualizuji…';
       try {
         if (registration && registration.waiting) {
+          waitingForActivation = true;
           registration.waiting.postMessage({ type: 'SKIP_WAITING' });
         } else if (registration && registration.update) {
           await registration.update();
@@ -546,7 +548,15 @@ function installPwaAndConnectivityHooks() {
       } catch (err) {
         console.warn('[Rotace] Update confirm failed', err);
       }
-      scheduleUpdateReload('manual');
+      if (waitingForActivation) {
+        const fallbackReload = () => {
+          if (!swUpdateReloading) scheduleUpdateReload('manual-fallback');
+        };
+        if (typeof registerTimeout === 'function') registerTimeout(fallbackReload, 4000);
+        else window.setTimeout(fallbackReload, 4000);
+      } else {
+        scheduleUpdateReload('manual');
+      }
     });
     requestAnimationFrame(() => toast.classList.add('isVisible'));
     return toast;
@@ -858,4 +868,3 @@ function installPwaAndConnectivityHooks() {
     cleanupAllLifecycle();
   });
 }
-

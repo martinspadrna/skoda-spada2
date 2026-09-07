@@ -8,12 +8,20 @@ function formatRakDisplayVersion(version) {
   return /^RaK\s+/i.test(text) ? text : ('RaK ' + text);
 }
 
+function getRakCurrentAppVersion() {
+  const runtimeVersion = typeof APP_VERSION !== 'undefined'
+    ? APP_VERSION
+    : (typeof window !== 'undefined' ? window.APP_VERSION : '');
+  if (String(runtimeVersion || '').trim()) return String(runtimeVersion).trim();
+  return String((typeof app !== 'undefined' && app && app.version) || '').trim();
+}
+
 function getRakAdminExportMetadataSnapshot(monthKey) {
   const permissionStatus = typeof adminPermissionStatusSnapshot === 'function'
     ? adminPermissionStatusSnapshot()
     : {};
   return {
-    version: formatRakDisplayVersion((typeof app !== 'undefined' && app.version) || (typeof APP_VERSION !== 'undefined' ? APP_VERSION : '')),
+    version: formatRakDisplayVersion(getRakCurrentAppVersion()),
     generatedAt: new Date().toLocaleString('cs-CZ'),
     activeAccountId: String(permissionStatus && permissionStatus.activeAccountId || '').trim(),
     roleLabel: String(permissionStatus && permissionStatus.roleLabel || 'nezjištěno').trim() || 'nezjištěno',
@@ -739,7 +747,7 @@ function makeAdminFullSettingsBackupRow(sourceRows, options) {
       createdBy: activeAccount,
       source,
       restoredBackupId: String(opts.restoredBackupId || '').trim(),
-      appVersion: String((typeof app !== 'undefined' && app && app.version) || (typeof APP_VERSION !== 'undefined' ? APP_VERSION : '') || '').trim(),
+      appVersion: getRakCurrentAppVersion(),
       rowCount: rows.length,
       rows
     }
@@ -855,7 +863,7 @@ async function downloadAdminFullSettingsBackup(backupId) {
   const payload = {
     type: 'rak-full-settings-backup-export',
     exportedAt: new Date().toISOString(),
-    appVersion: String((typeof app !== 'undefined' && app && app.version) || (typeof APP_VERSION !== 'undefined' ? APP_VERSION : '') || '').trim(),
+    appVersion: getRakCurrentAppVersion(),
     backupId: backup.id,
     backup: backup.remote
       ? {
@@ -1009,7 +1017,7 @@ async function createAdminFullSettingsBackupOnline() {
     if (!bridge || typeof bridge.createAdminSettingsBackup !== 'function') return { ok: false, reason: 'missing-bridge' };
     const result = await bridge.createAdminSettingsBackup({ rows: sourceRows }, {
       source: 'manual',
-      appVersion: String(app.version || (typeof APP_VERSION !== 'undefined' ? APP_VERSION : ''))
+      appVersion: getRakCurrentAppVersion()
     });
     if (!result.ok) return result;
     await loadAdminFullSettingsBackupsFromSupabase();
@@ -1043,7 +1051,7 @@ async function restoreAdminFullSettingsBackupOnline(backupId) {
     const currentSourceRows = adminFullSettingsSourceRows(currentRows);
     const preRestore = await bridge.createAdminSettingsBackup({ rows: currentSourceRows }, {
       source: 'before-restore',
-      appVersion: String(app.version || (typeof APP_VERSION !== 'undefined' ? APP_VERSION : '')),
+      appVersion: getRakCurrentAppVersion(),
       restoredBackupId: String(backupId || '')
     });
     if (!preRestore.ok) return preRestore;
@@ -3780,7 +3788,7 @@ function buildBugReportPayload() {
   const textEl = document.getElementById('bugReportText');
   const type = String(typeEl && typeEl.value || 'Chyba').trim() || 'Chyba';
   const text = String(textEl && textEl.value || '').trim();
-  const version = String((typeof app !== 'undefined' && app.version) || (typeof APP_VERSION !== 'undefined' ? APP_VERSION : '—'));
+  const version = getRakCurrentAppVersion() || '—';
   const theme = String(typeof getThemePreference === 'function' ? getThemePreference() : (document.documentElement.dataset.rakTheme || '—'));
   const background = String(typeof getBackgroundPreference === 'function' ? getBackgroundPreference() : (document.documentElement.dataset.rakBackground || '—'));
   return {
@@ -4550,7 +4558,7 @@ function bindAppMenuHandlers(body) {
           profileUiGuard ? ('Profilový vzhled guard: stejný save ' + String(profileUiGuard.saveSameSkips || 0) + ' · in-flight load/save ' + String(profileUiGuard.loadInFlightJoins || 0) + '/' + String(profileUiGuard.saveInFlightJoins || 0)) : ''
         ].filter(Boolean) : [];
         const diag = [
-          'Verze: ' + formatRakDisplayVersion((typeof app !== "undefined" && app.version) || (typeof APP_VERSION !== 'undefined' ? APP_VERSION : '')), 
+          'Verze: ' + formatRakDisplayVersion(getRakCurrentAppVersion()),
           'Online: ' + (navigator.onLine ? 'ano' : 'ne'),
           formatSupabaseKeepaliveLine(supabaseKeepaliveStatus || readSupabaseKeepaliveStatusForUi()),
           'Kompaktní režim: ' + (document.body.classList.contains('compactUI') ? 'zapnutý' : 'vypnutý'),
@@ -5567,7 +5575,7 @@ function openAppMenu(view) {
   const v = view || 'menu';
   const adminViews = new Set(['admin', 'admin-machines', 'admin-food', 'admin-vacation', 'admin-special-days', 'admin-rotation', 'admin-overtime', 'admin-generator-settings', 'admin-machine-tasks', 'admin-correction-settings', 'admin-workers', 'admin-change-log', 'admin-monthly-workflow', 'admin-handover', 'admin-manual', 'admin-settings-map', 'admin-accounts', 'admin-external-links', 'admin-app-contact', 'admin-payroll-settings', 'admin-backups', 'admin-settings-backups', 'admin-announcement', 'admin-export', 'admin-reports', 'admin-service']);
 
-  const versionText = (typeof app !== 'undefined' && app.version) || (typeof APP_VERSION !== 'undefined' ? APP_VERSION : '');
+  const versionText = getRakCurrentAppVersion();
   const contact = typeof getRakAppContactSettings === 'function'
     ? getRakAppContactSettings()
     : { name: 'Martin Špadrna', phone: '+420 773 682 499', email: 'martinspadrna@gmail.com' };
