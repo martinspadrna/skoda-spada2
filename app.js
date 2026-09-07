@@ -29,8 +29,8 @@ try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleR
 })();
 
 (async () => {
-  const RAK_MODULE_CACHE_VERSION = "1.5.14";
-  const RAK_DEV_UPDATE_BUILD = "v1.5.14";
+  const RAK_MODULE_CACHE_VERSION = "1.5.15";
+  const RAK_DEV_UPDATE_BUILD = "v1.5.15";
   window.RAK_PWA_BUILD = RAK_DEV_UPDATE_BUILD;
 
   const criticalFiles = [
@@ -91,7 +91,8 @@ try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleR
     "rak-shift-report-share.js",
     "brusy-fhb-v158.js",
     "rak-dev-fixes-v1512.js",
-    "rak-menu-report-order-v1513.js"
+    "rak-menu-report-order-v1513.js",
+    "rak-dashboard-shift-label-v1515.js"
   ];
 
   const files = criticalFiles.concat(deferredFiles);
