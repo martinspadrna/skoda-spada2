@@ -152,14 +152,20 @@ html.rakStableBootViewport{
   }
 }
 
-/* RaK 1.2 – iPhone 6.7\" viewport: vnejsi ramecek Dashboardu musi kopirovat skutecnou vysku obsahu.
-   Nektere 401–430px viewport-fit breakpointy nastavovaly dashboardShell max-height, zatimco karty mohly pretéct pod jeho spodni okraj. */
-@supports (-webkit-touch-callout:none){
-  @media (min-width:401px) and (max-width:440px) and (min-height:850px){
-    #home.page.active .dashboardShell{
-      height:auto !important;
-      max-height:none !important;
-      overflow:visible !important;
-    }
+/* RaK 1.2 – mobilní Dashboard: vnější rám se vždy řídí skutečnou výškou obsahu.
+   Screenshoty z iOS i Androidu ukázaly stejný problém: viewport-fit breakpoint omezil dashboardShell max-height,
+   ale spodní karty zůstaly vyšší a přetekly přes jeho spodní zaoblený okraj. */
+@media (max-width:700px){
+  #home.page.active{
+    height:auto !important;
+    min-height:100dvh !important;
+    overflow-x:visible !important;
+    overflow-y:auto !important;
+    padding-bottom:calc(var(--bottom-nav-h, 64px) + env(safe-area-inset-bottom) + 24px) !important;
+  }
+  #home.page.active .dashboardShell{
+    height:auto !important;
+    max-height:none !important;
+    overflow:visible !important;
   }
 }
