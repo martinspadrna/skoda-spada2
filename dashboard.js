@@ -589,6 +589,17 @@ function getDashboardActiveProfile() {
     const profile = typeof window.rakUserProfileGet === 'function' ? window.rakUserProfileGet() : null;
     if (profile && profile.fullName) return profile;
   } catch (err) {}
+  // Při prvním paintu nemusí být profilový modul ještě připravený.
+  // Použijeme proto synchronní snapshot načtený v <head>, případně stejný
+  // lokální profil přímo. Síť zůstává jen pro pozdější revalidaci.
+  try {
+    const early = window.__RAK_EARLY_USER_PROFILE__;
+    if (early && String(early.accountNumber || '').trim() && String(early.fullName || '').trim()) return early;
+  } catch (err) {}
+  try {
+    const local = typeof window.rakReadCachedUserProfile === 'function' ? window.rakReadCachedUserProfile() : null;
+    if (local && String(local.accountNumber || '').trim() && String(local.fullName || '').trim()) return local;
+  } catch (err) {}
   try {
     if (app && app.activeAccountName) return { fullName: app.activeAccountName, accountNumber: app.activeAccountId || '' };
   } catch (err) {}

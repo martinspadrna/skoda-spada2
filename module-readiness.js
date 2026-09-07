@@ -2,11 +2,23 @@
 (function setupRakEarlyAuthPrivacyGate() {
   try {
     const key = 'rotace_kalkulacky:user_profile_v1';
-    let loggedIn = false;
-    try {
-      const parsed = JSON.parse(localStorage.getItem(key) || 'null');
-      loggedIn = !!(parsed && typeof parsed === 'object' && String(parsed.accountNumber || '').trim() && String(parsed.fullName || '').trim());
-    } catch (err) {}
+    const readCachedProfile = () => {
+      try {
+        const parsed = JSON.parse(localStorage.getItem(key) || 'null');
+        const accountNumber = String(parsed && parsed.accountNumber || '').trim();
+        const fullName = String(parsed && parsed.fullName || '').trim();
+        if (!accountNumber || !fullName) return null;
+        return { accountNumber, fullName, updatedAt: Number(parsed.updatedAt || 0) || 0 };
+      } catch (err) {
+        return null;
+      }
+    };
+    if (typeof window.rakReadCachedUserProfile !== 'function') window.rakReadCachedUserProfile = readCachedProfile;
+    const earlyProfile = window.rakReadCachedUserProfile();
+    const loggedIn = !!earlyProfile;
+    // Profil je malý lokální údaj a může být k dispozici ještě před načtením
+    // aplikačních modulů. Dashboard tak nemusí na jméno čekat až do pozdního refreshu.
+    window.__RAK_EARLY_USER_PROFILE__ = earlyProfile;
     document.documentElement.dataset.rakAuthState = loggedIn ? 'unlocked' : 'locked';
     if (!document.getElementById('rak-early-auth-gate-style')) {
       const style = document.createElement('style');

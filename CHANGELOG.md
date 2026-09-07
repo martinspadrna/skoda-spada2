@@ -1,10 +1,12 @@
 ## RaK 1.5
 
+- Hotfix `1.5.1`: první pozdrav použije jméno okamžitě z lokálně uloženého profilu; sjednocené čtení profilu odstranilo závod mezi startem dashboardu a obnovením přihlášení.
+- PWA cache a loader modulů zvýšeny na `v1.5.1` / `1.5.1`, aby se oprava spolehlivě načetla i v nainstalované aplikaci.
 - Přihlášení a profily: trvalé přihlášení osobním číslem, bezpečnější role správců, účty i mimo pracovní rotace a vzhled uložený zvlášť ke každému účtu.
 - Rotace a rozpisy: rychlé zobrazení posledních uložených dat, synchronizace na pozadí, úkoly podle stroje a přísnější kontrola generátoru včetně návaznosti mezi měsíci.
 - Reporty a provoz: dokončený report směny, nový report dovolených z Google kalendáře, sdílení přes kopírování/systém/WhatsApp a nastavení korekcí FHB.
 - Mobilní aplikace: nové výrazné vzhledy s výchozím Nočním laserem, osobní přehled směny, nové logo a animované přihlášení, lepší rozložení a ručně zapínaný Láďův režim.
-- Release metadata sjednocena na `RaK 1.5`, technicka verze `1.5.0`, cache `v1.5`; loader modulu ma cache znacku `1.5.0`.
+- Release metadata sjednocena na `RaK 1.5`, technicka verze `1.5.1`, cache `v1.5.1`; loader modulu ma cache znacku `1.5.1`.
 
 ## RaK 1.2 (1.338)
 

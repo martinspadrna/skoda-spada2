@@ -401,6 +401,11 @@ async function runViewportSmoke(cdpPort, viewport, inlineHtml, liveRotationPaylo
     };
     try { Object.defineProperty(window, 'localStorage', { value: makeSmokeStorage(), configurable: true }); } catch (err) {}
     try { Object.defineProperty(window, 'sessionStorage', { value: makeSmokeStorage(), configurable: true }); } catch (err) {}
+    localStorage.setItem('rotace_kalkulacky:user_profile_v1', JSON.stringify({
+      accountNumber: '0000',
+      fullName: 'Test Martin',
+      updatedAt: Date.now()
+    }));
     document.open();
     document.write(${JSON.stringify(inlineHtml)});
     document.close();
@@ -422,6 +427,12 @@ async function runViewportSmoke(cdpPort, viewport, inlineHtml, liveRotationPaylo
   assert(bootState.bottomNavCount >= 4, `${viewport.name}: chybí spodní navigace`);
   assert(bootState.homeCards > 0, `${viewport.name}: Dashboard nemá karty`);
   assert(bootState.bodyBeforePosition === 'fixed', `${viewport.name}: pevné pozadí není fixed`);
+
+  const earlyGreetingState = await evalInPage(client, `(() => ({
+    cachedName: String(window.__RAK_EARLY_USER_PROFILE__ && window.__RAK_EARLY_USER_PROFILE__.fullName || ''),
+    greeting: String(document.querySelector('.dashboardPersonalGreeting')?.textContent || '').trim()
+  }))()`);
+  assert(earlyGreetingState.cachedName === 'Test Martin' && /Martine/.test(earlyGreetingState.greeting), `${viewport.name}: první pozdrav nevyužil lokálně uložené jméno ${JSON.stringify(earlyGreetingState)}`);
 
   const manualLadaState = await evalInPage(client, `(async () => {
     const previousPrefs = loadUiPrefs();

@@ -11,6 +11,7 @@
   function storedProfile() {
     try {
       if (typeof window.rakUserProfileGet === 'function') return window.rakUserProfileGet();
+      if (typeof window.rakReadCachedUserProfile === 'function') return window.rakReadCachedUserProfile();
       return JSON.parse(localStorage.getItem(PROFILE_KEY) || 'null');
     } catch (err) {
       return null;

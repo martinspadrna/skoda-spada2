@@ -240,8 +240,8 @@ const dashboardReleaseIsolationGuardV198 = Object.freeze({
 const releaseMetadataContractV199 = Object.freeze({
   displayVersion: '1.5',
   appLabel: 'RaK 1.5',
-  packageVersion: '1.5.0',
-  cacheVersion: 'v1.5',
+  packageVersion: '1.5.1',
+  cacheVersion: 'v1.5.1',
   realtimeChannel: 'rak-public-live-v1-5',
   changelogHeader: '## RaK 1.5',
   previousBuildFragments: Object.freeze(['1.2 (1.138)', '1.2.138', 'v1.2-1.138', '1.2 (1.137)', '1.2.137', 'v1.2-1.137', '1.2 (1.118)', '1.2.118', 'v1.2-1.118', 'rak-public-live-v1-2-1-118'])

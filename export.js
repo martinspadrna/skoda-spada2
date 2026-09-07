@@ -121,8 +121,8 @@ window.RAK_EXPORT_CONTRACTS = window.RAK_EXPORT_CONTRACTS || {};
 window.RAK_EXPORT_CONTRACTS.RAK_RELEASE_METADATA_CONTRACT_V199 = window.RAK_EXPORT_CONTRACTS.RAK_RELEASE_METADATA_CONTRACT_V199 || Object.freeze({
   displayVersion: '1.5',
   appLabel: 'RaK 1.5',
-  packageVersion: '1.5.0',
-  cacheVersion: 'v1.5',
+  packageVersion: '1.5.1',
+  cacheVersion: 'v1.5.1',
   realtimeChannel: 'rak-public-live-v1-5',
   changelogHeader: '## RaK 1.5',
   serviceWorkerVersionGuard: 'CACHE_VERSION + SW_APP_VERSION'

@@ -58,6 +58,9 @@
 
   function read() {
     try {
+      if (typeof window.rakReadCachedUserProfile === 'function') return window.rakReadCachedUserProfile();
+    } catch (err) {}
+    try {
       const raw = localStorage.getItem(PROFILE_KEY);
       const parsed = raw ? JSON.parse(raw) : null;
       if (!parsed || typeof parsed !== 'object') return null;
@@ -78,6 +81,7 @@
     if (!next.accountNumber || !next.fullName) return false;
     try { localStorage.setItem(PROFILE_KEY, JSON.stringify(next)); } catch (err) { return false; }
     window.__RAK_USER_PROFILE__ = next;
+    window.__RAK_EARLY_USER_PROFILE__ = next;
     syncSettingsProfileCard(next);
     return true;
   }
@@ -92,6 +96,7 @@
   function clear() {
     try { localStorage.removeItem(PROFILE_KEY); } catch (err) {}
     window.__RAK_USER_PROFILE__ = null;
+    window.__RAK_EARLY_USER_PROFILE__ = null;
     try {
       if (typeof app === 'object' && app) {
         app.activeAccountId = '';
@@ -123,6 +128,7 @@
     const fullName = String(safe.fullName || '').trim();
     if (!accountNumber || !fullName) return;
     window.__RAK_USER_PROFILE__ = { accountNumber, fullName, updatedAt: Number(safe.updatedAt || Date.now()) || Date.now() };
+    window.__RAK_EARLY_USER_PROFILE__ = window.__RAK_USER_PROFILE__;
     try {
       if (typeof app === 'object' && app) {
         app.activeAccountId = accountNumber;
@@ -169,6 +175,16 @@
       }
     } catch (err) { console.warn('RaK profile appearance sync failed', err); }
     syncSettingsProfileCard(window.__RAK_USER_PROFILE__);
+    // Pokud se profil doplnil až po prvním vykreslení, přepišeme pozdrav
+    // hned. Nečekáme na síťovou synchronizaci ani na periodický refresh Home.
+    try {
+      window.dispatchEvent(new CustomEvent('rak:user-profile-ready', { detail: window.__RAK_USER_PROFILE__ }));
+      if (typeof window.updateDashboard === 'function') {
+        const refresh = () => { try { window.updateDashboard(); } catch (err) {} };
+        if (typeof requestAnimationFrame === 'function') requestAnimationFrame(refresh);
+        else setTimeout(refresh, 0);
+      }
+    } catch (err) {}
   }
 
   async function lookup(last4) {
