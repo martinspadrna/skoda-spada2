@@ -29,7 +29,7 @@ try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleR
 })();
 
 (async () => {
-  const RAK_MODULE_CACHE_VERSION = "1.5.2";
+  const RAK_MODULE_CACHE_VERSION = "1.5.3";
 
   const criticalFiles = [
     "supabase-config.js",
@@ -159,6 +159,103 @@ try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleR
   } catch (err) {}
 
   if (typeof installPwaAndConnectivityHooks === 'function') installPwaAndConnectivityHooks();
+
+  // DEV fallback pro iOS/Android PWA: některé standalone prohlížeče nevyvolají updatefound
+  // spolehlivě po běžném registration.update(). Explicitní cache-busted registrace + vlastní
+  // waiting toast zajistí, že každá nová testovací cache opravdu nabídne Aktualizovat.
+  try {
+    if ('serviceWorker' in navigator && !window.__rakDevForcedUpdateBootstrap) {
+      window.__rakDevForcedUpdateBootstrap = true;
+      const DEV_SW_URL = 'sw.js?v=1.5.3';
+      const showDevWaitingToast = (registration) => {
+        try {
+          if (!registration || !registration.waiting || !document.body) return false;
+          if (document.querySelector('.rakUpdateToast')) return true;
+
+          const toast = document.createElement('div');
+          toast.className = 'rakUpdateToast isVisible';
+          toast.setAttribute('role', 'status');
+          toast.setAttribute('aria-live', 'polite');
+
+          const main = document.createElement('div');
+          main.className = 'rakUpdateToastMain';
+
+          const badge = document.createElement('div');
+          badge.className = 'rakUpdateToastBadge';
+          badge.setAttribute('aria-hidden', 'true');
+          badge.textContent = '⟳';
+
+          const body = document.createElement('div');
+          body.className = 'rakUpdateToastBody';
+          const title = document.createElement('div');
+          title.className = 'rakUpdateToastTitle';
+          title.textContent = 'K dispozici je nová testovací verze';
+          const version = document.createElement('div');
+          version.className = 'rakUpdateToastVersion';
+          version.textContent = 'Nová cache: v1.5.3';
+          const text = document.createElement('div');
+          text.className = 'rakUpdateToastText';
+          text.textContent = 'Klikni na Aktualizovat a appka načte nejnovější testovací build.';
+          body.append(title, version, text);
+          main.append(badge, body);
+
+          const action = document.createElement('button');
+          action.type = 'button';
+          action.className = 'rakUpdateToastAction';
+          action.textContent = 'Aktualizovat';
+          action.addEventListener('click', () => {
+            try {
+              action.disabled = true;
+              action.textContent = 'Aktualizuji…';
+              registration.waiting && registration.waiting.postMessage({ type: 'SKIP_WAITING' });
+            } catch (err) {}
+            window.setTimeout(() => { try { window.location.reload(); } catch (err) {} }, 4000);
+          });
+
+          toast.append(main, action);
+          document.body.appendChild(toast);
+          return true;
+        } catch (err) {
+          console.warn('DEV update toast failed', err);
+          return false;
+        }
+      };
+
+      const bootDevUpdateCheck = async () => {
+        try {
+          const registration = await navigator.serviceWorker.register(DEV_SW_URL, {
+            scope: './',
+            updateViaCache: 'none'
+          });
+          const inspect = () => {
+            if (showDevWaitingToast(registration)) return;
+            const installing = registration.installing;
+            if (installing && !installing.__rakDevWaitingHook) {
+              installing.__rakDevWaitingHook = true;
+              installing.addEventListener('statechange', () => {
+                if (installing.state === 'installed') showDevWaitingToast(registration);
+              });
+            }
+          };
+          inspect();
+          registration.addEventListener('updatefound', inspect);
+          try { await registration.update(); } catch (err) {}
+          inspect();
+        } catch (err) {
+          console.warn('DEV forced SW update check failed', err);
+        }
+      };
+
+      navigator.serviceWorker.addEventListener('controllerchange', () => {
+        if (window.__rakDevControllerReloading) return;
+        window.__rakDevControllerReloading = true;
+        try { window.location.reload(); } catch (err) {}
+      });
+      window.setTimeout(bootDevUpdateCheck, 250);
+      window.setTimeout(bootDevUpdateCheck, 2500);
+    }
+  } catch (err) { console.warn('DEV PWA update bootstrap failed', err); }
+
   if (typeof installBottomNavBindings === 'function') installBottomNavBindings();
   try { if (typeof applyBottomNavMoreHardFix === 'function') applyBottomNavMoreHardFix(); } catch (err) { console.warn('Bottom nav Více hard-fix failed', err); }
   try { if (typeof applyRakFixedBottomNavMetrics === 'function') applyRakFixedBottomNavMetrics(); } catch (err) { console.warn('Bottom nav fixed metrics failed', err); }
