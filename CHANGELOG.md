@@ -1,3 +1,11 @@
+## RaK 1.5
+
+- Přihlášení a profily: trvalé přihlášení osobním číslem, bezpečnější role správců, účty i mimo pracovní rotace a vzhled uložený zvlášť ke každému účtu.
+- Rotace a rozpisy: rychlé zobrazení posledních uložených dat, synchronizace na pozadí, úkoly podle stroje a přísnější kontrola generátoru včetně návaznosti mezi měsíci.
+- Reporty a provoz: dokončený report směny, nový report dovolených z Google kalendáře, sdílení přes kopírování/systém/WhatsApp a nastavení korekcí FHB.
+- Mobilní aplikace: nové výrazné vzhledy s výchozím Nočním laserem, osobní přehled směny, nové logo a animované přihlášení, lepší rozložení a ručně zapínaný Láďův režim.
+- Release metadata sjednocena na `RaK 1.5`, technicka verze `1.5.0`, cache `v1.5`; loader modulu ma cache znacku `1.5.0`.
+
 ## RaK 1.2 (1.338)
 
 - Administrace: opravené ukládání nastavení po bezpečnostní migraci, přidána změna hesla hlavního admina a mazání online záloh nastavení.

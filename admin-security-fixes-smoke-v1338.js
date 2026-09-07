@@ -59,7 +59,7 @@ async function run() {
   const backupCreate = await jsonRequest('/rest/v1/rpc/rak_owner_create_settings_backup_v2', {
     method: 'POST',
     headers,
-    body: JSON.stringify({ p_snapshot: { rows: [settings.payload[0]] }, p_source: 'live-smoke-v1338', p_app_version: '1.2 (1.338)' })
+    body: JSON.stringify({ p_snapshot: { rows: [settings.payload[0]] }, p_source: 'live-smoke-v1338', p_app_version: '1.5' })
   });
   assert(backupCreate.response.ok && backupCreate.payload.id, 'Vytvoření dočasné zálohy selhalo.');
   const backupDelete = await jsonRequest('/rest/v1/rpc/rak_owner_delete_settings_backup_v2', {

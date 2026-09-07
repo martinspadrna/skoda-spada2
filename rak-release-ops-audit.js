@@ -84,7 +84,7 @@
     gates.push(buildGate(
       'version-cache-channel',
       'Verze / cache / realtime kanál',
-      /^v\.\d+\.\d+ \(\d+\)$/.test(String(window.APP_VERSION || '')) ? 'ok' : 'blocker',
+      /^\d+\.\d+(?:\.\d+)?(?: \(\d+(?:\.\d+)*\))?$/.test(String(window.APP_VERSION || '')) ? 'ok' : 'blocker',
       'blocker',
       String(window.APP_VERSION || '—'),
       'Verze musí být sjednocená v core.js, sw.js, package.json, changelog, exportu a realtime kanálu.'

@@ -1,11 +1,11 @@
 #!/usr/bin/env node
-// RaK 1.2 (1.338) – smoke test soukromí připojení + Dashboard/appearance contract guard.
+// RaK 1.5 – smoke test soukromí připojení + Dashboard/appearance contract guard.
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
 
 function read(file) {
-  return fs.readFileSync(path.join(__dirname, file), 'utf8');
+  return fs.readFileSync(path.join(__dirname, file), 'utf8').replace(/\r\n/g, '\n');
 }
 function assert(cond, msg) {
   if (!cond) throw new Error(msg);
@@ -237,12 +237,12 @@ const dashboardReleaseIsolationGuardV198 = Object.freeze({
 });
 
 const releaseMetadataContractV199 = Object.freeze({
-  displayVersion: '1.2 (1.338)',
-  appLabel: 'RaK 1.2 (1.338)',
-  packageVersion: '1.2.338',
-  cacheVersion: 'v1.2-1.338',
-  realtimeChannel: 'rak-public-live-v1-2-1-126',
-  changelogHeader: '## RaK 1.2 (1.338)',
+  displayVersion: '1.5',
+  appLabel: 'RaK 1.5',
+  packageVersion: '1.5.0',
+  cacheVersion: 'v1.5',
+  realtimeChannel: 'rak-public-live-v1-5',
+  changelogHeader: '## RaK 1.5',
   previousBuildFragments: Object.freeze(['1.2 (1.138)', '1.2.138', 'v1.2-1.138', '1.2 (1.137)', '1.2.137', 'v1.2-1.137', '1.2 (1.118)', '1.2.118', 'v1.2-1.118', 'rak-public-live-v1-2-1-118'])
 });
 
@@ -351,12 +351,12 @@ function assertDashboardReleaseIsolationGuardV198() {
 function assertReleaseMetadataContractV199() {
   const contract = releaseMetadataContractV199;
   assertIncludes(exportJs, 'RAK_RELEASE_METADATA_CONTRACT_V199', 'export.js musí obsahovat release metadata contract v1.99');
-  assertIncludes(exportJs, "displayVersion: '1.2 (1.338)'", 'Release contract v export.js musí držet aktuální display verzi');
-  assertIncludes(exportJs, "packageVersion: '1.2.338'", 'Release contract v export.js musí držet aktuální package verzi');
+  assertIncludes(exportJs, `displayVersion: '${contract.displayVersion}'`, 'Release contract v export.js musí držet aktuální display verzi');
+  assertIncludes(exportJs, `packageVersion: '${contract.packageVersion}'`, 'Release contract v export.js musí držet aktuální package verzi');
   assert(packageJson.version === contract.packageVersion, `package.json version drift: čekám ${contract.packageVersion}, mám ${packageJson.version}`);
   assertIncludes(coreJs, `const APP_VERSION = "${contract.displayVersion}";`, 'core.js APP_VERSION není sjednocený s 1.105');
-  assert(/const CACHE_VERSION = 'v1\.2-dev-\d{8}-\d+';/.test(serviceWorkerJs), 'sw.js musí mít vlastní číslovaný DEV cache build');
-  assert(/const SW_APP_VERSION = 'development \d{4}-\d{2}-\d{2}\.\d+';/.test(serviceWorkerJs), 'sw.js musí zveřejnit shodný číslovaný DEV build');
+  assertIncludes(serviceWorkerJs, `const CACHE_VERSION = '${contract.cacheVersion}';`, 'sw.js musí mít produkční cache verzi RaK 1.5');
+  assertIncludes(serviceWorkerJs, `const SW_APP_VERSION = '${contract.displayVersion}';`, 'sw.js musí zveřejnit produkční verzi RaK 1.5');
   assertIncludes(bridge, `client.channel('${contract.realtimeChannel}')`, 'Supabase realtime kanál není sjednocený s 1.105');
   assertIncludes(bridge, `realtimeChannel: '${contract.realtimeChannel}'`, 'Supabase diagnostika realtime kanálu není sjednocená s 1.105');
   assert(changelogMd.startsWith(contract.changelogHeader), 'CHANGELOG.md musí začínat aktuálním buildem 1.105');
@@ -364,7 +364,7 @@ function assertReleaseMetadataContractV199() {
   assertIncludes(changelogMd, `cache \`${contract.cacheVersion}\``, 'CHANGELOG.md musí uvádět cache verzi 1.105');
   assertIncludes(exportJs, `version: '${contract.displayVersion}'`, 'export.js smoke report musí nést aktuální display verzi');
   assertIncludes(exportJs, `version: String(window.APP_VERSION || '${contract.displayVersion}')`, 'export.js fallbacky musí používat aktuální display verzi');
-  assert(/app\.js\?v=1\.2\.\d+/.test(indexHtml), 'index.html musí mít číslovaný cache-bust parametr app.js');
+  assertIncludes(indexHtml, `app.js?v=${contract.packageVersion}`, 'index.html musí mít cache-bust parametr shodný s technickou verzí');
   const scriptCacheRule = (vercelJson.headers || []).find((rule) => String(rule.source || '').includes('(js|css)'));
   const scriptCacheControl = String(scriptCacheRule && scriptCacheRule.headers && scriptCacheRule.headers.find((header) => header.key === 'Cache-Control')?.value || '');
   assert(scriptCacheControl.includes('max-age=0') && scriptCacheControl.includes('must-revalidate'), 'Vercel musí JS/CSS při novém vydání znovu ověřit');
@@ -400,10 +400,7 @@ function assertFixedAppBackgroundContractV1101() {
   assertIncludes(stylesReleasePolishCss, 'position:fixed !important;', 'Pozadí musí být fixované vůči viewportu');
   assertIncludes(stylesReleasePolishCss, 'background:var(--rakAppBackground, var(--bg, #050816)) !important;', 'Pevná background vrstva musí používat zvolené pozadí aplikace');
   assertIncludes(stylesReleasePolishCss, 'background:var(--rakAppBackgroundOverlay, transparent) !important;', 'Pevná overlay vrstva musí používat overlay zvoleného pozadí');
-  assertIncludes(stylesReleasePolishCss, `body,
-html.rakViewportPrimed body,
-html.rakStableBootViewport body{
-  background:transparent !important;`, 'Body musí být průhledné, aby pevná pseudo background vrstva nebyla překrytá scrollujícím pozadím');
+  assert(/body,\r?\nhtml\.rakViewportPrimed body,\r?\nhtml\.rakStableBootViewport body\{\r?\n\s*background:transparent !important;/.test(stylesReleasePolishCss), 'Body musí být průhledné, aby pevná pseudo background vrstva nebyla překrytá scrollujícím pozadím');
   ['#home', '#rotace', '#statistiky', '#rozpisy', '#kalkulacky', '#games', '#soustruhy', '#frezky', '#brusy'].forEach((selector) => {
     assertIncludes(stylesReleasePolishCss, selector, `Pevné pozadí v1.101 musí pokrýt stránku ${selector}`);
   });

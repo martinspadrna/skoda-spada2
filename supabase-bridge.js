@@ -1152,7 +1152,7 @@
 
     try {
       state.realtimeBindStartedAt = Date.now();
-      const channel = client.channel('rak-public-live-v1-2-1-126');
+      const channel = client.channel('rak-public-live-v1-5');
       REALTIME_TABLES.forEach((table) => {
         channel.on('postgres_changes', { event: '*', schema: 'public', table }, (payload) => {
           requestRealtimeRefresh(payload || { table });
@@ -1263,7 +1263,7 @@
       ends_at: payload.ends_at,
       marquee: payload.marquee,
       updated_at: nowIso,
-      app_version: String(window.APP_VERSION || '1.2 (1.338)'),
+      app_version: String(window.APP_VERSION || '1.5'),
       priority: 0
     });
     return [
@@ -1308,7 +1308,7 @@
           ends_at: fallback.ends_at,
           marquee: fallback.marquee,
           updated_at: new Date().toISOString(),
-          app_version: String(window.APP_VERSION || '1.2 (1.338)'),
+          app_version: String(window.APP_VERSION || '1.5'),
           priority: 0
         });
   }
@@ -1324,7 +1324,7 @@
             p_starts_at: safe.starts_at,
             p_ends_at: safe.ends_at,
             p_marquee: safe.marquee,
-            p_app_version: String(window.APP_VERSION || '1.2 (1.338)')
+            p_app_version: String(window.APP_VERSION || '1.5')
           })
         : client.rpc('rak_save_dashboard_announcement', {
             p_title: safe.title || null,
@@ -1334,7 +1334,7 @@
             p_ends_at: safe.ends_at,
             p_marquee: safe.marquee,
             p_updated_by: 'rak-admin-ui',
-            p_app_version: String(window.APP_VERSION || '1.2 (1.338)'),
+            p_app_version: String(window.APP_VERSION || '1.5'),
             p_priority: 0
           }), { mode: 'write', timeoutMs: 8000, attempts: 1 });
       if (res && res.error) return { ok: false, error: res.error, shape: 'rpc-save' };
@@ -1351,7 +1351,7 @@
         ? client.rpc('rak_admin_clear_announcement_v2')
         : client.rpc('rak_clear_dashboard_announcement', {
             p_updated_by: 'rak-admin-ui',
-            p_app_version: String(window.APP_VERSION || '1.2 (1.338)')
+            p_app_version: String(window.APP_VERSION || '1.5')
           }), { mode: 'write', timeoutMs: 8000, attempts: 1 });
       if (res && res.error) return { ok: false, error: res.error, shape: 'rpc-clear' };
       return { ok: true, cleared: true, count: Number(res && res.data || 0), shape: 'rpc-clear' };
@@ -1484,7 +1484,7 @@
       online: typeof navigator === 'undefined' ? false : !!navigator.onLine,
       cachedAnnouncementCount: Array.isArray(state.announcements) ? state.announcements.length : 0,
       table: 'announcements',
-      realtimeChannel: 'rak-public-live-v1-2-1-126',
+      realtimeChannel: 'rak-public-live-v1-5',
       readMode: 'public SELECT + realtime refresh + local cache fallback',
       writeMode: 'RPC security definer save/clear; direct table fallback only if RPC unavailable'
     });

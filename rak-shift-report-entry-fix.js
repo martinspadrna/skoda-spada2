@@ -1,18 +1,19 @@
-// RaK DEV – stabilní vstup do Reportu směny pro administrátorské účty.
+// RaK – stabilní vstup do Reportu směny pro administrátorské účty.
 (function () {
   'use strict';
 
-  const DEV_BUILD = 'DEV 2026-09-06.56';
+  const DEV_BUILD = '';
   const STYLE_ID = 'rak-shift-report-entry-fix-style-v4';
   const ENTRY_ATTR = 'data-rak-shift-report-entry';
   const PORTRAIT_OVERLAY_ID = 'rakPortraitOnlyOverlay';
   let opening = false;
   let scheduled = false;
 
-  window.RAK_DEV_BUILD = DEV_BUILD;
+  if (DEV_BUILD) window.RAK_DEV_BUILD = DEV_BUILD;
 
   function clearStaleDevUpdatePromptState() {
-    // Development větev používá stejné produkční APP_VERSION metadata 1.338,
+    if (!DEV_BUILD) return;
+    // Development větev může používat stejné produkční APP_VERSION metadata,
     // takže produkční ochrana proti opakovanému toastu by jinak mohla nové DEV
     // aktualizace trvale schovat. Stav čistíme před instalací PWA hooků; po kliknutí
     // na Aktualizovat si app-pwa-connectivity nastaví nový pending stav znovu.
@@ -70,6 +71,7 @@
   }
 
   function ensureAboutBuildInfo() {
+    if (!DEV_BUILD) return;
     const body = document.getElementById('appMenuBody');
     if (!body) return;
     const title = body.querySelector('.appMenuCardTitle');

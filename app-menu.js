@@ -5608,11 +5608,14 @@ function openAppMenu(view) {
       return;
     }
     if (v === 'about') {
+      const devBuildLine = window.RAK_DEV_BUILD
+        ? '  <div class="appMenuText">Testovací build: ' + escapeHtml(String(window.RAK_DEV_BUILD)) + '</div>'
+        : '';
       body.innerHTML = [
         '<div class="appMenuCard">',
         '  <div class="appMenuCardTitle">O aplikaci</div>',
         '  <div class="appMenuVersion">' + escapeHtml(formatRakDisplayVersion(versionText)) + '</div>',
-        '  <div class="appMenuText">Testovací build: ' + escapeHtml(String(window.RAK_DEV_BUILD || 'DEV')) + '</div>',
+        devBuildLine,
         '  ' + buildAppHistoryHtml(versionText),
         '  <button type="button" class="appMenuAction appMenuBack" data-menu-back="1">Zpět</button>',
         '</div>'
