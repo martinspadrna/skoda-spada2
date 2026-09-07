@@ -1,7 +1,8 @@
-// RaK 1.2 (1.155) – boot/load shell aplikace.
+// RaK 1.5.16 – boot/load shell aplikace.
 try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleReady('app.js', 'loaded', { source: 'index' }); } catch (err) {}
 
-// DEV: Hry jsou v této vývojové větvi úplně skryté ještě před prvním paintem.
+// Hry jsou z RaK odstraněné. CSS je schová před prvním paintem a tady odstraníme starý DOM,
+// bez trvalého MutationObserveru, který dříve zbytečně běžel po celou dobu aplikace.
 (function disableGamesSurface() {
   const removeGames = () => {
     try {
@@ -12,26 +13,15 @@ try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleR
       document.body && document.body.classList.remove('gamesOpen', 'tttOpen');
     } catch (err) {}
   };
-  try {
-    const style = document.createElement('style');
-    style.id = 'rak-dev-no-games-critical';
-    style.textContent = '#games,[data-action="games"],[data-page="games"],.bottomNavGamesBtn,link[href*="styles-games.css"]{display:none!important;}';
-    document.head.appendChild(style);
-  } catch (err) {}
   removeGames();
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', removeGames, { once: true });
-  else removeGames();
-  try {
-    const observer = new MutationObserver(() => removeGames());
-    observer.observe(document.documentElement, { childList: true, subtree: true });
-    window.__rakDevGamesObserver = observer;
-  } catch (err) {}
 })();
 
 (async () => {
-  const RAK_MODULE_CACHE_VERSION = "1.5.15";
-  const RAK_DEV_UPDATE_BUILD = "v1.5.15";
+  const RAK_MODULE_CACHE_VERSION = "1.5.16";
+  const RAK_DEV_UPDATE_BUILD = "v1.5.16";
   window.RAK_PWA_BUILD = RAK_DEV_UPDATE_BUILD;
+  window.RAK_MODULE_CACHE_VERSION = RAK_MODULE_CACHE_VERSION;
 
   const criticalFiles = [
     "supabase-config.js",
@@ -63,12 +53,10 @@ try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleR
     "brusy-fhb-v157.js",
     "appearance-theme.js",
     "changelog.js",
-    "admin-rotation.js",
     "admin-machine-tasks.js",
     "admin-food.js",
     "admin-reports.js",
     "admin-service-usage.js",
-    "admin-daymods.js",
     "ui.js",
     "rak-profile-settings-fix.js",
     "app-navigation.js",
@@ -89,42 +77,71 @@ try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleR
     "rak-shift-report.js",
     "rak-shift-report-entry-fix.js",
     "rak-shift-report-share.js",
-    "brusy-fhb-v158.js",
-    "rak-dev-fixes-v1512.js",
-    "rak-menu-report-order-v1513.js",
-    "rak-dashboard-shift-label-v1515.js"
+    "rak-maintenance-v1516.js"
   ];
 
-  const files = criticalFiles.concat(deferredFiles);
+  // Nejtěžší editor rozpisů a správa speciálních dnů se stáhnou až při otevření Administrace.
+  // Home / Rotace / Kalkulačky tak při běžném startu nestahují zhruba 400 kB JS navíc.
+  const lazyAdminFiles = [
+    "admin-rotation.js",
+    "admin-daymods.js"
+  ];
+
+  const bootFiles = criticalFiles.concat(deferredFiles);
 
   try {
     if (window.__rakModuleReadinessRegistry) {
-      window.__rakModuleReadinessRegistry.expected = ['module-readiness.js', 'rak-namespace.js', 'rak-audit-baseline.js', 'rak-runtime-health.js', 'rak-storage-sync-audit.js', 'rak-boot-sequence-audit.js', 'rak-export-release-audit.js', 'rak-dom-action-audit.js', 'rak-supabase-client-audit.js', 'rak-release-ops-audit.js', 'rak-appsec-privacy-audit.js', 'rak-release-gates.js', 'rak-dom-security-hardening.js', 'rak-due-diligence-progress.js', 'rak-performance-ci-audit.js', 'app.js', 'data.js'].concat(files.slice());
+      window.__rakModuleReadinessRegistry.expected = ['module-readiness.js', 'rak-namespace.js', 'rak-audit-baseline.js', 'rak-runtime-health.js', 'rak-storage-sync-audit.js', 'rak-boot-sequence-audit.js', 'rak-export-release-audit.js', 'rak-dom-action-audit.js', 'rak-supabase-client-audit.js', 'rak-release-ops-audit.js', 'rak-appsec-privacy-audit.js', 'rak-release-gates.js', 'rak-dom-security-hardening.js', 'rak-due-diligence-progress.js', 'rak-performance-ci-audit.js', 'app.js', 'data.js'].concat(bootFiles.slice());
       if (typeof initialRotationData !== 'undefined' && typeof window.rakMarkModuleReady === 'function') {
         window.rakMarkModuleReady('data.js', 'loaded', { source: 'index-preload' });
       }
     }
   } catch (err) {}
 
-  const loadScript = (src) => new Promise((resolve, reject) => {
-    const script = document.createElement("script");
-    const started = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
-    if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleReady(src, 'loading', { source: 'dynamic-loader' });
-    script.src = src + "?v=" + encodeURIComponent(RAK_MODULE_CACHE_VERSION);
-    script.async = false;
-    script.onload = () => {
-      const ended = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
-      if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleReady(src, 'loaded', { source: 'dynamic-loader', durationMs: ended - started });
-      resolve();
-    };
-    script.onerror = () => {
-      const ended = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
-      const error = new Error(`Nepodařilo se načíst ${src}`);
-      if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleReady(src, 'error', { source: 'dynamic-loader', durationMs: ended - started, error: error.message });
-      reject(error);
-    };
-    document.head.appendChild(script);
-  });
+  const scriptPromises = new Map();
+  const loadScript = (src) => {
+    const key = String(src || '').trim();
+    if (!key) return Promise.resolve();
+    if (scriptPromises.has(key)) return scriptPromises.get(key);
+    const promise = new Promise((resolve, reject) => {
+      const script = document.createElement("script");
+      const started = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
+      if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleReady(key, 'loading', { source: 'dynamic-loader' });
+      script.src = key + "?v=" + encodeURIComponent(RAK_MODULE_CACHE_VERSION);
+      script.async = false;
+      script.onload = () => {
+        const ended = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
+        if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleReady(key, 'loaded', { source: 'dynamic-loader', durationMs: ended - started });
+        resolve();
+      };
+      script.onerror = () => {
+        const ended = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
+        const error = new Error(`Nepodařilo se načíst ${key}`);
+        if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleReady(key, 'error', { source: 'dynamic-loader', durationMs: ended - started, error: error.message });
+        reject(error);
+      };
+      document.head.appendChild(script);
+    });
+    scriptPromises.set(key, promise);
+    return promise;
+  };
+
+  let lazyAdminPromise = null;
+  window.ensureRakAdminModulesLoaded = function ensureRakAdminModulesLoaded() {
+    if (lazyAdminPromise) return lazyAdminPromise;
+    lazyAdminPromise = (async () => {
+      for (const file of lazyAdminFiles) await loadScript(file);
+      try {
+        if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleReady('lazy-admin-modules', 'ready', { source: 'admin-open' });
+      } catch (err) {}
+      return true;
+    })().catch((err) => {
+      lazyAdminPromise = null;
+      throw err;
+    });
+    return lazyAdminPromise;
+  };
+  window.RAK_LAZY_ADMIN_FILES = lazyAdminFiles.slice();
 
   for (const file of criticalFiles) await loadScript(file);
 
@@ -142,8 +159,8 @@ try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleR
     });
   }
 
-  // Síťově nezdržuj start sekvenčním stahováním desítek nezávislých modulů.
-  // `async = false` v loadScript přitom zachovává jejich pořadí spuštění.
+  // Síťově nezdržuj start sekvenčním stahováním nezávislých modulů.
+  // Dynamické classic skripty mají async=false, takže se i při paralelním downloadu spustí v pořadí vložení.
   await Promise.all(deferredFiles.map(loadScript));
 
   // core.js vytváří runtime `app` až v odložené fázi. Profil načtený na loginu proto
@@ -158,7 +175,7 @@ try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleR
 
   if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleReady('boot-loader', 'ready', { source: 'dynamic-loader' });
 
-  // DEV: starý suppression marker smažeme jen jednou pro konkrétní build.
+  // Starý suppression marker smažeme jen jednou pro konkrétní build.
   // Po kliknutí na Aktualizovat už ho při reloadu znovu nemažeme, takže nevznikne update smyčka.
   try {
     const DEV_RESET_KEY = 'rak_dev_pwa_prompt_reset_build';
