@@ -1,4 +1,4 @@
-// RaK 1.5.9 – Brusy/FHB: zjednodušené popisky, výrazné indexy a spolehlivé ignorování prázdných polí.
+// RaK 1.5.10 – Brusy/FHB: zjednodušené popisky, výrazné indexy, spolehlivé ignorování prázdných polí a DEV update probe.
 (function installBrusFhbV158() {
   'use strict';
 
@@ -93,6 +93,35 @@ html body #korekce-brusy .brus157ChoiceGroup[data-brus157-select="index"] .brus1
     });
   }
 
+  function clearSuppressedUpdatePrompt() {
+    try {
+      sessionStorage.removeItem('rotace_sw_update_notice_v1');
+      sessionStorage.removeItem('rotace_sw_update_pending_v1');
+      localStorage.removeItem('rotace_sw_update_suppress_v1');
+    } catch (_) {}
+  }
+
+  // Vývojová větev si při startu sama vynutí kontrolu stejného sw.js. Staré potlačení
+  // nabídky mažeme jen tehdy, když nový worker opravdu čeká. Po aktivaci waiting zmizí,
+  // takže se aktualizace nemůže roztočit do smyčky.
+  async function probeDevelopmentUpdate(source) {
+    try {
+      if (!('serviceWorker' in navigator) || !navigator.onLine) return false;
+      const registration = await navigator.serviceWorker.getRegistration('./');
+      if (!registration) return false;
+      if (typeof registration.update === 'function') await registration.update();
+      if (!registration.waiting) return false;
+      clearSuppressedUpdatePrompt();
+      window.__RAK_DEV_WAITING_SW = true;
+      if (typeof window.__rotaceForcePwaUpdateCheck === 'function') {
+        try { await window.__rotaceForcePwaUpdateCheck('dev-probe:' + String(source || 'boot')); } catch (_) {}
+      }
+      return true;
+    } catch (_) {
+      return false;
+    }
+  }
+
   // Původní výpočet převádí Number('') na 0. Před výpočtem si proto zapamatujeme
   // skutečně prázdná pole a po vyrenderování výsledku jejich karty vždy odstraníme.
   // Funguje to i na iOS, kde se pořadí capture handlerů může lišit.
@@ -109,6 +138,8 @@ html body #korekce-brusy .brus157ChoiceGroup[data-brus157-select="index"] .brus1
   installStyles();
   removeDevelopmentBadge();
   cleanResultText();
+  void probeDevelopmentUpdate('module-load');
+  window.setTimeout(() => { void probeDevelopmentUpdate('after-boot'); }, 1400);
 
   const observer = new MutationObserver(() => {
     removeDevelopmentBadge();
