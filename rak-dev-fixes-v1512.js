@@ -1,8 +1,9 @@
-// RaK DEV v1.5.12 – drobné provozní opravy: kalendář, řazení reportu a WhatsApp.
+// RaK DEV v1.5.14 – provozní opravy: kalendář, report směny a WhatsApp.
 (function () {
   'use strict';
 
   const INDEX_ORDER = { AG: 0, AE: 0, AF: 1, AD: 1, AH: 2 };
+  const REPORT_SEPARATOR = '__________';
   let previewSorting = false;
 
   function sameDay(a, b) {
@@ -54,6 +55,70 @@
     return match ? match[1].toUpperCase() : '';
   }
 
+  function formatShiftReportText(text) {
+    let lines = String(text || '').replace(/\r/g, '').split('\n');
+
+    // V reportu pro mistra už není potřeba interní nadpis RaK – REPORT SMĚNY.
+    if (lines.length && /^\s*RaK\s*[–-]\s*REPORT SMĚNY\s*$/i.test(lines[0])) lines.shift();
+
+    lines = lines
+      .filter(line => !/^\s*_{5,}\s*$/.test(String(line || '')))
+      .map(line => {
+        let value = String(line || '');
+        value = value.replace(/\s*·\s*R8?\s*$/i, ' · Ranní');
+        value = value.replace(/\s*·\s*N8?\s*$/i, ' · Noční');
+        const nok = value.match(/^\s*NoK\s+celkem:\s*(.+?)\s*$/i);
+        if (nok) value = '  - ' + nok[1] + ' NoK';
+        return value;
+      });
+
+    const out = [];
+    let grinderSeen = false;
+
+    const trimTrailingBlankLines = () => {
+      while (out.length && !String(out[out.length - 1] || '').trim()) out.pop();
+    };
+
+    lines.forEach(line => {
+      const header = String(line || '').trim();
+      const grinderHeader = header === 'TBKR01:' || header === 'TRBR07:';
+
+      if (grinderHeader) {
+        if (!grinderSeen) {
+          trimTrailingBlankLines();
+          if (out.length && out[out.length - 1] !== REPORT_SEPARATOR) out.push(REPORT_SEPARATOR);
+        } else if (header === 'TRBR07:') {
+          trimTrailingBlankLines();
+          out.push('');
+        }
+        grinderSeen = true;
+        out.push(line);
+        return;
+      }
+
+      if (header === 'PROBLÉMY:') {
+        trimTrailingBlankLines();
+        if (grinderSeen && out[out.length - 1] !== REPORT_SEPARATOR) out.push(REPORT_SEPARATOR);
+        if (out.length) out.push('');
+        out.push(line);
+        return;
+      }
+
+      out.push(line);
+    });
+
+    // Nanejvýš jeden prázdný řádek mezi bloky a žádné prázdné řádky na krajích.
+    const compact = [];
+    out.forEach(line => {
+      const blank = !String(line || '').trim();
+      if (blank && (!compact.length || !String(compact[compact.length - 1] || '').trim())) return;
+      compact.push(line);
+    });
+    while (compact.length && !String(compact[0] || '').trim()) compact.shift();
+    while (compact.length && !String(compact[compact.length - 1] || '').trim()) compact.pop();
+    return compact.join('\n');
+  }
+
   function sortReportRowsByIndexColor(text) {
     const lines = String(text || '').split('\n');
     const out = [];
@@ -88,7 +153,7 @@
     const preview = root && root.querySelector ? root.querySelector('.rakShiftPreview') : null;
     if (!preview) return;
     const before = String(preview.textContent || '');
-    const after = sortReportRowsByIndexColor(before);
+    const after = sortReportRowsByIndexColor(formatShiftReportText(before));
     if (after === before) return;
     previewSorting = true;
     preview.textContent = after;
@@ -182,5 +247,6 @@
   else boot();
 
   window.rakGetFirstMorningShiftDateInMonthAllTeams = findFirstMorningShiftDateInMonth;
+  window.rakFormatShiftReportText = formatShiftReportText;
   window.rakSortShiftReportRowsByIndexColor = sortReportRowsByIndexColor;
 })();
