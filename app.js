@@ -29,7 +29,9 @@ try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleR
 })();
 
 (async () => {
-  const RAK_MODULE_CACHE_VERSION = "1.5.1";
+  const RAK_MODULE_CACHE_VERSION = "1.5.5";
+  const RAK_DEV_UPDATE_BUILD = "v1.5.5";
+  window.RAK_PWA_BUILD = RAK_DEV_UPDATE_BUILD;
 
   const criticalFiles = [
     "supabase-config.js",
@@ -150,6 +152,18 @@ try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleR
 
   if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleReady('boot-loader', 'ready', { source: 'dynamic-loader' });
 
+  // DEV: starý suppression marker smažeme jen jednou pro konkrétní build.
+  // Po kliknutí na Aktualizovat už ho při reloadu znovu nemažeme, takže nevznikne update smyčka.
+  try {
+    const DEV_RESET_KEY = 'rak_dev_pwa_prompt_reset_build';
+    if (localStorage.getItem(DEV_RESET_KEY) !== RAK_DEV_UPDATE_BUILD) {
+      sessionStorage.removeItem('rotace_sw_update_notice_v1');
+      sessionStorage.removeItem('rotace_sw_update_pending_v1');
+      localStorage.removeItem('rotace_sw_update_suppress_v1');
+      localStorage.setItem(DEV_RESET_KEY, RAK_DEV_UPDATE_BUILD);
+    }
+  } catch (err) {}
+
   if (typeof installPwaAndConnectivityHooks === 'function') installPwaAndConnectivityHooks();
   if (typeof installBottomNavBindings === 'function') installBottomNavBindings();
   try { if (typeof applyBottomNavMoreHardFix === 'function') applyBottomNavMoreHardFix(); } catch (err) { console.warn('Bottom nav Více hard-fix failed', err); }
@@ -165,5 +179,5 @@ try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleR
   try { if (typeof runRakBootSelfTest === 'function') runRakBootSelfTest(); } catch (err) { console.warn('Boot self-test selhal', err); }
 })().catch(err => {
   console.error(err);
-  alert("Nepodařilo se načíst aplikační skripty: " + (err && err.message ? err.message : err));
+  alert("Nepodařilo se načíst aplikační skripty: " + (err && err.message ? err.message : String(err)));
 });
