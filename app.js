@@ -29,8 +29,8 @@ try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleR
 })();
 
 (async () => {
-  const RAK_MODULE_CACHE_VERSION = "1.5.4";
-  const RAK_DEV_UPDATE_BUILD = "v1.5.4";
+  const RAK_MODULE_CACHE_VERSION = "1.5.5";
+  const RAK_DEV_UPDATE_BUILD = "v1.5.5";
   window.RAK_PWA_BUILD = RAK_DEV_UPDATE_BUILD;
 
   const criticalFiles = [
@@ -179,5 +179,5 @@ try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleR
   try { if (typeof runRakBootSelfTest === 'function') runRakBootSelfTest(); } catch (err) { console.warn('Boot self-test selhal', err); }
 })().catch(err => {
   console.error(err);
-  alert("Nepodařilo se načíst aplikační skripty: " + (err && err.message ? err.message : err));
+  alert("Nepodařilo se načíst aplikační skripty: " + (err && err.message ? err.message : String(err)));
 });
