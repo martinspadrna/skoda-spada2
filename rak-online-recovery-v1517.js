@@ -3,8 +3,8 @@
   'use strict';
 
   const BUILD = 'v1.5.17';
-  const SUPABASE_SRC = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.110.7/dist/umd/supabase.min.js';
-  const SUPABASE_SRI = 'sha384-3W1bdDo9TtwNu79/tC3heT3VLo8zK6wKKGnyCjUScpIAF4vi5X2LMS9XEg4fKr1V';
+  const SUPABASE_SRC = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.110.7/dist/umd/supabase.js';
+  const SUPABASE_SRI = 'sha384-hazsLVND17GNLVdtV19te6qbFT2YuLgl8SamcF+QR5eIOC+W4dGKrUNMxU1jH1zD';
   let onlinePromise = null;
   let clientPromise = null;
 
