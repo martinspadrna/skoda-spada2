@@ -1,5 +1,5 @@
 // RaK 1.5 production PWA service worker – update-safe build.
-const CACHE_VERSION = 'v1.5.23';
+const CACHE_VERSION = 'v1.5.24';
 const SW_APP_VERSION = '1.5';
 const STATIC_CACHE = `rotace-static-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `rotace-runtime-${CACHE_VERSION}`;
@@ -41,8 +41,6 @@ self.addEventListener('install', event => {
         if (cacheable(response)) await cache.put(url, response.clone());
       } catch (_) {}
     }));
-    // Záměrně NEvoláme skipWaiting automaticky. Nová verze zůstane čekat,
-    // aby RaK zobrazilo stejné tlačítko „Aktualizovat“ jako produkční main.
   })());
 });
 
@@ -111,7 +109,6 @@ self.addEventListener('fetch', event => {
   if (!request || request.method !== 'GET') return;
   const url = new URL(request.url);
   if (url.origin !== self.location.origin) return;
-  // Citlivé API odpovědi nikdy neobsluhujeme z PWA cache.
   if (url.pathname.startsWith('/api/')) return;
 
   if (request.mode === 'navigate') {
