@@ -2,8 +2,8 @@
 try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleReady('app.js', 'loaded', { source: 'index' }); } catch (err) {}
 
 (async () => {
-  const RAK_MODULE_CACHE_VERSION = "1.5.28";
-  const RAK_DEV_UPDATE_BUILD = "v1.5.28";
+  const RAK_MODULE_CACHE_VERSION = "1.5.29";
+  const RAK_DEV_UPDATE_BUILD = "v1.5.29";
   window.RAK_PWA_BUILD = RAK_DEV_UPDATE_BUILD;
 
   const criticalFiles = [
@@ -69,14 +69,19 @@ try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleR
 
   const idleAuditFiles = [
     "app-health-audits.js",
-    "app-postload-audits.js"
+    "app-postload-audits.js",
+    "rak-export-release-audit.js",
+    "rak-release-ops-audit.js",
+    "rak-due-diligence-progress.js",
+    "rak-performance-ci-audit.js",
+    "rak-mobile-smoke-audit.js"
   ];
 
   const files = criticalFiles.concat(deferredFiles);
 
   try {
     if (window.__rakModuleReadinessRegistry) {
-      window.__rakModuleReadinessRegistry.expected = ['module-readiness.js', 'rak-namespace.js', 'rak-audit-baseline.js', 'rak-runtime-health.js', 'rak-storage-sync-audit.js', 'rak-boot-sequence-audit.js', 'rak-export-release-audit.js', 'rak-dom-action-audit.js', 'rak-supabase-client-audit.js', 'rak-release-ops-audit.js', 'rak-appsec-privacy-audit.js', 'rak-release-gates.js', 'rak-dom-security-hardening.js', 'rak-due-diligence-progress.js', 'rak-performance-ci-audit.js', 'app.js', 'data.js'].concat(files.slice());
+      window.__rakModuleReadinessRegistry.expected = ['module-readiness.js', 'rak-namespace.js', 'rak-audit-baseline.js', 'rak-runtime-health.js', 'rak-storage-sync-audit.js', 'rak-boot-sequence-audit.js', 'rak-export-release-audit.js', 'rak-dom-action-audit.js', 'rak-supabase-client-audit.js', 'rak-release-ops-audit.js', 'rak-appsec-privacy-audit.js', 'rak-release-gates.js', 'rak-dom-security-hardening.js', 'rak-due-diligence-progress.js', 'rak-performance-ci-audit.js', 'rak-mobile-smoke-audit.js', 'app.js', 'data.js'].concat(files.slice());
       if (typeof initialRotationData !== 'undefined' && typeof window.rakMarkModuleReady === 'function') {
         window.rakMarkModuleReady('data.js', 'loaded', { source: 'index-preload' });
       }
@@ -156,8 +161,8 @@ try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleR
 
   const runIdleAudits = () => {
     Promise.all(idleAuditFiles.map(loadScript)).then(() => {
-      // Legacy audit funkce necháváme dostupné pro diagnostiku, ale už je
-      // automaticky nespouštíme: obsahují historické povinné kontroly Her.
+      // Diagnostické/release moduly zůstávají dostupné, ale neblokují první
+      // interaktivní start aplikace. Legacy audit funkce automaticky nespouštíme.
       try { window.__rakIdleAuditsReady = true; } catch (err) {}
     }).catch((err) => {
       console.warn('Idle audit moduly se nepodařilo načíst', err);
