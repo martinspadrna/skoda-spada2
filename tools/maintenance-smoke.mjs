@@ -9,6 +9,7 @@ const assert = (condition, message) => { if (!condition) throw new Error('[maint
 
 const app = read('app.js');
 const sw = read('sw.js');
+const externalDeps = read('rak-external-deps.js');
 const maintenance = read('rak-maintenance-v1516.js');
 const styles = read('styles-maintenance.css');
 const shiftReport = read('rak-shift-report.js');
@@ -19,11 +20,19 @@ const migration = read('supabase/migrations/20260907191622_rak_v1516_security_pe
 // Boot / cleanup
 assert(app.includes('window.ensureRakAdminModulesLoaded'), 'chybí lazy admin loader');
 assert(app.includes('"admin-rotation.js"') && app.includes('"admin-daymods.js"'), 'chybí lazy admin soubory');
+assert(app.includes('"rak-external-deps.js"'), 'chybí runtime loader externích knihoven');
 assert(!app.includes('rak-dev-fixes-v1512.js'), 'stále se načítá starý provozní patch');
 assert(!app.includes('rak-menu-report-order-v1513.js'), 'stále se načítá starý menu patch');
 assert(!app.includes('rak-dashboard-shift-label-v1515.js'), 'stále se načítá starý dashboard patch');
 assert(!app.includes('brusy-fhb-v158.js'), 'stále se načítá starý brus patch');
 assert(!app.includes('new MutationObserver(() => removeGames())'), 'Games cleanup stále používá globální observer');
+
+// Externí exportní knihovny
+assert(externalDeps.includes("global: 'XLSX'"), 'lazy loader nezná XLSX');
+assert(externalDeps.includes("global: 'JSZip'"), 'lazy loader nezná JSZip');
+assert(externalDeps.includes('script.integrity = dep.integrity'), 'lazy loader nepoužívá SRI');
+assert(externalDeps.includes("window.ensureRakExternalDependency = ensure"), 'lazy loader nezveřejňuje ensure API');
+assert(externalDeps.includes("input.id !== 'excelFile'"), 'Excel file input nemá lazy fallback');
 
 // Menu visual stability
 assert(styles.includes('[data-admin-action="vacation-report"]{order:1;}'), 'Report dovolené nemá pevné pořadí');
