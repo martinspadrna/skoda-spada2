@@ -11,6 +11,8 @@ const swJs = read('sw.js');
 const indexHtml = read('index.html');
 const bootSelfTest = read('app-boot-selftest.js');
 const dashboardShiftPatch = read('rak-dashboard-shift-label-v1515.js');
+const lazyExternalLibs = read('rak-lazy-external-libs.js');
+const deferHeavyLibs = read('tools/defer-heavy-libs.mjs');
 const packageJson = JSON.parse(read('package.json'));
 
 function assert(condition, message) {
@@ -82,6 +84,32 @@ for (const file of removedGameFiles) {
   assert(!fs.existsSync(path.join(root, file)), 'Po odstranění Her zůstal soubor ' + file);
 }
 
+// XLSX a JSZip jsou těžké pomocné knihovny. Nesmí blokovat start aplikace,
+// ale Supabase zůstává záměrně v ověřeném eager režimu.
+const vercelBuild = String(packageJson.scripts && packageJson.scripts['vercel-build'] || '');
+const xlsxUrl = 'https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js';
+const jszipUrl = 'https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js';
+assert(deferred.includes('rak-lazy-external-libs.js'), 'Lazy loader XLSX/JSZip není součástí ověřeného runtime');
+assert(vercelBuild.includes('tools/defer-heavy-libs.mjs'), 'Vercel build neodkládá XLSX/JSZip mimo startovní HTML');
+assert(deferHeavyLibs.includes('xlsx@0\\.18\\.5'), 'Build transform nehlídá přesně XLSX 0.18.5');
+assert(deferHeavyLibs.includes('jszip@3\\.10\\.1'), 'Build transform nehlídá přesně JSZip 3.10.1');
+assert(deferHeavyLibs.includes('@supabase\\/supabase-js@2\\.110\\.7'), 'Build transform nemá pojistku proti odstranění Supabase');
+assert(lazyExternalLibs.includes("window.rakEnsureExternalLibrary = ensureExternalLibrary"), 'Chybí veřejný on-demand loader externích knihoven');
+assert(lazyExternalLibs.includes("wrapAsyncGlobal('buildRakExcelImportPreview', 'xlsx')"), 'Excel import není navázaný na lazy XLSX');
+assert(lazyExternalLibs.includes("wrapAsyncGlobal('adminRotationGeneratorDownloadExcel', 'xlsx')"), 'Excel export rozpisu není navázaný na lazy XLSX');
+assert(lazyExternalLibs.includes("wrapAsyncGlobal('exportCurrentHtml', 'jszip')"), 'ZIP export není navázaný na lazy JSZip');
+assert(lazyExternalLibs.includes(xlsxUrl), 'Lazy loader nepoužívá připnutou XLSX URL');
+assert(lazyExternalLibs.includes(jszipUrl), 'Lazy loader nepoužívá připnutou JSZip URL');
+assert(lazyExternalLibs.includes('sha384-vtjasyidUo0kW94K5MXDXntzOJpQgBKXmE7e2Ga4LG0skTTLeBi97eFAXsqewJjw'), 'Lazy XLSX ztratilo SRI');
+assert(lazyExternalLibs.includes('sha384-+mbV2IY1Zk/X1p/nWllGySJSUN8uMs+gUAN10Or95UBH0fpj6GfKgPmgC5EXieXG'), 'Lazy JSZip ztratilo SRI');
+assert(lazyExternalLibs.includes("deadGamePaths"), 'ZIP export nemá runtime cleanup odstraněných Games cest');
+assert(lazyExternalLibs.includes("window.EXPORT_JS_FILES.includes('rak-lazy-external-libs.js')"), 'ZIP export nearchivuje nový lazy loader');
+assert(indexHtml.includes('@supabase/supabase-js@2.110.7'), 'Supabase eager script zmizel z index.html');
+if (String(process.env.VERCEL || '').trim()) {
+  assert(!indexHtml.includes(xlsxUrl), 'V nasazovaném HTML zůstal eager XLSX');
+  assert(!indexHtml.includes(jszipUrl), 'V nasazovaném HTML zůstal eager JSZip');
+}
+
 // qr.js je historicky špatně pojmenovaný: kromě QR obsahuje i výpočet Kantýny/Jídelny.
 assert(qrJs.includes('function getFoodMachineSettings'), 'qr.js už neobsahuje food settings očekávané dashboardem');
 assert(qrJs.includes('function getFoodSpecialDateSet'), 'qr.js už neobsahuje food kalendář očekávaný dashboardem');
@@ -97,4 +125,4 @@ assert(String(packageJson.version) === swVersionMatch[1], 'package.json a sw.js 
 assert(dashboardShiftPatch.includes('window.RAK_PWA_BUILD'), 'Zobrazený testovací build není navázaný na aktuální PWA build');
 assert(dashboardShiftPatch.includes('--rak-dev-build-label'), 'Chybí bezpečné přepsání starého build labelu v O aplikaci');
 
-console.log('[critical-runtime-smoke] OK navigation+rotation+food baseline locked; stable qr.js boot; idle audits available; version sync ' + packageJson.version + '; dynamic build label; Games removed from source and runtime');
+console.log('[critical-runtime-smoke] OK navigation+rotation+food baseline locked; stable qr.js boot; idle audits available; version sync ' + packageJson.version + '; dynamic build label; Games removed; XLSX+JSZip lazy; Supabase eager');
