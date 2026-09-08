@@ -34,6 +34,7 @@ try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleR
   ];
 
   const deferredFiles = [
+    "rak-external-deps.js",
     "app-runtime-guards.js",
     "app-health-audits.js",
     "app-postload-audits.js",
@@ -177,7 +178,7 @@ try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleR
   if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleReady('boot-loader', 'ready', { source: 'dynamic-loader' });
 
   // Starý suppression marker smažeme jen jednou pro konkrétní build.
-  // Po kliknutí na Aktualizovat už ho při reloadu znovu nemažeme, takže nevznikne update smyčka.
+  // Po kliknutí na Aktualizovat už při reloadu stav znovu nemažeme, takže nevznikne update smyčka.
   try {
     const DEV_RESET_KEY = 'rak_dev_pwa_prompt_reset_build';
     if (localStorage.getItem(DEV_RESET_KEY) !== RAK_DEV_UPDATE_BUILD) {
