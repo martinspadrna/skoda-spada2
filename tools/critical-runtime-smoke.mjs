@@ -54,9 +54,11 @@ assert(appJs.includes('installBottomNavBindings'), 'Chybí navázání spodní n
 assert(appJs.includes('applyBottomNavMoreHardFix'), 'Chybí hard-fix tlačítka Více');
 assert(appJs.includes('installDelegatedAppActions'), 'Chybí delegované akce aplikace');
 
-// Hry už se nenačítají. Jejich odstranění při startu proto nesmí držet globální DOM observer.
+// Hry už nejsou v deployovaném HTML a runtime už kvůli nim nesmí dělat žádný DOM cleanup.
 assert(!appJs.includes('__rakDevGamesObserver'), 'Hry znovu používají globální MutationObserver');
-assert(!appJs.includes('observer.observe(document.documentElement, { childList: true, subtree: true })'), 'Games cleanup znovu pozoruje celý DOM');
+assert(!appJs.includes('disableGamesSurface'), 'V app.js zůstal starý Games boot fallback');
+assert(!appJs.includes('rak-dev-no-games-critical'), 'V app.js zůstalo kritické CSS pro skryté Hry');
+assert(!appJs.includes('bottomNavGamesBtn'), 'V app.js zůstal runtime cleanup tlačítka Her');
 assert(!bootSelfTest.includes('DOM #games'), 'Boot self-test pořád vyžaduje odstraněný DOM Her');
 
 // Deploy build musí fyzicky odstranit HTML Her před vydáním statických souborů.
@@ -80,4 +82,4 @@ assert(String(packageJson.version) === swVersionMatch[1], 'package.json a sw.js 
 assert(dashboardShiftPatch.includes('window.RAK_PWA_BUILD'), 'Zobrazený testovací build není navázaný na aktuální PWA build');
 assert(dashboardShiftPatch.includes('--rak-dev-build-label'), 'Chybí bezpečné přepsání starého build labelu v O aplikaci');
 
-console.log('[critical-runtime-smoke] OK navigation+rotation+food baseline locked; stable qr.js boot; idle audits available; version sync ' + packageJson.version + '; dynamic build label; Games HTML stripped at deploy');
+console.log('[critical-runtime-smoke] OK navigation+rotation+food baseline locked; stable qr.js boot; idle audits available; version sync ' + packageJson.version + '; dynamic build label; Games HTML stripped; Games boot fallback removed');
