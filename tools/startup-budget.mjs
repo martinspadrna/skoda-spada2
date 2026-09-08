@@ -5,7 +5,9 @@ import { fileURLToPath } from 'node:url';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const appSource = fs.readFileSync(path.join(root, 'app.js'), 'utf8');
-const MAX_EAGER_JS_BYTES = 2_200_000;
+// Aktuální development je ~1.46 MB eager JS. Necháváme jen malou rezervu,
+// aby se velký modul nevrátil do startu bez vědomého rozhodnutí.
+const MAX_EAGER_JS_BYTES = 1_650_000;
 
 function parseArray(name) {
   const match = appSource.match(new RegExp('const\\s+' + name + '\\s*=\\s*\\[([\\s\\S]*?)\\];'));
@@ -17,12 +19,14 @@ function unique(values) {
   return Array.from(new Set(values));
 }
 
+function fileBytes(file) {
+  const full = path.join(root, file);
+  if (!fs.existsSync(full)) throw new Error('[startup-budget] chybí soubor ' + file);
+  return fs.statSync(full).size;
+}
+
 function bytesFor(files) {
-  return files.reduce((sum, file) => {
-    const full = path.join(root, file);
-    if (!fs.existsSync(full)) throw new Error('[startup-budget] chybí soubor ' + file);
-    return sum + fs.statSync(full).size;
-  }, 0);
+  return files.reduce((sum, file) => sum + fileBytes(file), 0);
 }
 
 function formatBytes(value) {
@@ -38,9 +42,15 @@ const lazy = new Set([...lazyMenu, ...lazyAdmin]);
 const eager = unique([...critical, ...deferred.filter((file) => !lazy.has(file))]);
 const eagerBytes = bytesFor(eager);
 const lazyBytes = bytesFor(unique([...lazyMenu, ...lazyAdmin]));
+const heaviest = eager
+  .map((file) => ({ file, bytes: fileBytes(file) }))
+  .sort((a, b) => b.bytes - a.bytes)
+  .slice(0, 8)
+  .map((item) => item.file + '=' + formatBytes(item.bytes))
+  .join(', ');
 
 if (eagerBytes > MAX_EAGER_JS_BYTES) {
-  throw new Error('[startup-budget] eager JS ' + formatBytes(eagerBytes) + ' překročil limit ' + formatBytes(MAX_EAGER_JS_BYTES));
+  throw new Error('[startup-budget] eager JS ' + formatBytes(eagerBytes) + ' překročil limit ' + formatBytes(MAX_EAGER_JS_BYTES) + '; největší: ' + heaviest);
 }
 
 for (const file of lazyMenu) {
@@ -51,4 +61,5 @@ for (const file of lazyAdmin) {
   if (deferred.includes(file) && eager.includes(file)) throw new Error('[startup-budget] admin-only soubor ' + file + ' se omylem vrátil do běžného startu');
 }
 
-console.log('[startup-budget] OK eager=' + formatBytes(eagerBytes) + ' lazy=' + formatBytes(lazyBytes) + ' eagerFiles=' + eager.length);
+console.log('[startup-budget] OK eager=' + formatBytes(eagerBytes) + ' / limit=' + formatBytes(MAX_EAGER_JS_BYTES) + ' lazy=' + formatBytes(lazyBytes) + ' eagerFiles=' + eager.length);
+console.log('[startup-budget] heaviest ' + heaviest);
