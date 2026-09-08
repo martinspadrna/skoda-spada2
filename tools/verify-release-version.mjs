@@ -15,6 +15,7 @@ const manifest = read('manifest.webmanifest');
 const index = read('index.html');
 const styles = read('styles.css');
 const maintenance = read('rak-maintenance-v1516.js');
+const noGamesRuntime = read('rak-no-games-runtime-v1516.js');
 const externalDeps = read('rak-external-deps.js');
 
 const packageVersion = String(pkg.version || '').trim();
@@ -31,6 +32,9 @@ expect(swCacheVersion === packageVersion, `sw.js cache version ${swCacheVersion}
 expect(swAppVersion === familyVersion, `sw.js app family ${swAppVersion} != ${familyVersion}`);
 expect(manifest.includes('?v=' + packageVersion), 'manifest ikony nejsou označené aktuálním buildem');
 expect(index.includes('app.js?v=' + packageVersion), 'index.html nenačítá app.js s aktuálním buildem');
+expect(index.includes('rak-no-games-runtime-v1516.js?v=' + packageVersion), 'index.html nenačítá guard proti starému game_* syncu');
+expect(noGamesRuntime.includes("reason: 'games-removed'"), 'no-games runtime nemá bezpečný skip starého game_* syncu');
+expect(noGamesRuntime.includes('saveGameAccountUiSettings') && noGamesRuntime.includes('loadGameAccountUiSettings'), 'no-games runtime neodpojuje starý remote UI sync');
 ['icon-180.png', 'icon-32.png', 'icon-192.png'].forEach((icon) => {
   expect(index.includes(icon + '?v=' + packageVersion), `index.html nemá aktuální verzi ikony ${icon}`);
 });
