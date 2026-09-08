@@ -12,8 +12,12 @@ if (!/^\d+\.\d+\.\d+$/.test(version)) throw new Error('[prepare-static-index] Ne
 let html = fs.readFileSync(indexPath, 'utf8');
 const beforeBytes = Buffer.byteLength(html, 'utf8');
 
+function escapeRegExp(value) {
+  return String(value || '').replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
 function removeDivById(source, id) {
-  const startRe = new RegExp('<div\\b[^>]*\\bid=["\\']' + id.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '["\\'][^>]*>', 'i');
+  const startRe = new RegExp("<div\\b[^>]*\\bid=[\"']" + escapeRegExp(id) + "[\"'][^>]*>", 'i');
   const startMatch = startRe.exec(source);
   if (!startMatch) return source;
   const start = startMatch.index;
