@@ -34,7 +34,7 @@ try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleR
   ];
 
   // Seznam zůstává kompletní i kvůli browser-smoke inventáři. V běžném runtime se
-  // těžké menu/admin soubory odfiltrují níže a stáhnou až při skutečném použití.
+  // těžké menu/admin/QR soubory odfiltrují níže a stáhnou až při skutečném použití.
   const deferredFiles = [
     "rak-external-deps.js",
     "app-runtime-guards.js",
@@ -100,7 +100,11 @@ try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleR
     "admin-service-usage.js"
   ];
 
-  const eagerDeferredFiles = deferredFiles.filter((file) => !lazyMenuFiles.includes(file) && !lazyAdminFiles.includes(file));
+  // qr.js je z velké části sada vložených SVG kódů. Načte se až při prvním
+  // dvojkliku/otevření QR konkrétního člověka, ne při každém startu aplikace.
+  const lazyQrFiles = ["qr.js"];
+
+  const eagerDeferredFiles = deferredFiles.filter((file) => !lazyMenuFiles.includes(file) && !lazyAdminFiles.includes(file) && !lazyQrFiles.includes(file));
   const bootFiles = criticalFiles.concat(eagerDeferredFiles);
 
   try {
@@ -194,6 +198,37 @@ try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleR
   };
   window.RAK_LAZY_ADMIN_FILES = lazyAdminFiles.slice();
 
+  let lazyQrPromise = null;
+  window.ensureRakQrModuleLoaded = function ensureRakQrModuleLoaded() {
+    if (lazyQrPromise) return lazyQrPromise;
+    lazyQrPromise = (async () => {
+      for (const file of lazyQrFiles) await loadScript(file);
+      try {
+        if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleReady('lazy-qr-module', 'ready', { source: 'person-qr-open' });
+      } catch (err) {}
+      return true;
+    })().catch((err) => {
+      lazyQrPromise = null;
+      throw err;
+    });
+    return lazyQrPromise;
+  };
+  window.RAK_LAZY_QR_FILES = lazyQrFiles.slice();
+
+  const lazyShowPersonQrModal = function lazyShowPersonQrModal(name) {
+    const requestedName = name;
+    return window.ensureRakQrModuleLoaded().then(() => {
+      const realShow = window.showPersonQrModal;
+      if (typeof realShow === 'function' && realShow !== lazyShowPersonQrModal) return realShow(requestedName);
+      throw new Error('QR modul se načetl bez funkce pro zobrazení QR.');
+    }).catch((err) => {
+      console.error('RaK QR lazy load failed', err);
+      try { if (typeof alert === 'function') alert('QR kód se nepodařilo načíst. Zkus to znovu.'); } catch (_) {}
+      return false;
+    });
+  };
+  window.showPersonQrModal = lazyShowPersonQrModal;
+
   for (const file of criticalFiles) await loadScript(file);
 
   try { if (typeof window.rakUserProfileBootstrap === 'function') window.rakUserProfileBootstrap(); } catch (err) { console.warn('RaK user profile bootstrap failed', err); }
@@ -211,7 +246,7 @@ try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleR
   }
 
   // Síťově nezdržuj start sekvenčním stahováním desítek nezávislých modulů.
-  // Těžké menu a admin editory se z této dávky vynechají a stáhnou až při použití.
+  // Těžké menu, admin editory a QR data se z této dávky vynechají a stáhnou až při použití.
   await Promise.all(eagerDeferredFiles.map(loadScript));
 
   // core.js vytváří runtime `app` až v odložené fázi. Profil načtený na loginu proto
