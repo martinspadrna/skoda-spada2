@@ -11,6 +11,7 @@
     'game_ui_settings',
     'gomoku_wins'
   ]);
+  const loginReplayGuard = new WeakSet();
   let attempts = 0;
   let timer = null;
 
@@ -90,10 +91,75 @@
     }
   }
 
-  function ensureSupabaseDependency() {
-    if (window.supabase && typeof window.supabase.createClient === 'function') return Promise.resolve(window.supabase);
-    if (typeof window.ensureRakExternalDependency !== 'function') return Promise.resolve(null);
-    return Promise.resolve(window.ensureRakExternalDependency('supabase')).catch(() => null);
+  function waitForExternalLoader(timeoutMs) {
+    const timeout = Math.max(0, Number(timeoutMs || 0) || 0);
+    const started = Date.now();
+    return new Promise((resolve) => {
+      const check = () => {
+        if (typeof window.ensureRakExternalDependency === 'function') {
+          resolve(window.ensureRakExternalDependency);
+          return;
+        }
+        if (Date.now() - started >= timeout) {
+          resolve(null);
+          return;
+        }
+        setTimeout(check, 40);
+      };
+      check();
+    });
+  }
+
+  async function ensureSupabaseDependency() {
+    if (window.supabase && typeof window.supabase.createClient === 'function') return window.supabase;
+    const ensure = typeof window.ensureRakExternalDependency === 'function'
+      ? window.ensureRakExternalDependency
+      : await waitForExternalLoader(5000);
+    if (typeof ensure !== 'function') return null;
+    try {
+      const sdk = await ensure('supabase');
+      patchSupabaseFactory();
+      return sdk || window.supabase || null;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  function installLoginSupabaseGuard() {
+    if (window.__rakLoginSupabaseGuardBound) return;
+    window.__rakLoginSupabaseGuardBound = true;
+    document.addEventListener('click', (event) => {
+      const button = event.target && event.target.closest ? event.target.closest('#rakUserLoginSubmit') : null;
+      if (!button || loginReplayGuard.has(button)) return;
+      if (window.supabase && typeof window.supabase.createClient === 'function') {
+        patchSupabaseFactory();
+        return;
+      }
+      event.preventDefault();
+      event.stopPropagation();
+      event.stopImmediatePropagation();
+      button.disabled = true;
+      const status = document.getElementById('rakUserLoginStatus');
+      if (status) {
+        status.textContent = 'Připravuji bezpečné přihlášení…';
+        status.classList.remove('error');
+      }
+      void ensureSupabaseDependency().then((sdk) => {
+        if (!sdk || typeof sdk.createClient !== 'function') {
+          if (status) {
+            status.textContent = 'Přihlášení se nepodařilo připravit. Zkontroluj připojení a zkus to znovu.';
+            status.classList.add('error');
+          }
+          return;
+        }
+        loginReplayGuard.add(button);
+        button.disabled = false;
+        try { button.click(); }
+        finally { setTimeout(() => loginReplayGuard.delete(button), 0); }
+      }).finally(() => {
+        if (!loginReplayGuard.has(button)) button.disabled = false;
+      });
+    }, true);
   }
 
   function wrapBridgeLoader() {
@@ -132,6 +198,7 @@
     }
   }
 
+  installLoginSupabaseGuard();
   apply();
   timer = setInterval(apply, 100);
   window.addEventListener('focus', apply);
