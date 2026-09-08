@@ -50,7 +50,7 @@ try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleR
     "app-pwa-connectivity.js",
     "core.js",
     "lifecycle.js",
-    "qr.js",
+    "qr-runtime.generated.js",
     "payroll.js",
     "brusy.js",
     "stats.js",
