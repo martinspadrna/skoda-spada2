@@ -1,8 +1,12 @@
-// RaK 1.5.16 – update-safe PWA service worker.
+// RaK 1.5.16 – update-safe PWA service worker + jednorázová recovery po rozbité 1.5.16 cache.
 const CACHE_VERSION = 'v1.5.16';
 const SW_APP_VERSION = '1.5';
-const STATIC_CACHE = `rotace-static-${CACHE_VERSION}`;
-const RUNTIME_CACHE = `rotace-runtime-${CACHE_VERSION}`;
+// Jednorázový recovery epoch vytvoří čisté cache i bez změny veřejné verze aplikace.
+// Předchozí rozbitý development build měl také 1.5.16, takže běžný update prompt neměl jak poznat rozdíl.
+const CACHE_EPOCH = 'recovery-20260908-a';
+const FORCE_RECOVERY_RELOAD = true;
+const STATIC_CACHE = `rotace-static-${CACHE_VERSION}-${CACHE_EPOCH}`;
+const RUNTIME_CACHE = `rotace-runtime-${CACHE_VERSION}-${CACHE_EPOCH}`;
 
 // Precache držíme záměrně malý. Velké login obrázky (přes 6 MB dohromady)
 // se uloží až při prvním skutečném použití, ne při každé aktualizaci aplikace.
@@ -52,12 +56,14 @@ self.addEventListener('install', event => {
     await Promise.all(CORE.map(async url => {
       try {
         const bust = new URL(url, self.location.href);
-        bust.searchParams.set('__rak_build', CACHE_VERSION);
+        bust.searchParams.set('__rak_build', CACHE_VERSION + '-' + CACHE_EPOCH);
         const response = await fetch(new Request(bust.href, { cache: 'reload' }));
         if (cacheable(response)) await cache.put(url, response.clone());
       } catch (_) {}
     }));
-    // Nová verze zůstane waiting, dokud uživatel nepotvrdí tlačítko Aktualizovat.
+    // Pouze tento recovery worker se aktivuje automaticky. Důvod: rozbitá a opravená
+    // development verze mají shodné číslo 1.5.16 a starý suppression marker blokuje prompt.
+    if (FORCE_RECOVERY_RELOAD) await self.skipWaiting();
   })());
 });
 
@@ -75,7 +81,8 @@ self.addEventListener('activate', event => {
     const navigations = [];
     clients.forEach(client => {
       try { client.postMessage({ type: 'sw-activated', version: CACHE_VERSION, appVersion: SW_APP_VERSION }); } catch (_) {}
-      if (approvedUpdateClientId && client.id === approvedUpdateClientId && typeof client.navigate === 'function') {
+      const approvedReload = approvedUpdateClientId && client.id === approvedUpdateClientId;
+      if ((FORCE_RECOVERY_RELOAD || approvedReload) && typeof client.navigate === 'function') {
         navigations.push(client.navigate(client.url).catch(() => null));
       }
     });
