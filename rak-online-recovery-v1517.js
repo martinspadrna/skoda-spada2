@@ -1,12 +1,13 @@
-// RaK v1.5.18 – cílená oprava online bootstrapu po regresi lazy Supabase na iOS.
-(function installRakOnlineRecoveryV1518() {
+// RaK v1.5.19 – cílená oprava online bootstrapu a načtení rozpisu po regresi lazy Supabase na iOS.
+(function installRakOnlineRecoveryV1519() {
   'use strict';
 
-  const BUILD = 'v1.5.18';
+  const BUILD = 'v1.5.19';
   const SUPABASE_SRC = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.110.7/dist/umd/supabase.js';
   const SUPABASE_SRI = 'sha384-hazsLVND17GNLVdtV19te6qbFT2YuLgl8SamcF+QR5eIOC+W4dGKrUNMxU1jH1zD';
   let onlinePromise = null;
   let clientPromise = null;
+  let directClient = null;
 
   window.RAK_RECOVERY_BUILD = BUILD;
   window.RAK_PWA_BUILD = BUILD;
@@ -26,6 +27,12 @@
       await sleep(60);
     }
     throw new Error('Timeout při čekání na ' + label + '.');
+  }
+
+  function currentConfig() {
+    const cfg = window.SUPABASE_CONFIG || {};
+    const key = String(cfg.publishableKey || cfg.anonKey || '').trim();
+    return cfg.url && key ? { url: String(cfg.url), key } : null;
   }
 
   function ensureSupabaseClient() {
@@ -59,6 +66,16 @@
     return clientPromise;
   }
 
+  function getDirectClient() {
+    if (directClient) return directClient;
+    const cfg = currentConfig();
+    if (!cfg || !window.supabase || typeof window.supabase.createClient !== 'function') return null;
+    directClient = window.supabase.createClient(cfg.url, cfg.key, {
+      auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false }
+    });
+    return directClient;
+  }
+
   function clearStaleUpdateMarkers() {
     try {
       const marker = 'rak_online_recovery_build';
@@ -70,10 +87,103 @@
     } catch (_) {}
   }
 
+  function parseRotationPayload(value) {
+    if (!value) return null;
+    if (value && typeof value === 'object') return value;
+    if (typeof value === 'string') {
+      try {
+        const parsed = JSON.parse(value);
+        return parsed && typeof parsed === 'object' ? parsed : null;
+      } catch (_) {}
+    }
+    return null;
+  }
+
+  function applyRotationPayload(payload) {
+    const parsed = parseRotationPayload(payload);
+    if (!parsed || !parsed.months || typeof parsed.months !== 'object' || !Object.keys(parsed.months).length) {
+      throw new Error('Online rozpis neobsahuje žádné měsíce.');
+    }
+
+    let next = parsed;
+    try {
+      if (typeof window.normalizeRotationData === 'function') next = window.normalizeRotationData(parsed);
+      else if (typeof normalizeRotationData === 'function') next = normalizeRotationData(parsed);
+    } catch (_) {
+      next = parsed;
+    }
+
+    if (typeof app !== 'undefined' && app) {
+      app.rotation = next;
+      try {
+        const years = typeof getAvailableYears === 'function' ? getAvailableYears(next) : [];
+        if (years.length && (!app.selectedYear || !years.includes(parseInt(app.selectedYear, 10)))) {
+          app.selectedYear = typeof getInitialSelectedYear === 'function' ? getInitialSelectedYear(next) : years[years.length - 1];
+        }
+      } catch (_) {}
+    }
+
+    try { if (typeof saveRotationData === 'function') saveRotationData(); } catch (_) {}
+    return next;
+  }
+
+  async function loadRotationVerified(bridge) {
+    let remote = null;
+    let bridgeError = null;
+
+    if (bridge && typeof bridge.loadRotationState === 'function') {
+      try {
+        remote = await bridge.loadRotationState();
+        if (remote && remote.payload) {
+          const applied = applyRotationPayload(remote.payload);
+          return { source: 'bridge', remote, applied };
+        }
+      } catch (error) {
+        bridgeError = error;
+        console.warn('[RaK 1.5.19] Bridge rotation read failed', error);
+      }
+    }
+
+    const client = getDirectClient();
+    if (!client) throw (bridgeError || new Error('Supabase klient pro přímé načtení rozpisu není dostupný.'));
+    const { data, error } = await client
+      .from('rotation_state')
+      .select('key,payload,meta,updated_at,revision')
+      .eq('key', 'main')
+      .maybeSingle();
+    if (error) throw error;
+    if (!data || !data.payload) throw new Error('Online rozpis main nebyl nalezen.');
+    const applied = applyRotationPayload(data.payload);
+    return { source: 'direct', remote: data, applied };
+  }
+
+  async function loadMachineSettingsVerified(bridge) {
+    if (bridge && typeof bridge.loadMachineSettings === 'function') {
+      try {
+        const rows = await bridge.loadMachineSettings();
+        if (Array.isArray(rows) && rows.length) {
+          if (typeof app !== 'undefined' && app) app.machineSettingsRows = rows;
+          return { source: 'bridge', rows };
+        }
+      } catch (error) {
+        console.warn('[RaK 1.5.19] Bridge machine settings read failed', error);
+      }
+    }
+
+    const client = getDirectClient();
+    if (!client) return { source: 'none', rows: [] };
+    const { data, error } = await client.from('machine_settings').select('*').order('category', { ascending: true }).order('machine_key', { ascending: true });
+    if (error) throw error;
+    const rows = Array.isArray(data) ? data : [];
+    if (typeof app !== 'undefined' && app && rows.length) app.machineSettingsRows = rows;
+    return { source: 'direct', rows };
+  }
+
   function refreshUi() {
     try { if (typeof window.forceHomeRefresh === 'function') window.forceHomeRefresh(); } catch (_) {}
     try { if (typeof window.renderRotace === 'function') window.renderRotace(); } catch (_) {}
     try { if (typeof window.renderStatsPanel === 'function') window.renderStatsPanel(); } catch (_) {}
+    try { if (typeof window.updateFoodTile === 'function') window.updateFoodTile(); } catch (_) {}
     try {
       if (navigator.onLine) document.documentElement.dataset.connection = 'online';
     } catch (_) {}
@@ -82,18 +192,10 @@
   async function startOnline() {
     if (onlinePromise) return onlinePromise;
     onlinePromise = (async () => {
-      await waitFor(() => {
-        const cfg = window.SUPABASE_CONFIG;
-        const apiKey = cfg && (cfg.publishableKey || cfg.anonKey);
-        return cfg && cfg.url && apiKey ? cfg : null;
-      }, 'Supabase konfiguraci', 15000);
-
+      await waitFor(() => currentConfig(), 'Supabase konfiguraci', 15000);
       await ensureSupabaseClient();
 
-      // Počkáme, až je hotová základní aplikace a online synchronizační helper.
-      // Tím odstraníme závod, kdy se bridge dříve spustil před core/app-rotation-sync.
       await waitFor(() => typeof window.syncRotationFromSupabase === 'function' ? window.syncRotationFromSupabase : null, 'synchronizaci Rozpisů', 20000);
-
       const ensureBridge = await waitFor(
         () => typeof window.ensureRakSupabaseBridgeLoaded === 'function' ? window.ensureRakSupabaseBridgeLoaded : null,
         'loader Supabase bridge',
@@ -104,31 +206,41 @@
 
       if (typeof bridge.init === 'function') await bridge.init();
 
-      // Machine settings obsahují mimo jiné data pro Kantýnu/Jídelnu. Nečekáme jen
-      // na background refresh – na iOS je načteme explicitně před finálním renderem.
-      if (typeof bridge.loadMachineSettings === 'function') {
-        try {
-          const rows = await bridge.loadMachineSettings();
-          if (Array.isArray(rows) && typeof app !== 'undefined' && app) app.machineSettingsRows = rows;
-        } catch (error) {
-          console.warn('[RaK 1.5.18] Machine settings recovery failed', error);
-        }
-      }
+      const rotationResult = await loadRotationVerified(bridge);
+      const settingsResult = await loadMachineSettingsVerified(bridge);
 
-      await window.syncRotationFromSupabase(false);
+      // Standardní synchronizaci necháme proběhnout ještě jednou kvůli interním timestampům,
+      // cache a stavu Online synchronizováno. Data už ale nejsou závislá jen na ní.
+      try { await window.syncRotationFromSupabase('discard-draft'); } catch (_) {}
       try { if (typeof bridge.bindRealtimeSubscriptions === 'function') bridge.bindRealtimeSubscriptions(); } catch (_) {}
+
+      window.RAK_RECOVERY_STATUS = {
+        ok: true,
+        build: BUILD,
+        rotationSource: rotationResult.source,
+        rotationRevision: Number(rotationResult.remote && rotationResult.remote.revision || 0) || 0,
+        rotationMonths: Object.keys(rotationResult.applied && rotationResult.applied.months || {}).length,
+        machineSettingsSource: settingsResult.source,
+        machineSettingsRows: Array.isArray(settingsResult.rows) ? settingsResult.rows.length : 0,
+        at: new Date().toISOString()
+      };
+
       refreshUi();
       return bridge;
     })().catch((error) => {
       onlinePromise = null;
-      console.warn('[RaK 1.5.18] Online recovery failed', error);
+      window.RAK_RECOVERY_STATUS = {
+        ok: false,
+        build: BUILD,
+        error: String(error && (error.message || error.code) || error || 'unknown'),
+        at: new Date().toISOString()
+      };
+      console.warn('[RaK 1.5.19] Online recovery failed', error);
       throw error;
     });
     return onlinePromise;
   }
 
-  // Přepíšeme pouze vstupní online promise. Lazy loader samotného bridge necháváme
-  // beze změny; oprava vynucuje správné pořadí konfigurace → klient → core/sync → bridge.
   window.ensureRakSupabaseOnlineStarted = startOnline;
 
   function fixAboutBuildLabels() {
@@ -145,6 +257,7 @@
   clearStaleUpdateMarkers();
   setTimeout(() => void startOnline().catch(() => {}), 0);
   setTimeout(() => void startOnline().catch(() => {}), 600);
+  setTimeout(() => void startOnline().then(refreshUi).catch(() => {}), 1800);
   window.addEventListener('online', () => void startOnline().then(refreshUi).catch(() => {}));
   window.addEventListener('pageshow', () => {
     window.RAK_PWA_BUILD = BUILD;
@@ -157,7 +270,5 @@
     if (more) setTimeout(fixAboutBuildLabels, 350);
   }, true);
 
-  // Menu je lazy; krátké opakování po startu odstraní starý v1.5.11 řádek i když
-  // byl vložen až po otevření sekce Více.
   [500, 1200, 2500].forEach((delay) => setTimeout(fixAboutBuildLabels, delay));
 })();
