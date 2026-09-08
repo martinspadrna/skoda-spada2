@@ -36,7 +36,7 @@ expect(index.includes('rak-no-games-runtime-v1516.js?v=' + packageVersion), 'ind
 expect(noGamesRuntime.includes("reason: 'games-removed'"), 'no-games runtime nemá bezpečný skip starého game_* syncu');
 expect(noGamesRuntime.includes('saveGameAccountUiSettings') && noGamesRuntime.includes('loadGameAccountUiSettings'), 'no-games runtime neodpojuje starý remote UI sync');
 expect(noGamesRuntime.includes('REMOVED_GAME_REALTIME_TABLES') && noGamesRuntime.includes("'game_sessions'") && noGamesRuntime.includes("'gomoku_wins'"), 'no-games runtime neblokuje realtime odstraněných Her');
-expect(noGamesRuntime.includes("ensureRakExternalDependency('supabase')"), 'online bridge nespouští lazy Supabase klienta');
+expect(noGamesRuntime.includes('ensureSupabaseDependency') && noGamesRuntime.includes("ensure('supabase')"), 'online bridge nespouští lazy Supabase klienta');
 ['icon-180.png', 'icon-32.png', 'icon-192.png'].forEach((icon) => {
   expect(index.includes(icon + '?v=' + packageVersion), `index.html nemá aktuální verzi ikony ${icon}`);
 });
