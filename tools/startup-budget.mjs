@@ -5,9 +5,9 @@ import { fileURLToPath } from 'node:url';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const appSource = fs.readFileSync(path.join(root, 'app.js'), 'utf8');
-// Aktuální development je ~1.46 MB eager JS. Necháváme jen malou rezervu,
+// Aktuální development je pod 1.4 MB eager JS. Necháváme jen malou rezervu,
 // aby se velký modul nevrátil do startu bez vědomého rozhodnutí.
-const MAX_EAGER_JS_BYTES = 1_650_000;
+const MAX_EAGER_JS_BYTES = 1_550_000;
 
 function parseArray(name) {
   const match = appSource.match(new RegExp('const\\s+' + name + '\\s*=\\s*\\[([\\s\\S]*?)\\];'));
@@ -38,10 +38,11 @@ const critical = parseArray('criticalFiles');
 const deferred = parseArray('deferredFiles');
 const lazyMenu = parseArray('lazyMenuFiles');
 const lazyAdmin = parseArray('lazyAdminFiles');
-const lazy = new Set([...lazyMenu, ...lazyAdmin]);
+const lazyQr = parseArray('lazyQrFiles');
+const lazy = new Set([...lazyMenu, ...lazyAdmin, ...lazyQr]);
 const eager = unique([...critical, ...deferred.filter((file) => !lazy.has(file))]);
 const eagerBytes = bytesFor(eager);
-const lazyBytes = bytesFor(unique([...lazyMenu, ...lazyAdmin]));
+const lazyBytes = bytesFor(unique([...lazyMenu, ...lazyAdmin, ...lazyQr]));
 const heaviest = eager
   .map((file) => ({ file, bytes: fileBytes(file) }))
   .sort((a, b) => b.bytes - a.bytes)
@@ -59,6 +60,10 @@ for (const file of lazyMenu) {
 }
 for (const file of lazyAdmin) {
   if (deferred.includes(file) && eager.includes(file)) throw new Error('[startup-budget] admin-only soubor ' + file + ' se omylem vrátil do běžného startu');
+}
+for (const file of lazyQr) {
+  if (!deferred.includes(file)) throw new Error('[startup-budget] QR soubor ' + file + ' musí zůstat v deferred inventáři pro smoke testy');
+  if (eager.includes(file)) throw new Error('[startup-budget] QR payload ' + file + ' se omylem vrátil do běžného startu');
 }
 
 console.log('[startup-budget] OK eager=' + formatBytes(eagerBytes) + ' / limit=' + formatBytes(MAX_EAGER_JS_BYTES) + ' lazy=' + formatBytes(lazyBytes) + ' eagerFiles=' + eager.length);
