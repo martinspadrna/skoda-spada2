@@ -34,7 +34,7 @@ try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleR
   ];
 
   // Seznam zůstává kompletní i kvůli browser-smoke inventáři. V běžném runtime se
-  // těžké menu/admin/QR soubory odfiltrují níže a stáhnou až při skutečném použití.
+  // těžké menu/admin/QR/audit soubory odfiltrují níže a stáhnou až při skutečné potřebě.
   const deferredFiles = [
     "rak-external-deps.js",
     "app-runtime-guards.js",
@@ -104,7 +104,11 @@ try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleR
   // dvojkliku/otevření QR konkrétního člověka, ne při každém startu aplikace.
   const lazyQrFiles = ["qr.js"];
 
-  const eagerDeferredFiles = deferredFiles.filter((file) => !lazyMenuFiles.includes(file) && !lazyAdminFiles.includes(file) && !lazyQrFiles.includes(file));
+  // Diagnostické audity nejsou potřeba k prvnímu interaktivnímu paintu. Načtou se
+  // po startu v idle čase a poté se spustí stejně jako dřív.
+  const idleAuditFiles = ["app-health-audits.js", "app-postload-audits.js"];
+
+  const eagerDeferredFiles = deferredFiles.filter((file) => !lazyMenuFiles.includes(file) && !lazyAdminFiles.includes(file) && !lazyQrFiles.includes(file) && !idleAuditFiles.includes(file));
   const bootFiles = criticalFiles.concat(eagerDeferredFiles);
 
   try {
@@ -229,6 +233,28 @@ try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleR
   };
   window.showPersonQrModal = lazyShowPersonQrModal;
 
+  let idleAuditPromise = null;
+  window.ensureRakIdleAuditsLoaded = function ensureRakIdleAuditsLoaded() {
+    if (idleAuditPromise) return idleAuditPromise;
+    idleAuditPromise = (async () => {
+      for (const file of idleAuditFiles) await loadScript(file);
+      return true;
+    })().catch((err) => {
+      idleAuditPromise = null;
+      throw err;
+    });
+    return idleAuditPromise;
+  };
+  const scheduleIdleAudits = () => {
+    const run = () => {
+      void window.ensureRakIdleAuditsLoaded().then(() => {
+        try { if (typeof window.runRakPostLoadAudits === 'function') window.runRakPostLoadAudits(); else if (typeof runRakPostLoadAudits === 'function') runRakPostLoadAudits(); } catch (err) { console.warn('Post-load audit orchestrace failed', err); }
+      }).catch((err) => console.warn('Idle audit load failed', err));
+    };
+    if (typeof requestIdleCallback === 'function') requestIdleCallback(run, { timeout: 2500 });
+    else setTimeout(run, 1200);
+  };
+
   for (const file of criticalFiles) await loadScript(file);
 
   try { if (typeof window.rakUserProfileBootstrap === 'function') window.rakUserProfileBootstrap(); } catch (err) { console.warn('RaK user profile bootstrap failed', err); }
@@ -246,7 +272,7 @@ try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleR
   }
 
   // Síťově nezdržuj start sekvenčním stahováním desítek nezávislých modulů.
-  // Těžké menu, admin editory a QR data se z této dávky vynechají a stáhnou až při použití.
+  // Těžké menu, admin editory, QR data a diagnostické audity se z této dávky vynechají.
   await Promise.all(eagerDeferredFiles.map(loadScript));
 
   // core.js vytváří runtime `app` až v odložené fázi. Profil načtený na loginu proto
@@ -278,7 +304,7 @@ try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleR
   try { if (typeof applyBottomNavMoreHardFix === 'function') applyBottomNavMoreHardFix(); } catch (err) { console.warn('Bottom nav Více hard-fix failed', err); }
   try { if (typeof applyRakFixedBottomNavMetrics === 'function') applyRakFixedBottomNavMetrics(); } catch (err) { console.warn('Bottom nav fixed metrics failed', err); }
   if (typeof installDelegatedAppActions === 'function') installDelegatedAppActions();
-  try { if (typeof runRakPostLoadAudits === 'function') runRakPostLoadAudits(); } catch (err) { console.warn('Post-load audit orchestrace failed', err); }
+  scheduleIdleAudits();
 
   try {
     if (typeof window.__rotaceBootHomeRefreshLate === 'function') window.__rotaceBootHomeRefreshLate();
