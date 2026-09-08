@@ -13,8 +13,7 @@ try {
     "DOM #home": !!document.getElementById("home"),
     "DOM #rotace": !!document.getElementById("rotace"),
     "DOM #rotaceStatsPanel": !!document.getElementById("rotaceStatsPanel"),
-    "DOM .bottomNav": !!document.querySelector(".bottomNav"),
-    "DOM #games": !!document.getElementById("games")
+    "DOM .bottomNav": !!document.querySelector(".bottomNav")
   };
   const missing = Object.entries(required).filter(([_, v]) => !v).map(([k]) => k);
   if (missing.length) {
