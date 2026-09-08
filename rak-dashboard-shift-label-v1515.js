@@ -1,10 +1,26 @@
-// RaK DEV v1.5.15 – plný název směny v personifikované kartě Dashboardu.
+// RaK DEV – plný název směny v personifikované kartě Dashboardu + jednotné číslo testovacího buildu.
 (function () {
   'use strict';
 
   let attempts = 0;
 
+  function installCurrentBuildLabel() {
+    const currentBuild = String(window.RAK_PWA_BUILD || window.RAK_DEV_BUILD || '').trim();
+    if (!currentBuild) return;
+    window.RAK_DEV_BUILD = currentBuild;
+    try {
+      document.documentElement.style.setProperty('--rak-dev-build-label', JSON.stringify('Testovací build: ' + currentBuild));
+      if (!document.getElementById('rak-current-dev-build-label-style')) {
+        const style = document.createElement('style');
+        style.id = 'rak-current-dev-build-label-style';
+        style.textContent = '[data-rak-dev-build-info="1"]{font-size:0!important;}[data-rak-dev-build-info="1"]::after{content:var(--rak-dev-build-label);font-size:14px;line-height:1.35;font-weight:800;}';
+        document.head.appendChild(style);
+      }
+    } catch (err) {}
+  }
+
   function install() {
+    installCurrentBuildLabel();
     const original = window.buildDashboardPersonalHeroHtml;
     if (typeof original !== 'function') return false;
     if (original.__rakFullShiftLabelV1515) return true;
@@ -30,6 +46,7 @@
   }
 
   function retry() {
+    installCurrentBuildLabel();
     if (install()) return;
     attempts += 1;
     if (attempts < 80) setTimeout(retry, 25);
