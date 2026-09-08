@@ -50,7 +50,9 @@ if (!/rak-no-games-runtime-v1516\.js(?:\?v=[^"'\s>]*)?/i.test(html)) {
   html = html.replace(/rak-no-games-runtime-v1516\.js\?v=[^"'\s>]+/gi, 'rak-no-games-runtime-v1516.js?v=' + version);
 }
 
-// XLSX a JSZip se načítají přes rak-external-deps.js až při importu/exportu.
+// Supabase klient i těžké exportní knihovny se načítají přes rak-external-deps.js.
+// Supabase až při startu online vrstvy po prvním paintu, XLSX/JSZip až při importu/exportu.
+html = html.replace(/\s*<script\b[^>]*src=["'][^"']*@supabase\/supabase-js@2\.110\.7\/dist\/umd\/supabase\.js[^"']*["'][^>]*><\/script>\s*/gi, '\n');
 html = html.replace(/\s*<script\b[^>]*src=["'][^"']*xlsx@0\.18\.5\/dist\/xlsx\.full\.min\.js[^"']*["'][^>]*><\/script>\s*/gi, '\n');
 html = html.replace(/\s*<script\b[^>]*src=["'][^"']*jszip@3\.10\.1\/dist\/jszip\.min\.js[^"']*["'][^>]*><\/script>\s*/gi, '\n');
 
