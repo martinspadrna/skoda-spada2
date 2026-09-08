@@ -51,13 +51,15 @@ assert(appJs.includes('installBottomNavBindings'), 'Chybí navázání spodní n
 assert(appJs.includes('applyBottomNavMoreHardFix'), 'Chybí hard-fix tlačítka Více');
 assert(appJs.includes('installDelegatedAppActions'), 'Chybí delegované akce aplikace');
 
+// Hry už se nenačítají. Jejich odstranění při startu proto nesmí držet globální DOM observer.
+assert(!appJs.includes('__rakDevGamesObserver'), 'Hry znovu používají globální MutationObserver');
+assert(!appJs.includes('observer.observe(document.documentElement, { childList: true, subtree: true })'), 'Games cleanup znovu pozoruje celý DOM');
+
 // qr.js je historicky špatně pojmenovaný: kromě QR obsahuje i výpočet Kantýny/Jídelny.
-// Proto ho nesmíme bez spolehlivě nasazeného rozdělení jen tak lazy-loadnout.
 assert(qrJs.includes('function getFoodMachineSettings'), 'qr.js už neobsahuje food settings očekávané dashboardem');
 assert(qrJs.includes('function getFoodSpecialDateSet'), 'qr.js už neobsahuje food kalendář očekávaný dashboardem');
 assert(qrJs.includes('const BRUS_CONFIG'), 'qr.js ztratil konfiguraci brusů');
 
-// Základní build číslo musí být stejné v package, app loaderu a service workeru.
 const appVersionMatch = appJs.match(/RAK_MODULE_CACHE_VERSION\s*=\s*["']([^"']+)["']/);
 const swVersionMatch = swJs.match(/CACHE_VERSION\s*=\s*["']v?([^"']+)["']/);
 assert(appVersionMatch, 'Nelze přečíst RAK_MODULE_CACHE_VERSION z app.js');
@@ -65,8 +67,7 @@ assert(swVersionMatch, 'Nelze přečíst CACHE_VERSION ze sw.js');
 assert(String(packageJson.version) === appVersionMatch[1], 'package.json a app.js mají rozdílnou build verzi');
 assert(String(packageJson.version) === swVersionMatch[1], 'package.json a sw.js mají rozdílnou build verzi');
 
-// O aplikaci nesmí zobrazovat staré natvrdo zapsané číslo z report patchů.
 assert(dashboardShiftPatch.includes('window.RAK_PWA_BUILD'), 'Zobrazený testovací build není navázaný na aktuální PWA build');
 assert(dashboardShiftPatch.includes('--rak-dev-build-label'), 'Chybí bezpečné přepsání starého build labelu v O aplikaci');
 
-console.log('[critical-runtime-smoke] OK navigation+rotation+food baseline locked; stable qr.js boot; idle audits; version sync ' + packageJson.version + '; dynamic build label');
+console.log('[critical-runtime-smoke] OK navigation+rotation+food baseline locked; stable qr.js boot; idle audits; version sync ' + packageJson.version + '; dynamic build label; Games observer removed');
