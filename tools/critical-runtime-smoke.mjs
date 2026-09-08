@@ -6,8 +6,7 @@ import { fileURLToPath } from 'node:url';
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const read = (file) => fs.readFileSync(path.join(root, file), 'utf8');
 const appJs = read('app.js');
-const qrRuntime = read('qr-runtime.generated.js');
-const qrData = read('qr-data.generated.js');
+const qrJs = read('qr.js');
 
 function assert(condition, message) {
   if (!condition) throw new Error('[critical-runtime-smoke] ' + message);
@@ -21,7 +20,7 @@ function loaderGroup(name) {
 
 const deferred = loaderGroup('deferredFiles');
 const mustStayBootLoaded = [
-  'qr-runtime.generated.js',
+  'qr.js',
   'stats.js',
   'dashboard.js',
   'rotace.js',
@@ -37,23 +36,16 @@ for (const file of mustStayBootLoaded) {
   assert(deferred.includes(file), file + ' nesmí být přesunut mimo ověřený boot bez samostatného mobilního testu');
 }
 
-assert(!deferred.includes('qr.js'), 'Původní těžký qr.js se nesmí vrátit do startovacího loaderu');
-assert(!deferred.includes('qr-data.generated.js'), 'QR SVG data se nesmí načítat při startu');
+assert(!deferred.includes('qr-runtime.generated.js'), 'Generated QR runtime se nesmí vrátit do bootu bez ověřeného statického nasazení');
 assert(appJs.includes('await Promise.all(deferredFiles.map(loadScript))'), 'Boot musí před navázáním UI počkat na deferred moduly');
 assert(appJs.includes('installBottomNavBindings'), 'Chybí navázání spodní navigace');
 assert(appJs.includes('applyBottomNavMoreHardFix'), 'Chybí hard-fix tlačítka Více');
 assert(appJs.includes('installDelegatedAppActions'), 'Chybí delegované akce aplikace');
 
-// Provozní část historického qr.js musí zůstat v běžném bootu.
-assert(qrRuntime.includes('function getFoodMachineSettings'), 'Slim QR runtime už neobsahuje food settings očekávané dashboardem');
-assert(qrRuntime.includes('function getFoodSpecialDateSet'), 'Slim QR runtime už neobsahuje food kalendář očekávaný dashboardem');
-assert(qrRuntime.includes('const BRUS_CONFIG'), 'Slim QR runtime ztratil konfiguraci brusů');
+// qr.js je historicky špatně pojmenovaný: kromě QR obsahuje i výpočet Kantýny/Jídelny.
+// Proto ho nesmíme bez spolehlivě nasazeného rozdělení jen tak lazy-loadnout.
+assert(qrJs.includes('function getFoodMachineSettings'), 'qr.js už neobsahuje food settings očekávané dashboardem');
+assert(qrJs.includes('function getFoodSpecialDateSet'), 'qr.js už neobsahuje food kalendář očekávaný dashboardem');
+assert(qrJs.includes('const BRUS_CONFIG'), 'qr.js ztratil konfiguraci brusů');
 
-// Pouze velká SVG data QR smějí být odložená.
-assert(qrRuntime.includes('function ensurePersonQrDataLoaded'), 'Chybí lazy loader QR dat');
-assert(qrRuntime.includes("script.src = 'qr-data.generated.js"), 'QR runtime nenačítá lazy datový soubor');
-assert(qrRuntime.includes('async function showPersonQrModal'), 'QR modal nečeká na lazy data');
-assert(qrData.includes('window.PERSON_QR_CODES ='), 'Generated QR data nemají očekávaný export');
-assert(qrData.length > 1000, 'Generated QR data vypadají podezřele malá');
-
-console.log('[critical-runtime-smoke] OK navigation+rotation+food baseline locked; QR SVG data lazy');
+console.log('[critical-runtime-smoke] OK navigation+rotation+food baseline locked; stable qr.js boot');
