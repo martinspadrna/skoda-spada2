@@ -1,32 +1,9 @@
 // RaK 1.2 (1.155) – boot/load shell aplikace.
 try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleReady('app.js', 'loaded', { source: 'index' }); } catch (err) {}
 
-// DEV: Hry jsou v deployovaném index.html odstraněné už při buildu.
-// Tohle zůstává jen jako bezpečný jednorázový fallback bez globálního observeru.
-(function disableGamesSurface() {
-  const removeGames = () => {
-    try {
-      const gamesPage = document.getElementById('games');
-      if (gamesPage) gamesPage.remove();
-      document.querySelectorAll('[data-action="games"], [data-page="games"], .bottomNavGamesBtn').forEach((el) => el.remove());
-      document.querySelectorAll('link[href*="styles-games.css"]').forEach((el) => el.remove());
-      document.body && document.body.classList.remove('gamesOpen', 'tttOpen');
-    } catch (err) {}
-  };
-  try {
-    const style = document.createElement('style');
-    style.id = 'rak-dev-no-games-critical';
-    style.textContent = '#games,[data-action="games"],[data-page="games"],.bottomNavGamesBtn,link[href*="styles-games.css"]{display:none!important;}';
-    document.head.appendChild(style);
-  } catch (err) {}
-  removeGames();
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', removeGames, { once: true });
-  else removeGames();
-})();
-
 (async () => {
-  const RAK_MODULE_CACHE_VERSION = "1.5.25";
-  const RAK_DEV_UPDATE_BUILD = "v1.5.25";
+  const RAK_MODULE_CACHE_VERSION = "1.5.26";
+  const RAK_DEV_UPDATE_BUILD = "v1.5.26";
   window.RAK_PWA_BUILD = RAK_DEV_UPDATE_BUILD;
 
   const criticalFiles = [
