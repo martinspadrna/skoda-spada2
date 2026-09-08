@@ -131,6 +131,13 @@
     document.addEventListener('click', (event) => {
       const button = event.target && event.target.closest ? event.target.closest('#rakUserLoginSubmit') : null;
       if (!button || loginReplayGuard.has(button)) return;
+
+      // Neplatný/neudaný účet necháme okamžitě zpracovat původnímu loginu, aby se
+      // hned zobrazila jeho validace a animace chyby. Síť má smysl řešit až pro 4 číslice.
+      const input = document.getElementById('rakUserLoginAccountNumber');
+      const accountDigits = String(input && input.value || '').replace(/\D/g, '');
+      if (!/^\d{4}$/.test(accountDigits)) return;
+
       if (window.supabase && typeof window.supabase.createClient === 'function') {
         patchSupabaseFactory();
         return;
