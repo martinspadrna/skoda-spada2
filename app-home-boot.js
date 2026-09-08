@@ -1,119 +1,146 @@
-// RaK 1.2 (1.155) – home boot sekvence oddělená ze startovacích vazeb aplikace.
-function runRakHomeBootRefresh() {
-  const activePage = document.querySelector(".page.active")?.id || "";
-  if ((typeof app !== "undefined" && app.homeBootSuppressed && activePage !== "home") || window.__rotaceManualNavLocked || (window.__rotaceHomeBootLocked && activePage !== "home") || (window.__rotaceUserNavigated && activePage !== 'home')) {
-    return;
-  }
-  try {
-    if (typeof showPage === "function") showPage("home");
-    if (typeof scheduleHomeRefresh === "function") {
-      scheduleHomeRefresh();
-    } else if (typeof updateDashboard === "function") {
-      updateDashboard();
-    }
-    if (typeof updateFoodTile === "function") updateFoodTile();
-    if (typeof updateEportalTile === "function") updateEportalTile();
-  } catch (err) {
-    console.warn("Initial home boot failed", err);
+// RaK 1.5.17 – lehká Home boot sekvence bez kaskády plných překreslení.
+(function installRakLeanHomeBootModule() {
+  'use strict';
+
+  let lastBootRefreshAt = 0;
+  let recoveryTimer = 0;
+  let recoveryAttempt = 0;
+
+  function getActivePageId() {
+    try { return document.querySelector('.page.active')?.id || ''; }
+    catch (_) { return ''; }
   }
 
-  const runHomeRefresh = () => {
+  function homeNavigationBlocked(activePage) {
+    return !!(
+      window.__rotaceManualNavLocked
+      || (window.__rotaceHomeBootLocked && activePage !== 'home')
+      || (typeof app !== 'undefined' && app && app.homeBootSuppressed && activePage !== 'home')
+      || (window.__rotaceUserNavigated && activePage !== 'home')
+    );
+  }
+
+  function homeNeedsRecovery() {
     try {
-      if (typeof forceHomeRefresh === "function") {
+      if (typeof homeLooksUnpainted === 'function') return !!homeLooksUnpainted();
+    } catch (_) {}
+    const hero = document.getElementById('dashHero');
+    if (!hero) return true;
+    const text = String(hero.textContent || '').trim();
+    return !text || /Načítám směnu/i.test(text);
+  }
+
+  function paintHome(options) {
+    const opts = options || {};
+    const activePage = getActivePageId();
+    if (homeNavigationBlocked(activePage)) return false;
+
+    try {
+      if (activePage !== 'home' && typeof showPage === 'function') showPage('home');
+      if (opts.force && typeof forceHomeRefresh === 'function') {
         forceHomeRefresh();
-      } else if (typeof refreshHomeScreen === "function") {
+      } else if (typeof scheduleHomeRefresh === 'function') {
+        scheduleHomeRefresh();
+      } else if (typeof refreshHomeScreen === 'function') {
         refreshHomeScreen();
-      } else if (typeof updateDashboard === "function") {
+      } else if (typeof updateDashboard === 'function') {
         updateDashboard();
-        if (typeof updateFoodTile === "function") updateFoodTile();
-        if (typeof updateEportalTile === "function") updateEportalTile();
       }
+      if (typeof updateFoodTile === 'function') updateFoodTile();
+      if (typeof updateEportalTile === 'function') updateEportalTile();
+      return true;
     } catch (err) {
-      console.warn("Home refresh retry failed", err);
+      console.warn('Home paint failed', err);
+      return false;
     }
-  };
+  }
 
-  const keepPingingHome = () => {
-    let tries = 0;
-    const tick = () => {
-      // Obnova má sloužit jen pro výjimečný stav po startu. Původní varianta
-      // přestavěla Home jednou i tehdy, když už byla hotová, což bylo na
-      // slabším telefonu při spuštění zbytečně znatelné.
-      const needsRecovery = typeof homeLooksUnpainted === "function" ? homeLooksUnpainted() : false;
-      if (!needsRecovery) return;
-      tries += 1;
-      runHomeRefresh();
-      const stillBlank = typeof homeLooksUnpainted === "function" ? homeLooksUnpainted() : false;
-      if (stillBlank && tries < 18) {
-        setTimeout(tick, 120);
+  function clearRecoveryTimer() {
+    if (!recoveryTimer) return;
+    clearTimeout(recoveryTimer);
+    recoveryTimer = 0;
+  }
+
+  function scheduleRecoveryCheck(delay) {
+    clearRecoveryTimer();
+    recoveryTimer = setTimeout(() => {
+      recoveryTimer = 0;
+      const activePage = getActivePageId();
+      if (activePage !== 'home' || homeNavigationBlocked(activePage)) return;
+      if (!homeNeedsRecovery()) {
+        recoveryAttempt = 0;
+        return;
       }
-    };
-    tick();
-  };
 
-  // Láďův režim: keepPingingHome sám opakuje jen dokud je Home nevykreslená,
-  // takže pevná kaskáda dalších plných refreshů je na slabém telefonu zbytečná zátěž.
-  const ladaLite = !!(document.body && document.body.classList && document.body.classList.contains("ladaMode"));
-  if (ladaLite) {
-    // scheduleHomeRefresh už první paint zařadila do requestAnimationFrame.
-    // Zde necháváme jen opožděnou kontrolu prázdného renderu.
-    setTimeout(keepPingingHome, 140);
-    return;
+      recoveryAttempt += 1;
+      paintHome({ force: true, reason: 'blank-home-recovery' });
+      if (recoveryAttempt < 4 && homeNeedsRecovery()) {
+        const nextDelay = [160, 280, 520, 900][Math.min(recoveryAttempt, 3)];
+        scheduleRecoveryCheck(nextDelay);
+      } else {
+        recoveryAttempt = 0;
+      }
+    }, Math.max(40, Number(delay) || 140));
   }
 
-  if (typeof requestAnimationFrame === "function") {
-    requestAnimationFrame(runHomeRefresh);
-    requestAnimationFrame(() => requestAnimationFrame(runHomeRefresh));
-  }
-  setTimeout(runHomeRefresh, 80);
-  setTimeout(runHomeRefresh, 220);
-  setTimeout(runHomeRefresh, 520);
-  setTimeout(runHomeRefresh, 980);
-  setTimeout(keepPingingHome, 60);
-}
+  function runRakHomeBootRefresh() {
+    const activePage = getActivePageId();
+    if (homeNavigationBlocked(activePage)) return false;
 
-function runRakLateHomeBootRefresh() {
-  try {
-    const activePage = document.querySelector(".page.active")?.id || "";
-    if (window.__rotaceManualNavLocked || (window.__rotaceHomeBootLocked && activePage !== "home") || (typeof app !== "undefined" && app.homeBootSuppressed && activePage !== "home") || (window.__rotaceUserNavigated && activePage !== 'home')) {
+    const now = Date.now();
+    // DOMContentLoaded, load a pageshow mohou při startu přijít těsně po sobě.
+    // Jedno vykreslení stačí; další běží jen pokud Home zůstala prázdná.
+    if (now - lastBootRefreshAt < 120 && !homeNeedsRecovery()) return true;
+    lastBootRefreshAt = now;
+
+    paintHome({ force: false, reason: 'boot' });
+    recoveryAttempt = 0;
+    scheduleRecoveryCheck(170);
+    return true;
+  }
+
+  function runRakLateHomeBootRefresh() {
+    const activePage = getActivePageId();
+    if (activePage !== 'home' || homeNavigationBlocked(activePage)) return false;
+    if (!homeNeedsRecovery()) return true;
+    paintHome({ force: true, reason: 'late-recovery' });
+    scheduleRecoveryCheck(260);
+    return true;
+  }
+
+  function installRakHomeBootSequence() {
+    if (window.__rakHomeBootSequenceInstalled) {
+      if (homeNeedsRecovery()) runRakHomeBootRefresh();
       return;
     }
-    const ladaLite = !!(document.body && document.body.classList && document.body.classList.contains("ladaMode"));
-    // Pozdní refresh je fallback pro normální start. V Láďově režimu by
-    // zbytečně přestavěl již viditelnou Home podruhé a způsobil krátké škubnutí.
-    if (ladaLite && typeof homeLooksUnpainted === "function" && !homeLooksUnpainted()) {
-      return;
-    }
-    if (typeof showPage === "function") showPage("home");
-    if (typeof refreshHomeScreen === "function") refreshHomeScreen();
-    else if (typeof updateDashboard === "function") updateDashboard();
-    if (typeof updateFoodTile === "function") updateFoodTile();
-    if (typeof updateEportalTile === "function") updateEportalTile();
-  } catch (err) {
-    console.warn('Late home boot failed', err);
-  }
-}
+    window.__rakHomeBootSequenceInstalled = true;
 
-function installRakHomeBootSequence() {
-  if (window.__rakHomeBootSequenceInstalled) {
     runRakHomeBootRefresh();
-    return;
+
+    window.addEventListener('load', () => {
+      if (homeNeedsRecovery()) runRakLateHomeBootRefresh();
+    }, { once: true });
+
+    window.addEventListener('pageshow', (event) => {
+      // Při běžném prvním pageshow znovu nic nepřekreslujeme. Po návratu z BFCache
+      // nebo při skutečně prázdné Home obnovíme jen jeden render.
+      if ((event && event.persisted) || homeNeedsRecovery()) runRakHomeBootRefresh();
+    });
+
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible' && getActivePageId() === 'home' && homeNeedsRecovery()) {
+        runRakLateHomeBootRefresh();
+      }
+    });
   }
-  window.__rakHomeBootSequenceInstalled = true;
 
-  runRakHomeBootRefresh();
-  const ladaLiteBoot = !!(document.body && document.body.classList && document.body.classList.contains("ladaMode"));
-  if (!ladaLiteBoot) {
-    setTimeout(runRakHomeBootRefresh, 60);
-    setTimeout(runRakHomeBootRefresh, 240);
-  }
-  setTimeout(runRakLateHomeBootRefresh, 1100);
-  window.addEventListener("load", runRakHomeBootRefresh, { once: true });
-  window.addEventListener("pageshow", runRakHomeBootRefresh);
-}
+  window.runRakHomeBootRefresh = runRakHomeBootRefresh;
+  window.runRakLateHomeBootRefresh = runRakLateHomeBootRefresh;
+  window.installRakHomeBootSequence = installRakHomeBootSequence;
 
-window.runRakHomeBootRefresh = runRakHomeBootRefresh;
-window.runRakLateHomeBootRefresh = runRakLateHomeBootRefresh;
-window.installRakHomeBootSequence = installRakHomeBootSequence;
-
-try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleReady('app-home-boot.js', 'loaded', { source: 'dynamic-loader' }); } catch (err) {}
+  try {
+    if (typeof window.rakMarkModuleReady === 'function') {
+      window.rakMarkModuleReady('app-home-boot.js', 'loaded', { source: 'dynamic-loader', mode: 'lean-recovery' });
+    }
+  } catch (_) {}
+})();
