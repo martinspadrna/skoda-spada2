@@ -7,7 +7,7 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const indexPath = path.join(root, 'index.html');
 const pkg = JSON.parse(fs.readFileSync(path.join(root, 'package.json'), 'utf8'));
 const version = String(pkg.version || '').trim();
-const recoveryBuild = '1.5.17';
+const recoveryBuild = '1.5.18';
 if (!/^\d+\.\d+\.\d+$/.test(version)) throw new Error('[prepare-static-index] Neplatná package verze: ' + version);
 
 let html = fs.readFileSync(indexPath, 'utf8');
@@ -51,7 +51,7 @@ if (!/rak-no-games-runtime-v1516\.js(?:\?v=[^"'\s>]*)?/i.test(html)) {
   html = html.replace(/rak-no-games-runtime-v1516\.js\?v=[^"'\s>]+/gi, 'rak-no-games-runtime-v1516.js?v=' + version);
 }
 
-// iOS recovery 1.5.17: po regresi lazy Supabase vynutíme správné pořadí online bootstrapu.
+// iOS recovery 1.5.18: po regresi lazy Supabase vynutíme správné pořadí online bootstrapu.
 // Je záměrně samostatný a verzovaný novým recovery buildem, aby ho Safari nemohlo vzít
 // ze stejné 1.5.16 runtime cache jako rozbitou variantu.
 if (!/rak-online-recovery-v1517\.js(?:\?v=[^"'\s>]*)?/i.test(html)) {
