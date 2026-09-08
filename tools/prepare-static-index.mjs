@@ -7,6 +7,7 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const indexPath = path.join(root, 'index.html');
 const pkg = JSON.parse(fs.readFileSync(path.join(root, 'package.json'), 'utf8'));
 const version = String(pkg.version || '').trim();
+const recoveryBuild = '1.5.17';
 if (!/^\d+\.\d+\.\d+$/.test(version)) throw new Error('[prepare-static-index] Neplatná package verze: ' + version);
 
 let html = fs.readFileSync(indexPath, 'utf8');
@@ -50,6 +51,18 @@ if (!/rak-no-games-runtime-v1516\.js(?:\?v=[^"'\s>]*)?/i.test(html)) {
   html = html.replace(/rak-no-games-runtime-v1516\.js\?v=[^"'\s>]+/gi, 'rak-no-games-runtime-v1516.js?v=' + version);
 }
 
+// iOS recovery 1.5.17: po regresi lazy Supabase vynutíme správné pořadí online bootstrapu.
+// Je záměrně samostatný a verzovaný novým recovery buildem, aby ho Safari nemohlo vzít
+// ze stejné 1.5.16 runtime cache jako rozbitou variantu.
+if (!/rak-online-recovery-v1517\.js(?:\?v=[^"'\s>]*)?/i.test(html)) {
+  html = html.replace(
+    /(<script\b[^>]*src=["']rak-no-games-runtime-v1516\.js\?v=[^"']+["'][^>]*><\/script>)/i,
+    '$1\n<script src="rak-online-recovery-v1517.js?v=' + recoveryBuild + '"></script>'
+  );
+} else {
+  html = html.replace(/rak-online-recovery-v1517\.js\?v=[^"'\s>]+/gi, 'rak-online-recovery-v1517.js?v=' + recoveryBuild);
+}
+
 // XLSX a JSZip se načítají přes rak-external-deps.js až při importu/exportu.
 html = html.replace(/\s*<script\b[^>]*src=["'][^"']*xlsx@0\.18\.5\/dist\/xlsx\.full\.min\.js[^"']*["'][^>]*><\/script>\s*/gi, '\n');
 html = html.replace(/\s*<script\b[^>]*src=["'][^"']*jszip@3\.10\.1\/dist\/jszip\.min\.js[^"']*["'][^>]*><\/script>\s*/gi, '\n');
@@ -73,4 +86,4 @@ if (!html.endsWith('\n')) html += '\n';
 
 fs.writeFileSync(indexPath, html, 'utf8');
 const afterBytes = Buffer.byteLength(html, 'utf8');
-console.log('[prepare-static-index] OK version=' + version + ' index=' + beforeBytes + '→' + afterBytes + ' B removed=' + (beforeBytes - afterBytes) + ' B');
+console.log('[prepare-static-index] OK version=' + version + ' recovery=' + recoveryBuild + ' index=' + beforeBytes + '→' + afterBytes + ' B removed=' + (beforeBytes - afterBytes) + ' B');
