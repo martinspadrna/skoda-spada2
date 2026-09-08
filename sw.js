@@ -174,7 +174,16 @@ self.addEventListener('fetch', event => {
   }
 
   if (STATIC_EXT.test(url.pathname)) {
-    // Dynamické moduly app.js mají build query ?v=...; ty můžeme po prvním načtení
+    // app.js je boot loader celé aplikace. Historický index stále používá starší
+    // query parametr, takže ho nikdy nevracíme stylem stale-while-revalidate;
+    // při každém startu nejdřív ověříme čerstvou verzi na síti a teprve offline
+    // použijeme cache. Tím odpadá jednorázové spuštění starého loaderu po update.
+    if (/\/app\.js$/i.test(url.pathname)) {
+      event.respondWith(networkFirst(request, (async () => (await exactCached(request)) || Response.error())()));
+      return;
+    }
+
+    // Ostatní dynamické moduly app.js mají build query ?v=...; ty můžeme po prvním načtení
     // vracet okamžitě z přesné cache a čerstvost ověřit na pozadí.
     if (url.searchParams.has('v')) {
       event.respondWith(staleWhileRevalidateVersioned(request, event));
