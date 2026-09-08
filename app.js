@@ -29,8 +29,8 @@ try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleR
 })();
 
 (async () => {
-  const RAK_MODULE_CACHE_VERSION = "1.5.15";
-  const RAK_DEV_UPDATE_BUILD = "v1.5.15";
+  const RAK_MODULE_CACHE_VERSION = "1.5.21";
+  const RAK_DEV_UPDATE_BUILD = "v1.5.21";
   window.RAK_PWA_BUILD = RAK_DEV_UPDATE_BUILD;
 
   const criticalFiles = [
@@ -50,7 +50,7 @@ try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleR
     "app-pwa-connectivity.js",
     "core.js",
     "lifecycle.js",
-    "qr-runtime.generated.js",
+    "qr.js",
     "payroll.js",
     "brusy.js",
     "stats.js",
