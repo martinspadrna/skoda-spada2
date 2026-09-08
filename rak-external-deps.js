@@ -1,8 +1,13 @@
-// RaK v1.5.16 – těžké exportní knihovny se načtou až při skutečném použití.
+// RaK v1.5.16 – externí knihovny se načtou až ve chvíli, kdy je aplikace skutečně potřebuje.
 (function installRakExternalDependencyLoader() {
   'use strict';
 
   const DEPENDENCIES = Object.freeze({
+    supabase: Object.freeze({
+      global: 'supabase',
+      src: 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.110.7/dist/umd/supabase.js',
+      integrity: 'sha384-hazsLVND17GNLVdtV19te6qbFT2YuLgl8SamcF+QR5eIOC+W4dGKrUNMxU1jH1zD'
+    }),
     xlsx: Object.freeze({
       global: 'XLSX',
       src: 'https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js',
@@ -87,14 +92,14 @@
   }
 
   function showError(error) {
-    const message = error && error.message ? error.message : 'Exportní knihovnu se nepodařilo načíst.';
+    const message = error && error.message ? error.message : 'Externí knihovnu se nepodařilo načíst.';
     try {
       if (typeof window.showToast === 'function') window.showToast(message);
       else alert(message);
     } catch (_) {}
   }
 
-  // U klikacích akcí knihovnu načteme v capture fázi a původní klik zopakujeme až poté.
+  // U klikacích exportních akcí knihovnu načteme v capture fázi a původní klik zopakujeme až poté.
   document.addEventListener('click', (event) => {
     const target = event.target && event.target.closest ? event.target.closest('button,a,[data-action],[data-menu-action],[data-admin-action]') : null;
     if (!target || replayGuard.has(target)) return;
@@ -119,8 +124,8 @@
     event.stopImmediatePropagation();
     void ensure('xlsx').then(() => {
       input.dataset.rakXlsxReplay = '1';
-      try { input.dispatchEvent(new Event('change', { bubbles:true })); }
-      finally { delete input.dataset.rakXlsxReplay; }
+      try { input.dispatchEvent(new Event('change', { bubbles:true }));
+      } finally { delete input.dataset.rakXlsxReplay; }
     }).catch(showError);
   }, true);
 
@@ -128,6 +133,7 @@
   window.ensureRakExternalDependencies = ensureMany;
   window.getRakExternalDependencyStatus = function () {
     return {
+      supabase: ready('supabase') ? 'ready' : (pending.has('supabase') ? 'loading' : 'idle'),
       xlsx: ready('xlsx') ? 'ready' : (pending.has('xlsx') ? 'loading' : 'idle'),
       jszip: ready('jszip') ? 'ready' : (pending.has('jszip') ? 'loading' : 'idle')
     };
