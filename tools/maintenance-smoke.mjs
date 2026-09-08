@@ -20,6 +20,10 @@ const migration = read('supabase/migrations/20260907191622_rak_v1516_security_pe
 // Boot / cleanup
 assert(app.includes('window.ensureRakAdminModulesLoaded'), 'chybí lazy admin loader');
 assert(app.includes('"admin-rotation.js"') && app.includes('"admin-daymods.js"'), 'chybí lazy admin soubory');
+assert(app.includes('window.ensureRakMenuModulesLoaded'), 'chybí lazy loader menu Více');
+assert(app.includes('const eagerDeferredFiles = deferredFiles.filter'), 'menu se neodfiltruje z běžného startu');
+assert(app.includes('"app-menu.js"') && app.includes('"rak-admin-menu-fix.js"'), 'lazy menu nemá kompletní soubory');
+assert(app.includes('await Promise.all(eagerDeferredFiles.map(loadScript))'), 'start stále stahuje celý deferred balík');
 assert(app.includes('"rak-external-deps.js"'), 'chybí runtime loader externích knihoven');
 assert(!app.includes('rak-dev-fixes-v1512.js'), 'stále se načítá starý provozní patch');
 assert(!app.includes('rak-menu-report-order-v1513.js'), 'stále se načítá starý menu patch');
