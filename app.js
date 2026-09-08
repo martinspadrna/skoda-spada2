@@ -34,7 +34,7 @@ try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleR
   ];
 
   // Seznam zůstává kompletní i kvůli browser-smoke inventáři. V běžném runtime se
-  // těžké menu soubory odfiltrují níže a stáhnou až při prvním otevření „Více“.
+  // těžké menu/admin soubory odfiltrují níže a stáhnou až při skutečném použití.
   const deferredFiles = [
     "rak-external-deps.js",
     "app-runtime-guards.js",
@@ -89,14 +89,18 @@ try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleR
     "rak-admin-menu-fix.js"
   ];
 
-  // Nejtěžší editor rozpisů a správa speciálních dnů se stáhnou až při otevření Administrace.
-  // Home / Rotace / Kalkulačky tak při běžném startu nestahují zhruba 400 kB JS navíc.
+  // Admin editory a reportové moduly běžný uživatel při startu nepotřebuje.
+  // Stáhnou se až po kliknutí na Administraci; funkční data pro Home/Rotace zůstávají v core modulech.
   const lazyAdminFiles = [
     "admin-rotation.js",
-    "admin-daymods.js"
+    "admin-daymods.js",
+    "admin-machine-tasks.js",
+    "admin-food.js",
+    "admin-reports.js",
+    "admin-service-usage.js"
   ];
 
-  const eagerDeferredFiles = deferredFiles.filter((file) => !lazyMenuFiles.includes(file));
+  const eagerDeferredFiles = deferredFiles.filter((file) => !lazyMenuFiles.includes(file) && !lazyAdminFiles.includes(file));
   const bootFiles = criticalFiles.concat(eagerDeferredFiles);
 
   try {
@@ -207,7 +211,7 @@ try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleR
   }
 
   // Síťově nezdržuj start sekvenčním stahováním desítek nezávislých modulů.
-  // Těžký app-menu.js se z této dávky vynechá a stáhne až na první otevření Více.
+  // Těžké menu a admin editory se z této dávky vynechají a stáhnou až při použití.
   await Promise.all(eagerDeferredFiles.map(loadScript));
 
   // core.js vytváří runtime `app` až v odložené fázi. Profil načtený na loginu proto
