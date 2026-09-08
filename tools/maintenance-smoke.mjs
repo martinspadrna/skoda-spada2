@@ -58,7 +58,8 @@ assert(noGamesRuntime.includes('loadGameAccountUiSettings = noRemoteUiLoad'), 's
 assert(noGamesRuntime.includes('REMOVED_GAME_REALTIME_TABLES'), 'chybí seznam odstraněných realtime tabulek');
 assert(noGamesRuntime.includes("'game_accounts'") && noGamesRuntime.includes("'game_sessions'") && noGamesRuntime.includes("'gomoku_wins'"), 'realtime filtr nemá kompletní herní tabulky');
 assert(noGamesRuntime.includes("String(type || '') === 'postgres_changes'"), 'realtime filtr nehlídá postgres_changes');
-assert(noGamesRuntime.includes("ensureRakExternalDependency('supabase')"), 'Supabase klient není navázaný na lazy online start');
+assert(noGamesRuntime.includes('ensureSupabaseDependency') && noGamesRuntime.includes("ensure('supabase')"), 'Supabase klient není navázaný na lazy online start');
+assert(noGamesRuntime.includes("closest('#rakUserLoginSubmit')"), 'rychlé úvodní přihlášení nemá lazy Supabase guard');
 
 // Home boot nesmí znovu zavést několik plných překreslení po startu.
 assert(homeBoot.includes('function homeNeedsRecovery()'), 'Home boot nemá kontrolu skutečně prázdného renderu');
