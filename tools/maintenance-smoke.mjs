@@ -21,7 +21,7 @@ const migration = read('supabase/migrations/20260907191622_rak_v1516_security_pe
 assert(app.includes('window.ensureRakAdminModulesLoaded'), 'chybí lazy admin loader');
 assert(app.includes('"admin-rotation.js"') && app.includes('"admin-daymods.js"'), 'chybí lazy admin editory');
 assert(app.includes('"admin-machine-tasks.js"') && app.includes('"admin-food.js"') && app.includes('"admin-reports.js"') && app.includes('"admin-service-usage.js"'), 'admin-only moduly nejsou v lazy balíku');
-assert(app.includes('!lazyMenuFiles.includes(file) && !lazyAdminFiles.includes(file) && !lazyQrFiles.includes(file) && !idleAuditFiles.includes(file)'), 'běžný start neodfiltruje menu, admin, QR a audity');
+assert(app.includes('!lazyMenuFiles.includes(file) && !lazyAdminFiles.includes(file) && !lazyQrFiles.includes(file) && !idleAuditFiles.includes(file) && !lazySupabaseFiles.includes(file)'), 'běžný start neodfiltruje menu, admin, QR, audity a Supabase bridge');
 assert(app.includes('window.ensureRakMenuModulesLoaded'), 'chybí lazy loader menu Více');
 assert(app.includes('window.ensureRakQrModuleLoaded'), 'chybí lazy loader QR dat');
 assert(app.includes('const lazyQrFiles = ["qr.js"]'), 'QR payload není v lazy balíku');
@@ -29,6 +29,11 @@ assert(app.includes('window.showPersonQrModal = lazyShowPersonQrModal'), 'QR nem
 assert(app.includes('const idleAuditFiles = ["app-health-audits.js", "app-postload-audits.js"]'), 'health audity nejsou v idle balíku');
 assert(app.includes('window.ensureRakIdleAuditsLoaded'), 'chybí loader idle auditů');
 assert(app.includes("requestIdleCallback(run, { timeout: 2500 })"), 'audity se nespouštějí v idle čase');
+assert(app.includes('const lazySupabaseFiles = ["supabase-bridge.js"]'), 'Supabase bridge není v after-paint balíku');
+assert(app.includes('window.ensureRakSupabaseBridgeLoaded'), 'chybí lazy loader Supabase bridge');
+assert(app.includes('window.ensureRakSupabaseOnlineStarted'), 'chybí start online vrstvy po načtení bridge');
+assert(app.includes('scheduleSupabaseOnlineStart();'), 'Supabase online vrstva se po prvním paintu nespouští');
+assert(app.includes('await window.ensureRakSupabaseOnlineStarted();'), 'rychlý vstup do adminu nečeká na online vrstvu');
 assert(app.includes('const eagerDeferredFiles = deferredFiles.filter'), 'moduly se neodfiltrují z běžného startu');
 assert(app.includes('"app-menu.js"') && app.includes('"rak-admin-menu-fix.js"'), 'lazy menu nemá kompletní soubory');
 assert(app.includes('await Promise.all(eagerDeferredFiles.map(loadScript))'), 'start stále stahuje celý deferred balík');
