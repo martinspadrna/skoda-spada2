@@ -5,9 +5,9 @@ import { fileURLToPath } from 'node:url';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const appSource = fs.readFileSync(path.join(root, 'app.js'), 'utf8');
-// Po odložení Supabase bridge je běžný first-paint balík kolem 1 MB.
+// Po odložení Supabase bridge a těžkých kalkulaček má být first-paint balík pod 1 MB.
 // Rezerva zůstává malá, aby se těžký modul nevrátil do startu bez vědomého rozhodnutí.
-const MAX_EAGER_JS_BYTES = 1_180_000;
+const MAX_EAGER_JS_BYTES = 1_050_000;
 
 function parseArray(name) {
   const match = appSource.match(new RegExp('const\\s+' + name + '\\s*=\\s*\\[([\\s\\S]*?)\\];'));
@@ -38,13 +38,15 @@ const critical = parseArray('criticalFiles');
 const deferred = parseArray('deferredFiles');
 const lazyMenu = parseArray('lazyMenuFiles');
 const lazyAdmin = parseArray('lazyAdminFiles');
+const lazyCalculators = parseArray('lazyCalculatorFiles');
 const lazyQr = parseArray('lazyQrFiles');
 const idleAudits = parseArray('idleAuditFiles');
 const lazySupabase = parseArray('lazySupabaseFiles');
-const lazy = new Set([...lazyMenu, ...lazyAdmin, ...lazyQr, ...idleAudits, ...lazySupabase]);
+const lazy = new Set([...lazyMenu, ...lazyAdmin, ...lazyCalculators, ...lazyQr, ...idleAudits, ...lazySupabase]);
 const eager = unique([...critical, ...deferred.filter((file) => !lazy.has(file))]);
 const eagerBytes = bytesFor(eager);
 const lazyBytes = bytesFor(unique([...lazyMenu, ...lazyAdmin, ...lazyQr]));
+const calculatorBytes = bytesFor(unique(lazyCalculators));
 const idleBytes = bytesFor(unique(idleAudits));
 const onlineBytes = bytesFor(unique(lazySupabase));
 const heaviest = eager
@@ -65,6 +67,10 @@ for (const file of lazyMenu) {
 for (const file of lazyAdmin) {
   if (deferred.includes(file) && eager.includes(file)) throw new Error('[startup-budget] admin-only soubor ' + file + ' se omylem vrátil do běžného startu');
 }
+for (const file of lazyCalculators) {
+  if (!deferred.includes(file)) throw new Error('[startup-budget] kalkulačkový modul ' + file + ' musí zůstat v deferred inventáři');
+  if (eager.includes(file)) throw new Error('[startup-budget] kalkulačkový modul ' + file + ' se omylem vrátil do běžného startu');
+}
 for (const file of lazyQr) {
   if (!deferred.includes(file)) throw new Error('[startup-budget] QR soubor ' + file + ' musí zůstat v deferred inventáři pro smoke testy');
   if (eager.includes(file)) throw new Error('[startup-budget] QR payload ' + file + ' se omylem vrátil do běžného startu');
@@ -78,5 +84,5 @@ for (const file of lazySupabase) {
   if (eager.includes(file)) throw new Error('[startup-budget] Supabase bridge ' + file + ' se omylem vrátil před first paint');
 }
 
-console.log('[startup-budget] OK eager=' + formatBytes(eagerBytes) + ' / limit=' + formatBytes(MAX_EAGER_JS_BYTES) + ' lazy=' + formatBytes(lazyBytes) + ' online-after-paint=' + formatBytes(onlineBytes) + ' idle=' + formatBytes(idleBytes) + ' eagerFiles=' + eager.length);
+console.log('[startup-budget] OK eager=' + formatBytes(eagerBytes) + ' / limit=' + formatBytes(MAX_EAGER_JS_BYTES) + ' lazy=' + formatBytes(lazyBytes) + ' calculators=' + formatBytes(calculatorBytes) + ' online-after-paint=' + formatBytes(onlineBytes) + ' idle=' + formatBytes(idleBytes) + ' eagerFiles=' + eager.length);
 console.log('[startup-budget] heaviest ' + heaviest);
