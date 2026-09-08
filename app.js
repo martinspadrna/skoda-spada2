@@ -34,7 +34,7 @@ try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleR
   ];
 
   // Seznam zůstává kompletní i kvůli browser-smoke inventáři. V běžném runtime se
-  // těžké menu/admin/QR/audit/online soubory odfiltrují níže a stáhnou až při skutečné potřebě.
+  // těžké menu/admin/QR/audit/online/kalkulačkové soubory odfiltrují níže a stáhnou až při skutečné potřebě.
   const deferredFiles = [
     "rak-external-deps.js",
     "app-runtime-guards.js",
@@ -90,8 +90,11 @@ try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleR
   ];
 
   // Admin editory a reportové moduly běžný uživatel při startu nepotřebuje.
-  // Stáhnou se až po kliknutí na Administraci; funkční data pro Home/Rotace zůstávají v core modulech.
+  // Brusy/FHB základ se sem přidává i jako závislost admin kalibrace; loadScript ho deduplikuje,
+  // pokud byl mezitím načten z kalkulačky.
   const lazyAdminFiles = [
+    "brusy-fhb-correction.js",
+    "brusy-fhb-v157.js",
     "admin-rotation.js",
     "admin-daymods.js",
     "admin-machine-tasks.js",
@@ -99,6 +102,20 @@ try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleR
     "admin-reports.js",
     "admin-service-usage.js"
   ];
+
+  // Výpočetní moduly jsou potřeba až po otevření konkrétní kalkulačky. HTML panel zůstává
+  // okamžitě dostupný, ale logiku Soustruhů / Brusů / Brusy FHB netaháme na Home.
+  const lazyCalculatorFiles = [
+    "soustruhy.js",
+    "brusy.js",
+    "brusy-fhb-correction.js",
+    "brusy-fhb-v157.js"
+  ];
+  const lazyCalculatorGroups = Object.freeze({
+    "page-soustruhy": ["soustruhy.js"],
+    "page-brusy": ["brusy.js"],
+    "page-korekce-brusy": ["brusy-fhb-correction.js", "brusy-fhb-v157.js"]
+  });
 
   // qr.js je z velké části sada vložených SVG kódů. Načte se až při prvním
   // dvojkliku/otevření QR konkrétního člověka, ne při každém startu aplikace.
@@ -113,7 +130,7 @@ try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleR
   // realtime, machine settings i admin pak běží stejně, jen už neblokují první obrazovku.
   const lazySupabaseFiles = ["supabase-bridge.js"];
 
-  const eagerDeferredFiles = deferredFiles.filter((file) => !lazyMenuFiles.includes(file) && !lazyAdminFiles.includes(file) && !lazyQrFiles.includes(file) && !idleAuditFiles.includes(file) && !lazySupabaseFiles.includes(file));
+  const eagerDeferredFiles = deferredFiles.filter((file) => !lazyMenuFiles.includes(file) && !lazyAdminFiles.includes(file) && !lazyCalculatorFiles.includes(file) && !lazyQrFiles.includes(file) && !idleAuditFiles.includes(file) && !lazySupabaseFiles.includes(file));
   const bootFiles = criticalFiles.concat(eagerDeferredFiles);
 
   try {
@@ -255,6 +272,57 @@ try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleR
   };
   window.RAK_LAZY_ADMIN_FILES = lazyAdminFiles.slice();
 
+  const calculatorReplayGuard = new WeakSet();
+  const calculatorLoadPromises = new Map();
+  window.ensureRakCalculatorModulesLoaded = function ensureRakCalculatorModulesLoaded(action) {
+    const key = String(action || '').trim();
+    const files = lazyCalculatorGroups[key] || [];
+    if (!files.length) return Promise.resolve(true);
+    if (calculatorLoadPromises.has(key)) return calculatorLoadPromises.get(key);
+    const promise = (async () => {
+      for (const file of files) await loadScript(file);
+      try {
+        if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleReady('lazy-calculator-' + key, 'ready', { source: 'calculator-open' });
+      } catch (err) {}
+      return true;
+    })().catch((err) => {
+      calculatorLoadPromises.delete(key);
+      throw err;
+    });
+    calculatorLoadPromises.set(key, promise);
+    return promise;
+  };
+  window.RAK_LAZY_CALCULATOR_FILES = lazyCalculatorFiles.slice();
+
+  const installLazyCalculatorGuard = () => {
+    document.addEventListener('click', (event) => {
+      const target = event.target && event.target.closest ? event.target.closest('[data-action]') : null;
+      if (!target || calculatorReplayGuard.has(target)) return;
+      const action = String(target.getAttribute('data-action') || '').trim();
+      if (!lazyCalculatorGroups[action]) return;
+      const files = lazyCalculatorGroups[action];
+      const allLoaded = files.every((file) => scriptPromises.has(file));
+      if (allLoaded) return;
+
+      event.preventDefault();
+      event.stopPropagation();
+      event.stopImmediatePropagation();
+      const wasDisabled = !!target.disabled;
+      target.disabled = true;
+      void window.ensureRakCalculatorModulesLoaded(action).then(() => {
+        calculatorReplayGuard.add(target);
+        try { target.click(); }
+        finally { setTimeout(() => calculatorReplayGuard.delete(target), 0); }
+      }).catch((err) => {
+        console.error('RaK calculator lazy load failed', action, err);
+        try {
+          if (typeof window.showToast === 'function') window.showToast('Kalkulačku se nepodařilo načíst. Zkus to znovu.');
+          else if (typeof alert === 'function') alert('Kalkulačku se nepodařilo načíst. Zkus to znovu.');
+        } catch (_) {}
+      }).finally(() => { target.disabled = wasDisabled; });
+    }, true);
+  };
+
   let lazyQrPromise = null;
   window.ensureRakQrModuleLoaded = function ensureRakQrModuleLoaded() {
     if (lazyQrPromise) return lazyQrPromise;
@@ -325,7 +393,7 @@ try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleR
   }
 
   // Síťově nezdržuj start sekvenčním stahováním desítek nezávislých modulů.
-  // Těžké menu, admin editory, QR data, Supabase bridge a diagnostické audity se z této dávky vynechají.
+  // Těžké menu, admin editory, kalkulačky, QR data, Supabase bridge a diagnostické audity se z této dávky vynechají.
   await Promise.all(eagerDeferredFiles.map(loadScript));
 
   // core.js vytváří runtime `app` až v odložené fázi. Profil načtený na loginu proto
@@ -356,6 +424,7 @@ try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleR
   if (typeof installBottomNavBindings === 'function') installBottomNavBindings();
   try { if (typeof applyBottomNavMoreHardFix === 'function') applyBottomNavMoreHardFix(); } catch (err) { console.warn('Bottom nav Více hard-fix failed', err); }
   try { if (typeof applyRakFixedBottomNavMetrics === 'function') applyRakFixedBottomNavMetrics(); } catch (err) { console.warn('Bottom nav fixed metrics failed', err); }
+  installLazyCalculatorGuard();
   if (typeof installDelegatedAppActions === 'function') installDelegatedAppActions();
   scheduleSupabaseOnlineStart();
   scheduleIdleAudits();
