@@ -34,7 +34,7 @@ try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleR
   ];
 
   // Seznam zůstává kompletní i kvůli browser-smoke inventáři. V běžném runtime se
-  // těžké menu/admin/QR/audit soubory odfiltrují níže a stáhnou až při skutečné potřebě.
+  // těžké menu/admin/QR/audit/online soubory odfiltrují níže a stáhnou až při skutečné potřebě.
   const deferredFiles = [
     "rak-external-deps.js",
     "app-runtime-guards.js",
@@ -108,7 +108,12 @@ try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleR
   // po startu v idle čase a poté se spustí stejně jako dřív.
   const idleAuditFiles = ["app-health-audits.js", "app-postload-audits.js"];
 
-  const eagerDeferredFiles = deferredFiles.filter((file) => !lazyMenuFiles.includes(file) && !lazyAdminFiles.includes(file) && !lazyQrFiles.includes(file) && !idleAuditFiles.includes(file));
+  // Supabase bridge je největší běžně načítaný JS modul. Home se nejdřív vykreslí
+  // z lokálních dat a bridge se připojí těsně po prvním paintu. Online Rotace,
+  // realtime, machine settings i admin pak běží stejně, jen už neblokují první obrazovku.
+  const lazySupabaseFiles = ["supabase-bridge.js"];
+
+  const eagerDeferredFiles = deferredFiles.filter((file) => !lazyMenuFiles.includes(file) && !lazyAdminFiles.includes(file) && !lazyQrFiles.includes(file) && !idleAuditFiles.includes(file) && !lazySupabaseFiles.includes(file));
   const bootFiles = criticalFiles.concat(eagerDeferredFiles);
 
   try {
@@ -185,10 +190,58 @@ try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleR
   };
   window.RAK_LAZY_MENU_FILES = lazyMenuFiles.slice();
 
+  let lazySupabasePromise = null;
+  let supabaseOnlineStartPromise = null;
+  window.ensureRakSupabaseBridgeLoaded = function ensureRakSupabaseBridgeLoaded() {
+    if (window.RotationSupabaseBridge) return Promise.resolve(window.RotationSupabaseBridge);
+    if (lazySupabasePromise) return lazySupabasePromise;
+    lazySupabasePromise = (async () => {
+      for (const file of lazySupabaseFiles) await loadScript(file);
+      const bridge = window.RotationSupabaseBridge;
+      if (!bridge) throw new Error('Supabase bridge se načetl bez RotationSupabaseBridge.');
+      try {
+        if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleReady('lazy-supabase-bridge', 'ready', { source: 'after-first-paint' });
+      } catch (err) {}
+      return bridge;
+    })().catch((err) => {
+      lazySupabasePromise = null;
+      throw err;
+    });
+    return lazySupabasePromise;
+  };
+  window.ensureRakSupabaseOnlineStarted = function ensureRakSupabaseOnlineStarted() {
+    if (supabaseOnlineStartPromise) return supabaseOnlineStartPromise;
+    supabaseOnlineStartPromise = window.ensureRakSupabaseBridgeLoaded().then(async (bridge) => {
+      if (bridge && typeof bridge.init === 'function') await bridge.init();
+      if (typeof window.syncRotationFromSupabase === 'function') await window.syncRotationFromSupabase(false);
+      try { if (typeof window.forceHomeRefresh === 'function') window.forceHomeRefresh(); } catch (err) {}
+      return bridge;
+    }).catch((err) => {
+      supabaseOnlineStartPromise = null;
+      throw err;
+    });
+    return supabaseOnlineStartPromise;
+  };
+  window.RAK_LAZY_SUPABASE_FILES = lazySupabaseFiles.slice();
+
+  const scheduleSupabaseOnlineStart = () => {
+    const run = () => {
+      void window.ensureRakSupabaseOnlineStarted().catch((err) => console.warn('Deferred Supabase bridge start failed', err));
+    };
+    if (typeof requestAnimationFrame === 'function') {
+      requestAnimationFrame(() => setTimeout(run, 0));
+    } else {
+      setTimeout(run, 120);
+    }
+  };
+
   let lazyAdminPromise = null;
   window.ensureRakAdminModulesLoaded = function ensureRakAdminModulesLoaded() {
     if (lazyAdminPromise) return lazyAdminPromise;
     lazyAdminPromise = (async () => {
+      // Admin ověřuje oprávnění přes Supabase, takže při velmi rychlém tapnutí
+      // nemusí čekat na automatický after-paint start bridge.
+      await window.ensureRakSupabaseOnlineStarted();
       for (const file of lazyAdminFiles) await loadScript(file);
       try {
         if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleReady('lazy-admin-modules', 'ready', { source: 'admin-open' });
@@ -272,7 +325,7 @@ try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleR
   }
 
   // Síťově nezdržuj start sekvenčním stahováním desítek nezávislých modulů.
-  // Těžké menu, admin editory, QR data a diagnostické audity se z této dávky vynechají.
+  // Těžké menu, admin editory, QR data, Supabase bridge a diagnostické audity se z této dávky vynechají.
   await Promise.all(eagerDeferredFiles.map(loadScript));
 
   // core.js vytváří runtime `app` až v odložené fázi. Profil načtený na loginu proto
@@ -304,6 +357,7 @@ try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleR
   try { if (typeof applyBottomNavMoreHardFix === 'function') applyBottomNavMoreHardFix(); } catch (err) { console.warn('Bottom nav Více hard-fix failed', err); }
   try { if (typeof applyRakFixedBottomNavMetrics === 'function') applyRakFixedBottomNavMetrics(); } catch (err) { console.warn('Bottom nav fixed metrics failed', err); }
   if (typeof installDelegatedAppActions === 'function') installDelegatedAppActions();
+  scheduleSupabaseOnlineStart();
   scheduleIdleAudits();
 
   try {
