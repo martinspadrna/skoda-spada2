@@ -54,6 +54,10 @@ if (!/rak-no-games-runtime-v1516\.js(?:\?v=[^"'\s>]*)?/i.test(html)) {
 html = html.replace(/\s*<script\b[^>]*src=["'][^"']*xlsx@0\.18\.5\/dist\/xlsx\.full\.min\.js[^"']*["'][^>]*><\/script>\s*/gi, '\n');
 html = html.replace(/\s*<script\b[^>]*src=["'][^"']*jszip@3\.10\.1\/dist\/jszip\.min\.js[^"']*["'][^>]*><\/script>\s*/gi, '\n');
 
+// Podpis používá bezpečný systémový cursive fallback; kvůli jedinému dekorativnímu fontu
+// neposíláme IP/UA při startu aplikace na Google Fonts.
+html = html.replace(/\s*<link\b[^>]*href=["']https:\/\/fonts\.googleapis\.com\/[^"']+["'][^>]*>\s*/gi, '\n');
+
 // Hry už nejsou součást RaK. Odstraňujeme je ještě před odesláním HTML do prohlížeče,
 // ne až následným JS cleanupem po prvním paintu.
 html = removeDivById(html, 'games');
