@@ -19,7 +19,9 @@ const migration = read('supabase/migrations/20260907191622_rak_v1516_security_pe
 
 // Boot / cleanup
 assert(app.includes('window.ensureRakAdminModulesLoaded'), 'chybí lazy admin loader');
-assert(app.includes('"admin-rotation.js"') && app.includes('"admin-daymods.js"'), 'chybí lazy admin soubory');
+assert(app.includes('"admin-rotation.js"') && app.includes('"admin-daymods.js"'), 'chybí lazy admin editory');
+assert(app.includes('"admin-machine-tasks.js"') && app.includes('"admin-food.js"') && app.includes('"admin-reports.js"') && app.includes('"admin-service-usage.js"'), 'admin-only moduly nejsou v lazy balíku');
+assert(app.includes('!lazyMenuFiles.includes(file) && !lazyAdminFiles.includes(file)'), 'běžný start neodfiltruje menu i admin moduly');
 assert(app.includes('window.ensureRakMenuModulesLoaded'), 'chybí lazy loader menu Více');
 assert(app.includes('const eagerDeferredFiles = deferredFiles.filter'), 'menu se neodfiltruje z běžného startu');
 assert(app.includes('"app-menu.js"') && app.includes('"rak-admin-menu-fix.js"'), 'lazy menu nemá kompletní soubory');
