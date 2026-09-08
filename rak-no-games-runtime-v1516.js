@@ -90,11 +90,22 @@
     }
   }
 
+  function ensureSupabaseDependency() {
+    if (window.supabase && typeof window.supabase.createClient === 'function') return Promise.resolve(window.supabase);
+    if (typeof window.ensureRakExternalDependency !== 'function') return Promise.resolve(null);
+    return Promise.resolve(window.ensureRakExternalDependency('supabase')).catch(() => null);
+  }
+
   function wrapBridgeLoader() {
     const original = window.ensureRakSupabaseBridgeLoaded;
     if (typeof original !== 'function' || original.__rakGamesRemovedWrapped) return false;
     const wrapped = function () {
-      return Promise.resolve(original.apply(this, arguments)).then((bridge) => {
+      const context = this;
+      const args = arguments;
+      return ensureSupabaseDependency().then(() => {
+        patchSupabaseFactory();
+        return original.apply(context, args);
+      }).then((bridge) => {
         patchBridge(bridge);
         return bridge;
       });
