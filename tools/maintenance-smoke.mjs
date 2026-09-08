@@ -84,6 +84,7 @@ assert(!/CORE\s*=\s*\[[\s\S]*rak-login-crab/.test(sw), 'login obrázky jsou stá
 assert(sw.includes('cacheFirstImage'), 'obrázky nemají cache-first');
 assert(sw.includes('staleWhileRevalidateVersioned'), 'verzované moduly nemají SWR');
 assert(sw.includes("url.pathname.startsWith('/api/')"), 'API není vyřazené z PWA cache');
+assert(sw.includes("/\\/app\\.js$/i.test(url.pathname)"), 'app.js se po update neověřuje network-first');
 
 // DB hardening source-of-truth
 assert(migration.includes("revoke execute on function %s from anon"), 'admin RPC nemají anon hardening');
