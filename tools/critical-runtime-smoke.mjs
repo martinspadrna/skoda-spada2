@@ -49,6 +49,17 @@ assert(!deferred.includes('app-health-audits.js'), 'Health audity nemají blokov
 assert(!deferred.includes('app-postload-audits.js'), 'Post-load audity nemají blokovat první interaktivní boot');
 assert(idleAudits.includes('app-health-audits.js'), 'Health audity musí zůstat dostupné v idle fázi');
 assert(idleAudits.includes('app-postload-audits.js'), 'Post-load audit orchestrátor musí zůstat dostupný v idle fázi');
+const idleReleaseDiagnostics = [
+  'rak-export-release-audit.js',
+  'rak-release-ops-audit.js',
+  'rak-due-diligence-progress.js',
+  'rak-performance-ci-audit.js',
+  'rak-mobile-smoke-audit.js'
+];
+for (const file of idleReleaseDiagnostics) {
+  assert(idleAudits.includes(file), file + ' má být dostupný až v idle diagnostické fázi');
+  assert(deferHeavyLibs.includes(file), 'Build transform neodkládá startup diagnostiku ' + file);
+}
 assert(appJs.includes('requestIdleCallback(runIdleAudits'), 'Idle audity musí být plánované až po bootu');
 assert(!appJs.includes('runRakPostLoadAudits()'), 'Legacy post-load audit se po odstranění Her nesmí automaticky spouštět');
 assert(appJs.includes('await Promise.all(deferredFiles.map(loadScript))'), 'Boot musí před navázáním UI počkat na deferred moduly');
@@ -94,6 +105,7 @@ assert(vercelBuild.includes('tools/defer-heavy-libs.mjs'), 'Vercel build neodkl�
 assert(deferHeavyLibs.includes('xlsx@0\\.18\\.5'), 'Build transform nehlídá přesně XLSX 0.18.5');
 assert(deferHeavyLibs.includes('jszip@3\\.10\\.1'), 'Build transform nehlídá přesně JSZip 3.10.1');
 assert(deferHeavyLibs.includes('@supabase\\/supabase-js@2\\.110\\.7'), 'Build transform nemá pojistku proti odstranění Supabase');
+assert(deferHeavyLibs.includes('rak-dom-security-hardening\\.js'), 'Build transform nemá pojistku pro DOM security hardening');
 assert(lazyExternalLibs.includes("window.rakEnsureExternalLibrary = ensureExternalLibrary"), 'Chybí veřejný on-demand loader externích knihoven');
 assert(lazyExternalLibs.includes("wrapAsyncGlobal('buildRakExcelImportPreview', 'xlsx')"), 'Excel import není navázaný na lazy XLSX');
 assert(lazyExternalLibs.includes("wrapAsyncGlobal('adminRotationGeneratorDownloadExcel', 'xlsx')"), 'Excel export rozpisu není navázaný na lazy XLSX');
@@ -108,6 +120,10 @@ assert(indexHtml.includes('@supabase/supabase-js@2.110.7'), 'Supabase eager scri
 if (String(process.env.VERCEL || '').trim()) {
   assert(!indexHtml.includes(xlsxUrl), 'V nasazovaném HTML zůstal eager XLSX');
   assert(!indexHtml.includes(jszipUrl), 'V nasazovaném HTML zůstal eager JSZip');
+  for (const file of idleReleaseDiagnostics) {
+    assert(!indexHtml.includes('src="' + file + '"'), 'V nasazovaném HTML zůstala eager diagnostika ' + file);
+  }
+  assert(indexHtml.includes('src="rak-dom-security-hardening.js"'), 'DOM security hardening zmizel ze startup HTML');
 }
 
 // qr.js je historicky špatně pojmenovaný: kromě QR obsahuje i výpočet Kantýny/Jídelny.
@@ -125,4 +141,4 @@ assert(String(packageJson.version) === swVersionMatch[1], 'package.json a sw.js 
 assert(dashboardShiftPatch.includes('window.RAK_PWA_BUILD'), 'Zobrazený testovací build není navázaný na aktuální PWA build');
 assert(dashboardShiftPatch.includes('--rak-dev-build-label'), 'Chybí bezpečné přepsání starého build labelu v O aplikaci');
 
-console.log('[critical-runtime-smoke] OK navigation+rotation+food baseline locked; stable qr.js boot; idle audits available; version sync ' + packageJson.version + '; dynamic build label; Games removed; XLSX+JSZip lazy; Supabase eager');
+console.log('[critical-runtime-smoke] OK navigation+rotation+food baseline locked; stable qr.js boot; release diagnostics idle; version sync ' + packageJson.version + '; Games removed; XLSX+JSZip lazy; Supabase eager; DOM security eager');
