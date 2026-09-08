@@ -33,6 +33,8 @@ try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleR
     "rak-login-life.js"
   ];
 
+  // Seznam zůstává kompletní i kvůli browser-smoke inventáři. V běžném runtime se
+  // těžké menu soubory odfiltrují níže a stáhnou až při prvním otevření „Více“.
   const deferredFiles = [
     "rak-external-deps.js",
     "app-runtime-guards.js",
@@ -82,6 +84,11 @@ try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleR
     "rak-maintenance-v1516.js"
   ];
 
+  const lazyMenuFiles = [
+    "app-menu.js",
+    "rak-admin-menu-fix.js"
+  ];
+
   // Nejtěžší editor rozpisů a správa speciálních dnů se stáhnou až při otevření Administrace.
   // Home / Rotace / Kalkulačky tak při běžném startu nestahují zhruba 400 kB JS navíc.
   const lazyAdminFiles = [
@@ -89,7 +96,8 @@ try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleR
     "admin-daymods.js"
   ];
 
-  const bootFiles = criticalFiles.concat(deferredFiles);
+  const eagerDeferredFiles = deferredFiles.filter((file) => !lazyMenuFiles.includes(file));
+  const bootFiles = criticalFiles.concat(eagerDeferredFiles);
 
   try {
     if (window.__rakModuleReadinessRegistry) {
@@ -128,6 +136,43 @@ try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleR
     return promise;
   };
 
+  let lazyMenuPromise = null;
+  const lazyOpenAppMenu = function lazyOpenAppMenu(route) {
+    const requestedRoute = String(route || 'menu');
+    return window.ensureRakMenuModulesLoaded().then(() => {
+      const realOpen = window.openAppMenu;
+      if (typeof realOpen === 'function' && realOpen !== lazyOpenAppMenu) return realOpen(requestedRoute);
+      return false;
+    });
+  };
+  const lazyToggleAppMenu = function lazyToggleAppMenu() {
+    return window.ensureRakMenuModulesLoaded().then(() => {
+      const realToggle = window.toggleAppMenu;
+      if (typeof realToggle === 'function' && realToggle !== lazyToggleAppMenu) return realToggle();
+      const realOpen = window.openAppMenu;
+      if (typeof realOpen === 'function' && realOpen !== lazyOpenAppMenu) return realOpen('menu');
+      return false;
+    });
+  };
+
+  window.openAppMenu = lazyOpenAppMenu;
+  window.toggleAppMenu = lazyToggleAppMenu;
+  window.ensureRakMenuModulesLoaded = function ensureRakMenuModulesLoaded() {
+    if (lazyMenuPromise) return lazyMenuPromise;
+    lazyMenuPromise = (async () => {
+      for (const file of lazyMenuFiles) await loadScript(file);
+      try {
+        if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleReady('lazy-menu-modules', 'ready', { source: 'menu-open' });
+      } catch (err) {}
+      return true;
+    })().catch((err) => {
+      lazyMenuPromise = null;
+      throw err;
+    });
+    return lazyMenuPromise;
+  };
+  window.RAK_LAZY_MENU_FILES = lazyMenuFiles.slice();
+
   let lazyAdminPromise = null;
   window.ensureRakAdminModulesLoaded = function ensureRakAdminModulesLoaded() {
     if (lazyAdminPromise) return lazyAdminPromise;
@@ -161,9 +206,9 @@ try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleR
     });
   }
 
-  // Síťově nezdržuj start sekvenčním stahováním nezávislých modulů.
-  // Dynamické classic skripty mají async=false, takže se i při paralelním downloadu spustí v pořadí vložení.
-  await Promise.all(deferredFiles.map(loadScript));
+  // Síťově nezdržuj start sekvenčním stahováním desítek nezávislých modulů.
+  // Těžký app-menu.js se z této dávky vynechá a stáhne až na první otevření Více.
+  await Promise.all(eagerDeferredFiles.map(loadScript));
 
   // core.js vytváří runtime `app` až v odložené fázi. Profil načtený na loginu proto
   // znovu přeneseme do runtime po načtení celé aplikace, jinak UI/admin vidí prázdný účet.
