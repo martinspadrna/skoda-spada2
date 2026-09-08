@@ -10,6 +10,7 @@ const assert = (condition, message) => { if (!condition) throw new Error('[maint
 const app = read('app.js');
 const sw = read('sw.js');
 const externalDeps = read('rak-external-deps.js');
+const noGamesRuntime = read('rak-no-games-runtime-v1516.js');
 const maintenance = read('rak-maintenance-v1516.js');
 const styles = read('styles-maintenance.css');
 const shiftReport = read('rak-shift-report.js');
@@ -51,6 +52,14 @@ assert(!app.includes('rak-dashboard-shift-label-v1515.js'), 'stále se načítá
 assert(!app.includes('brusy-fhb-v158.js'), 'stále se načítá starý brus patch');
 assert(!app.includes('new MutationObserver(() => removeGames())'), 'Games cleanup stále používá globální observer');
 
+// Odstraněné Hry nesmí dál generovat UI sync ani realtime provoz.
+assert(noGamesRuntime.includes('saveGameAccountUiSettings = noRemoteUiSave'), 'starý game UI save není odpojený');
+assert(noGamesRuntime.includes('loadGameAccountUiSettings = noRemoteUiLoad'), 'starý game UI load není odpojený');
+assert(noGamesRuntime.includes('REMOVED_GAME_REALTIME_TABLES'), 'chybí seznam odstraněných realtime tabulek');
+assert(noGamesRuntime.includes("'game_accounts'") && noGamesRuntime.includes("'game_sessions'") && noGamesRuntime.includes("'gomoku_wins'"), 'realtime filtr nemá kompletní herní tabulky');
+assert(noGamesRuntime.includes("String(type || '') === 'postgres_changes'"), 'realtime filtr nehlídá postgres_changes');
+assert(noGamesRuntime.includes("ensureRakExternalDependency('supabase')"), 'Supabase klient není navázaný na lazy online start');
+
 // Home boot nesmí znovu zavést několik plných překreslení po startu.
 assert(homeBoot.includes('function homeNeedsRecovery()'), 'Home boot nemá kontrolu skutečně prázdného renderu');
 assert(homeBoot.includes('scheduleRecoveryCheck(170)'), 'Home boot nemá lehkou recovery kontrolu');
@@ -59,9 +68,12 @@ assert(!homeBoot.includes('setTimeout(runHomeRefresh, 220)'), 'Home boot znovu o
 assert(!homeBoot.includes('setTimeout(runHomeRefresh, 520)'), 'Home boot znovu obsahuje starou kaskádu refreshů');
 assert(!homeBoot.includes('setTimeout(runHomeRefresh, 980)'), 'Home boot znovu obsahuje starou kaskádu refreshů');
 
-// Externí exportní knihovny
+// Externí knihovny jsou připnuté, chráněné SRI a načítají se lazy.
+assert(externalDeps.includes("global: 'supabase'"), 'lazy loader nezná Supabase');
+assert(externalDeps.includes('@supabase/supabase-js@2.110.7/dist/umd/supabase.js'), 'Supabase není připnutý na přesnou verzi');
 assert(externalDeps.includes("global: 'XLSX'"), 'lazy loader nezná XLSX');
 assert(externalDeps.includes("global: 'JSZip'"), 'lazy loader nezná JSZip');
+assert((externalDeps.match(/integrity:\s*'sha384-/g) || []).length >= 3, 'lazy externí knihovny nemají všechny SRI');
 assert(externalDeps.includes('script.integrity = dep.integrity'), 'lazy loader nepoužívá SRI');
 assert(externalDeps.includes("window.ensureRakExternalDependency = ensure"), 'lazy loader nezveřejňuje ensure API');
 assert(externalDeps.includes("input.id !== 'excelFile'"), 'Excel file input nemá lazy fallback');
