@@ -56,6 +56,8 @@ try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleR
     "brusy-fhb-v157.js",
     "appearance-theme.js",
     "changelog.js",
+    "admin-rotation.js",
+    "admin-daymods.js",
     "admin-machine-tasks.js",
     "admin-food.js",
     "admin-reports.js",
@@ -161,6 +163,7 @@ try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleR
       script.onerror = () => {
         const ended = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
         const error = new Error(`Nepodařilo se načíst ${key}`);
+        scriptPromises.delete(key);
         if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleReady(key, 'error', { source: 'dynamic-loader', durationMs: ended - started, error: error.message });
         reject(error);
       };
