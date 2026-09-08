@@ -1,7 +1,8 @@
 // RaK 1.2 (1.155) – boot/load shell aplikace.
 try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleReady('app.js', 'loaded', { source: 'index' }); } catch (err) {}
 
-// DEV: Hry jsou v této vývojové větvi úplně skryté ještě před prvním paintem.
+// DEV: Hry jsou v této vývojové větvi odstraněné jednorázově při startu.
+// Herní moduly se už nenačítají, takže není potřeba globální MutationObserver.
 (function disableGamesSurface() {
   const removeGames = () => {
     try {
@@ -21,16 +22,11 @@ try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleR
   removeGames();
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', removeGames, { once: true });
   else removeGames();
-  try {
-    const observer = new MutationObserver(() => removeGames());
-    observer.observe(document.documentElement, { childList: true, subtree: true });
-    window.__rakDevGamesObserver = observer;
-  } catch (err) {}
 })();
 
 (async () => {
-  const RAK_MODULE_CACHE_VERSION = "1.5.23";
-  const RAK_DEV_UPDATE_BUILD = "v1.5.23";
+  const RAK_MODULE_CACHE_VERSION = "1.5.24";
+  const RAK_DEV_UPDATE_BUILD = "v1.5.24";
   window.RAK_PWA_BUILD = RAK_DEV_UPDATE_BUILD;
 
   const criticalFiles = [
@@ -93,8 +89,6 @@ try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleR
     "rak-dashboard-shift-label-v1515.js"
   ];
 
-  // Diagnostické audity nejsou potřeba pro první interaktivní vykreslení.
-  // Načtou se až po dokončení Home/navigace, aby nebrzdily start aplikace.
   const idleAuditFiles = [
     "app-health-audits.js",
     "app-postload-audits.js"
@@ -147,12 +141,8 @@ try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleR
     });
   }
 
-  // Síťově nezdržuj start sekvenčním stahováním desítek nezávislých modulů.
-  // `async = false` v loadScript přitom zachovává jejich pořadí spuštění.
   await Promise.all(deferredFiles.map(loadScript));
 
-  // core.js vytváří runtime `app` až v odložené fázi. Profil načtený na loginu proto
-  // znovu přeneseme do runtime po načtení celé aplikace, jinak UI/admin vidí prázdný účet.
   try {
     const storedProfile = typeof window.rakUserProfileGet === 'function' ? window.rakUserProfileGet() : null;
     if (storedProfile && typeof window.rakUserProfileApplyToRuntime === 'function') {
@@ -163,8 +153,6 @@ try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleR
 
   if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleReady('boot-loader', 'ready', { source: 'dynamic-loader' });
 
-  // DEV: starý suppression marker smažeme jen jednou pro konkrétní build.
-  // Po kliknutí na Aktualizovat už ho při reloadu znovu nemažeme, takže nevznikne update smyčka.
   try {
     const DEV_RESET_KEY = 'rak_dev_pwa_prompt_reset_build';
     if (localStorage.getItem(DEV_RESET_KEY) !== RAK_DEV_UPDATE_BUILD) {
