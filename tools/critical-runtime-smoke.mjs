@@ -8,6 +8,7 @@ const read = (file) => fs.readFileSync(path.join(root, file), 'utf8');
 const appJs = read('app.js');
 const qrJs = read('qr.js');
 const swJs = read('sw.js');
+const dashboardShiftPatch = read('rak-dashboard-shift-label-v1515.js');
 const packageJson = JSON.parse(read('package.json'));
 
 function assert(condition, message) {
@@ -64,4 +65,8 @@ assert(swVersionMatch, 'Nelze přečíst CACHE_VERSION ze sw.js');
 assert(String(packageJson.version) === appVersionMatch[1], 'package.json a app.js mají rozdílnou build verzi');
 assert(String(packageJson.version) === swVersionMatch[1], 'package.json a sw.js mají rozdílnou build verzi');
 
-console.log('[critical-runtime-smoke] OK navigation+rotation+food baseline locked; stable qr.js boot; idle audits; version sync ' + packageJson.version);
+// O aplikaci nesmí zobrazovat staré natvrdo zapsané číslo z report patchů.
+assert(dashboardShiftPatch.includes('window.RAK_PWA_BUILD'), 'Zobrazený testovací build není navázaný na aktuální PWA build');
+assert(dashboardShiftPatch.includes('--rak-dev-build-label'), 'Chybí bezpečné přepsání starého build labelu v O aplikaci');
+
+console.log('[critical-runtime-smoke] OK navigation+rotation+food baseline locked; stable qr.js boot; idle audits; version sync ' + packageJson.version + '; dynamic build label');
