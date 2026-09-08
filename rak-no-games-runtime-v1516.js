@@ -14,34 +14,6 @@
     return Promise.resolve(null);
   }
 
-  function patchAppearanceSync() {
-    let changed = false;
-    try {
-      if (typeof window.pushAccountUiRemoteSettings === 'function' && !window.pushAccountUiRemoteSettings.__rakGamesRemoved) {
-        const save = noRemoteUiSave;
-        save.__rakGamesRemoved = true;
-        window.pushAccountUiRemoteSettings = save;
-        try { pushAccountUiRemoteSettings = save; } catch (_) {}
-        changed = true;
-      }
-      if (typeof window.pushActiveAccountUiRemoteSettings === 'function' && !window.pushActiveAccountUiRemoteSettings.__rakGamesRemoved) {
-        const saveActive = noRemoteUiSave;
-        saveActive.__rakGamesRemoved = true;
-        window.pushActiveAccountUiRemoteSettings = saveActive;
-        try { pushActiveAccountUiRemoteSettings = saveActive; } catch (_) {}
-        changed = true;
-      }
-      if (typeof window.loadActiveAccountUiRemoteSettings === 'function' && !window.loadActiveAccountUiRemoteSettings.__rakGamesRemoved) {
-        const load = noRemoteUiLoad;
-        load.__rakGamesRemoved = true;
-        window.loadActiveAccountUiRemoteSettings = load;
-        try { loadActiveAccountUiRemoteSettings = load; } catch (_) {}
-        changed = true;
-      }
-    } catch (_) {}
-    return changed;
-  }
-
   function patchBridge(bridge) {
     const target = bridge || window.RotationSupabaseBridge;
     if (!target || target.__rakGamesRemovedRuntime) return false;
@@ -72,14 +44,10 @@
 
   function apply() {
     attempts += 1;
-    patchAppearanceSync();
-    wrapBridgeLoader();
+    const loaderReady = wrapBridgeLoader()
+      || (typeof window.ensureRakSupabaseBridgeLoaded === 'function' && !!window.ensureRakSupabaseBridgeLoaded.__rakGamesRemovedWrapped);
     patchBridge();
-    const appearanceReady = typeof window.pushAccountUiRemoteSettings === 'function'
-      && !!window.pushAccountUiRemoteSettings.__rakGamesRemoved;
-    const loaderReady = typeof window.ensureRakSupabaseBridgeLoaded !== 'function'
-      || !!window.ensureRakSupabaseBridgeLoaded.__rakGamesRemovedWrapped;
-    if (appearanceReady && loaderReady && attempts >= 10 && timer) {
+    if (loaderReady && attempts >= 10 && timer) {
       clearInterval(timer);
       timer = null;
     }
