@@ -15,6 +15,7 @@ const styles = read('styles-maintenance.css');
 const shiftReport = read('rak-shift-report.js');
 const brus157 = read('brusy-fhb-v157.js');
 const brusBase = read('brusy-fhb-correction.js');
+const homeBoot = read('app-home-boot.js');
 const migration = read('supabase/migrations/20260907191622_rak_v1516_security_performance_cleanup.sql');
 
 // Boot / cleanup
@@ -43,6 +44,14 @@ assert(!app.includes('rak-menu-report-order-v1513.js'), 'stále se načítá sta
 assert(!app.includes('rak-dashboard-shift-label-v1515.js'), 'stále se načítá starý dashboard patch');
 assert(!app.includes('brusy-fhb-v158.js'), 'stále se načítá starý brus patch');
 assert(!app.includes('new MutationObserver(() => removeGames())'), 'Games cleanup stále používá globální observer');
+
+// Home boot nesmí znovu zavést několik plných překreslení po startu.
+assert(homeBoot.includes('function homeNeedsRecovery()'), 'Home boot nemá kontrolu skutečně prázdného renderu');
+assert(homeBoot.includes('scheduleRecoveryCheck(170)'), 'Home boot nemá lehkou recovery kontrolu');
+assert(!homeBoot.includes('setTimeout(runHomeRefresh, 80)'), 'Home boot znovu obsahuje starou kaskádu refreshů');
+assert(!homeBoot.includes('setTimeout(runHomeRefresh, 220)'), 'Home boot znovu obsahuje starou kaskádu refreshů');
+assert(!homeBoot.includes('setTimeout(runHomeRefresh, 520)'), 'Home boot znovu obsahuje starou kaskádu refreshů');
+assert(!homeBoot.includes('setTimeout(runHomeRefresh, 980)'), 'Home boot znovu obsahuje starou kaskádu refreshů');
 
 // Externí exportní knihovny
 assert(externalDeps.includes("global: 'XLSX'"), 'lazy loader nezná XLSX');
