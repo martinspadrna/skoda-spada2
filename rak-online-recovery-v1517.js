@@ -1,8 +1,8 @@
-// RaK v1.5.17 – cílená oprava online bootstrapu po regresi lazy Supabase na iOS.
-(function installRakOnlineRecoveryV1517() {
+// RaK v1.5.18 – cílená oprava online bootstrapu po regresi lazy Supabase na iOS.
+(function installRakOnlineRecoveryV1518() {
   'use strict';
 
-  const BUILD = 'v1.5.17';
+  const BUILD = 'v1.5.18';
   const SUPABASE_SRC = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.110.7/dist/umd/supabase.js';
   const SUPABASE_SRI = 'sha384-hazsLVND17GNLVdtV19te6qbFT2YuLgl8SamcF+QR5eIOC+W4dGKrUNMxU1jH1zD';
   let onlinePromise = null;
@@ -84,7 +84,8 @@
     onlinePromise = (async () => {
       await waitFor(() => {
         const cfg = window.SUPABASE_CONFIG;
-        return cfg && cfg.url && cfg.anonKey ? cfg : null;
+        const apiKey = cfg && (cfg.publishableKey || cfg.anonKey);
+        return cfg && cfg.url && apiKey ? cfg : null;
       }, 'Supabase konfiguraci', 15000);
 
       await ensureSupabaseClient();
@@ -110,7 +111,7 @@
           const rows = await bridge.loadMachineSettings();
           if (Array.isArray(rows) && typeof app !== 'undefined' && app) app.machineSettingsRows = rows;
         } catch (error) {
-          console.warn('[RaK 1.5.17] Machine settings recovery failed', error);
+          console.warn('[RaK 1.5.18] Machine settings recovery failed', error);
         }
       }
 
@@ -120,7 +121,7 @@
       return bridge;
     })().catch((error) => {
       onlinePromise = null;
-      console.warn('[RaK 1.5.17] Online recovery failed', error);
+      console.warn('[RaK 1.5.18] Online recovery failed', error);
       throw error;
     });
     return onlinePromise;
