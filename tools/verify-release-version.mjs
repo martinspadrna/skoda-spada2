@@ -42,6 +42,7 @@ expect(!index.includes('xlsx@0.18.5/dist/xlsx.full.min.js'), 'index.html stále 
 expect(!index.includes('jszip@3.10.1/dist/jszip.min.js'), 'index.html stále eager načítá JSZip');
 expect(externalDeps.includes('xlsx@0.18.5/dist/xlsx.full.min.js'), 'XLSX chybí v lazy loaderu');
 expect(externalDeps.includes('jszip@3.10.1/dist/jszip.min.js'), 'JSZip chybí v lazy loaderu');
+expect(!index.includes('fonts.googleapis.com'), 'index.html stále při startu kontaktuje Google Fonts');
 expect(!/\bid=["']games["']/.test(index), 'index.html stále obsahuje stránku Hry');
 expect(!index.includes('bottomNavGamesBtn'), 'index.html stále obsahuje tlačítko Hry');
 expect(!index.includes('styles-games.css'), 'index.html stále načítá CSS Her');
