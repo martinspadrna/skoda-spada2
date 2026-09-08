@@ -29,8 +29,8 @@ try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleR
 })();
 
 (async () => {
-  const RAK_MODULE_CACHE_VERSION = "1.5.21";
-  const RAK_DEV_UPDATE_BUILD = "v1.5.21";
+  const RAK_MODULE_CACHE_VERSION = "1.5.22";
+  const RAK_DEV_UPDATE_BUILD = "v1.5.22";
   window.RAK_PWA_BUILD = RAK_DEV_UPDATE_BUILD;
 
   const criticalFiles = [
@@ -45,8 +45,6 @@ try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleR
 
   const deferredFiles = [
     "app-runtime-guards.js",
-    "app-health-audits.js",
-    "app-postload-audits.js",
     "app-pwa-connectivity.js",
     "core.js",
     "lifecycle.js",
@@ -93,6 +91,13 @@ try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleR
     "rak-dev-fixes-v1512.js",
     "rak-menu-report-order-v1513.js",
     "rak-dashboard-shift-label-v1515.js"
+  ];
+
+  // Diagnostické audity nejsou potřeba pro první interaktivní vykreslení.
+  // Načtou se až po dokončení Home/navigace, aby nebrzdily start aplikace.
+  const idleAuditFiles = [
+    "app-health-audits.js",
+    "app-postload-audits.js"
   ];
 
   const files = criticalFiles.concat(deferredFiles);
@@ -175,7 +180,6 @@ try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleR
   try { if (typeof applyBottomNavMoreHardFix === 'function') applyBottomNavMoreHardFix(); } catch (err) { console.warn('Bottom nav Více hard-fix failed', err); }
   try { if (typeof applyRakFixedBottomNavMetrics === 'function') applyRakFixedBottomNavMetrics(); } catch (err) { console.warn('Bottom nav fixed metrics failed', err); }
   if (typeof installDelegatedAppActions === 'function') installDelegatedAppActions();
-  try { if (typeof runRakPostLoadAudits === 'function') runRakPostLoadAudits(); } catch (err) { console.warn('Post-load audit orchestrace failed', err); }
 
   try {
     if (typeof window.__rotaceBootHomeRefreshLate === 'function') window.__rotaceBootHomeRefreshLate();
@@ -183,6 +187,16 @@ try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleR
   } catch (err) { console.warn('Post-load boot failed', err); }
 
   try { if (typeof runRakBootSelfTest === 'function') window.runRakBootSelfTest ? window.runRakBootSelfTest() : runRakBootSelfTest(); } catch (err) { console.warn('Boot self-test selhal', err); }
+
+  const runIdleAudits = () => {
+    Promise.all(idleAuditFiles.map(loadScript)).then(() => {
+      try { if (typeof runRakPostLoadAudits === 'function') runRakPostLoadAudits(); } catch (err) { console.warn('Post-load audit orchestrace failed', err); }
+    }).catch((err) => {
+      console.warn('Idle audit moduly se nepodařilo načíst', err);
+    });
+  };
+  if (typeof requestIdleCallback === 'function') requestIdleCallback(runIdleAudits, { timeout: 1800 });
+  else setTimeout(runIdleAudits, 900);
 })().catch(err => {
   console.error(err);
   alert("Nepodařilo se načíst aplikační skripty: " + (err && err.message ? err.message : String(err)));
