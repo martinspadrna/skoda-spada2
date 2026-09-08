@@ -1,5 +1,12 @@
-// RaK 1.2 (1.155) – runtime guardy aplikace oddělené z app.js.
+// RaK 1.5.16 – lehké runtime guardy aplikace.
 try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleReady('app-runtime-guards.js', 'loaded', { source: 'dynamic-loader' }); } catch (err) {}
+
+// app-menu.js se načítá dřív než těžký admin-rotation.js. Menu při bindu volá tento
+// admin hook i mimo Administraci; do načtení admin modulu proto musí existovat bezpečný no-op.
+// Jakmile se admin-rotation.js načte, jeho skutečná function declaration tento hook nahradí.
+if (typeof window.adminBindRotationZoomGuard !== 'function') {
+  window.adminBindRotationZoomGuard = function adminBindRotationZoomGuardLazyFallback() {};
+}
 
 (function setupRakAppLikeTextSelectionGuard() {
   if (window.__rakAppLikeTextSelectionGuard) return;
