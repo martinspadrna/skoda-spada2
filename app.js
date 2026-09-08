@@ -1,8 +1,8 @@
 // RaK 1.2 (1.155) – boot/load shell aplikace.
 try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleReady('app.js', 'loaded', { source: 'index' }); } catch (err) {}
 
-// DEV: Hry jsou v této vývojové větvi odstraněné jednorázově při startu.
-// Herní moduly se už nenačítají, takže není potřeba globální MutationObserver.
+// DEV: Hry jsou v deployovaném index.html odstraněné už při buildu.
+// Tohle zůstává jen jako bezpečný jednorázový fallback bez globálního observeru.
 (function disableGamesSurface() {
   const removeGames = () => {
     try {
@@ -25,8 +25,8 @@ try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleR
 })();
 
 (async () => {
-  const RAK_MODULE_CACHE_VERSION = "1.5.24";
-  const RAK_DEV_UPDATE_BUILD = "v1.5.24";
+  const RAK_MODULE_CACHE_VERSION = "1.5.25";
+  const RAK_DEV_UPDATE_BUILD = "v1.5.25";
   window.RAK_PWA_BUILD = RAK_DEV_UPDATE_BUILD;
 
   const criticalFiles = [
@@ -178,7 +178,9 @@ try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleR
 
   const runIdleAudits = () => {
     Promise.all(idleAuditFiles.map(loadScript)).then(() => {
-      try { if (typeof runRakPostLoadAudits === 'function') runRakPostLoadAudits(); } catch (err) { console.warn('Post-load audit orchestrace failed', err); }
+      // Legacy audit funkce necháváme dostupné pro diagnostiku, ale už je
+      // automaticky nespouštíme: obsahují historické povinné kontroly Her.
+      try { window.__rakIdleAuditsReady = true; } catch (err) {}
     }).catch((err) => {
       console.warn('Idle audit moduly se nepodařilo načíst', err);
     });
