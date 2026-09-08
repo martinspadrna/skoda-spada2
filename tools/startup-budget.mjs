@@ -5,9 +5,9 @@ import { fileURLToPath } from 'node:url';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const appSource = fs.readFileSync(path.join(root, 'app.js'), 'utf8');
-// Aktuální development je kolem 1.3 MB eager JS. Necháváme jen malou rezervu,
-// aby se velký modul nevrátil do startu bez vědomého rozhodnutí.
-const MAX_EAGER_JS_BYTES = 1_450_000;
+// Po odložení Supabase bridge je běžný first-paint balík kolem 1 MB.
+// Rezerva zůstává malá, aby se těžký modul nevrátil do startu bez vědomého rozhodnutí.
+const MAX_EAGER_JS_BYTES = 1_180_000;
 
 function parseArray(name) {
   const match = appSource.match(new RegExp('const\\s+' + name + '\\s*=\\s*\\[([\\s\\S]*?)\\];'));
@@ -40,11 +40,13 @@ const lazyMenu = parseArray('lazyMenuFiles');
 const lazyAdmin = parseArray('lazyAdminFiles');
 const lazyQr = parseArray('lazyQrFiles');
 const idleAudits = parseArray('idleAuditFiles');
-const lazy = new Set([...lazyMenu, ...lazyAdmin, ...lazyQr, ...idleAudits]);
+const lazySupabase = parseArray('lazySupabaseFiles');
+const lazy = new Set([...lazyMenu, ...lazyAdmin, ...lazyQr, ...idleAudits, ...lazySupabase]);
 const eager = unique([...critical, ...deferred.filter((file) => !lazy.has(file))]);
 const eagerBytes = bytesFor(eager);
 const lazyBytes = bytesFor(unique([...lazyMenu, ...lazyAdmin, ...lazyQr]));
 const idleBytes = bytesFor(unique(idleAudits));
+const onlineBytes = bytesFor(unique(lazySupabase));
 const heaviest = eager
   .map((file) => ({ file, bytes: fileBytes(file) }))
   .sort((a, b) => b.bytes - a.bytes)
@@ -71,6 +73,10 @@ for (const file of idleAudits) {
   if (!deferred.includes(file)) throw new Error('[startup-budget] idle audit ' + file + ' musí zůstat v deferred inventáři');
   if (eager.includes(file)) throw new Error('[startup-budget] audit ' + file + ' se omylem vrátil do kritického startu');
 }
+for (const file of lazySupabase) {
+  if (!deferred.includes(file)) throw new Error('[startup-budget] Supabase bridge ' + file + ' musí zůstat v deferred inventáři');
+  if (eager.includes(file)) throw new Error('[startup-budget] Supabase bridge ' + file + ' se omylem vrátil před first paint');
+}
 
-console.log('[startup-budget] OK eager=' + formatBytes(eagerBytes) + ' / limit=' + formatBytes(MAX_EAGER_JS_BYTES) + ' lazy=' + formatBytes(lazyBytes) + ' idle=' + formatBytes(idleBytes) + ' eagerFiles=' + eager.length);
+console.log('[startup-budget] OK eager=' + formatBytes(eagerBytes) + ' / limit=' + formatBytes(MAX_EAGER_JS_BYTES) + ' lazy=' + formatBytes(lazyBytes) + ' online-after-paint=' + formatBytes(onlineBytes) + ' idle=' + formatBytes(idleBytes) + ' eagerFiles=' + eager.length);
 console.log('[startup-budget] heaviest ' + heaviest);
