@@ -41,8 +41,3 @@ jobs:
         env:
           CHROMIUM_BIN: ${{ steps.chrome.outputs.chrome-path }}
         run: npm run test:release
-
-      - name: Print non-fatal browser console errors
-        env:
-          CHROMIUM_BIN: ${{ steps.chrome.outputs.chrome-path }}
-        run: node tools/browser-console-diagnostic.mjs
