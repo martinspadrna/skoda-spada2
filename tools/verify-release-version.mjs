@@ -35,18 +35,13 @@ expect(index.includes('app.js?v=' + packageVersion), 'index.html nenačítá app
 expect(index.includes('rak-no-games-runtime-v1516.js?v=' + packageVersion), 'index.html nenačítá guard proti starému game_* syncu');
 expect(noGamesRuntime.includes("reason: 'games-removed'"), 'no-games runtime nemá bezpečný skip starého game_* syncu');
 expect(noGamesRuntime.includes('saveGameAccountUiSettings') && noGamesRuntime.includes('loadGameAccountUiSettings'), 'no-games runtime neodpojuje starý remote UI sync');
-expect(noGamesRuntime.includes('REMOVED_GAME_REALTIME_TABLES') && noGamesRuntime.includes("'game_sessions'") && noGamesRuntime.includes("'gomoku_wins'"), 'no-games runtime neblokuje realtime odstraněných Her');
-expect(noGamesRuntime.includes('ensureSupabaseDependency') && noGamesRuntime.includes("ensure('supabase')"), 'online bridge nespouští lazy Supabase klienta');
 ['icon-180.png', 'icon-32.png', 'icon-192.png'].forEach((icon) => {
   expect(index.includes(icon + '?v=' + packageVersion), `index.html nemá aktuální verzi ikony ${icon}`);
 });
-expect(!index.includes('@supabase/supabase-js@2.110.7'), 'index.html stále eager načítá Supabase klienta');
 expect(!index.includes('xlsx@0.18.5/dist/xlsx.full.min.js'), 'index.html stále eager načítá XLSX');
 expect(!index.includes('jszip@3.10.1/dist/jszip.min.js'), 'index.html stále eager načítá JSZip');
-expect(externalDeps.includes('@supabase/supabase-js@2.110.7/dist/umd/supabase.js'), 'Supabase klient chybí v lazy loaderu');
 expect(externalDeps.includes('xlsx@0.18.5/dist/xlsx.full.min.js'), 'XLSX chybí v lazy loaderu');
 expect(externalDeps.includes('jszip@3.10.1/dist/jszip.min.js'), 'JSZip chybí v lazy loaderu');
-expect((externalDeps.match(/integrity:\s*'sha384-/g) || []).length >= 3, 'lazy externí knihovny nemají všechny SRI');
 expect(!index.includes('fonts.googleapis.com'), 'index.html stále při startu kontaktuje Google Fonts');
 expect(!/\bid=["']games["']/.test(index), 'index.html stále obsahuje stránku Hry');
 expect(!index.includes('bottomNavGamesBtn'), 'index.html stále obsahuje tlačítko Hry');

@@ -84,14 +84,14 @@ includes(serviceWorker, "url.pathname.startsWith('/api/')", 'Service worker musi
 includes(serviceWorker, '/\\bno-store\\b|\\bprivate\\b/', 'Service worker musi respektovat privatni cache hlavicky.');
 includes(serviceWorker, '{ ignoreSearch: false }', 'Runtime cache nesmi ignorovat parametry URL.');
 
-// Žádná třetí strana se nesmí načítat eager z indexu. Supabase/XLSX/JSZip jsou
-// připnuté na přesné verze, mají SRI a načítají se jen přes runtime loader.
-assert((indexHtml.match(/cdn\.jsdelivr\.net\/npm\//g) || []).length === 0, 'Index nesmi eager nacitat knihovny z jsDelivr.');
-assert((indexHtml.match(/integrity="sha384-/g) || []).length === 0, 'Po odlozeni externich knihoven nema index obsahovat eager SRI skripty.');
-includes(externalDeps, '@supabase/supabase-js@2.110.7/dist/umd/supabase.js', 'Lazy Supabase klient musi byt pripnuty na konkretni verzi.');
+// Supabase klient zůstává jediná eager CDN knihovna a musí mít SRI. XLSX/JSZip jsou
+// záměrně lazy, ale jejich přesné verze a SRI musí být pevně definované v runtime loaderu.
+assert((indexHtml.match(/integrity="sha384-/g) || []).length >= 1, 'Eager externi knihovna musi mit SRI.');
+assert((indexHtml.match(/cdn\.jsdelivr\.net\/npm\//g) || []).length === 1, 'Index smi eager nacitat jen pripnuty Supabase klient.');
+includes(indexHtml, '@supabase/supabase-js@2.110.7', 'Supabase klient musi byt pripnuty na konkretni verzi.');
 includes(externalDeps, 'xlsx@0.18.5/dist/xlsx.full.min.js', 'Lazy XLSX musi byt pripnute na konkretni verzi.');
 includes(externalDeps, 'jszip@3.10.1/dist/jszip.min.js', 'Lazy JSZip musi byt pripnute na konkretni verzi.');
-assert((externalDeps.match(/integrity:\s*'sha384-/g) || []).length >= 3, 'Lazy externi knihovny musi mit SRI.');
+assert((externalDeps.match(/integrity:\s*'sha384-/g) || []).length >= 2, 'Lazy exportni knihovny musi mit SRI.');
 includes(externalDeps, 'script.integrity = dep.integrity', 'Lazy externi loader musi SRI skutecne nastavit na script.');
 
 const globalHeaders = (vercel.headers || []).find((rule) => rule.source === '/(.*)');
@@ -101,4 +101,4 @@ assert(csp && csp.value.includes("frame-ancestors 'none'"), 'Vercel musi posilat
 includes(excelImport, 'RAK_EXCEL_IMPORT_MAX_FILE_BYTES', 'Excel import musi mit limit souboru.');
 includes(excelImport, 'RAK_EXCEL_IMPORT_MAX_CELLS_PER_SHEET', 'Excel import musi mit limit bunek.');
 
-console.log(JSON.stringify({ ok: true, mode: 'security-smoke-v1337', migrations: migrations.length, eagerSriScripts: 0, lazySriScripts: 3 }));
+console.log(JSON.stringify({ ok: true, mode: 'security-smoke-v1337', migrations: migrations.length, eagerSriScripts: 1, lazySriScripts: 2 }));

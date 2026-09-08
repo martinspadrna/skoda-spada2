@@ -39,17 +39,18 @@ function removeDivById(source, id) {
 html = html.replace(/(assets\/app-icons\/icon-(?:32|180|192|512)\.png)\?v=[^"'\s>]+/g, '$1?v=' + version);
 html = html.replace(/app\.js\?v=[^"'\s>]+/g, 'app.js?v=' + version);
 
-// No-games/login guard musí běžet ještě před app.js, aby mohl zachytit i velmi rychlé
-// přihlášení a připravit Supabase klienta dřív, než se spustí account-access interceptor.
-html = html.replace(/\s*<script\b[^>]*src=["']rak-no-games-runtime-v1516\.js(?:\?v=[^"']*)?["'][^>]*><\/script>\s*/gi, '\n');
-html = html.replace(
-  /(<script\b[^>]*src=["']app\.js\?v=[^"']+["'][^>]*><\/script>)/i,
-  '<script src="rak-no-games-runtime-v1516.js?v=' + version + '"></script>\n$1'
-);
+// Po odstranění Her z UI nesmí profil/vzhled dál používat staré game_* RPC.
+// Malý runtime guard je vložen hned za app.js a jeho URL je verzovaná stejně jako build.
+if (!/rak-no-games-runtime-v1516\.js(?:\?v=[^"'\s>]*)?/i.test(html)) {
+  html = html.replace(
+    /(<script\b[^>]*src=["']app\.js\?v=[^"']+["'][^>]*><\/script>)/i,
+    '$1\n<script src="rak-no-games-runtime-v1516.js?v=' + version + '"></script>'
+  );
+} else {
+  html = html.replace(/rak-no-games-runtime-v1516\.js\?v=[^"'\s>]+/gi, 'rak-no-games-runtime-v1516.js?v=' + version);
+}
 
-// Supabase klient i těžké exportní knihovny se načítají přes rak-external-deps.js.
-// Supabase až při prvním skutečném online/login požadavku, XLSX/JSZip až při importu/exportu.
-html = html.replace(/\s*<script\b[^>]*src=["'][^"']*@supabase\/supabase-js@2\.110\.7\/dist\/umd\/supabase\.js[^"']*["'][^>]*><\/script>\s*/gi, '\n');
+// XLSX a JSZip se načítají přes rak-external-deps.js až při importu/exportu.
 html = html.replace(/\s*<script\b[^>]*src=["'][^"']*xlsx@0\.18\.5\/dist\/xlsx\.full\.min\.js[^"']*["'][^>]*><\/script>\s*/gi, '\n');
 html = html.replace(/\s*<script\b[^>]*src=["'][^"']*jszip@3\.10\.1\/dist\/jszip\.min\.js[^"']*["'][^>]*><\/script>\s*/gi, '\n');
 
