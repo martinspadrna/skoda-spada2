@@ -10,7 +10,6 @@ let html = fs.readFileSync(indexPath, 'utf8');
 const patterns = [
   /\n?<script\s+src="https:\/\/cdn\.jsdelivr\.net\/npm\/xlsx@0\.18\.5\/dist\/xlsx\.full\.min\.js"[^>]*><\/script>/,
   /\n?<script\s+src="https:\/\/cdn\.jsdelivr\.net\/npm\/jszip@3\.10\.1\/dist\/jszip\.min\.js"[^>]*><\/script>/,
-  /\n?\s*<script\s+src="assets\/rak-memory-total-time-fix\.js[^\"]*"[^>]*><\/script>/
 ];
 
 const idleDiagnosticFiles = [
@@ -39,9 +38,6 @@ if (/cdn\.jsdelivr\.net\/npm\/xlsx@0\.18\.5\/dist\/xlsx\.full\.min\.js/.test(htm
 if (/cdn\.jsdelivr\.net\/npm\/jszip@3\.10\.1\/dist\/jszip\.min\.js/.test(html)) {
   throw new Error('[defer-heavy-libs] JSZip zůstal v index.html jako eager script.');
 }
-if (/assets\/rak-memory-total-time-fix\.js/.test(html)) {
-  throw new Error('[defer-heavy-libs] Odstraněný Memory/Pexeso guard zůstal v startup HTML.');
-}
 for (const file of idleDiagnosticFiles) {
   if (html.includes('src="' + file + '"')) {
     throw new Error('[defer-heavy-libs] Diagnostický modul zůstal v startup HTML: ' + file);
@@ -55,4 +51,4 @@ if (!/src="rak-dom-security-hardening\.js"/.test(html)) {
 }
 
 fs.writeFileSync(indexPath, html, 'utf8');
-console.log('[defer-heavy-libs] OK XLSX + JSZip + obsolete Memory guard + diagnostic-only scripts deferred; Supabase and DOM security hardening untouched');
+console.log('[defer-heavy-libs] OK XLSX + JSZip + diagnostic-only scripts deferred; Supabase and DOM security hardening untouched');

@@ -12,7 +12,7 @@ const dashboardJs = read('dashboard.js');
 const swJs = read('sw.js');
 const indexHtml = read('index.html');
 const bootSelfTest = read('app-boot-selftest.js');
-const dashboardShiftPatch = read('rak-dashboard-shift-label-v1515.js');
+const appMenuJs = read('app-menu.js');
 const shiftReportEntryFix = read('rak-shift-report-entry-fix.js');
 const shiftReport = read('rak-shift-report.js');
 const shiftReportShare = read('rak-shift-report-share.js');
@@ -83,7 +83,14 @@ assert(!fs.existsSync(path.join(root, 'rak-dev-fixes-v1512.js')), 'Historický r
 assert(!fs.existsSync(path.join(root, 'rak-menu-report-order-v1513.js')), 'Legacy CSS stabilizátor pořadí reportů se nesmí vrátit do zdrojů');
 assert(shiftReportEntryFix.includes('const anchor = vacationReportButton || nativeReportButton || adminButton;'), 'Report směny musí preferovat Report dovolené jako viditelnou kotvu pořadí');
 assert(!deferred.includes('rak-dashboard-shift-label-v1515.js'), 'Dashboard patch se po nativním převzetí nesmí vrátit do runtime bootu');
-assert(fs.existsSync(path.join(root, 'rak-dashboard-shift-label-v1515.js')), 'Dashboard patch musí ve v1.5.45 ještě zůstat ve zdrojích jako rychlá fallback pojistka');
+assert(!fs.existsSync(path.join(root, 'rak-dashboard-shift-label-v1515.js')), 'Dashboard patch se po mobilním ověření nesmí vrátit do zdrojů');
+assert(!deferred.includes('rak-profile-settings-fix.js'), 'Profil settings fix se po nativním převzetí nesmí vrátit do runtime');
+assert(!deferred.includes('rak-admin-menu-fix.js'), 'Admin menu fix se po nativním převzetí nesmí vrátit do runtime');
+assert(!fs.existsSync(path.join(root, 'rak-profile-settings-fix.js')), 'Profil settings fix se po nativním převzetí nesmí vrátit do zdrojů');
+assert(!fs.existsSync(path.join(root, 'rak-admin-menu-fix.js')), 'Admin menu fix se po nativním převzetí nesmí vrátit do zdrojů');
+assert(appMenuJs.includes('function buildGamesProfileSettingsHtml()'), 'Nativní profilová karta musí být přímo v app-menu.js');
+assert(appMenuJs.includes('function rakAdminMenuResolveActiveAccountId()'), 'Nativní resolver admin účtu musí být přímo v app-menu.js');
+assert(appMenuJs.includes('const activeId = rakAdminMenuResolveActiveAccountId();'), 'Admin menu musí používat nativní resolver aktivního účtu');
 assert(dashboardJs.includes('function formatDashboardPersonalShiftLabel(value)'), 'Dashboard musí mít nativní formatter plného názvu směny');
 assert(dashboardJs.includes("if (/^R8?$/i.test(shift)) return 'Ranní';"), 'Dashboard musí nativně převádět R/R8 na Ranní');
 assert(dashboardJs.includes("if (/^N8?$/i.test(shift)) return 'Noční';"), 'Dashboard musí nativně převádět N/N8 na Noční');
@@ -110,6 +117,7 @@ assert(!indexHtml.includes('<div id="games"'), 'Zdrojový index.html pořád obs
 assert(!indexHtml.includes('data-action="games"'), 'Zdrojový index.html pořád obsahuje vstup do Her');
 assert(!indexHtml.includes('data-page="games"'), 'Zdrojový index.html pořád obsahuje navigaci na Hry');
 assert(!indexHtml.includes('styles-games.css'), 'Zdrojový index.html pořád načítá herní CSS');
+assert(!indexHtml.includes('assets/rak-memory-total-time-fix.js'), 'Zdrojový index.html pořád obsahuje odstraněný Memory/Pexeso guard');
 assert(!String(packageJson.scripts && packageJson.scripts['vercel-build'] || '').includes('strip-games-html'), 'Build pořád závisí na dočasném Games HTML stripperu');
 
 const removedGameFiles = [
@@ -139,7 +147,6 @@ assert(deferHeavyLibs.includes('xlsx@0\\.18\\.5'), 'Build transform nehlídá p�
 assert(deferHeavyLibs.includes('jszip@3\\.10\\.1'), 'Build transform nehlídá přesně JSZip 3.10.1');
 assert(deferHeavyLibs.includes('@supabase\\/supabase-js@2\\.110\\.7'), 'Build transform nemá pojistku proti odstranění Supabase');
 assert(deferHeavyLibs.includes('rak-dom-security-hardening\\.js'), 'Build transform nemá pojistku pro DOM security hardening');
-assert(deferHeavyLibs.includes('rak-memory-total-time-fix\\.js'), 'Build transform neodstraňuje starý Memory/Pexeso guard');
 assert(lazyExternalLibs.includes("window.rakEnsureExternalLibrary = ensureExternalLibrary"), 'Chybí veřejný on-demand loader externích knihoven');
 assert(lazyExternalLibs.includes("wrapAsyncGlobal('buildRakExcelImportPreview', 'xlsx')"), 'Excel import není navázaný na lazy XLSX');
 assert(lazyExternalLibs.includes("wrapAsyncGlobal('adminRotationGeneratorDownloadExcel', 'xlsx')"), 'Excel export rozpisu není navázaný na lazy XLSX');
@@ -174,7 +181,5 @@ assert(swVersionMatch, 'Nelze přečíst CACHE_VERSION ze sw.js');
 assert(String(packageJson.version) === appVersionMatch[1], 'package.json a app.js mají rozdílnou build verzi');
 assert(String(packageJson.version) === swVersionMatch[1], 'package.json a sw.js mají rozdílnou build verzi');
 
-assert(dashboardShiftPatch.includes('window.RAK_PWA_BUILD'), 'Zobrazený testovací build není navázaný na aktuální PWA build');
-assert(dashboardShiftPatch.includes('--rak-dev-build-label'), 'Chybí bezpečné přepsání starého build labelu v O aplikaci');
 
 console.log('[critical-runtime-smoke] OK navigation+rotation+food baseline locked; stable qr.js boot; extended diagnostics idle; version sync ' + packageJson.version + '; Games removed; XLSX+JSZip lazy; Supabase eager; DOM security eager');
