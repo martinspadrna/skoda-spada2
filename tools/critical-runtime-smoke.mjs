@@ -271,15 +271,22 @@ assert(appVersionMatch, 'Nelze přečíst RAK_MODULE_CACHE_VERSION z app.js');
 assert(swVersionMatch, 'Nelze přečíst CACHE_VERSION ze sw.js');
 assert(String(packageJson.version) === appVersionMatch[1], 'package.json a app.js mají rozdílnou build verzi');
 assert(String(packageJson.version) === swVersionMatch[1], 'package.json a sw.js mají rozdílnou build verzi');
-assert(stylesOverridesLegacyEarlyCss.length > 100000, 'CSS legacy early vrstva je neočekávaně malá');
-assert(stylesOverridesLegacyMidCss.length > 100000, 'CSS legacy mid vrstva je neočekávaně malá');
-assert(stylesOverridesLegacyLateCss.length > 100000, 'CSS legacy late vrstva je neočekávaně malá');
+assert(stylesOverridesLegacyEarlyCss.length > 1000, 'CSS legacy early vrstva chybí nebo je neočekávaně malá');
+assert(stylesOverridesLegacyMidCss.length > 1000, 'CSS legacy mid vrstva chybí nebo je neočekávaně malá');
+assert(stylesOverridesLegacyLateCss.length > 1000, 'CSS legacy late vrstva chybí nebo je neočekávaně malá');
 assert(!fs.existsSync(path.join(root, 'styles-overrides.css')), 'Původní styles-overrides.css monolit se nesmí vrátit');
 const cssLegacyEarlyPos = indexHtml.indexOf('styles-overrides-legacy-early.css');
 const cssLegacyMidPos = indexHtml.indexOf('styles-overrides-legacy-mid.css');
 const cssLegacyLatePos = indexHtml.indexOf('styles-overrides-legacy-late.css');
 const cssDashboardFitPos = indexHtml.indexOf('styles-dashboard-fit.css');
 assert(cssLegacyEarlyPos >= 0 && cssLegacyEarlyPos < cssLegacyMidPos && cssLegacyMidPos < cssLegacyLatePos && cssLegacyLatePos < cssDashboardFitPos, 'CSS legacy vrstvy musí zachovat původní cascade pořadí před Dashboard fit');
+const legacyCssWithoutComments = [stylesOverridesLegacyEarlyCss, stylesOverridesLegacyMidCss, stylesOverridesLegacyLateCss]
+  .join('\n')
+  .replace(/\/\*[\s\S]*?\*\//g, '');
+for (const deadGameCssMarker of ['#games', 'body.gamesOpen', 'body.gamesCompactMode', 'body.tttOpen', '#tttOverlay']) {
+  assert(!legacyCssWithoutComments.includes(deadGameCssMarker), 'Po odstranění Her zůstal legacy CSS marker ' + deadGameCssMarker);
+}
+assert(!/\.(?:games|game|ttt|snake|arcade|ships|flap|gomoku)[A-Za-z0-9_-]*\b/i.test(legacyCssWithoutComments), 'Po odstranění Her zůstal herní legacy CSS selector');
 
 
 console.log('[critical-runtime-smoke] OK navigation+rotation+food baseline locked; stable qr.js boot; extended diagnostics idle; version sync ' + packageJson.version + '; Games removed; XLSX+JSZip lazy; Supabase eager; DOM security eager');
