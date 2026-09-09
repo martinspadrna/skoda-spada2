@@ -43,3 +43,5 @@ jobs:
           git add -A
           git commit -m "Split rotation editor and machine settings in v1.5.54"
           git push origin development
+
+# retry after migration parser fix
