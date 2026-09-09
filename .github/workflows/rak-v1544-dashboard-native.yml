@@ -1,0 +1,64 @@
+name: RaK v1.5.44 safe dashboard migration
+on:
+  push:
+    branches: [development]
+    paths: ['.github/workflows/rak-v1544-dashboard-native.yml']
+permissions:
+  contents: write
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: development
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Apply exact native dashboard migration
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          def replace_once(path, old, new):
+              p = Path(path)
+              s = p.read_text()
+              if s.count(old) != 1:
+                  raise SystemExit(f'{path}: expected exactly one match, got {s.count(old)}')
+              p.write_text(s.replace(old, new, 1))
+
+          replace_once('dashboard.js',
+              "function buildDashboardPersonalHeroHtml(now, esc) {",
+              "function formatDashboardPersonalShiftLabel(value) {\n  const shift = String(value || '').trim();\n  if (/^R8?$/i.test(shift)) return 'Ranní';\n  if (/^N8?$/i.test(shift)) return 'Noční';\n  return shift;\n}\n\nfunction buildDashboardPersonalHeroHtml(now, esc) {")
+          replace_once('dashboard.js',
+              "  const shift = String(entry && entry.shift || '').trim();",
+              "  const rawShift = String(entry && entry.shift || '').trim();\n  const shift = formatDashboardPersonalShiftLabel(rawShift);")
+
+          replace_once('rak-shift-report-entry-fix.js',
+              "  const DEV_BUILD = 'v1.5.11';",
+              "  const DEV_BUILD = String(window.RAK_PWA_BUILD || window.RAK_DEV_BUILD || '').trim();")
+
+          replace_once('app.js', 'const RAK_MODULE_CACHE_VERSION = "1.5.43";', 'const RAK_MODULE_CACHE_VERSION = "1.5.44";')
+          replace_once('app.js', 'const RAK_DEV_UPDATE_BUILD = "v1.5.43";', 'const RAK_DEV_UPDATE_BUILD = "v1.5.44";')
+          replace_once('package.json', '"version": "1.5.43"', '"version": "1.5.44"')
+          replace_once('sw.js', "const CACHE_VERSION = 'v1.5.43';", "const CACHE_VERSION = 'v1.5.44';")
+
+          replace_once('tools/critical-runtime-smoke.mjs',
+              "const statsJs = read('stats.js');\nconst swJs = read('sw.js');",
+              "const statsJs = read('stats.js');\nconst dashboardJs = read('dashboard.js');\nconst swJs = read('sw.js');")
+          marker = "assert(shiftReportEntryFix.includes('const anchor = vacationReportButton || nativeReportButton || adminButton;'), 'Report směny musí preferovat Report dovolené jako viditelnou kotvu pořadí');"
+          addition = marker + "\nassert(deferred.includes('rak-dashboard-shift-label-v1515.js'), 'Dashboard patch musí ve v1.5.44 zůstat dočasně jako mobilní fallback');\nassert(dashboardJs.includes('function formatDashboardPersonalShiftLabel(value)'), 'Dashboard musí mít nativní formatter plného názvu směny');\nassert(dashboardJs.includes(\"if (/^R8?$/i.test(shift)) return 'Ranní';\"), 'Dashboard musí nativně převádět R/R8 na Ranní');\nassert(dashboardJs.includes(\"if (/^N8?$/i.test(shift)) return 'Noční';\"), 'Dashboard musí nativně převádět N/N8 na Noční');\nassert(dashboardJs.includes('const shift = formatDashboardPersonalShiftLabel(rawShift);'), 'Personifikovaná Dashboard karta musí používat nativní plný název směny');\nassert(shiftReportEntryFix.includes(\"const DEV_BUILD = String(window.RAK_PWA_BUILD || window.RAK_DEV_BUILD || '').trim();\"), 'O aplikaci musí brát testovací build z aktuálního PWA buildu');\nassert(!shiftReportEntryFix.includes(\"const DEV_BUILD = 'v1.5.11';\"), 'Starý hardcoded testovací build v1.5.11 se nesmí vrátit');"
+          replace_once('tools/critical-runtime-smoke.mjs', marker, addition)
+          PY
+      - name: Full repository check
+        run: npm run check
+      - name: Commit only after checks pass
+        shell: bash
+        run: |
+          rm .github/workflows/rak-v1544-dashboard-native.yml
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add app.js package.json sw.js dashboard.js rak-shift-report-entry-fix.js tools/critical-runtime-smoke.mjs .github/workflows/rak-v1544-dashboard-native.yml
+          git commit -m 'Move dashboard shift and build labels native in v1.5.44'
+          git push origin development
