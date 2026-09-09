@@ -1,0 +1,82 @@
+name: RaK v1.5.43 remove legacy dev-fix
+on:
+  push:
+    branches: [development]
+    paths: ['.github/workflows/rak-v1543-remove-devfix.yml']
+permissions:
+  contents: write
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: development
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Apply exact legacy cleanup
+        shell: python
+        run: |
+          from pathlib import Path
+          import json
+
+          def replace_once(path, old, new):
+              p = Path(path)
+              text = p.read_text(encoding='utf-8')
+              if text.count(old) != 1:
+                  raise SystemExit(f'{path}: expected exactly one occurrence, found {text.count(old)}')
+              p.write_text(text.replace(old, new, 1), encoding='utf-8')
+
+          replace_once('app.js', 'const RAK_MODULE_CACHE_VERSION = "1.5.42";', 'const RAK_MODULE_CACHE_VERSION = "1.5.43";')
+          replace_once('app.js', 'const RAK_DEV_UPDATE_BUILD = "v1.5.42";', 'const RAK_DEV_UPDATE_BUILD = "v1.5.43";')
+
+          pkg = json.loads(Path('package.json').read_text(encoding='utf-8'))
+          if pkg.get('version') != '1.5.42':
+              raise SystemExit(f"package version mismatch: {pkg.get('version')}")
+          pkg['version'] = '1.5.43'
+          Path('package.json').write_text(json.dumps(pkg, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
+
+          replace_once('sw.js', "const CACHE_VERSION = 'v1.5.42';", "const CACHE_VERSION = 'v1.5.43';")
+
+          smoke = Path('tools/critical-runtime-smoke.mjs')
+          text = smoke.read_text(encoding='utf-8')
+          exact_lines = [
+              "const devFixes = read('rak-dev-fixes-v1512.js');\n",
+              "assert(!devFixes.includes('openWhatsAppWithoutBlankPage'), 'WhatsApp workaround už nesmí zůstávat duplicitně v rak-dev-fixes-v1512.js');\n",
+              "assert(!devFixes.includes('scheduleReportSort'), 'Legacy plánování řazení reportu se nesmí vrátit do rak-dev-fixes-v1512.js');\n",
+              "assert(!devFixes.includes('formatShiftReportText'), 'Formátování reportu už nesmí být duplicitně v rak-dev-fixes-v1512.js');\n",
+              "assert(!devFixes.includes('MutationObserver'), 'Legacy reportový MutationObserver už nesmí zůstat v rak-dev-fixes-v1512.js');\n",
+              "assert(devFixes.includes('window.getFirstMorningShiftDateInMonth = findFirstMorningShiftDateInMonth;'), 'Kalendářový fix první ranní směny musí zatím zůstat zachovaný');\n",
+          ]
+          for line in exact_lines:
+              if text.count(line) != 1:
+                  raise SystemExit(f'smoke expected exactly one legacy line: {line.strip()}')
+              text = text.replace(line, '', 1)
+          anchor = "assert(!deferred.includes('rak-dev-fixes-v1512.js'), 'Historický rak-dev-fixes-v1512.js se po nativním převzetí reportu a kalendáře nesmí vrátit do runtime bootu');\n"
+          new_guard = anchor + "assert(!fs.existsSync(path.join(root, 'rak-dev-fixes-v1512.js')), 'Historický rak-dev-fixes-v1512.js se po mobilním ověření odpojeného runtime nesmí vrátit do zdrojů');\n"
+          if text.count(anchor) != 1:
+              raise SystemExit('smoke runtime-disconnect guard mismatch')
+          text = text.replace(anchor, new_guard, 1)
+          smoke.write_text(text, encoding='utf-8')
+
+          legacy = Path('rak-dev-fixes-v1512.js')
+          if not legacy.exists():
+              raise SystemExit('legacy dev-fix file already missing unexpectedly')
+          legacy.unlink()
+
+          workflow = Path('.github/workflows/rak-v1543-remove-devfix.yml')
+          if not workflow.exists():
+              raise SystemExit('self-removal workflow missing')
+          workflow.unlink()
+      - name: Full repository check
+        run: npm run check
+      - name: Commit only after checks pass
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git diff --cached --check
+          git commit -m "Remove obsolete dev-fixes source in v1.5.43"
+          git push origin HEAD:development
