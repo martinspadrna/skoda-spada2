@@ -30,12 +30,24 @@ jobs:
           node --check app-pwa-connectivity.js
           node --check tools/critical-runtime-smoke.mjs
       - name: Full repository check
-        run: npm run check
+        id: repo_check
+        shell: bash
+        run: |
+          set -o pipefail
+          npm run check 2>&1 | tee check.log
+      - name: Upload check log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v1547-check-log
+          path: check.log
+          if-no-files-found: ignore
       - name: Commit migration after checks pass
         shell: bash
         run: |
           rm tools/rak-v1547-migrate.py
           rm .github/workflows/rak-v1547-report-entry-migration.yml
+          rm -f check.log
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -A
