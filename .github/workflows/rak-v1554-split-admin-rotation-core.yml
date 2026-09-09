@@ -22,6 +22,18 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22
+      - name: Patch migration smoke declarations
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('tools/rak-v1554-split-admin-rotation-core.py')
+          s = p.read_text(encoding='utf-8')
+          old = '''needle = "const appMenuAdminExportJs = read('app-menu-admin-export.js');"\ninsert = "const adminRotationEditorJs = read('admin-rotation-editor.js');\\nconst adminRotationOvertimeJs = read('admin-rotation-overtime.js');\\nconst adminRotationGeneratorJs = read('admin-rotation-generator.js');\\nconst adminMachineSettingsJs = read('admin-machine-settings.js');\\nconst adminRotationJs = read('admin-rotation.js');\\n"\nif 'const adminRotationEditorJs' not in smoke:\n    smoke = smoke.replace(needle, insert + needle, 1)'''
+          new = '''if "const adminRotationEditorJs = read('admin-rotation-editor.js');" not in smoke:\n    smoke = smoke.replace("const adminRotationGeneratorJs = read('admin-rotation-generator.js');", "const adminRotationGeneratorJs = read('admin-rotation-generator.js');\\nconst adminRotationEditorJs = read('admin-rotation-editor.js');", 1)\nif "const adminMachineSettingsJs = read('admin-machine-settings.js');" not in smoke:\n    smoke = smoke.replace("const adminRotationEditorJs = read('admin-rotation-editor.js');", "const adminRotationEditorJs = read('admin-rotation-editor.js');\\nconst adminMachineSettingsJs = read('admin-machine-settings.js');", 1)'''
+          if old not in s:
+              raise SystemExit('smoke declaration patch block not found')
+          p.write_text(s.replace(old, new, 1), encoding='utf-8')
+          PY
       - name: Apply rotation core split
         run: python3 tools/rak-v1554-split-admin-rotation-core.py
       - name: Syntax check touched rotation files
@@ -44,4 +56,4 @@ jobs:
           git commit -m "Split rotation editor and machine settings in v1.5.54"
           git push origin development
 
-# retry after migration parser fix
+# final retry: smoke declaration patch only
