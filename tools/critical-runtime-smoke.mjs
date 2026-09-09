@@ -11,6 +11,9 @@ const statsJs = read('stats.js');
 const dashboardJs = read('dashboard.js');
 const swJs = read('sw.js');
 const indexHtml = read('index.html');
+const stylesOverridesLegacyEarlyCss = read('styles-overrides-legacy-early.css');
+const stylesOverridesLegacyMidCss = read('styles-overrides-legacy-mid.css');
+const stylesOverridesLegacyLateCss = read('styles-overrides-legacy-late.css');
 const bootSelfTest = read('app-boot-selftest.js');
 const adminRotationJs = read('admin-rotation.js');
 const adminRotationOvertimeJs = read('admin-rotation-overtime.js');
@@ -268,6 +271,15 @@ assert(appVersionMatch, 'Nelze přečíst RAK_MODULE_CACHE_VERSION z app.js');
 assert(swVersionMatch, 'Nelze přečíst CACHE_VERSION ze sw.js');
 assert(String(packageJson.version) === appVersionMatch[1], 'package.json a app.js mají rozdílnou build verzi');
 assert(String(packageJson.version) === swVersionMatch[1], 'package.json a sw.js mají rozdílnou build verzi');
+assert(stylesOverridesLegacyEarlyCss.length > 100000, 'CSS legacy early vrstva je neočekávaně malá');
+assert(stylesOverridesLegacyMidCss.length > 100000, 'CSS legacy mid vrstva je neočekávaně malá');
+assert(stylesOverridesLegacyLateCss.length > 100000, 'CSS legacy late vrstva je neočekávaně malá');
+assert(!fs.existsSync(path.join(root, 'styles-overrides.css')), 'Původní styles-overrides.css monolit se nesmí vrátit');
+const cssLegacyEarlyPos = indexHtml.indexOf('styles-overrides-legacy-early.css');
+const cssLegacyMidPos = indexHtml.indexOf('styles-overrides-legacy-mid.css');
+const cssLegacyLatePos = indexHtml.indexOf('styles-overrides-legacy-late.css');
+const cssDashboardFitPos = indexHtml.indexOf('styles-dashboard-fit.css');
+assert(cssLegacyEarlyPos >= 0 && cssLegacyEarlyPos < cssLegacyMidPos && cssLegacyMidPos < cssLegacyLatePos && cssLegacyLatePos < cssDashboardFitPos, 'CSS legacy vrstvy musí zachovat původní cascade pořadí před Dashboard fit');
 
 
 console.log('[critical-runtime-smoke] OK navigation+rotation+food baseline locked; stable qr.js boot; extended diagnostics idle; version sync ' + packageJson.version + '; Games removed; XLSX+JSZip lazy; Supabase eager; DOM security eager');

@@ -36,7 +36,10 @@ const indexHtml = read('index.html');
 const dashboardJs = read('dashboard.js');
 const payrollJs = read('payroll.js');
 const adminReportsJs = read('admin-reports.js');
-const stylesOverridesCss = read('styles-overrides.css');
+const stylesOverridesLegacyEarlyCss = read('styles-overrides-legacy-early.css');
+const stylesOverridesLegacyMidCss = read('styles-overrides-legacy-mid.css');
+const stylesOverridesLegacyLateCss = read('styles-overrides-legacy-late.css');
+const stylesOverridesCss = stylesOverridesLegacyEarlyCss + stylesOverridesLegacyMidCss + stylesOverridesLegacyLateCss;
 const dashboardFitCss = read('styles-dashboard-fit.css');
 const dashboardPolishCss = read('styles-dashboard-polish.css');
 const menuPolishCss = read('styles-menu-polish.css');
@@ -64,7 +67,9 @@ const dashboardCssLayerOrderContractV194 = Object.freeze([
   'styles-inline-legacy.css',
   'styles-calc-panels.css',
   'styles-games.css',
-  'styles-overrides.css',
+  'styles-overrides-legacy-early.css',
+  'styles-overrides-legacy-mid.css',
+  'styles-overrides-legacy-late.css',
   'styles-dashboard-fit.css',
   'styles-admin-polish.css',
   'styles-menu-polish.css',
@@ -78,7 +83,9 @@ const dashboardCssLayerOrderContractV194 = Object.freeze([
   'styles-rotation-tasks.css'
 ]);
 const dashboardCriticalStyles = [
-  'styles-overrides.css',
+  'styles-overrides-legacy-early.css',
+  'styles-overrides-legacy-mid.css',
+  'styles-overrides-legacy-late.css',
   'styles-dashboard-fit.css',
   'styles-admin-polish.css',
   'styles-menu-polish.css',
@@ -259,13 +266,13 @@ const dashboardCssGuardSeriesCompleteV1100 = Object.freeze({
   intent: 'dashboard-css-guard-series-closed',
   status: 'closed',
   requiredMarkers: Object.freeze([
-    ['styles-overrides.css', 'Dashboard legacy override inventory guard'],
-    ['styles-overrides.css', 'Dashboard proven-overridden legacy candidates'],
-    ['styles-overrides.css', 'Dashboard extended proven-overridden legacy candidates'],
+    ['styles-overrides-legacy-early.css', 'Dashboard legacy override inventory guard'],
+    ['styles-overrides-legacy-early.css', 'Dashboard proven-overridden legacy candidates'],
+    ['styles-overrides-legacy-early.css', 'Dashboard extended proven-overridden legacy candidates'],
     ['styles-dashboard-polish.css', 'Dashboard no visual owner drift guard'],
     ['styles-dashboard-polish.css', 'Dashboard CSS layer order contract v1.94'],
     ['styles-dashboard-polish.css', 'Dashboard active owner registry'],
-    ['styles-overrides.css', 'Dashboard no-new-hotfix lock v1.96'],
+    ['styles-overrides-legacy-early.css', 'Dashboard no-new-hotfix lock v1.96'],
     ['styles-dashboard-polish.css', 'Dashboard override selector lock v1.96'],
     ['styles-dashboard-polish.css', 'Dashboard scope guard v1.97'],
     ['styles-dashboard-polish.css', 'Dashboard release isolation guard v1.98'],
