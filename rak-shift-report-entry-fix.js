@@ -296,10 +296,9 @@
     button.disabled = false;
     button.setAttribute('aria-hidden', 'false');
 
-    // Původní skrytý vstup do reportu spravuje rak-shift-report-share.js.
-    // Kotvíme náš stabilní vstup až ZA něj. Tím se oba MutationObservery
-    // nepřetahují o pozici hned za tlačítkem Administrace a nezablokují UI.
-    const anchor = nativeReportButton || vacationReportButton || adminButton;
+    // Report dovolené je viditelný vlastník pořadí. Skrytý legacy vstup do
+    // reportu směny může observer přesouvat, ale náš stabilní vstup zůstává za dovolenou.
+    const anchor = vacationReportButton || nativeReportButton || adminButton;
     if (anchor && anchor.nextElementSibling !== button) anchor.insertAdjacentElement('afterend', button);
   }
 

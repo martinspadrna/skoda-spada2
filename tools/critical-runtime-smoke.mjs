@@ -11,6 +11,7 @@ const swJs = read('sw.js');
 const indexHtml = read('index.html');
 const bootSelfTest = read('app-boot-selftest.js');
 const dashboardShiftPatch = read('rak-dashboard-shift-label-v1515.js');
+const shiftReportEntryFix = read('rak-shift-report-entry-fix.js');
 const lazyExternalLibs = read('rak-lazy-external-libs.js');
 const deferHeavyLibs = read('tools/defer-heavy-libs.mjs');
 const packageJson = JSON.parse(read('package.json'));
@@ -72,6 +73,8 @@ assert(appJs.includes('await Promise.all(deferredFiles.map(loadScript))'), 'Boot
 assert(appJs.includes('installBottomNavBindings'), 'Chybí navázání spodní navigace');
 assert(appJs.includes('applyBottomNavMoreHardFix'), 'Chybí hard-fix tlačítka Více');
 assert(appJs.includes('installDelegatedAppActions'), 'Chybí delegované akce aplikace');
+assert(deferred.includes('rak-menu-report-order-v1513.js'), 'Stabilizační pořadí reportů musí zůstat boot-loaded do mobilního ověření nové kotvy');
+assert(shiftReportEntryFix.includes('const anchor = vacationReportButton || nativeReportButton || adminButton;'), 'Report směny musí preferovat Report dovolené jako viditelnou kotvu pořadí');
 
 // Hry už nejsou součástí zdrojového HTML ani runtime bootu.
 assert(!appJs.includes('__rakDevGamesObserver'), 'Hry znovu používají globální MutationObserver');
