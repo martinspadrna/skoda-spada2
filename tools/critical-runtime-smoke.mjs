@@ -82,7 +82,8 @@ assert(!deferred.includes('rak-dev-fixes-v1512.js'), 'Historický rak-dev-fixes-
 assert(!fs.existsSync(path.join(root, 'rak-dev-fixes-v1512.js')), 'Historický rak-dev-fixes-v1512.js se po mobilním ověření odpojeného runtime nesmí vrátit do zdrojů');
 assert(!fs.existsSync(path.join(root, 'rak-menu-report-order-v1513.js')), 'Legacy CSS stabilizátor pořadí reportů se nesmí vrátit do zdrojů');
 assert(shiftReportEntryFix.includes('const anchor = vacationReportButton || nativeReportButton || adminButton;'), 'Report směny musí preferovat Report dovolené jako viditelnou kotvu pořadí');
-assert(deferred.includes('rak-dashboard-shift-label-v1515.js'), 'Dashboard patch musí ve v1.5.44 zůstat dočasně jako mobilní fallback');
+assert(!deferred.includes('rak-dashboard-shift-label-v1515.js'), 'Dashboard patch se po nativním převzetí nesmí vrátit do runtime bootu');
+assert(fs.existsSync(path.join(root, 'rak-dashboard-shift-label-v1515.js')), 'Dashboard patch musí ve v1.5.45 ještě zůstat ve zdrojích jako rychlá fallback pojistka');
 assert(dashboardJs.includes('function formatDashboardPersonalShiftLabel(value)'), 'Dashboard musí mít nativní formatter plného názvu směny');
 assert(dashboardJs.includes("if (/^R8?$/i.test(shift)) return 'Ranní';"), 'Dashboard musí nativně převádět R/R8 na Ranní');
 assert(dashboardJs.includes("if (/^N8?$/i.test(shift)) return 'Noční';"), 'Dashboard musí nativně převádět N/N8 na Noční');
