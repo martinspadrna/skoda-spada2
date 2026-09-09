@@ -1,0 +1,43 @@
+name: RaK v1.5.48 app-menu split
+
+on:
+  push:
+    branches: [development]
+    paths:
+      - '.github/workflows/rak-v1548-split-menu.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  split:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: development
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Apply split
+        run: python3 tools/rak-v1548-split-menu.py
+      - name: Syntax check touched files
+        run: |
+          node --check app.js
+          node --check app-menu.js
+          node --check app-menu-profile.js
+          node --check app-menu-shift-report.js
+          node --check tools/critical-runtime-smoke.mjs
+      - name: Full repository check
+        run: npm run check
+      - name: Commit split after checks pass
+        shell: bash
+        run: |
+          rm tools/rak-v1548-split-menu.py
+          rm .github/workflows/rak-v1548-split-menu.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "Split profile and shift report from app-menu in v1.5.48"
+          git push origin HEAD:development
