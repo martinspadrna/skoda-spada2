@@ -111,14 +111,23 @@ if old_map not in export:
 export = export.replace(old_map, new_map, 1)
 EXPORT.write_text(export, encoding='utf-8')
 
-# Runtime health/release inventories.
-trio_lines = "      'styles-overrides-legacy-early.css',\n      'styles-overrides-legacy-mid.css',\n      'styles-overrides-legacy-late.css',"
+# Runtime health/release inventories. The two files use different indentation.
 for path in (HEALTH, RELEASE_AUDIT):
     text = path.read_text(encoding='utf-8')
-    needle = "      'styles-overrides.css',"
-    if needle not in text:
+    replaced = False
+    for indent in ('    ', '      '):
+        needle = indent + "'styles-overrides.css',"
+        if needle in text:
+            trio_lines = '\n'.join([
+                indent + "'styles-overrides-legacy-early.css',",
+                indent + "'styles-overrides-legacy-mid.css',",
+                indent + "'styles-overrides-legacy-late.css',"
+            ])
+            text = text.replace(needle, trio_lines, 1)
+            replaced = True
+            break
+    if not replaced:
         raise RuntimeError(f'{path.name}: styles-overrides inventory entry not found')
-    text = text.replace(needle, trio_lines, 1)
     path.write_text(text, encoding='utf-8')
 
 # App usage smoke: reconstruct the original legacy CSS byte-for-byte (after LF normalization)
