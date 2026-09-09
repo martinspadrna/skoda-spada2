@@ -21,7 +21,9 @@ jobs:
         with:
           node-version: 20
       - name: Apply migration
-        run: python3 tools/rak-v1547-migrate.py
+        run: |
+          python3 tools/rak-v1547-migrate.py
+          python3 tools/rak-v1547-fix-check.py
       - name: Syntax check touched files
         run: |
           node --check app.js
@@ -46,6 +48,7 @@ jobs:
         shell: bash
         run: |
           rm tools/rak-v1547-migrate.py
+          rm tools/rak-v1547-fix-check.py
           rm .github/workflows/rak-v1547-report-entry-migration.yml
           rm -f check.log
           git config user.name "github-actions[bot]"
