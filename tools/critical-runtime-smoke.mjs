@@ -52,7 +52,10 @@ assert(idleAudits.includes('app-postload-audits.js'), 'Post-load audit orchestr√
 const idleReleaseDiagnostics = [
   'rak-storage-sync-audit.js',
   'rak-boot-sequence-audit.js',
+  'rak-dom-action-audit.js',
   'rak-supabase-client-audit.js',
+  'rak-appsec-privacy-audit.js',
+  'rak-release-gates.js',
   'rak-export-release-audit.js',
   'rak-release-ops-audit.js',
   'rak-due-diligence-progress.js',
