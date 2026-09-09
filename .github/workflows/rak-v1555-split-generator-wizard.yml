@@ -40,3 +40,5 @@ jobs:
           git add -A
           git commit -m "Split generator engine and wizard in v1.5.55"
           git push origin development
+
+# retry after updating the historical smoke ownership guard
