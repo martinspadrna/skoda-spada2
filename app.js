@@ -2,8 +2,8 @@
 try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleReady('app.js', 'loaded', { source: 'index' }); } catch (err) {}
 
 (async () => {
-  const RAK_MODULE_CACHE_VERSION = "1.5.50";
-  const RAK_DEV_UPDATE_BUILD = "v1.5.50";
+  const RAK_MODULE_CACHE_VERSION = "1.5.51";
+  const RAK_DEV_UPDATE_BUILD = "v1.5.51";
   window.RAK_PWA_BUILD = RAK_DEV_UPDATE_BUILD;
 
   const criticalFiles = [
@@ -43,6 +43,8 @@ try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleR
     "ui.js",
     "app-navigation.js",
     "app-bottom-nav.js",
+    "app-menu-admin-export.js",
+    "app-menu-admin-core.js",
     "app-menu.js",
     "app-menu-pages.js",
     "app-menu-bug-report.js",
