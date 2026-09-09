@@ -1,0 +1,53 @@
+name: RaK v1.5.52 admin core split
+
+on:
+  push:
+    branches:
+      - development
+    paths:
+      - tools/rak-v1552-split-admin-core.py
+      - .github/workflows/rak-v1552-split-admin-core.yml
+
+permissions:
+  contents: write
+
+jobs:
+  split:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout development
+        uses: actions/checkout@v4
+        with:
+          ref: development
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Apply admin core split
+        run: python3 tools/rak-v1552-split-admin-core.py
+
+      - name: Syntax check touched menu files
+        run: |
+          node --check app-menu-admin-export.js
+          node --check app-menu-admin-storage.js
+          node --check app-menu-admin-service.js
+          node --check app-menu-admin-renderer.js
+          node --check app-menu.js
+          node --check app.js
+          node --check tools/critical-runtime-smoke.mjs
+
+      - name: Full repository check
+        run: npm run check
+
+      - name: Commit split after checks pass
+        run: |
+          rm -f .github/workflows/rak-v1552-split-admin-core.yml tools/rak-v1552-split-admin-core.py
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git diff --cached --check
+          git commit -m "Split admin core modules in v1.5.52"
+          git push origin HEAD:development
