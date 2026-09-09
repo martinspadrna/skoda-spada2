@@ -1,0 +1,52 @@
+name: RaK v1.5.57 dead game CSS cleanup
+
+on:
+  push:
+    branches: [development]
+    paths:
+      - '.github/workflows/rak-v1557-remove-dead-game-css.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout development
+        uses: actions/checkout@v4
+        with:
+          ref: development
+          fetch-depth: 0
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Remove dead game CSS
+        run: python3 tools/rak-v1557-remove-dead-game-css.py
+      - name: Verify game CSS is gone
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          files = [Path('styles-overrides-legacy-early.css'), Path('styles-overrides-legacy-mid.css'), Path('styles-overrides-legacy-late.css')]
+          text = '\n'.join(p.read_text() for p in files)
+          clean = re.sub(r'/\*[\s\S]*?\*/', '', text)
+          markers = ['#games', 'body.gamesOpen', 'body.gamesCompactMode', 'body.tttOpen', '#tttOverlay']
+          for marker in markers:
+              assert marker not in clean, marker
+          assert not re.search(r'\.(?:games|game|ttt|snake|arcade|ships|flap|gomoku)[A-Za-z0-9_-]*\b', clean, re.I)
+          print('legacy CSS bytes after cleanup:', [len(p.read_text()) for p in files])
+          PY
+          node --check app.js
+          node --check tools/critical-runtime-smoke.mjs
+      - name: Full repository check
+        run: npm run check
+      - name: Commit cleanup after checks pass
+        run: |
+          rm -f .github/workflows/rak-v1557-remove-dead-game-css.yml tools/rak-v1557-remove-dead-game-css.py
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "Remove dead game CSS in v1.5.57"
+          git push origin development
