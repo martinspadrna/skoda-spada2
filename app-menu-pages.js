@@ -22,6 +22,11 @@ function renderAppMenuAboutPage(body, versionText) {
 
 function renderAppMenuContactPage(body, versionText) {
       bindAppMenuHandlers(body);
+      const contact = typeof getRakAppContactSettings === 'function'
+        ? getRakAppContactSettings()
+        : { name: 'Martin Špadrna', phone: '+420 773 682 499', email: 'martinspadrna@gmail.com' };
+      const contactPhoneHref = typeof getRakAppContactPhoneHref === 'function' ? getRakAppContactPhoneHref(contact) : '';
+      const contactEmailHref = typeof getRakAppContactEmailHref === 'function' ? getRakAppContactEmailHref(contact) : '';
       body.innerHTML = [
         '<div class="appMenuCard">',
         '  <div class="appMenuCardTitle">Kontakt</div>',
