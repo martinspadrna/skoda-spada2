@@ -730,6 +730,13 @@ function getDashboardAccessOverview(now) {
   return rows;
 }
 
+function formatDashboardPersonalShiftLabel(value) {
+  const shift = String(value || '').trim();
+  if (/^R8?$/i.test(shift)) return 'Ranní';
+  if (/^N8?$/i.test(shift)) return 'Noční';
+  return shift;
+}
+
 function buildDashboardPersonalHeroHtml(now, esc) {
   const state = getDashboardPersonalShiftStatus(now);
   const friendlyName = getDashboardFriendlyName(state.name);
@@ -737,7 +744,8 @@ function buildDashboardPersonalHeroHtml(now, esc) {
   const entry = state.active || state.next;
   const isActive = !!state.active;
   const machine = String(entry && entry.target || '').trim();
-  const shift = String(entry && entry.shift || '').trim();
+  const rawShift = String(entry && entry.shift || '').trim();
+  const shift = formatDashboardPersonalShiftLabel(rawShift);
   const task = dashboardPersonalTaskText(entry);
   const window = entry && typeof getPersonScheduleEntryWindow === 'function' ? getPersonScheduleEntryWindow(entry) : null;
   let status = '';
