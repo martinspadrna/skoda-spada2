@@ -96,7 +96,7 @@
   wrapAsyncGlobal('exportCurrentHtml', 'jszip');
   wrapAsyncGlobal('triggerRakZipExport', 'jszip');
 
-  // Staré Games soubory už fyzicky neexistují. ZIP export proto nesmí dál čekat jejich cesty.
+  // Staré Games soubory a jejich Memory guard už nejsou součástí nasazeného runtime.
   const deadGamePaths = new Set([
     'games-engine.js',
     'games-profile.js',
@@ -106,7 +106,8 @@
     'gomoku-ai-smoke-v966.js',
     'styles-games.css',
     'assets/nav-icons/games-gray.png',
-    'assets/nav-icons/games-green.png'
+    'assets/nav-icons/games-green.png',
+    'assets/rak-memory-total-time-fix.js'
   ]);
   try {
     if (window.EXPORT_SOURCE_IDS && typeof window.EXPORT_SOURCE_IDS === 'object') {

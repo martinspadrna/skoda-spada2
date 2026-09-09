@@ -112,6 +112,7 @@ assert(deferHeavyLibs.includes('xlsx@0\\.18\\.5'), 'Build transform nehlídá p�
 assert(deferHeavyLibs.includes('jszip@3\\.10\\.1'), 'Build transform nehlídá přesně JSZip 3.10.1');
 assert(deferHeavyLibs.includes('@supabase\\/supabase-js@2\\.110\\.7'), 'Build transform nemá pojistku proti odstranění Supabase');
 assert(deferHeavyLibs.includes('rak-dom-security-hardening\\.js'), 'Build transform nemá pojistku pro DOM security hardening');
+assert(deferHeavyLibs.includes('rak-memory-total-time-fix\\.js'), 'Build transform neodstraňuje starý Memory/Pexeso guard');
 assert(lazyExternalLibs.includes("window.rakEnsureExternalLibrary = ensureExternalLibrary"), 'Chybí veřejný on-demand loader externích knihoven');
 assert(lazyExternalLibs.includes("wrapAsyncGlobal('buildRakExcelImportPreview', 'xlsx')"), 'Excel import není navázaný na lazy XLSX');
 assert(lazyExternalLibs.includes("wrapAsyncGlobal('adminRotationGeneratorDownloadExcel', 'xlsx')"), 'Excel export rozpisu není navázaný na lazy XLSX');
@@ -121,11 +122,13 @@ assert(lazyExternalLibs.includes(jszipUrl), 'Lazy loader nepoužívá připnutou
 assert(lazyExternalLibs.includes('sha384-vtjasyidUo0kW94K5MXDXntzOJpQgBKXmE7e2Ga4LG0skTTLeBi97eFAXsqewJjw'), 'Lazy XLSX ztratilo SRI');
 assert(lazyExternalLibs.includes('sha384-+mbV2IY1Zk/X1p/nWllGySJSUN8uMs+gUAN10Or95UBH0fpj6GfKgPmgC5EXieXG'), 'Lazy JSZip ztratilo SRI');
 assert(lazyExternalLibs.includes("deadGamePaths"), 'ZIP export nemá runtime cleanup odstraněných Games cest');
+assert(lazyExternalLibs.includes("'assets/rak-memory-total-time-fix.js'"), 'ZIP cleanup nevyřazuje starý Memory/Pexeso guard');
 assert(lazyExternalLibs.includes("window.EXPORT_JS_FILES.includes('rak-lazy-external-libs.js')"), 'ZIP export nearchivuje nový lazy loader');
 assert(indexHtml.includes('@supabase/supabase-js@2.110.7'), 'Supabase eager script zmizel z index.html');
 if (String(process.env.VERCEL || '').trim()) {
   assert(!indexHtml.includes(xlsxUrl), 'V nasazovaném HTML zůstal eager XLSX');
   assert(!indexHtml.includes(jszipUrl), 'V nasazovaném HTML zůstal eager JSZip');
+  assert(!indexHtml.includes('assets/rak-memory-total-time-fix.js'), 'V nasazeném HTML zůstal starý Memory/Pexeso guard');
   for (const file of idleReleaseDiagnostics) {
     assert(!indexHtml.includes('src="' + file + '"'), 'V nasazovaném HTML zůstala eager diagnostika ' + file);
   }
