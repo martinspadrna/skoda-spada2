@@ -2156,26 +2156,11 @@ body.ladaMode .dashboardAnnouncementBar{
 /* v.1.5 (939) – Obsazenost strojů: odstranění černého SVG fallbacku pod čárou. */
 #stats .statsOccupancyLineArea{
   display:none !important;
-  fill:transparent !important;
-  stroke:none !important;
-  opacity:0 !important;
 }
-#stats .statsOccupancyLineChart svg{
-  background:transparent !important;
-}
-#stats .statsOccupancyLineGrid{
-  fill:none !important;
-  stroke:rgba(var(--theme-rgb, 124,255,124), .24) !important;
-}
-#stats .statsOccupancyLine{
-  fill:none !important;
-  stroke:var(--rak-stats-theme-accent, var(--theme-accent, var(--accent, #7cff7c))) !important;
-  filter:drop-shadow(0 0 8px rgba(var(--theme-rgb, 124,255,124), .38)) !important;
-}
-#stats .statsOccupancyLineDot{
-  fill:var(--rak-stats-theme-accent, var(--theme-accent, var(--accent, #7cff7c))) !important;
-  stroke:rgba(255,255,255,.88) !important;
-}
+
+
+
+
 body.lightweightMode #stats .statsOccupancyLine,
 body.lowEndDevice #stats .statsOccupancyLine,
 body.ladaMode #stats .statsOccupancyLine{
@@ -2200,8 +2185,6 @@ body.ladaMode #stats .statsOccupancyChartTint{
 }
 #stats .statsOccupancyLineArea{
   display:block !important;
-  stroke:none !important;
-  opacity:1 !important;
 }
 body.lightweightMode #stats .statsOccupancyLineArea,
 body.lowEndDevice #stats .statsOccupancyLineArea,
@@ -2216,8 +2199,6 @@ body.ladaMode #stats .statsOccupancyLineArea{
 }
 #stats .statsOccupancyLineArea{
   display:block !important;
-  stroke:none !important;
-  opacity:1 !important;
   fill-opacity:.18 !important;
 }
 body.lightweightMode #stats .statsOccupancyLineArea,

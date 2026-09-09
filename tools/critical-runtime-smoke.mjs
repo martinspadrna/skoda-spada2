@@ -18,6 +18,8 @@ const stylesViewportPolishCss = read('styles-viewport-polish.css');
 const stylesReleasePolishCss = read('styles-release-polish.css');
 const stylesMenuPolishCss = read('styles-menu-polish.css');
 const stylesAdminPolishCss = read('styles-admin-polish.css');
+const stylesStatsPolishCss = read('styles-stats-polish.css');
+const stylesThemePropagationCss = read('styles-theme-propagation.css');
 const dashboardFitCss = read('styles-dashboard-fit.css');
 const dashboardPolishCss = read('styles-dashboard-polish.css');
 const dashboardLegacyCleanupTargetsV158 = [
@@ -66,6 +68,13 @@ assert(stylesMenuPolishCss.includes('#appMenuBody .rakDevicePerfCard'), 'Menu po
 assert(stylesAdminPolishCss.includes('#appMenuBody[data-admin-view="rotation"] #adminRotationEditor .appMenuAdminRotationTable'), 'Admin polish musí dál vlastnit tabulku Rozpisů');
 assert(stylesAdminPolishCss.includes('.adminRotationQuickRemove'), 'Admin polish musí dál vlastnit rychlé Odebrat');
 assert(legacyMenuAdminCssV160.length > 100000, 'v1.5.60 nesmí omylem vyprázdnit legacy CSS');
+const legacyCalcStatsCssV161 = stylesOverridesLegacyEarlyCss + '\n' + stylesOverridesLegacyMidCss + '\n' + stylesOverridesLegacyLateCss;
+assert(stylesOverridesLegacyEarlyCss.includes('RaK v1.5.61 – proven calculator/statistics legacy dedupe'), 'Chybí v1.5.61 kalkulačky/statistiky cleanup marker');
+assert(stylesStatsPolishCss.includes('.statsYearOverviewCard'), 'Stats polish musí dál vlastnit roční přehled statistik');
+assert(stylesStatsPolishCss.includes('.statsOccupancyLineChart'), 'Stats polish musí dál vlastnit graf obsazenosti');
+assert(stylesThemePropagationCss.includes('.calcTile'), 'Theme propagation musí dál vlastnit barevnou propagaci kalkulaček');
+assert(stylesThemePropagationCss.includes('.calcResultMain'), 'Theme propagation musí dál vlastnit text výsledků kalkulaček');
+assert(legacyCalcStatsCssV161.length > 100000, 'v1.5.61 nesmí omylem vyprázdnit legacy CSS');
 const bootSelfTest = read('app-boot-selftest.js');
 const adminRotationJs = read('admin-rotation.js');
 const adminRotationOvertimeJs = read('admin-rotation-overtime.js');

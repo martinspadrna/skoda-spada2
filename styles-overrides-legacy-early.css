@@ -1,3 +1,9 @@
+/* RaK v1.5.61 – proven calculator/statistics legacy dedupe.
+   Legacy kalkulačkové/statistické deklarace se mažou pouze tehdy, když stejný selector
+   ve stejné media/supports větvi vlastní stejnou vlastnost v některé později načtené
+   polish vrstvě se stejnou/vyšší prioritou. styles-calc-panels.css je načtený PŘED legacy
+   vrstvami, proto se záměrně nepoužívá jako důkaz pro mazání. Obecné card/page/body
+   selectory jsou z tohoto průchodu vyloučené. */
 /* RaK v1.5.60 – proven menu/admin legacy dedupe.
    Legacy menu/admin deklarace se mažou pouze tehdy, když stejný selector ve stejné
    media/supports větvi vlastní stejnou vlastnost v později načteném
@@ -3411,7 +3417,6 @@ body.lowEndDevice :is(#soustruhy, #frezky, #brusy, #pracka, #korekce-soustruhy, 
 #brusy.calcPage{
   --brus-choice-btn-h:clamp(46px, 6.8dvh, 60px);
   --brus-choice-btn-pad-y:clamp(8px, 1.55dvh, 12px);
-  --brus-choice-gap:8px;
 }
 #brusy.calcPage .brusChoiceGrid,
 #brusy.calcPage .brusIndexGrid{
@@ -3462,7 +3467,6 @@ body.lowEndDevice :is(#soustruhy, #frezky, #brusy, #pracka, #korekce-soustruhy, 
   #brusy.calcPage{
     --brus-choice-btn-h:clamp(44px, 6.3dvh, 56px);
     --brus-choice-btn-pad-y:7px;
-    --brus-choice-gap:8px;
   }
 }
 
@@ -3473,7 +3477,6 @@ body.lowEndDevice :is(#soustruhy, #frezky, #brusy, #pracka, #korekce-soustruhy, 
 #brusy.calcPage{
   --brus-choice-btn-h:clamp(42px, 5.55dvh, 50px);
   --brus-choice-btn-pad-y:6px;
-  --brus-choice-gap:8px;
 }
 #brusy.calcPage .brusChoiceGrid,
 #brusy.calcPage .brusIndexGrid{
@@ -3524,7 +3527,6 @@ body.lowEndDevice :is(#soustruhy, #frezky, #brusy, #pracka, #korekce-soustruhy, 
   #brusy.calcPage{
     --brus-choice-btn-h:clamp(40px, 5.45dvh, 48px);
     --brus-choice-btn-pad-y:6px;
-    --brus-choice-gap:8px;
   }
 }
 
@@ -3532,76 +3534,32 @@ body.lowEndDevice :is(#soustruhy, #frezky, #brusy, #pracka, #korekce-soustruhy, 
 /* v.1.1 (592) – Brusy: oprava skutečné velikosti tlačítek přes vlastní třídy.
    Už se nespoléhá jen na obecnou .bbtn vrstvu. Volba brusu a běžné indexy
    jsou viditelně zmenšené na velikost mezi nízkými volnými indexy a původními vysokými tlačítky. */
-#brusy.calcPage{
-  --brus-main-choice-h:44px;
-  --brus-free-choice-h:40px;
-  --brus-choice-gap:7px;
-}
+
 html body #brusy.calcPage .brusChoiceGrid,
 html body #brusy.calcPage .brusIndexGrid{
-  gap:var(--brus-choice-gap) !important;
   grid-auto-rows:auto !important;
-  align-items:stretch !important;
 }
 html body #brusy.calcPage .brusIndexGrid > .brusFreeWrap{
-  gap:var(--brus-choice-gap) !important;
   grid-column:1 / -1 !important;
-  align-items:stretch !important;
   min-height:0 !important;
   height:auto !important;
   max-height:none !important;
 }
-html body #brusy.calcPage .bbtn.brusMachineBtn,
-html body #brusy.calcPage .bbtn.brusIndexBtn{
-  height:var(--brus-main-choice-h) !important;
-  min-height:var(--brus-main-choice-h) !important;
-  max-height:var(--brus-main-choice-h) !important;
-  padding:5px 9px !important;
-  font-size:14px !important;
-  line-height:1.05 !important;
-  border-radius:13px !important;
-  display:flex !important;
-  align-items:center !important;
-  justify-content:center !important;
-  box-sizing:border-box !important;
-  overflow:hidden !important;
-}
-html body #brusy.calcPage .bbtn.brusFreeIndexBtn{
-  height:var(--brus-free-choice-h) !important;
-  min-height:var(--brus-free-choice-h) !important;
-  max-height:var(--brus-free-choice-h) !important;
-  padding:4px 9px !important;
-  font-size:13.5px !important;
-  line-height:1.05 !important;
-  border-radius:13px !important;
-  display:flex !important;
-  align-items:center !important;
-  justify-content:center !important;
-  box-sizing:border-box !important;
-  overflow:hidden !important;
-}
+
+
 @media (max-width:430px){
-  #brusy.calcPage{
-    --brus-main-choice-h:43px;
-    --brus-free-choice-h:40px;
-    --brus-choice-gap:7px;
-  }
+  
   html body #brusy.calcPage .bbtn.brusMachineBtn,
   html body #brusy.calcPage .bbtn.brusIndexBtn{
     padding-top:5px !important;
     padding-bottom:5px !important;
-    font-size:13.8px !important;
   }
 }
 
 /* v.1.1 (593) – Brusy: menší mezera mezi volbou brusu a indexy.
    Nehýbe výškou tlačítek z v.592, jen stáhne vertikální rozestup mezi oběma bloky. */
-html body #brusy.calcPage .brusChoiceGrid{
-  margin-bottom:-5px !important;
-}
-html body #brusy.calcPage .brusIndexGrid{
-  margin-top:0 !important;
-}
+
+
 @media (max-width:430px){
   html body #brusy.calcPage .brusChoiceGrid{
     margin-bottom:-6px !important;
