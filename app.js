@@ -2,8 +2,8 @@
 try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleReady('app.js', 'loaded', { source: 'index' }); } catch (err) {}
 
 (async () => {
-  const RAK_MODULE_CACHE_VERSION = "1.5.29";
-  const RAK_DEV_UPDATE_BUILD = "v1.5.29";
+  const RAK_MODULE_CACHE_VERSION = "1.5.30";
+  const RAK_DEV_UPDATE_BUILD = "v1.5.30";
   window.RAK_PWA_BUILD = RAK_DEV_UPDATE_BUILD;
 
   const criticalFiles = [
@@ -70,6 +70,9 @@ try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleR
   const idleAuditFiles = [
     "app-health-audits.js",
     "app-postload-audits.js",
+    "rak-storage-sync-audit.js",
+    "rak-boot-sequence-audit.js",
+    "rak-supabase-client-audit.js",
     "rak-export-release-audit.js",
     "rak-release-ops-audit.js",
     "rak-due-diligence-progress.js",
