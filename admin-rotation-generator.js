@@ -3162,4 +3162,144 @@ function adminHandleRotationGeneratorWizardAction(action, target) {
   return false;
 }
 
+
+
+// v1.5.54 – doplněné funkce přesunuté z admin-rotation.js.
+function adminRotationSplitGeneratorList(value) {
+  const source = Array.isArray(value) ? value : String(value || '').split(/[\n,;]/);
+  const seen = new Set();
+  return source
+    .map((item) => String(item || '').trim())
+    .filter((item) => {
+      if (!item || seen.has(item)) return false;
+      seen.add(item);
+      return true;
+    });
+}
+
+
+function adminRotationNormalizeGeneratorSettings(settings) {
+  const base = RAK_ROTATION_GENERATOR_RULES_V1107 || {};
+  const raw = settings && typeof settings === 'object' ? settings : {};
+  const softPreferred = adminRotationSplitGeneratorList(raw.softPreferred).length
+    ? adminRotationSplitGeneratorList(raw.softPreferred)
+    : Array.from(base.softPreferred || []);
+  const hardPreferred = adminRotationSplitGeneratorList(raw.hardPreferred).length
+    ? adminRotationSplitGeneratorList(raw.hardPreferred)
+    : Array.from(base.hardPreferred || []);
+  const softCore = adminRotationSplitGeneratorList(raw.softCore).length
+    ? adminRotationSplitGeneratorList(raw.softCore)
+    : Array.from(base.softCore || []);
+  const softHardCycle = adminRotationFilterMachineList(raw.softHardCycle, HARD_MACHINE_HEADERS).length
+    ? adminRotationFilterMachineList(raw.softHardCycle, HARD_MACHINE_HEADERS)
+    : Array.from(base.softHardCycle || []);
+  const hardCycle = adminRotationFilterMachineList(raw.hardCycle, HARD_MACHINE_HEADERS).length
+    ? adminRotationFilterMachineList(raw.hardCycle, HARD_MACHINE_HEADERS)
+    : Array.from(base.hardCycle || []);
+  const softHardBlockLength = Math.max(1, Math.min(12, Number(raw.softHardBlockLength || base.softHardBlockLength || 3) || 3));
+  const softBaseLathe = Object.assign({}, base.softBaseLathe || {}, adminRotationNormalizeSoftBaseLathe(raw.softBaseLathe || {}, softCore));
+  const avoidLatheWhenTwoLathesOneMillEnabled = adminRotationGeneratorBooleanValue(raw.avoidLatheWhenTwoLathesOneMillEnabled, base.avoidLatheWhenTwoLathesOneMillEnabled !== false);
+  const avoidLatheWhenTwoLathesOneMillNames = adminRotationSplitGeneratorList(raw.avoidLatheWhenTwoLathesOneMillNames).length
+    ? adminRotationSplitGeneratorList(raw.avoidLatheWhenTwoLathesOneMillNames)
+    : Array.from(base.avoidLatheWhenTwoLathesOneMillNames || ['Starý']);
+  const soloMillBalanceEnabled = adminRotationGeneratorBooleanValue(raw.soloMillBalanceEnabled, base.soloMillBalanceEnabled !== false);
+  const soloMillMaxSpread = Math.max(0, Math.min(6, Number(raw.soloMillMaxSpread ?? base.soloMillMaxSpread ?? 1) || 1));
+  const softTotalBalanceEnabled = adminRotationGeneratorBooleanValue(raw.softTotalBalanceEnabled, base.softTotalBalanceEnabled !== false);
+  const softTotalBalanceNames = adminRotationSplitGeneratorList(raw.softTotalBalanceNames).length
+    ? adminRotationSplitGeneratorList(raw.softTotalBalanceNames)
+    : Array.from(base.softTotalBalanceNames || ['Blažek', 'Starý', 'Kříž', 'Pech']);
+  const softTotalMaxSpread = Math.max(0, Math.min(6, Number(raw.softTotalMaxSpread ?? base.softTotalMaxSpread ?? 1) || 1));
+  const hardPeopleSoftKindBalanceEnabled = adminRotationGeneratorBooleanValue(raw.hardPeopleSoftKindBalanceEnabled, base.hardPeopleSoftKindBalanceEnabled !== false);
+  const hardPeopleSoftKindBalanceNames = adminRotationSplitGeneratorList(raw.hardPeopleSoftKindBalanceNames).length
+    ? adminRotationSplitGeneratorList(raw.hardPeopleSoftKindBalanceNames)
+    : Array.from(base.hardPeopleSoftKindBalanceNames || base.hardPreferred || []);
+  const hardPeopleSoftKindMaxSpread = Math.max(0, Math.min(6, Number(raw.hardPeopleSoftKindMaxSpread ?? base.hardPeopleSoftKindMaxSpread ?? 1) || 1));
+  const softKindGlobalBalanceEnabled = adminRotationGeneratorBooleanValue(raw.softKindGlobalBalanceEnabled, base.softKindGlobalBalanceEnabled !== false);
+  const softKindMixedMinimumShifts = Math.max(1, Math.min(12, Number(raw.softKindMixedMinimumShifts ?? base.softKindMixedMinimumShifts ?? 3) || 3));
+  return {
+    type: ADMIN_ROTATION_GENERATOR_SETTINGS_CATEGORY,
+    softPreferred,
+    hardPreferred,
+    softCore,
+    softHardCycle,
+    softHardBlockLength,
+    softBaseLathe,
+    hardCycle,
+    avoidLatheWhenTwoLathesOneMillEnabled,
+    avoidLatheWhenTwoLathesOneMillNames,
+    soloMillBalanceEnabled,
+    soloMillMaxSpread,
+    softTotalBalanceEnabled,
+    softTotalBalanceNames,
+    softTotalMaxSpread,
+    hardPeopleSoftKindBalanceEnabled,
+    hardPeopleSoftKindBalanceNames,
+    hardPeopleSoftKindMaxSpread,
+    softKindGlobalBalanceEnabled,
+    softKindMixedMinimumShifts
+  };
+}
+
+
+function adminRotationHasGeneratorSettingsRow() {
+  const rows = Array.isArray(app && app.machineSettingsRows) ? app.machineSettingsRows : [];
+  return rows.some(adminIsRotationGeneratorSettingsRow);
+}
+
+
+function adminRotationRefreshGeneratorSettingsStatus(root) {
+  const scope = root && root.querySelector ? root : document;
+  const statusEl = scope.querySelector ? scope.querySelector('#adminGeneratorSettingsStatus') : document.getElementById('adminGeneratorSettingsStatus');
+  if (!statusEl) return false;
+  const html = buildAdminRotationGeneratorStatusHtml(readAdminRotationGeneratorDraftFromDom(scope));
+  const wrapper = document.createElement('div');
+  wrapper.innerHTML = html;
+  const fresh = wrapper.firstElementChild;
+  if (!fresh) return false;
+  statusEl.replaceWith(fresh);
+  return true;
+}
+
+
+function adminRotationAddGeneratorAllowedRange(result, fromKey, toKey) {
+  const keys = adminRotationGetOrderedMonthKeys();
+  const fromSort = adminRotationMonthSortValue(fromKey);
+  const toSort = adminRotationMonthSortValue(toKey);
+  if (!fromSort || !toSort) return;
+  keys.forEach((key) => {
+    const sort = adminRotationMonthSortValue(key);
+    if (sort >= fromSort && sort <= toSort && !result.includes(key)) result.push(key);
+  });
+}
+
+
+function adminRotationGetAllowedGeneratorMonthKeys() {
+  const keys = adminRotationGetOrderedMonthKeys();
+  if (!keys.length) return [];
+  const result = [];
+  const currentMonth = adminRotationGetCurrentExistingMonthKey();
+  const latestGenerated = adminRotationGetLatestGeneratedMonthKey();
+  const currentSort = adminRotationMonthSortValue(currentMonth);
+  const latestSort = adminRotationMonthSortValue(latestGenerated);
+  const baseForNext = currentSort && (!latestSort || currentSort > latestSort)
+    ? currentMonth
+    : latestGenerated;
+  const next = baseForNext ? adminRotationGetNextExistingMonthKeyAfter(baseForNext) : '';
+
+  if (currentMonth && next) {
+    adminRotationAddGeneratorAllowedRange(result, currentMonth, next);
+  } else if (currentMonth) {
+    result.push(currentMonth);
+  } else if (next) {
+    result.push(next);
+  }
+
+  if (!result.length) {
+    const fallback = adminRotationGetDefaultFutureMonthKey() || keys[0];
+    if (fallback) result.push(fallback);
+  }
+
+  return result.sort((a, b) => adminRotationMonthSortValue(a) - adminRotationMonthSortValue(b));
+}
+
 try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleReady('admin-rotation-generator.js', 'loaded', { source: 'dynamic-loader' }); } catch (err) {}

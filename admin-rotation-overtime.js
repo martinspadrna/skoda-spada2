@@ -405,4 +405,104 @@ function readAdminRotationOvertimeSettingsFromDom() {
   };
 }
 
+
+
+// v1.5.54 – doplněné funkce přesunuté z admin-rotation.js.
+function adminRotationRefreshOvertimeYearSummaries(root) {
+  const scope = root || document.getElementById('appMenuBody') || document;
+  const teams = ['A', 'B', 'C', 'D'];
+  scope.querySelectorAll('[data-rotation-overtime-year-body]').forEach((body) => {
+    const year = String(body.getAttribute('data-rotation-overtime-year-body') || '').trim();
+    const counts = adminRotationOvertimeBuildEmptyShiftCounts();
+    let total = 0;
+    body.querySelectorAll('tr[data-rotation-overtime-row]').forEach((row) => {
+      const fallbackYear = String(row.getAttribute('data-overtime-year') || year || '').trim();
+      const dateInput = row.querySelector('[data-rotation-overtime-date]');
+      const iso = adminRotationOvertimeCzechDateToIso(dateInput ? dateInput.value : '', fallbackYear);
+      if (!isValidRotationOvertimeIsoDate(iso)) return;
+      const info = adminRotationOvertimeGetShiftInfoForIsoDate(iso);
+      const team = info && info.team ? String(info.team).trim().toUpperCase() : '';
+      if (!Object.prototype.hasOwnProperty.call(counts, team)) return;
+      counts[team] += 1;
+      total += 1;
+    });
+    const summary = scope.querySelector('[data-rotation-overtime-year-summary="' + year + '"]');
+    if (summary) {
+      const totalEl = summary.querySelector('[data-overtime-year-total]');
+      if (totalEl) totalEl.textContent = String(total) + '× celkem';
+      teams.forEach((team) => {
+        const chip = summary.querySelector('[data-overtime-shift-count="' + team + '"]');
+        if (chip) chip.innerHTML = escapeHtml(team) + ' <b>' + String(counts[team] || 0) + '×</b>';
+      });
+    }
+    const totalLabel = scope.querySelector('[data-rotation-overtime-year-total-label="' + year + '"]');
+    if (totalLabel) totalLabel.textContent = String(total) + '×';
+  });
+  adminRotationRefreshOvertimeStatus(scope);
+}
+
+
+function adminRotationRefreshOvertimeStatus(root) {
+  const scope = root || document.getElementById('appMenuBody') || document;
+  const box = scope.querySelector ? scope.querySelector('#adminRotationOvertimeStatus') : null;
+  if (!box) return;
+  const wasOpen = !!(box.hasAttribute && box.hasAttribute('open'));
+  const wrap = document.createElement('div');
+  wrap.innerHTML = buildAdminRotationOvertimeStatusHtml(adminRotationOvertimeReadEntriesFromRoot(scope));
+  const next = wrap.firstElementChild;
+  if (next) {
+    if (wasOpen && next.setAttribute) next.setAttribute('open', '');
+    box.replaceWith(next);
+  }
+}
+
+
+function adminRotationRefreshOvertimeShiftBadges(root, applyFilter) {
+  const scope = root || document.getElementById('appMenuBody') || document;
+  const selectedFilter = adminRotationOvertimeGetSelectedShiftFilter();
+  scope.querySelectorAll('tr[data-rotation-overtime-row]').forEach((row) => {
+    const fallbackYear = String(row.getAttribute('data-overtime-year') || '').trim();
+    const dateInput = row.querySelector('[data-rotation-overtime-date]');
+    const iso = adminRotationOvertimeCzechDateToIso(dateInput ? dateInput.value : '', fallbackYear);
+    const info = adminRotationOvertimeGetShiftInfoForIsoDate(iso);
+    const team = info && info.team ? info.team : '';
+    row.setAttribute('data-overtime-shift', team);
+    const badge = row.querySelector('[data-rotation-overtime-shift-label]');
+    if (badge) {
+      badge.textContent = team ? ('Směna ' + team) : '—';
+      badge.setAttribute('title', team ? ('Automaticky dopočítáno z data přesčasu: Směna ' + team) : 'Směna se dopočítá po zadání platného data.');
+    }
+    if (applyFilter !== false) {
+      const shouldHide = !!(iso && selectedFilter !== 'ALL' && team && team !== selectedFilter);
+      row.classList.toggle('adminRotationOvertimeHiddenByFilter', shouldHide);
+    }
+  });
+  adminRotationRefreshOvertimeYearSummaries(scope);
+}
+
+
+function adminRotationAddOvertimeRow(year) {
+  const safeYear = String(year || new Date().getFullYear()).trim();
+  const body = document.querySelector('#appMenuBody [data-rotation-overtime-year-body="' + safeYear.replace(/"/g, '') + '"]');
+  if (!body) return;
+  body.insertAdjacentHTML('beforeend', buildAdminRotationOvertimeRowHtml({ date: '', to: true, note: '' }, body.querySelectorAll('tr').length, safeYear));
+  const status = document.getElementById('adminOnlineSaveStatus');
+  if (status) status.textContent = 'Přidaný prázdný řádek. Přesčasy se uloží až tlačítkem Uložit přesčasy.';
+}
+
+
+function adminRotationClearOvertimeRow(target) {
+  const row = target && typeof target.closest === 'function' ? target.closest('tr[data-rotation-overtime-row]') : null;
+  if (!row) return;
+  const date = row.querySelector('[data-rotation-overtime-date]');
+  const to = row.querySelector('[data-rotation-overtime-to]');
+  const note = row.querySelector('[data-rotation-overtime-note]');
+  if (date) date.value = '';
+  if (to) to.checked = true;
+  if (note) note.value = '';
+  try { adminRotationRefreshOvertimeShiftBadges(document.getElementById('appMenuBody'), true); } catch (err) {}
+  const status = document.getElementById('adminOnlineSaveStatus');
+  if (status) status.textContent = 'Řádek je vyčištěný. Změna se uloží až tlačítkem Uložit přesčasy.';
+}
+
 try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleReady('admin-rotation-overtime.js', 'loaded', { source: 'dynamic-loader' }); } catch (err) {}

@@ -15,6 +15,8 @@ const bootSelfTest = read('app-boot-selftest.js');
 const adminRotationJs = read('admin-rotation.js');
 const adminRotationOvertimeJs = read('admin-rotation-overtime.js');
 const adminRotationGeneratorJs = read('admin-rotation-generator.js');
+const adminRotationEditorJs = read('admin-rotation-editor.js');
+const adminMachineSettingsJs = read('admin-machine-settings.js');
 const appMenuJs = read('app-menu.js');
 const appMenuAdminExportJs = read('app-menu-admin-export.js');
 const appMenuAdminStorageJs = read('app-menu-admin-storage.js');
@@ -124,6 +126,21 @@ assert(adminRotationGeneratorJs.includes('function adminBuildRotationGenerationM
 assert(adminRotationGeneratorJs.includes('function adminRotationGeneratorRenderWizard'), 'Průvodce generátoru musí vlastnit admin-rotation-generator.js');
 assert(!adminRotationJs.includes('function buildAdminRotationOvertimeSettingsHtml()'), 'Přesčasy se nesmí vrátit do admin-rotation.js');
 assert(!adminRotationJs.includes('function buildAdminRotationGeneratorSettingsHtml()'), 'Generátor se nesmí vrátit do admin-rotation.js');
+
+assert(deferred.includes('admin-rotation-editor.js'), 'Editor rozpisu musí zůstat součástí ověřeného bootu');
+assert(deferred.includes('admin-rotation-overtime.js'), 'Přesčasy musí zůstat součástí ověřeného bootu');
+assert(deferred.includes('admin-rotation-generator.js'), 'Generátor rozpisu musí zůstat součástí ověřeného bootu');
+assert(deferred.includes('admin-machine-settings.js'), 'Nastavení strojů musí zůstat součástí ověřeného bootu');
+assert(adminRotationEditorJs.includes('function buildAdminRotationTableHtml'), 'Editor tabulky rozpisu musí vlastnit admin-rotation-editor.js');
+assert(adminRotationEditorJs.includes('function adminBindRotationZoomGuard'), 'Mobilní guard editoru musí vlastnit admin-rotation-editor.js');
+assert(adminMachineSettingsJs.includes('function buildAdminMachineSettingsTableHtml'), 'Nastavení strojů musí vlastnit admin-machine-settings.js');
+assert(adminRotationGeneratorJs.includes('function adminRotationNormalizeGeneratorSettings'), 'Generator settings musí být sjednocené v admin-rotation-generator.js');
+assert(adminRotationOvertimeJs.includes('function adminRotationRefreshOvertimeYearSummaries'), 'Overtime refresh musí být sjednocený v admin-rotation-overtime.js');
+assert(!adminRotationJs.includes('function buildAdminRotationTableHtml'), 'Editor se nesmí vrátit do admin-rotation.js core');
+assert(!adminRotationJs.includes('function buildAdminMachineSettingsTableHtml'), 'Nastavení strojů se nesmí vrátit do admin-rotation.js core');
+assert(!adminRotationJs.includes('function adminRotationNormalizeGeneratorSettings'), 'Generator settings se nesmí vrátit do admin-rotation.js core');
+assert(adminRotationJs.includes('function getAdminRotationMonthKeys'), 'admin-rotation.js core musí držet společný výběr měsíců');
+
 assert(deferred.includes('app-menu-admin-export.js'), 'Admin export modul musí zůstat součástí ověřeného bootu');
 assert(deferred.includes('app-menu-admin-storage.js'), 'Admin storage/backup modul musí zůstat součástí ověřeného bootu');
 assert(deferred.includes('app-menu-admin-service.js'), 'Admin service/handover modul musí zůstat součástí ověřeného bootu');

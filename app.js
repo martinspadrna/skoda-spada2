@@ -2,8 +2,8 @@
 try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleReady('app.js', 'loaded', { source: 'index' }); } catch (err) {}
 
 (async () => {
-  const RAK_MODULE_CACHE_VERSION = "1.5.53";
-  const RAK_DEV_UPDATE_BUILD = "v1.5.53";
+  const RAK_MODULE_CACHE_VERSION = "1.5.54";
+  const RAK_DEV_UPDATE_BUILD = "v1.5.54";
   window.RAK_PWA_BUILD = RAK_DEV_UPDATE_BUILD;
 
   const criticalFiles = [
@@ -34,8 +34,10 @@ try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleR
     "brusy-fhb-v157.js",
     "appearance-theme.js",
     "changelog.js",
+    "admin-rotation-editor.js",
     "admin-rotation-overtime.js",
     "admin-rotation-generator.js",
+    "admin-machine-settings.js",
     "admin-rotation.js",
     "admin-machine-tasks.js",
     "admin-food.js",
