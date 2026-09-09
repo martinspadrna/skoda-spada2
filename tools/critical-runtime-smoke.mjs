@@ -14,6 +14,39 @@ const indexHtml = read('index.html');
 const stylesOverridesLegacyEarlyCss = read('styles-overrides-legacy-early.css');
 const stylesOverridesLegacyMidCss = read('styles-overrides-legacy-mid.css');
 const stylesOverridesLegacyLateCss = read('styles-overrides-legacy-late.css');
+const dashboardFitCss = read('styles-dashboard-fit.css');
+const dashboardPolishCss = read('styles-dashboard-polish.css');
+const dashboardLegacyCleanupTargetsV158 = [
+  '#home .dashboardGrid', '#home .dashboardCard', '#home .dashboardHeroCard',
+  '#dashHero .dashboardHeroLine2', '#dashHero .dashboardHeroLine3', '#dashHero .dashboardHeroLine3Pill',
+  '#home .dashboardIconInline', '#home .dashboardIcon.dashboardIconInline', '#home .dashboardDot',
+  '#dashKantyna .dashboardDot', '#dashJidelna .dashboardDot'
+];
+const dashboardActiveOwnersV158 = [
+  '#home.page.active .dashboardGrid', '#home.page.active .dashboardCard', '#home.page.active #dashHero.dashboardHeroCard',
+  '#home.page.active #dashHero .dashboardHeroLine2', '#home.page.active #dashHero .dashboardHeroLine3',
+  '#home.page.active #dashHero .dashboardHeroLine3Pill', '#home.page.active .dashboardCard .dashboardIcon.dashboardIconInline',
+  '#home.page.active #dashKantyna .dashboardDot', '#home.page.active #dashJidelna .dashboardDot'
+];
+function criticalCssSelectorSet(source) {
+  const clean = String(source || '').replace(/\/\*[\s\S]*?\*\//g, '');
+  const set = new Set();
+  for (const match of clean.matchAll(/([^{}]+)\{/g)) {
+    const head = String(match[1] || '').trim();
+    if (!head || head.startsWith('@')) continue;
+    for (const selector of head.split(',')) set.add(selector.replace(/\s+/g, ' ').trim());
+  }
+  return set;
+}
+const legacyDashboardSelectorSetV158 = criticalCssSelectorSet(stylesOverridesLegacyEarlyCss + '\n' + stylesOverridesLegacyMidCss + '\n' + stylesOverridesLegacyLateCss);
+for (const selector of dashboardLegacyCleanupTargetsV158) {
+  assert(!legacyDashboardSelectorSetV158.has(selector), 'Odstraněný Dashboard legacy selector se vrátil: ' + selector);
+}
+const activeDashboardCssV158 = dashboardFitCss + '\n' + dashboardPolishCss;
+for (const selector of dashboardActiveOwnersV158) {
+  assert(activeDashboardCssV158.includes(selector), 'Chybí aktivní Dashboard owner po legacy cleanupu: ' + selector);
+}
+assert(stylesOverridesLegacyEarlyCss.includes('Dashboard legacy cleanup'), 'Chybí v1.5.58 Dashboard legacy cleanup marker');
 const bootSelfTest = read('app-boot-selftest.js');
 const adminRotationJs = read('admin-rotation.js');
 const adminRotationOvertimeJs = read('admin-rotation-overtime.js');

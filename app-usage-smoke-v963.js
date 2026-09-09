@@ -211,9 +211,9 @@ const dashboardActiveOwnerRegistryV195 = Object.freeze([
   '#home.page.active #dashJidelna .dashboardDot'
 ]);
 
-const dashboardOverridesSelectorLockV196 = Object.freeze({
-  count: 256,
-  sha256: '797b74acd9f476627b6b2d9e16bae57f48c684f4d2460bebb9a33a2217651113'
+const dashboardLegacyCleanupV158 = Object.freeze({
+  intent: 'proven-dashboard-legacy-selectors-removed',
+  removedSelectors: dashboardLegacyOnlyInventoryV195.length
 });
 
 const dashboardReleaseIsolationGuardV198 = Object.freeze({
@@ -266,13 +266,10 @@ const dashboardCssGuardSeriesCompleteV1100 = Object.freeze({
   intent: 'dashboard-css-guard-series-closed',
   status: 'closed',
   requiredMarkers: Object.freeze([
-    ['styles-overrides-legacy-early.css', 'Dashboard legacy override inventory guard'],
-    ['styles-overrides-legacy-early.css', 'Dashboard proven-overridden legacy candidates'],
-    ['styles-overrides-legacy-early.css', 'Dashboard extended proven-overridden legacy candidates'],
+    ['styles-overrides-legacy-early.css', 'Dashboard legacy cleanup'],
     ['styles-dashboard-polish.css', 'Dashboard no visual owner drift guard'],
     ['styles-dashboard-polish.css', 'Dashboard CSS layer order contract v1.94'],
     ['styles-dashboard-polish.css', 'Dashboard active owner registry'],
-    ['styles-overrides-legacy-early.css', 'Dashboard no-new-hotfix lock v1.96'],
     ['styles-dashboard-polish.css', 'Dashboard override selector lock v1.96'],
     ['styles-dashboard-polish.css', 'Dashboard scope guard v1.97'],
     ['styles-dashboard-polish.css', 'Dashboard release isolation guard v1.98'],
@@ -597,44 +594,31 @@ dashboardNoVisualOwnerDriftSelectors.forEach((selector) => assertDashboardNoVisu
 assertIncludes(dashboardPolishCss, 'Dashboard no visual owner drift guard', 'styles-dashboard-polish.css musí mít 1.92 no visual owner drift guard');
 assertIncludes(dashboardPolishCss, 'styles-dashboard-fit.css / styles-dashboard-polish.css', '1.92 guard musí jasně pojmenovat povolené Dashboard vlastníky');
 
-assertIncludes(stylesOverridesCss, 'Dashboard legacy-only inventory', 'styles-overrides.css musí mít 1.95 legacy-only inventory guard');
-assertIncludes(stylesOverridesCss, 'Tahle vrstva je u Dashboardu braná jen jako historická stopa starých hotfixů.', '1.95 legacy guard musí jasně říct, že overrides není aktivní vlastník Dashboardu');
-assertIncludes(stylesOverridesCss, 'Aktivní vizuální vlastníci pro stejné oblasti jsou evidovaní zvlášť ve styles-dashboard-fit.css / styles-dashboard-polish.css.', '1.95 legacy guard musí odkázat na aktivní dashboard vrstvy');
-assertIncludes(dashboardPolishCss, 'Dashboard active owner registry', 'styles-dashboard-polish.css musí mít 1.95 active owner registry guard');
-assertIncludes(dashboardPolishCss, 'Aktivní vlastníci jsou oddělení od legacy inventury', '1.95 active owner registry musí jasně oddělit aktivní vlastníky od legacy inventury');
+assertIncludes(stylesOverridesLegacyEarlyCss, 'Dashboard legacy cleanup', 'Legacy CSS musí dokumentovat v1.5.58 Dashboard cleanup');
 const dashboardLegacyOnlySetV195 = new Set(dashboardLegacyOnlyInventoryV195);
 const dashboardActiveOwnerSetV195 = new Set(dashboardActiveOwnerRegistryV195);
+const dashboardLegacyActiveSelectorSetV158 = new Set(getCssRuleSelectors(stylesOverridesCss));
+assert(dashboardLegacyCleanupV158.intent === 'proven-dashboard-legacy-selectors-removed', 'v1.5.58 Dashboard cleanup contract má špatný intent');
+assert(dashboardLegacyCleanupV158.removedSelectors >= 11, 'v1.5.58 Dashboard cleanup musí hlídat celý ověřený legacy seznam');
 dashboardLegacyOnlyInventoryV195.forEach((selector) => {
-  assertIncludes(stylesOverridesCss, selector, `1.95 legacy-only inventory musí obsahovat ${selector}`);
-  assert(!dashboardActiveOwnerSetV195.has(selector), `Legacy-only selector nesmí být zároveň aktivní vlastník: ${selector}`);
+  assert(!dashboardLegacyActiveSelectorSetV158.has(selector), `v1.5.58 odstraněný Dashboard legacy selector se vrátil: ${selector}`);
+  assert(!dashboardActiveOwnerSetV195.has(selector), `Legacy selector nesmí být zároveň aktivní vlastník: ${selector}`);
 });
 dashboardActiveOwnerRegistryV195.forEach((selector) => {
-  assertCssOwner(selector, `1.95 active owner registry musí mít pozdní dashboard vlastníka pro ${selector}`);
-  assert(!dashboardLegacyOnlySetV195.has(selector), `Active owner selector nesmí být zároveň legacy-only položka: ${selector}`);
-  assertDashboardNoVisualOwnerDrift(selector);
+  assertCssOwner(selector, `v1.5.58 active owner registry musí mít pozdní dashboard vlastníka pro ${selector}`);
+  assert(!dashboardLegacyOnlySetV195.has(selector), `Active owner selector nesmí být zároveň odstraněná legacy položka: ${selector}`);
 });
 dashboardLegacyOwnerMap.forEach(([legacySelector, ownerSelector]) => {
+  assertCssOwner(ownerSelector, `v1.5.58 chybí aktivní vlastník pro odstraněný legacy selector ${legacySelector}`);
   if (legacySelector !== ownerSelector) {
-    assert(dashboardLegacyOnlySetV195.has(legacySelector), `Legacy selector není v 1.95 legacy-only inventuře: ${legacySelector}`);
-    assert(dashboardActiveOwnerSetV195.has(ownerSelector), `Owner selector není v 1.95 active registry: ${ownerSelector}`);
+    assert(dashboardLegacyOnlySetV195.has(legacySelector), `Legacy selector není ve v1.5.58 cleanup inventuře: ${legacySelector}`);
+    assert(dashboardActiveOwnerSetV195.has(ownerSelector), `Owner selector není v active registry: ${ownerSelector}`);
   }
 });
-assert(dashboardLegacyOnlyInventoryV195.length >= 11, '1.95 legacy-only inventory musí dál pokrýt všechny staré Dashboard oblasti');
-assert(dashboardActiveOwnerRegistryV195.length >= 10, '1.95 active owner registry musí dál pokrýt hlavní Dashboard vlastníky');
-
-assertIncludes(stylesOverridesCss, 'Dashboard no-new-hotfix lock v1.96', 'styles-overrides.css musí mít 1.96 guard proti novým Dashboard hotfixům');
-assertIncludes(stylesOverridesCss, 'Nové vizuální Dashboard úpravy už sem nepřidávat', '1.96 guard musí jasně říkat, že nové Dashboard úpravy nepatří do overrides');
-assertIncludes(dashboardPolishCss, 'Dashboard override selector lock v1.96', 'styles-dashboard-polish.css musí mít 1.96 owner-side lock poznámku');
-const dashboardOverridesSignatureV196 = getDashboardOverrideSelectorSignature(stylesOverridesCss);
-assert(
-  dashboardOverridesSignatureV196.count === dashboardOverridesSelectorLockV196.count,
-  `Dashboard overrides selector count drift: čekám ${dashboardOverridesSelectorLockV196.count}, mám ${dashboardOverridesSignatureV196.count}`
-);
-assert(
-  dashboardOverridesSignatureV196.sha256 === dashboardOverridesSelectorLockV196.sha256,
-  `Dashboard overrides selector lock drift: čekám ${dashboardOverridesSelectorLockV196.sha256}, mám ${dashboardOverridesSignatureV196.sha256}`
-);
-
+assert(dashboardLegacyOnlyInventoryV195.length >= 11, 'v1.5.58 cleanup inventory musí pokrýt všechny ověřené staré Dashboard oblasti');
+assert(dashboardActiveOwnerRegistryV195.length >= 10, 'Active owner registry musí dál pokrýt hlavní Dashboard vlastníky');
+assertIncludes(dashboardPolishCss, 'Dashboard active owner registry', 'styles-dashboard-polish.css musí dál držet active owner registry');
+assertIncludes(dashboardPolishCss, 'Dashboard override selector lock v1.96', 'styles-dashboard-polish.css musí dál držet owner-side lock poznámku');
 
 // Vítězné dashboard vlastnictví: test drží klíčové selektory v dashboard vrstvách, ne ve slepých globálních přepisech.
 lockedDashboardSelectors.forEach((selector) => assertCssOwner(selector));

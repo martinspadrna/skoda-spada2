@@ -2109,23 +2109,7 @@ body.ladaMode #rotaceNamesPanel #namesGrid{
   backdrop-filter:blur(var(--rakDashboardGlassBlur)) saturate(150%) !important;
   box-shadow:0 20px 54px rgba(0,0,0,.32), inset 0 1px 0 rgba(255,255,255,.075) !important;
 }
-#home .dashboardHeroCard,
-#home .dashboardCard{
-  position:relative !important;
-  overflow:hidden !important;
-  isolation:isolate !important;
-  background:
-    var(--rakDashboardCardTint),
-    var(--rakDashboardCardBg),
-    color-mix(in srgb, var(--panel, rgba(18,28,22,.72)) 72%, transparent) !important;
-  border-color:var(--rakDashboardCardLine) !important;
-  -webkit-backdrop-filter:blur(var(--rakDashboardGlassBlur)) saturate(155%) !important;
-  backdrop-filter:blur(var(--rakDashboardGlassBlur)) saturate(155%) !important;
-  box-shadow:
-    0 14px 34px rgba(0,0,0,.26),
-    0 0 0 1px color-mix(in srgb, var(--green, #7CFF7C) 10%, transparent) inset,
-    inset 0 1px 0 rgba(255,255,255,.10) !important;
-}
+
 #home .dashboardHeroCard::before,
 #home .dashboardCard::before{
   content:"" !important;
@@ -2165,11 +2149,7 @@ body.ladaMode #rotaceNamesPanel #namesGrid{
 #home .dashboardMeta{
   color:color-mix(in srgb, var(--soft, #e5f7e9) 58%, rgba(255,255,255,.52)) !important;
 }
-#home .dashboardIcon.dashboardIconInline{
-  border-radius:16px !important;
-  background:linear-gradient(180deg, color-mix(in srgb, var(--green, #7CFF7C) 18%, transparent), rgba(255,255,255,.035)) !important;
-  box-shadow:0 8px 18px rgba(0,0,0,.16), inset 0 1px 0 rgba(255,255,255,.08) !important;
-}
+
 body.lightweightMode #home .dashboardShell,
 body.lowEndDevice #home .dashboardShell,
 body.ladaMode #home .dashboardShell,
@@ -2310,21 +2290,7 @@ body.ladaMode #rotace.page.active #rotaceNamesPanel.active #namesGrid{
   backdrop-filter:blur(var(--rakDashboardGlassBlur)) saturate(185%) !important;
   box-shadow:0 24px 70px rgba(0,0,0,.30), inset 0 1px 0 rgba(255,255,255,.16) !important;
 }
-#home .dashboardHeroCard,
-#home .dashboardCard{
-  background:
-    var(--rakDashboardCardTint),
-    var(--rakDashboardCardBg),
-    color-mix(in srgb, var(--panel, rgba(18,28,22,.72)) 46%, transparent) !important;
-  border-color:var(--rakDashboardCardLine) !important;
-  -webkit-backdrop-filter:blur(var(--rakDashboardGlassBlur)) saturate(185%) !important;
-  backdrop-filter:blur(var(--rakDashboardGlassBlur)) saturate(185%) !important;
-  box-shadow:
-    0 16px 42px rgba(0,0,0,.24),
-    0 0 0 1px rgba(255,255,255,.055) inset,
-    inset 0 1px 0 rgba(255,255,255,.18),
-    inset 0 -1px 0 color-mix(in srgb, var(--green, #7CFF7C) 12%, transparent) !important;
-}
+
 #home .dashboardHeroCard::before,
 #home .dashboardCard::before{
   background:
@@ -2345,7 +2311,6 @@ body.ladaMode #rotace.page.active #rotaceNamesPanel.active #namesGrid{
     0 0 0 1px rgba(255,255,255,.075) inset,
     0 0 28px color-mix(in srgb, var(--green, #7CFF7C) 12%, transparent) !important;
 }
-#home .dashboardIcon.dashboardIconInline,
 #home .dashboardCard .dashboardIcon.dashboardIconInline,
 .dashboardCard .dashboardIcon.dashboardIconInline{
   background:transparent !important;
@@ -2543,7 +2508,6 @@ body:not(.lightweightMode):not(.lowEndDevice):not(.ladaMode) #home .dashboardGri
   z-index:1;
 }
 #home .dashboardIcon,
-#home .dashboardIcon.dashboardIconInline,
 #home .dashboardCardIcon{
   background: transparent !important;
   border: 0 !important;
@@ -2715,7 +2679,6 @@ body:not(.lightweightMode):not(.lowEndDevice):not(.ladaMode) #home .dashboardGri
   filter: blur(8px);
 }
 #home .dashboardIcon,
-#home .dashboardIcon.dashboardIconInline,
 #home .dashboardCardIcon{
   color: var(--rak-dash-icon-theme) !important;
   text-shadow:0 0 14px color-mix(in srgb, var(--rak-dash-icon-theme) 34%, transparent) !important;
@@ -3030,25 +2993,21 @@ body.ladaMode #stats .statsOccupancyLineArea{
 }
 @media (min-width:405px) and (max-width:420px) and (min-height:910px) and (max-height:925px){
   #home #dashHero .dashboardHeroLine1Text,
-  #home #dashHero .dashboardHeroLine2,
-  #home #dashHero .dashboardHeroLine3,
-  #home #dashHero .dashboardHeroBarRow,
-  #dashHero .dashboardHeroLine1Text,
-  #dashHero .dashboardHeroLine2,
-  #dashHero .dashboardHeroLine3,
-  #dashHero .dashboardHeroBarRow{
+#home #dashHero .dashboardHeroLine2,
+#home #dashHero .dashboardHeroLine3,
+#home #dashHero .dashboardHeroBarRow,
+#dashHero .dashboardHeroLine1Text,
+#dashHero .dashboardHeroBarRow{
     transform:translateX(-3px) !important;
   }
 }
 @media (min-width:425px) and (max-width:435px) and (min-height:925px) and (max-height:940px){
   #home #dashHero .dashboardHeroLine1Text,
-  #home #dashHero .dashboardHeroLine2,
-  #home #dashHero .dashboardHeroLine3,
-  #home #dashHero .dashboardHeroBarRow,
-  #dashHero .dashboardHeroLine1Text,
-  #dashHero .dashboardHeroLine2,
-  #dashHero .dashboardHeroLine3,
-  #dashHero .dashboardHeroBarRow{
+#home #dashHero .dashboardHeroLine2,
+#home #dashHero .dashboardHeroLine3,
+#home #dashHero .dashboardHeroBarRow,
+#dashHero .dashboardHeroLine1Text,
+#dashHero .dashboardHeroBarRow{
     transform:translateX(-1px) !important;
   }
 }
@@ -3058,25 +3017,21 @@ body.ladaMode #stats .statsOccupancyLineArea{
 /* v.1.5 (966) – Navazuje na stabilizaci Dashboardu, 5tlačítkovou lištu a prokliky v Rotaci. */
 @media (min-width:405px) and (max-width:420px) and (min-height:910px) and (max-height:925px){
   #home #dashHero .dashboardHeroLine1Text,
-  #home #dashHero .dashboardHeroLine2,
-  #home #dashHero .dashboardHeroLine3,
-  #home #dashHero .dashboardHeroBarRow,
-  #dashHero .dashboardHeroLine1Text,
-  #dashHero .dashboardHeroLine2,
-  #dashHero .dashboardHeroLine3,
-  #dashHero .dashboardHeroBarRow{
+#home #dashHero .dashboardHeroLine2,
+#home #dashHero .dashboardHeroLine3,
+#home #dashHero .dashboardHeroBarRow,
+#dashHero .dashboardHeroLine1Text,
+#dashHero .dashboardHeroBarRow{
     transform:translateX(-5px) !important;
   }
 }
 @media (min-width:425px) and (max-width:435px) and (min-height:925px) and (max-height:940px){
   #home #dashHero .dashboardHeroLine1Text,
-  #home #dashHero .dashboardHeroLine2,
-  #home #dashHero .dashboardHeroLine3,
-  #home #dashHero .dashboardHeroBarRow,
-  #dashHero .dashboardHeroLine1Text,
-  #dashHero .dashboardHeroLine2,
-  #dashHero .dashboardHeroLine3,
-  #dashHero .dashboardHeroBarRow{
+#home #dashHero .dashboardHeroLine2,
+#home #dashHero .dashboardHeroLine3,
+#home #dashHero .dashboardHeroBarRow,
+#dashHero .dashboardHeroLine1Text,
+#dashHero .dashboardHeroBarRow{
     transform:translateX(-3px) !important;
   }
 }
@@ -3181,38 +3136,21 @@ nav.bottomNav > .bottomNavScroll > .bottomNavBtn.bottomNavMenuBtn .bottomNavLabe
   gap:clamp(10px, 1.35dvh, 16px) !important;
   margin-bottom:clamp(8px, 1.2dvh, 18px) !important;
 }
-#home .dashboardGrid{
-  flex:1 1 auto !important;
-  display:grid !important;
-  grid-template-columns:repeat(2, minmax(0, 1fr)) !important;
-  grid-auto-rows:minmax(clamp(102px, 12.8dvh, 150px), 1fr) !important;
-  gap:clamp(10px, 1.45dvh, 16px) !important;
-}
-#home .dashboardHeroCard{
-  min-height:clamp(128px, 17.8dvh, 190px) !important;
-  padding-top:clamp(16px, 2.2dvh, 24px) !important;
-  padding-bottom:clamp(15px, 2.0dvh, 22px) !important;
-}
-#home .dashboardCard{
-  min-height:clamp(102px, 12.8dvh, 150px) !important;
-  padding:clamp(13px, 1.75dvh, 18px) !important;
-}
+
+
+
 @media (min-height:880px) and (max-width:700px){
   #home .dashboardShell{
     min-height:calc(100dvh - var(--bottom-nav-h, 72px) - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 18px) !important;
   }
-  #home .dashboardGrid{
-    grid-auto-rows:minmax(clamp(122px, 13.8dvh, 168px), 1fr) !important;
-  }
-  #home .dashboardCard{
-    min-height:clamp(122px, 13.8dvh, 168px) !important;
-  }
+  
+  
 }
 @media (max-height:760px){
   #home .dashboardShell{gap:10px !important;min-height:auto !important;}
-  #home .dashboardGrid{grid-auto-rows:minmax(94px, auto) !important;gap:10px !important;}
-  #home .dashboardCard{min-height:94px !important;padding:12px !important;}
-  #home .dashboardHeroCard{min-height:118px !important;}
+  
+  
+  
 }
 #rotace.page.active #rotaceNamesPanel.active{
   padding-bottom:var(--rak-rotace-names-content-bottom, 206px) !important;

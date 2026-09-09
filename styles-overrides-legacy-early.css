@@ -1,34 +1,7 @@
-/* RaK 1.2 (1.146) – Dashboard legacy override inventory guard.
-   Tenhle soubor pořád obsahuje historické Dashboard hotfixy. Nejsou mazány naslepo; vítězné Dashboard vrstvy jsou styles-dashboard-fit.css a styles-dashboard-polish.css, které se načítají později. */
-/* RaK 1.2 (1.146) – Dashboard proven-overridden legacy candidates.
-   Tyhle staré Dashboard selektory jsou už jen inventura/legacy stopa.
-   Aktivní vlastníci zůstávají v styles-dashboard-fit.css a styles-dashboard-polish.css.
-   Kandidáti: #home .dashboardGrid, #home .dashboardCard, #home .dashboardHeroCard,
-   #dashHero .dashboardHeroLine3, #home .dashboardDot.
-   Nepřidávat sem nové Dashboard hotfixy bez ověření vítězné vrstvy. */
-/* RaK 1.2 (1.146) – Dashboard extended proven-overridden legacy candidates.
-   Rozšířená inventura dalších starých selektorů, které mají pozdějšího vlastníka.
-   Kandidáti: #home .dashboardIconInline, #home .dashboardIcon.dashboardIconInline,
-   #dashHero .dashboardHeroLine2, #dashHero .dashboardHeroLine3Pill,
-   #dashKantyna .dashboardDot, #dashJidelna .dashboardDot.
-   Pořád jen označení a guard; žádné mazání ani vizuální změna Dashboardu. */
-/* RaK 1.2 (1.146) – Dashboard legacy owner map.
-   Ověřené staré Dashboard selektory v tomhle souboru jsou ponechané jako inventura,
-   ale aktivní vlastník je pozdější dvojice styles-dashboard-fit.css / styles-dashboard-polish.css.
-   Test app-usage hlídá mapu legacy → active owner, aby se další úpravy neopíraly o staré bloky.
-   Mapované oblasti: shell, hero panel, grid, karty, stavové tečky Kantýna/Jídelna,
-   ikonky panelů a posuny hero řádků pro ručně laděné mobilní viewporty. */
-/* RaK 1.2 (1.146) – Dashboard legacy-only inventory.
-   Tahle vrstva je u Dashboardu braná jen jako historická stopa starých hotfixů.
-   Legacy-only selektory: #home .dashboardGrid, #home .dashboardCard, #home .dashboardHeroCard,
-   #dashHero .dashboardHeroLine2, #dashHero .dashboardHeroLine3, #dashHero .dashboardHeroLine3Pill,
-   #home .dashboardIconInline, #home .dashboardIcon.dashboardIconInline, #home .dashboardDot,
-   #dashKantyna .dashboardDot, #dashJidelna .dashboardDot.
-   Aktivní vizuální vlastníci pro stejné oblasti jsou evidovaní zvlášť ve styles-dashboard-fit.css / styles-dashboard-polish.css. */
-/* RaK 1.2 (1.146) – Dashboard no-new-hotfix lock v1.96.
-   Nové vizuální Dashboard úpravy už sem nepřidávat. Tahle vrstva zůstává jen historická inventura starých přepisů; nové aktivní změny patří do styles-dashboard-fit.css nebo styles-dashboard-polish.css.
-   Test app-usage hlídá počet a podpis Dashboard selektorů v téhle vrstvě, aby se sem omylem nevrátil další vizuální hotfix. */
-
+/* RaK v1.5.58 – Dashboard legacy cleanup.
+   11 přesných, prokazatelně přepsaných Dashboard selectorů bylo odstraněno z legacy override vrstev.
+   Aktivní vlastníci zůstávají výhradně ve styles-dashboard-fit.css / styles-dashboard-polish.css.
+   Tyto legacy selectory se sem nesmí vracet; nové Dashboard úpravy patří do aktivních Dashboard vrstev. */
 .bottomNav{gap:3px !important;
     padding:3px 3px calc(3px + env(safe-area-inset-bottom)) !important;}
 .bottomNavScroll{gap:3px !important;
@@ -53,12 +26,7 @@
 .bottomNavBtn.active{transform:translateY(-4px) scale(1.05) !important;
     z-index:30 !important;}
 .bottomNavBtn.active::before{inset:-5px !important;}
-#home .dashboardDot, #dashKantyna .dashboardDot, #dashJidelna .dashboardDot{width:27px !important;
-    height:27px !important;
-    min-width:27px !important;
-    min-height:27px !important;
-    border-radius:999px !important;
-    box-shadow:0 0 0 1px rgba(255,255,255,.10), 0 0 10px rgba(124,255,124,.18) !important;}
+
 #home .dashboardDot.is-open, #dashKantyna .dashboardDot.is-open, #dashJidelna .dashboardDot.is-open{background:radial-gradient(circle at 35% 35%, #f6fff6 0%, #6bff6b 28%, #17c617 60%, #0b6e0b 100%) !important;
     box-shadow:0 0 0 1px rgba(255,255,255,.14), 0 0 12px rgba(71,255,71,.42), 0 0 24px rgba(71,255,71,.24) !important;}
 #home .dashboardDot.is-closed, #dashKantyna .dashboardDot.is-closed, #dashJidelna .dashboardDot.is-closed{background:radial-gradient(circle at 35% 35%, #ffd9d9 0%, #ff4f4f 24%, #ff1111 56%, #b00000 100%) !important;
@@ -69,8 +37,7 @@
     display:block;
     stroke:currentColor;
     fill:none;}
-#home .dashboardIconInline{width:64px !important;
-    height:64px !important;}
+
 #home .dashboardIconInline svg, #home .dashboardIconInline img, #home .dashboardCard .dashboardIcon.dashboardIconInline img, #home .dashboardCard .dashboardIcon.dashboardIconInline svg, .dashboardCard .dashboardIcon.dashboardIconInline img, .dashboardCard .dashboardIcon.dashboardIconInline svg, body.compactUI #home .dashboardCard .dashboardIcon.dashboardIconInline img, body.compactUI #home .dashboardCard .dashboardIcon.dashboardIconInline svg, body.compactUI .dashboardCard .dashboardIcon.dashboardIconInline img, body.compactUI .dashboardCard .dashboardIcon.dashboardIconInline svg{width:100% !important;
     height:100% !important;}
 #home .dashboardIconInline img{display:block !important;
@@ -229,8 +196,7 @@ body{min-height: 100dvh !important;
       margin-top: 10px !important;}.tile{min-height: 96px !important;
       font-size: 16px !important;}.big{min-height: 126px !important;
       font-size: 20px !important;}.card{padding: 10px !important;}}
-#home .dashboardIconInline{width:74px !important;
-    height:74px !important;}
+
 #home .dashboardCard .dashboardIcon.dashboardIconInline, .dashboardCard .dashboardIcon.dashboardIconInline{width:51px !important;
     height:51px !important;
     flex:0 0 51px !important;}
@@ -405,13 +371,10 @@ body.compactUI .appMenuAction{min-height:42px !important;}
 body.compactUI .appMenuSettingsList, body.compactUI .appMenuActionRow, body.compactUI .appMenuMonthYearButtons{gap:8px !important;}
 body.reduceMotion .dashboardCard, body.reduceMotion .calcTile, body.reduceMotion .appMenuAction, body.reduceMotion .bottomNavBtn, body.reduceMotion .brusDetails, body.reduceMotion .brusDetails *{transition:none !important;
     animation:none !important;}
-#home .dashboardIconInline, .dashboardCard .dashboardIcon.dashboardIconInline{width:60px !important;
+.dashboardCard .dashboardIcon.dashboardIconInline{width:60px !important;
     height:60px !important;
     flex:0 0 60px !important;}
-#home .dashboardDot, #dashKantyna .dashboardDot, #dashJidelna .dashboardDot{width:19px !important;
-    height:19px !important;
-    min-width:19px !important;
-    min-height:19px !important;}
+
 .bottomNav{bottom:calc(4px + env(safe-area-inset-bottom)) !important;
     padding:1px 1px calc(1px + env(safe-area-inset-bottom)) !important;}
 .bottomNavScroll, .bottomNavInner{gap:2px !important;}
@@ -588,26 +551,8 @@ html[data-rak-phase1="complete"] body{min-height:100svh;}
 
 
 /* v.1.1 (530) – Post-F1 finální polish: Dashboard D řádek, Rotace čitelnost, spodní panel. */
-#dashHero .dashboardHeroLine2{
-  font-size:clamp(13px, 3.3vw, 16px) !important;
-  line-height:1.22 !important;
-  font-weight:850 !important;
-  color:rgba(223,255,219,.92) !important;
-}
-#dashHero .dashboardHeroLine3{
-  width:fit-content !important;
-  max-width:100% !important;
-  margin-top:8px !important;
-  padding:7px 10px !important;
-  border-radius:999px !important;
-  border:1px solid rgba(124,255,124,.16) !important;
-  background:rgba(124,255,124,.075) !important;
-  color:rgba(232,255,232,.88) !important;
-  font-size:clamp(12px, 3vw, 14px) !important;
-  line-height:1.2 !important;
-  font-weight:750 !important;
-  white-space:normal !important;
-}
+
+
 #rotaceNamesPanel #personView .rotaceMiniCard.rotaceShiftCard,
 #rotace #personView .rotaceMiniCard.rotaceShiftCard{
   min-height:72px !important;
@@ -992,9 +937,7 @@ body{
 }
 
 /* v.1.1 (530) – Dashboard text cleanup + Rotace overview/nav placement. */
-#dashHero .dashboardHeroLine2{
-  font-weight:850 !important;
-}
+
 #rotaceNamesPanel.active{
   display:flex !important;
   flex-direction:column !important;
@@ -1124,14 +1067,7 @@ body{
 
 
 /* v.1.1 (530) – Dashboard polish + Fáze 3 start: lightweight guard rails. */
-#dashHero .dashboardHeroLine3{
-  display:block !important;
-  width:fit-content !important;
-  max-width:min(100%, 520px) !important;
-  margin:8px auto 0 !important;
-  text-align:center !important;
-  align-self:center !important;
-}
+
 body.lightweightMode .dashboardHeroCard,
 body.lightweightMode .dashboardCard,
 body.lightweightMode .card,
@@ -1217,23 +1153,8 @@ body.lightweightMode .qrModalOverlay{
 }
 
 /* v.1.1 (530) – Dashboard D line optical center + Rotace name dock cleanup + Fáze 3 menu polish. */
-#dashHero .dashboardHeroLine3{
-  display:block !important;
-  box-sizing:border-box !important;
-  width:100% !important;
-  max-width:100% !important;
-  margin:8px 0 0 !important;
-  padding:7px 8px !important;
-  text-align:center !important;
-  align-self:stretch !important;
-  transform:translateX(-16px) !important;
-}
-@media (max-width:700px){
-  #dashHero .dashboardHeroLine3{
-    transform:translateX(-10px) !important;
-    padding-inline:6px !important;
-  }
-}
+
+
 #rotace.page.active #rotaceNamesPanel.active #namesGrid{
   border:none !important;
   background:transparent !important;
@@ -1279,47 +1200,13 @@ body.lightweightMode .appMenuSettingBtn{
   box-shadow:0 8px 18px rgba(0,0,0,.20) !important;
 }
 /* v.1.1 (530) – optical correction for unequal hero padding. */
-#dashHero .dashboardHeroLine3{
-  width:calc(100% + 128px) !important;
-  max-width:calc(100% + 128px) !important;
-  margin-left:-32px !important;
-  margin-right:0 !important;
-  transform:none !important;
-}
-@media (max-width:700px){
-  #dashHero .dashboardHeroLine3{
-    width:calc(100% + 96px) !important;
-    max-width:calc(100% + 96px) !important;
-    margin-left:-24px !important;
-    transform:none !important;
-  }
-}
+
+
 
 
 /* v.1.1 (530) – Dashboard D řádek zpět na skutečný střed + Rotace aktivní jméno bez oříznutí + Fáze 3 pokračování. */
-#dashHero .dashboardHeroLine3{
-  box-sizing:border-box !important;
-  display:block !important;
-  width:fit-content !important;
-  max-width:min(100%, 520px) !important;
-  margin:8px auto 0 !important;
-  padding:7px 10px !important;
-  text-align:center !important;
-  align-self:center !important;
-  justify-self:center !important;
-  transform:none !important;
-  left:auto !important;
-  right:auto !important;
-  white-space:normal !important;
-  overflow-wrap:anywhere !important;
-}
-@media (max-width:700px){
-  #dashHero .dashboardHeroLine3{
-    max-width:calc(100% - 4px) !important;
-    padding-inline:8px !important;
-    transform:none !important;
-  }
-}
+
+
 #rotace.page.active #rotaceNamesPanel.active #namesGrid{
   padding-top:12px !important;
   overflow-x:visible !important;
@@ -1341,53 +1228,9 @@ body.lightweightMode #rotaceNamesPanel .rotaceNameTile{
 }
 
 /* v.1.1 (530) – Dashboard D řádek centrovaný přes celou kartu + Láďův režim pro starší Androidy. */
-#dashHero .dashboardHeroLine3{
-  --dash-hero-pad-left:64px;
-  --dash-hero-pad-right:128px;
-  display:block !important;
-  box-sizing:border-box !important;
-  width:calc(100% + var(--dash-hero-pad-left) + var(--dash-hero-pad-right)) !important;
-  max-width:none !important;
-  margin:8px 0 0 calc(-1 * var(--dash-hero-pad-left)) !important;
-  padding:0 !important;
-  border:0 !important;
-  border-radius:0 !important;
-  background:transparent !important;
-  box-shadow:none !important;
-  text-align:center !important;
-  transform:none !important;
-  left:auto !important;
-  right:auto !important;
-  align-self:stretch !important;
-  justify-self:stretch !important;
-  overflow:visible !important;
-}
-#dashHero .dashboardHeroLine3Pill{
-  display:inline-block !important;
-  box-sizing:border-box !important;
-  max-width:min(520px, calc(100vw - 28px - env(safe-area-inset-left) - env(safe-area-inset-right))) !important;
-  padding:7px 10px !important;
-  border-radius:999px !important;
-  border:1px solid rgba(124,255,124,.16) !important;
-  background:rgba(124,255,124,.075) !important;
-  color:rgba(232,255,232,.88) !important;
-  font-size:clamp(12px, 3vw, 14px) !important;
-  line-height:1.2 !important;
-  font-weight:750 !important;
-  text-align:center !important;
-  white-space:normal !important;
-  overflow-wrap:anywhere !important;
-}
-@media (max-width:700px){
-  #dashHero .dashboardHeroLine3{
-    --dash-hero-pad-left:58px;
-    --dash-hero-pad-right:16px;
-  }
-  #dashHero .dashboardHeroLine3Pill{
-    max-width:calc(100vw - 24px - env(safe-area-inset-left) - env(safe-area-inset-right)) !important;
-    padding-inline:8px !important;
-  }
-}
+
+
+
 #rotace.page.active #rotaceNamesPanel.active #namesGrid{
   padding-top:16px !important;
   overflow-x:visible !important;
@@ -1485,51 +1328,10 @@ body.lowEndDevice #rotaceNamesPanel .rotaceTileTitle{
 
 
 /* v.1.1 (530) – Dashboard recovery: ikony/data vždy viditelné + D řádek skutečně opticky centrovaný. */
-#dashHero .dashboardHeroLine3{
-  display:flex !important;
-  align-items:center !important;
-  justify-content:center !important;
-  box-sizing:border-box !important;
-  width:100% !important;
-  max-width:100% !important;
-  margin:8px 0 0 !important;
-  padding:0 !important;
-  border:0 !important;
-  border-radius:0 !important;
-  background:transparent !important;
-  box-shadow:none !important;
-  text-align:center !important;
-  align-self:stretch !important;
-  justify-self:stretch !important;
-  overflow:visible !important;
-  transform:translateX(-24px) !important;
-}
-@media (max-width:700px){
-  #dashHero .dashboardHeroLine3{transform:translateX(-21px) !important;}
-}
-@media (max-width:390px){
-  #dashHero .dashboardHeroLine3{transform:translateX(-18px) !important;}
-}
-#dashHero .dashboardHeroLine3Pill{
-  display:inline-flex !important;
-  align-items:center !important;
-  justify-content:center !important;
-  box-sizing:border-box !important;
-  width:auto !important;
-  max-width:min(520px, calc(100vw - 40px - env(safe-area-inset-left) - env(safe-area-inset-right))) !important;
-  padding:7px 10px !important;
-  border-radius:999px !important;
-  border:1px solid rgba(124,255,124,.16) !important;
-  background:rgba(124,255,124,.075) !important;
-  color:rgba(232,255,232,.88) !important;
-  font-size:clamp(12px, 3vw, 14px) !important;
-  line-height:1.2 !important;
-  font-weight:750 !important;
-  text-align:center !important;
-  white-space:normal !important;
-  overflow-wrap:anywhere !important;
-}
-#home .dashboardCard,
+
+
+
+
 body.lightweightMode #home .dashboardCard,
 body.lowEndDevice #home .dashboardCard{
   display:grid !important;
@@ -1541,7 +1343,6 @@ body.lowEndDevice #home .dashboardCard{
 #home .dashboardValue,
 #home .dashboardMeta,
 #home .dashboardLabelRow,
-#home .dashboardIcon.dashboardIconInline,
 #home .dashboardIconImg,
 #home .dashboardIconSvg{
   display:flex !important;
@@ -1552,14 +1353,7 @@ body.lowEndDevice #home .dashboardCard{
 #home .dashboardMeta{
   display:block !important;
 }
-#home .dashboardIcon.dashboardIconInline{
-  width:44px !important;
-  height:44px !important;
-  min-width:44px !important;
-  flex:0 0 44px !important;
-  align-items:center !important;
-  justify-content:center !important;
-}
+
 body.lightweightMode #home .dashboardIcon.dashboardIconInline,
 body.lowEndDevice #home .dashboardIcon.dashboardIconInline{
   width:38px !important;
@@ -1579,14 +1373,7 @@ body.lowEndDevice #home .dashboardIcon.dashboardIconInline{
 
 
 /* v.1.1 (530) – Dashboard safe recovery: Láďův režim nesmí schovat ikonky ani hodnoty. */
-#home .dashboardCard{
-  display:grid !important;
-  grid-template-columns:minmax(0,1fr) auto !important;
-  grid-template-rows:auto auto auto !important;
-  gap:6px 10px !important;
-  overflow:visible !important;
-  contain:none !important;
-}
+
 #home .dashboardTop,
 #home .dashboardHead,
 #home .dashboardLabelRow{
@@ -1612,21 +1399,7 @@ body.lowEndDevice #home .dashboardIcon.dashboardIconInline{
   grid-column:1 !important;
   color:rgba(230,240,230,.68) !important;
 }
-#home .dashboardIcon.dashboardIconInline{
-  display:flex !important;
-  visibility:visible !important;
-  opacity:1 !important;
-  width:44px !important;
-  height:44px !important;
-  min-width:44px !important;
-  flex:0 0 44px !important;
-  align-items:center !important;
-  justify-content:center !important;
-  align-self:center !important;
-  justify-self:end !important;
-  overflow:visible !important;
-  contain:none !important;
-}
+
 #home .dashboardIcon.dashboardIconInline img,
 #home .dashboardIcon.dashboardIconInline svg,
 #home .dashboardIconImg,
@@ -1656,69 +1429,14 @@ body.lowEndDevice #home .dashboardIcon.dashboardIconInline{
   min-width:38px !important;
   flex-basis:38px !important;
 }
-#dashHero .dashboardHeroLine3{
-  display:block !important;
-  width:100% !important;
-  max-width:100% !important;
-  margin:8px auto 0 !important;
-  padding:0 4px !important;
-  box-sizing:border-box !important;
-  text-align:center !important;
-  transform:none !important;
-  overflow:visible !important;
-}
-#dashHero .dashboardHeroLine3Pill{
-  display:inline-block !important;
-  width:auto !important;
-  max-width:calc(100vw - 36px - env(safe-area-inset-left) - env(safe-area-inset-right)) !important;
-  margin:0 auto !important;
-  text-align:center !important;
-}
+
+
 
 /* v.1.1 (530) – Dashboard D řádek: finální optické dorovnání + Fáze 3 finální Láďův režim. */
-#dashHero .dashboardHeroLine3{
-  display:flex !important;
-  align-items:center !important;
-  justify-content:center !important;
-  box-sizing:border-box !important;
-  width:100% !important;
-  max-width:100% !important;
-  margin:8px 0 0 !important;
-  padding:0 !important;
-  border:0 !important;
-  border-radius:0 !important;
-  background:transparent !important;
-  box-shadow:none !important;
-  text-align:center !important;
-  overflow:visible !important;
-  transform:translateX(-10px) !important;
-}
-@media (max-width:430px){
-  #dashHero .dashboardHeroLine3{transform:translateX(-9px) !important;}
-}
-@media (max-width:390px){
-  #dashHero .dashboardHeroLine3{transform:translateX(-7px) !important;}
-}
-#dashHero .dashboardHeroLine3Pill{
-  display:inline-flex !important;
-  align-items:center !important;
-  justify-content:center !important;
-  box-sizing:border-box !important;
-  width:auto !important;
-  max-width:calc(100vw - 44px - env(safe-area-inset-left) - env(safe-area-inset-right)) !important;
-  margin:0 auto !important;
-  padding:7px 10px !important;
-  border-radius:999px !important;
-  border:1px solid rgba(124,255,124,.16) !important;
-  background:rgba(124,255,124,.075) !important;
-  color:rgba(232,255,232,.88) !important;
-  font-size:clamp(12px, 3vw, 14px) !important;
-  line-height:1.2 !important;
-  font-weight:750 !important;
-  text-align:center !important;
-  white-space:normal !important;
-  overflow-wrap:anywhere !important;
-}
+
+
+
+
 body.lightweightMode,
 body.lowEndDevice{
   --rak-compact-gap:8px;
@@ -1869,48 +1587,9 @@ body.lowEndDevice #home .dashboardDot{
 }
 
 /* v.1.1 (530) – Dashboard: řádek směny D se centruje podle celé hero karty, ne podle odsazeného textového sloupce. */
-#dashHero .dashboardHeroLine3{
-  --dash-line3-left-pad:64px;
-  --dash-line3-right-pad:128px;
-  display:flex !important;
-  align-items:center !important;
-  justify-content:center !important;
-  box-sizing:border-box !important;
-  width:calc(100% + var(--dash-line3-left-pad) + var(--dash-line3-right-pad)) !important;
-  max-width:none !important;
-  margin:8px 0 0 calc(-1 * var(--dash-line3-left-pad)) !important;
-  padding:0 !important;
-  border:0 !important;
-  border-radius:0 !important;
-  background:transparent !important;
-  box-shadow:none !important;
-  text-align:center !important;
-  align-self:stretch !important;
-  justify-self:stretch !important;
-  overflow:visible !important;
-  transform:none !important;
-  left:auto !important;
-  right:auto !important;
-}
-#dashHero .dashboardHeroLine3Pill{
-  display:inline-flex !important;
-  align-items:center !important;
-  justify-content:center !important;
-  box-sizing:border-box !important;
-  width:auto !important;
-  max-width:min(520px, calc(100vw - 28px - env(safe-area-inset-left) - env(safe-area-inset-right))) !important;
-  margin:0 auto !important;
-  padding:7px 10px !important;
-  text-align:center !important;
-  white-space:normal !important;
-  overflow-wrap:anywhere !important;
-}
-@media (max-width:700px){
-  #dashHero .dashboardHeroLine3{
-    --dash-line3-left-pad:58px;
-    --dash-line3-right-pad:16px;
-  }
-}
+
+
+
 body.lightweightMode #dashHero .dashboardHeroLine3,
 body.lowEndDevice #dashHero .dashboardHeroLine3{
   --dash-line3-left-pad:12px;
@@ -1925,12 +1604,7 @@ body.lowEndDevice #dashHero .dashboardHeroLine3Pill{
 
 
 /* v.1.1 (530) – Dashboard: D řádek rozdělený na hlavní informaci + chybějící na dalším řádku. */
-#dashHero .dashboardHeroLine3Pill{
-  flex-direction:column !important;
-  gap:2px !important;
-  line-height:1.16 !important;
-  white-space:normal !important;
-}
+
 #dashHero .dashboardHeroLine3Main,
 #dashHero .dashboardHeroLine3Sub{
   display:block !important;
