@@ -50,4 +50,4 @@ jobs:
           git commit -m "Split legacy CSS monolith in v1.5.56"
           git push origin development
 
-# retry after inventory indentation fix
+# final retry after critical smoke anchor fix
