@@ -1,0 +1,65 @@
+name: RaK v1.5.58 Dashboard legacy CSS cleanup
+
+on:
+  push:
+    branches: [development]
+    paths:
+      - '.github/workflows/rak-v1558-remove-dashboard-legacy-css.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout development
+        uses: actions/checkout@v4
+        with:
+          ref: development
+          fetch-depth: 0
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Remove proven Dashboard legacy CSS
+        run: python3 tools/rak-v1558-remove-dashboard-legacy-css.py
+      - name: Verify Dashboard legacy ownership
+        run: |
+          node --check app-usage-smoke-v963.js
+          node --check tools/critical-runtime-smoke.mjs
+          node tools/critical-runtime-smoke.mjs
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          files = [Path('styles-overrides-legacy-early.css'), Path('styles-overrides-legacy-mid.css'), Path('styles-overrides-legacy-late.css')]
+          clean = re.sub(r'/\*[\s\S]*?\*/', '', '\n'.join(p.read_text() for p in files))
+          targets = [
+            '#home .dashboardGrid', '#home .dashboardCard', '#home .dashboardHeroCard',
+            '#dashHero .dashboardHeroLine2', '#dashHero .dashboardHeroLine3', '#dashHero .dashboardHeroLine3Pill',
+            '#home .dashboardIconInline', '#home .dashboardIcon.dashboardIconInline', '#home .dashboardDot',
+            '#dashKantyna .dashboardDot', '#dashJidelna .dashboardDot'
+          ]
+          # Parse exact selector components, not substrings of descendant selectors.
+          selectors = set()
+          for m in re.finditer(r'([^{}]+)\{', clean):
+            head = m.group(1).strip()
+            if head.startswith('@'):
+              continue
+            for selector in head.split(','):
+              selectors.add(re.sub(r'\s+', ' ', selector.strip()))
+          remaining = [s for s in targets if s in selectors]
+          assert not remaining, remaining
+          print('Dashboard legacy exact selectors removed:', len(targets))
+          print('Legacy CSS bytes:', [len(p.read_text()) for p in files])
+          PY
+      - name: Full repository check
+        run: npm run check
+      - name: Commit cleanup after checks pass
+        run: |
+          rm -f .github/workflows/rak-v1558-remove-dashboard-legacy-css.yml tools/rak-v1558-remove-dashboard-legacy-css.py
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "Remove proven Dashboard legacy CSS in v1.5.58"
+          git push origin development
