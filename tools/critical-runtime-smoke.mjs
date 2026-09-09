@@ -14,6 +14,8 @@ const indexHtml = read('index.html');
 const stylesOverridesLegacyEarlyCss = read('styles-overrides-legacy-early.css');
 const stylesOverridesLegacyMidCss = read('styles-overrides-legacy-mid.css');
 const stylesOverridesLegacyLateCss = read('styles-overrides-legacy-late.css');
+const stylesViewportPolishCss = read('styles-viewport-polish.css');
+const stylesReleasePolishCss = read('styles-release-polish.css');
 const dashboardFitCss = read('styles-dashboard-fit.css');
 const dashboardPolishCss = read('styles-dashboard-polish.css');
 const dashboardLegacyCleanupTargetsV158 = [
@@ -47,6 +49,14 @@ for (const selector of dashboardActiveOwnersV158) {
   assert(activeDashboardCssV158.includes(selector), 'Chybí aktivní Dashboard owner po legacy cleanupu: ' + selector);
 }
 assert(stylesOverridesLegacyEarlyCss.includes('Dashboard legacy cleanup'), 'Chybí v1.5.58 Dashboard legacy cleanup marker');
+const legacyNavLayoutCssV159 = (stylesOverridesLegacyEarlyCss + '\n' + stylesOverridesLegacyMidCss + '\n' + stylesOverridesLegacyLateCss)
+  .replace(/\/\*[\s\S]*?\*\//g, '');
+assert(stylesOverridesLegacyEarlyCss.includes('RaK v1.5.59 – proven nav/layout legacy dedupe'), 'Chybí v1.5.59 nav/layout cleanup marker');
+assert(!legacyNavLayoutCssV159.includes('.bottomNavGamesBtn'), 'Mrtvý bottomNavGamesBtn se nesmí vrátit');
+assert(!legacyNavLayoutCssV159.includes('[data-page="games"]'), 'Mrtvý Games nav selector se nesmí vrátit');
+assert(stylesViewportPolishCss.includes('html body nav.bottomNav'), 'Viewport polish musí dál vlastnit iOS pozici spodní lišty');
+assert(stylesReleasePolishCss.includes('html body nav.bottomNav'), 'Release polish musí dál vlastnit finální bottom-nav pozici');
+assert(stylesReleasePolishCss.includes('.page.active'), 'Release polish musí dál držet finální page shell');
 const bootSelfTest = read('app-boot-selftest.js');
 const adminRotationJs = read('admin-rotation.js');
 const adminRotationOvertimeJs = read('admin-rotation-overtime.js');
