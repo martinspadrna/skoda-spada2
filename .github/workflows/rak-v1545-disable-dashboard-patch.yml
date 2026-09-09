@@ -1,0 +1,60 @@
+name: RaK v1.5.45 safe dashboard patch disconnect
+
+on:
+  push:
+    branches: [development]
+    paths:
+      - '.github/workflows/rak-v1545-disable-dashboard-patch.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  disconnect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: development
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Apply exact runtime disconnect
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          def replace_exact(path, old, new, count=1):
+              p = Path(path)
+              text = p.read_text()
+              actual = text.count(old)
+              if actual != count:
+                  raise SystemExit(f'{path}: expected {count} occurrence(s), found {actual}: {old!r}')
+              p.write_text(text.replace(old, new, count))
+
+          replace_exact('app.js', 'const RAK_MODULE_CACHE_VERSION = "1.5.44";', 'const RAK_MODULE_CACHE_VERSION = "1.5.45";')
+          replace_exact('app.js', 'const RAK_DEV_UPDATE_BUILD = "v1.5.44";', 'const RAK_DEV_UPDATE_BUILD = "v1.5.45";')
+          replace_exact('app.js', '    "brusy-fhb-v158.js",\n    "rak-dashboard-shift-label-v1515.js"\n', '    "brusy-fhb-v158.js"\n')
+          replace_exact('package.json', '"version": "1.5.44"', '"version": "1.5.45"')
+          replace_exact('sw.js', "const CACHE_VERSION = 'v1.5.44';", "const CACHE_VERSION = 'v1.5.45';")
+
+          old = "assert(deferred.includes('rak-dashboard-shift-label-v1515.js'), 'Dashboard patch musí ve v1.5.44 zůstat dočasně jako mobilní fallback');"
+          new = "assert(!deferred.includes('rak-dashboard-shift-label-v1515.js'), 'Dashboard patch se po nativním převzetí nesmí vrátit do runtime bootu');\nassert(fs.existsSync(path.join(root, 'rak-dashboard-shift-label-v1515.js')), 'Dashboard patch musí ve v1.5.45 ještě zůstat ve zdrojích jako rychlá fallback pojistka');"
+          replace_exact('tools/critical-runtime-smoke.mjs', old, new)
+          PY
+
+          node --check app.js
+          node --check tools/critical-runtime-smoke.mjs
+      - name: Full repository check
+        run: npm run check
+      - name: Commit only after checks pass
+        shell: bash
+        run: |
+          rm .github/workflows/rak-v1545-disable-dashboard-patch.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add app.js package.json sw.js tools/critical-runtime-smoke.mjs .github/workflows/rak-v1545-disable-dashboard-patch.yml
+          git commit -m "Disconnect dashboard shift patch runtime in v1.5.45"
+          git push origin HEAD:development
