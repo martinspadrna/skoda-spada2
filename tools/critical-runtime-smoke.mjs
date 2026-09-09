@@ -78,6 +78,7 @@ assert(appJs.includes('installBottomNavBindings'), 'Chybí navázání spodní n
 assert(appJs.includes('applyBottomNavMoreHardFix'), 'Chybí hard-fix tlačítka Více');
 assert(appJs.includes('installDelegatedAppActions'), 'Chybí delegované akce aplikace');
 assert(!deferred.includes('rak-menu-report-order-v1513.js'), 'Legacy CSS stabilizátor pořadí reportů se po mobilním ověření nové kotvy nesmí vrátit do bootu');
+assert(!deferred.includes('rak-dev-fixes-v1512.js'), 'Historický rak-dev-fixes-v1512.js se po nativním převzetí reportu a kalendáře nesmí vrátit do runtime bootu');
 assert(!fs.existsSync(path.join(root, 'rak-menu-report-order-v1513.js')), 'Legacy CSS stabilizátor pořadí reportů se nesmí vrátit do zdrojů');
 assert(shiftReportEntryFix.includes('const anchor = vacationReportButton || nativeReportButton || adminButton;'), 'Report směny musí preferovat Report dovolené jako viditelnou kotvu pořadí');
 assert(shiftReport.includes("const INDEX_ORDER = { AG: 0, AE: 0, AF: 1, AD: 1, AH: 2 };"), 'Hlavní report modul musí držet ověřené pořadí indexů');
