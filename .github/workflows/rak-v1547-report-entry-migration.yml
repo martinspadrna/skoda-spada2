@@ -1,0 +1,43 @@
+name: RaK v1.5.47 report entry migration
+
+on:
+  push:
+    branches: [development]
+    paths:
+      - '.github/workflows/rak-v1547-report-entry-migration.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: development
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Apply migration
+        run: python3 tools/rak-v1547-migrate.py
+      - name: Syntax check touched files
+        run: |
+          node --check app.js
+          node --check app-menu.js
+          node --check rak-shift-report.js
+          node --check app-pwa-connectivity.js
+          node --check tools/critical-runtime-smoke.mjs
+      - name: Full repository check
+        run: npm run check
+      - name: Commit migration after checks pass
+        shell: bash
+        run: |
+          rm tools/rak-v1547-migrate.py
+          rm .github/workflows/rak-v1547-report-entry-migration.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "Move shift report entry native in v1.5.47"
+          git push origin HEAD:development
