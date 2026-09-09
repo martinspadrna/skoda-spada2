@@ -7,6 +7,8 @@
   const HARD = ['TNKS01', 'TPKW01', 'TPKW02', 'TBKR01', 'TBKR07'];
   const SOFT = ['MSKC01', 'MSKC02', 'MSKC03', 'MSKC04', 'MFKF06', 'MFKF10'];
   const INDEX_COLORS = { AF: 'blue', AG: 'green', AH: 'orange', AD: 'blue', AE: 'green' };
+  const INDEX_ORDER = { AG: 0, AE: 0, AF: 1, AD: 1, AH: 2 };
+  const REPORT_SEPARATOR = '__________';
   const SECTIONS = [
     { id: 'mo', label: 'MO', fields: [], indexes: ['AF', 'AG', 'AH'], defaultIndex: 'AF', totalNok: true },
     { id: 'to', label: 'TO', fields: [], indexes: ['AD', 'AE', 'AH'], defaultIndex: 'AD' },
@@ -36,7 +38,93 @@
   function syncIndexColor(select){if(!select)return;select.classList.remove('rakShiftIndex--blue','rakShiftIndex--green','rakShiftIndex--orange','rakShiftIndex--neutral');select.classList.add(indexColorClass(select.value));const color=INDEX_COLORS[select.value]||'neutral';select.dataset.indexColor=color;const row=select.closest('.rakShiftProdRow');if(row)row.dataset.indexColor=color;}
   function getDraft(root){const production={};SECTIONS.forEach((section)=>{production[section.id]=Array.from(root.querySelectorAll('[data-section="'+section.id+'"]')).map((row)=>({index:row.querySelector('.rakShiftIndex')?.value||section.defaultIndex,qty:row.querySelector('.rakShiftQty')?.value||'',nok:row.querySelector('.rakShiftNok')?.value||'',free:row.querySelector('.rakShiftFree')?.value||''})).filter((r)=>r.qty!==''||r.nok!==''||r.free!=='');});const problems=Array.from(root.querySelectorAll('.rakShiftProblemRow')).map((row)=>({machine:row.querySelector('.rakShiftMachine')?.value||'',from:row.querySelector('.rakShiftFrom')?.value||'',to:row.querySelector('.rakShiftTo')?.value||'',text:row.querySelector('.rakShiftProblemText')?.value.trim()||''})).filter((p)=>p.machine||p.from||p.to||p.text);return{date:root.querySelector('.rakShiftDate')?.value||'',shift:root.querySelector('.rakShiftShift')?.value||'',production,moNok:root.querySelector('.rakShiftTotalNok')?.value||'',problems};}
   function problemDuration(from,to){const parse=(value)=>{const match=String(value||'').match(/^(\d{1,2}):(\d{2})$/);if(!match)return null;const hour=Number(match[1]);const minute=Number(match[2]);return hour>=0&&hour<24&&minute>=0&&minute<60?(hour*60+minute):null;};const start=parse(from);let end=parse(to);if(start==null||end==null)return null;if(end<start)end+=24*60;return end-start;} function formatProblemDuration(minutes){if(!Number.isFinite(minutes))return '';if(minutes<60)return String(minutes)+'min';const hours=Math.floor(minutes/60);const rest=minutes%60;return String(hours)+'h'+(rest?String(rest).padStart(2,'0')+'min':'');}
-  function reportText(draft){const date=draft.date?new Date(draft.date+'T12:00:00').toLocaleDateString('cs-CZ'):new Date().toLocaleDateString('cs-CZ');const lines=['RaK – REPORT SMĚNY',date+(draft.shift?' · '+draft.shift:''),''];const labels={mo:'MO',to:'TO',r01:'TBKR01',r07:'TRBR07'};Object.keys(labels).forEach((id)=>{if(id==='r01')lines.push('');lines.push(labels[id]+':');const rows=draft.production[id]||[];rows.forEach((r)=>{const extras=[];if(r.nok)extras.push(r.nok+' NOK');if(r.free)extras.push('z toho '+r.free+' volné');lines.push('  - '+r.qty+' '+r.index+(extras.length?' ('+extras.join(', ')+')':''));});if(!rows.length)lines.push('  -');if(id==='mo'&&draft.moNok)lines.push('  NoK celkem: '+draft.moNok);if(id!=='r01')lines.push('');});if(draft.problems.length){const order=['TNKS01','TPKW01','TPKW02','TBKR01','TBKR07','MSKC01','MSKC02','MSKC03','MSKC04','MFKF06','MFKF10'];lines.push('');lines.push('PROBLÉMY:');draft.problems.slice().sort((a,b)=>{const ai=order.indexOf(a.machine);const bi=order.indexOf(b.machine);return (ai<0?order.length:ai)-(bi<0?order.length:bi);}).forEach((p)=>{const duration=formatProblemDuration(problemDuration(p.from,p.to));lines.push('  '+p.machine+' – '+(p.from||'??:??')+'–'+(p.to||'??:??')+(duration?' ('+duration+')':'')+', '+(p.text||'bez popisu'));});}return lines.join('\n').trim();}
+  function reportLineIndex(line) {
+    const match = String(line || '').match(/\b(AF|AG|AH|AD|AE)\b/i);
+    return match ? match[1].toUpperCase() : '';
+  }
+  function formatShiftReportText(text) {
+    let lines = String(text || '').replace(/\r/g, '').split('\n');
+    if (lines.length && /^\s*RaK\s*[–-]\s*REPORT SMĚNY\s*$/i.test(lines[0])) lines.shift();
+    lines = lines
+      .filter(line => !/^\s*_{5,}\s*$/.test(String(line || '')))
+      .map(line => {
+        let value = String(line || '');
+        value = value.replace(/\s*·\s*R8?\s*$/i, ' · Ranní');
+        value = value.replace(/\s*·\s*N8?\s*$/i, ' · Noční');
+        const nok = value.match(/^\s*NoK\s+celkem:\s*(.+?)\s*$/i);
+        if (nok) value = '  - ' + nok[1] + ' NoK';
+        return value;
+      });
+
+    const out = [];
+    let grinderSeen = false;
+    const trimTrailingBlankLines = () => {
+      while (out.length && !String(out[out.length - 1] || '').trim()) out.pop();
+    };
+
+    lines.forEach(line => {
+      const header = String(line || '').trim();
+      const grinderHeader = header === 'TBKR01:' || header === 'TRBR07:';
+      if (grinderHeader) {
+        if (!grinderSeen) {
+          trimTrailingBlankLines();
+          if (out.length && out[out.length - 1] !== REPORT_SEPARATOR) out.push(REPORT_SEPARATOR);
+        } else if (header === 'TRBR07:') {
+          trimTrailingBlankLines();
+          out.push('');
+        }
+        grinderSeen = true;
+        out.push(line);
+        return;
+      }
+      if (header === 'PROBLÉMY:') {
+        trimTrailingBlankLines();
+        if (grinderSeen && out[out.length - 1] !== REPORT_SEPARATOR) out.push(REPORT_SEPARATOR);
+        if (out.length) out.push('');
+        out.push(line);
+        return;
+      }
+      out.push(line);
+    });
+
+    const compact = [];
+    out.forEach(line => {
+      const blank = !String(line || '').trim();
+      if (blank && (!compact.length || !String(compact[compact.length - 1] || '').trim())) return;
+      compact.push(line);
+    });
+    while (compact.length && !String(compact[0] || '').trim()) compact.shift();
+    while (compact.length && !String(compact[compact.length - 1] || '').trim()) compact.pop();
+    return compact.join('\n');
+  }
+  function sortReportRowsByIndexColor(text) {
+    const lines = String(text || '').split('\n');
+    const out = [];
+    let i = 0;
+    while (i < lines.length) {
+      const header = String(lines[i] || '').trim();
+      if (!/^(MO|TO|TBKR01|TRBR07):$/.test(header)) {
+        out.push(lines[i]);
+        i += 1;
+        continue;
+      }
+      out.push(lines[i]);
+      i += 1;
+      const rows = [];
+      while (i < lines.length && /^\s*-\s*/.test(lines[i])) {
+        rows.push({ line: lines[i], pos: rows.length, index: reportLineIndex(lines[i]) });
+        i += 1;
+      }
+      rows.sort((a, b) => {
+        const ao = Object.prototype.hasOwnProperty.call(INDEX_ORDER, a.index) ? INDEX_ORDER[a.index] : 99;
+        const bo = Object.prototype.hasOwnProperty.call(INDEX_ORDER, b.index) ? INDEX_ORDER[b.index] : 99;
+        return ao - bo || a.pos - b.pos;
+      });
+      rows.forEach(item => out.push(item.line));
+    }
+    return out.join('\n');
+  }
+  function reportText(draft){const date=draft.date?new Date(draft.date+'T12:00:00').toLocaleDateString('cs-CZ'):new Date().toLocaleDateString('cs-CZ');const lines=['RaK – REPORT SMĚNY',date+(draft.shift?' · '+draft.shift:''),''];const labels={mo:'MO',to:'TO',r01:'TBKR01',r07:'TRBR07'};Object.keys(labels).forEach((id)=>{if(id==='r01')lines.push('');lines.push(labels[id]+':');const rows=draft.production[id]||[];rows.forEach((r)=>{const extras=[];if(r.nok)extras.push(r.nok+' NOK');if(r.free)extras.push('z toho '+r.free+' volné');lines.push('  - '+r.qty+' '+r.index+(extras.length?' ('+extras.join(', ')+')':''));});if(!rows.length)lines.push('  -');if(id==='mo'&&draft.moNok)lines.push('  NoK celkem: '+draft.moNok);if(id!=='r01')lines.push('');});if(draft.problems.length){const order=['TNKS01','TPKW01','TPKW02','TBKR01','TBKR07','MSKC01','MSKC02','MSKC03','MSKC04','MFKF06','MFKF10'];lines.push('');lines.push('PROBLÉMY:');draft.problems.slice().sort((a,b)=>{const ai=order.indexOf(a.machine);const bi=order.indexOf(b.machine);return (ai<0?order.length:ai)-(bi<0?order.length:bi);}).forEach((p)=>{const duration=formatProblemDuration(problemDuration(p.from,p.to));lines.push('  '+p.machine+' – '+(p.from||'??:??')+'–'+(p.to||'??:??')+(duration?' ('+duration+')':'')+', '+(p.text||'bez popisu'));});}return sortReportRowsByIndexColor(formatShiftReportText(lines.join('\n').trim()));}
   function saveLocal(text,draft){try{const rows=JSON.parse(localStorage.getItem(STORAGE_KEY)||'[]');rows.unshift({id:Date.now(),createdAt:new Date().toISOString(),text,draft});localStorage.setItem(STORAGE_KEY,JSON.stringify(rows.slice(0,30)));}catch(err){}}
   function draftStorageKey(){let account='';try{const profile=typeof rakUserProfileGet==='function'?rakUserProfileGet():null;account=String(profile&&profile.accountNumber||'').trim();if(!account&&typeof app==='object'&&app&&app.gamesProfile)account=String(app.gamesProfile.activeAccountId||'').trim();}catch(err){}return DRAFT_STORAGE_PREFIX+':'+(account||'local');}
   function loadDraft(){try{const saved=JSON.parse(localStorage.getItem(draftStorageKey())||'null');return saved&&saved.draft&&typeof saved.draft==='object'?saved:null;}catch(err){return null;}}

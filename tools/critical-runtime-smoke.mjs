@@ -12,6 +12,7 @@ const indexHtml = read('index.html');
 const bootSelfTest = read('app-boot-selftest.js');
 const dashboardShiftPatch = read('rak-dashboard-shift-label-v1515.js');
 const shiftReportEntryFix = read('rak-shift-report-entry-fix.js');
+const shiftReport = read('rak-shift-report.js');
 const shiftReportShare = read('rak-shift-report-share.js');
 const devFixes = read('rak-dev-fixes-v1512.js');
 const lazyExternalLibs = read('rak-lazy-external-libs.js');
@@ -78,6 +79,9 @@ assert(appJs.includes('installDelegatedAppActions'), 'Chybí delegované akce ap
 assert(!deferred.includes('rak-menu-report-order-v1513.js'), 'Legacy CSS stabilizátor pořadí reportů se po mobilním ověření nové kotvy nesmí vrátit do bootu');
 assert(!fs.existsSync(path.join(root, 'rak-menu-report-order-v1513.js')), 'Legacy CSS stabilizátor pořadí reportů se nesmí vrátit do zdrojů');
 assert(shiftReportEntryFix.includes('const anchor = vacationReportButton || nativeReportButton || adminButton;'), 'Report směny musí preferovat Report dovolené jako viditelnou kotvu pořadí');
+assert(shiftReport.includes("const INDEX_ORDER = { AG: 0, AE: 0, AF: 1, AD: 1, AH: 2 };"), 'Hlavní report modul musí držet ověřené pořadí indexů');
+assert(shiftReport.includes("const REPORT_SEPARATOR = '__________';"), 'Hlavní report modul musí držet oddělovače provozních bloků');
+assert(shiftReport.includes("return sortReportRowsByIndexColor(formatShiftReportText(lines.join('\\n').trim()));"), 'Finální text reportu se musí formátovat a řadit už v hlavním modulu');
 assert(shiftReportShare.includes("const href = 'whatsapp://send?text='"), 'WhatsApp reportu musí používat ověřené přímé předání bez nového prázdného okna');
 assert(!shiftReportShare.includes("window.open('https://wa.me/?text='"), 'WhatsApp reportu se nesmí vrátit k window.open(wa.me) kvůli bílé stránce po návratu');
 assert(!devFixes.includes('openWhatsAppWithoutBlankPage'), 'WhatsApp workaround už nesmí zůstávat duplicitně v rak-dev-fixes-v1512.js');
