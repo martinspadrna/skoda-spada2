@@ -38,7 +38,6 @@ WIZ.write_text(
     encoding='utf-8'
 )
 
-# Guard the thematic ownership before touching boot/version files.
 engine = GEN.read_text(encoding='utf-8')
 wizard = WIZ.read_text(encoding='utf-8')
 if 'function adminBuildRotationGenerationModel' not in engine:
@@ -85,6 +84,10 @@ if "const adminRotationGeneratorWizardJs = read('admin-rotation-generator-wizard
         raise RuntimeError('Smoke generator read anchor not found')
     smoke = smoke.replace(read_anchor, read_anchor + "\nconst adminRotationGeneratorWizardJs = read('admin-rotation-generator-wizard.js');", 1)
 
+# Retire the old v1.5.53 ownership guard before adding the new split guards.
+old_owner_guard = "assert(adminRotationGeneratorJs.includes('function adminRotationGeneratorRenderWizard'), 'Průvodce generátoru musí vlastnit admin-rotation-generator.js');"
+smoke = smoke.replace(old_owner_guard, "assert(!adminRotationGeneratorJs.includes('function adminRotationGeneratorRenderWizard'), 'Průvodce generátoru už nesmí zůstat v generator engine');")
+
 assert_anchor = "assert(deferred.includes('admin-rotation-generator.js'), 'Generátor rozpisu musí zůstat součástí ověřeného bootu');"
 checks = """
 assert(deferred.includes('admin-rotation-generator-wizard.js'), 'Průvodce generátoru musí zůstat součástí ověřeného bootu');
@@ -96,7 +99,7 @@ assert(adminRotationGeneratorWizardJs.includes('function adminRotationGeneratorD
 assert(!adminRotationGeneratorJs.includes('function adminRotationGeneratorRenderWizard'), 'Wizard UI se nesmí vrátit do generator engine');
 assert(!adminRotationGeneratorJs.includes('ADMIN_ROTATION_GENERATOR_ABSENCE_ICS_URL'), 'Kalendářový endpoint se nesmí vrátit do generator engine');
 """
-if 'Průvodce generátoru musí zůstat' not in smoke:
+if 'Wizard modul musí vlastnit průvodce generátoru' not in smoke:
     if assert_anchor not in smoke:
         raise RuntimeError('Smoke generator assert anchor not found')
     smoke = smoke.replace(assert_anchor, assert_anchor + '\n' + checks.strip(), 1)
