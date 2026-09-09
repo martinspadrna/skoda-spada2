@@ -14,58 +14,26 @@ SMOKE = ROOT / 'tools/critical-runtime-smoke.mjs'
 
 src = SRC.read_text(encoding='utf-8')
 
-# Find top-level function declarations and their complete bodies.
+# Top-level functions in this file are consistently formatted with their closing
+# brace at column 0. Using that stable style is safer here than trying to lex JS
+# regex/template literals in a temporary migration parser.
 pat = re.compile(r'(?m)^(?:async\s+)?function\s+([A-Za-z_$][\w$]*)\s*\(')
 
 def find_block_end(text, start):
     brace = text.find('{', start)
     if brace < 0:
         raise RuntimeError('Missing function body at %d' % start)
-    depth = 0
-    i = brace
-    state = 'code'
-    quote = ''
-    while i < len(text):
-        ch = text[i]
-        nxt = text[i+1] if i + 1 < len(text) else ''
-        if state == 'code':
-            if ch in ('"', "'", '`'):
-                state = 'string'; quote = ch
-            elif ch == '/' and nxt == '/':
-                state = 'line'; i += 1
-            elif ch == '/' and nxt == '*':
-                state = 'block'; i += 1
-            elif ch == '{':
-                depth += 1
-            elif ch == '}':
-                depth -= 1
-                if depth == 0:
-                    end = i + 1
-                    while end < len(text) and text[end] in ' \t':
-                        end += 1
-                    if end < len(text) and text[end] == ';':
-                        end += 1
-                    while end < len(text) and text[end] in '\r\n':
-                        end += 1
-                    return end
-        elif state == 'string':
-            if ch == '\\':
-                i += 1
-            elif ch == quote:
-                state = 'code'
-        elif state == 'line':
-            if ch in '\r\n':
-                state = 'code'
-        elif state == 'block':
-            if ch == '*' and nxt == '/':
-                state = 'code'; i += 1
-        i += 1
-    raise RuntimeError('Unclosed function at %d' % start)
+    match = re.search(r'(?m)^}[ \t]*;?[ \t]*(?:\r?\n|$)', text[brace + 1:])
+    if not match:
+        raise RuntimeError('Unclosed top-level function at %d' % start)
+    end = brace + 1 + match.end()
+    while end < len(text) and text[end] in '\r\n':
+        end += 1
+    return end
 
 blocks = []
 for m in pat.finditer(src):
     start = m.start()
-    # Only accept declarations that start with no indentation (top-level).
     if start > 0 and src[start-1] not in '\r\n':
         continue
     end = find_block_end(src, start)
@@ -120,9 +88,9 @@ for start, end, name, block in blocks:
         ranges.append((start, end, name, bucket))
 
 if len(selected['machine']) < 8:
-    raise RuntimeError('Machine split too small: %d' % len(selected['machine']))
+    raise RuntimeError('Machine split too small: %d; names=%r' % (len(selected['machine']), [n for n, _ in selected['machine']]))
 if len(selected['editor']) < 15:
-    raise RuntimeError('Editor split too small: %d' % len(selected['editor']))
+    raise RuntimeError('Editor split too small: %d; names=%r' % (len(selected['editor']), [n for n, _ in selected['editor']]))
 if not selected['generator']:
     raise RuntimeError('Expected leftover generator functions')
 if not selected['overtime']:
