@@ -1,0 +1,84 @@
+name: RaK v1.5.39 safe migration
+
+on:
+  push:
+    branches:
+      - development
+
+permissions:
+  contents: write
+
+jobs:
+  migrate:
+    if: github.event.head_commit.message == 'Prepare safe v1.5.39 migration'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: development
+          fetch-depth: 2
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Apply exact migration
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import base64, zlib
+
+          def dec(value):
+              return zlib.decompress(base64.b64decode(value)).decode('utf-8')
+
+          def replace_once(path, old, new):
+              p = Path(path)
+              text = p.read_text()
+              if text.count(old) != 1:
+                  raise SystemExit(f'Expected exactly one match in {path}, got {text.count(old)}')
+              p.write_text(text.replace(old, new, 1))
+
+          report = Path('rak-shift-report.js')
+          text = report.read_text()
+          if "const INDEX_ORDER = { AG: 0, AE: 0, AF: 1, AD: 1, AH: 2 };" in text:
+              raise SystemExit('Report formatting already migrated')
+          replace_once('rak-shift-report.js', dec('eNpTUEjOzysuUfD0c3GNiHf29/EPClawVahWcHSzUlBPyilNVddRcHQHstOLUlPzQBwPICe/KDEvHSzlgqTMFa5ModaaCwCaRhk0'), dec('eNpTUEjOzysuUfD0c3GNiHf29/EPClawVahWcHSzUlBPyilNVddRcHQHstOLUlPzQBwPICe/KDEvHSzlgqTMFa5ModaaSwHFaP8gF9cgiMlA0wwgqkEU0B5DiDmGEMONkDUHuQb4B4XEB7sGOAY5hviDTFCPhwN1ay4A4S0zyg=='))
+          replace_once('rak-shift-report.js', dec('eNp9VEtu2zAQ3fcUzCZDQY4hp0UDyFUN5LdR/IFtoEhTL/ShYyaSqFJ0vg7Qbdfd9QY9QfdNT9KTdChKVuIiBQTocfiG8zTzRELmyyxSXGREslxINWU3isYymCvrPhJZoUgcKOaVkbaGvYxdk0MEtInZMO3suo6DD1htJU5EFCRMkyZK8uycQlTsHHwEy10n/5fWNZUTnrHCO4Nx4JM/X76R8dFoOJ6SSf/398EptMrKlYpiweeqB+TXTwL2k5ALYLUAZvWJQciSwrtPhQv9IbQUvqf4lk4Hwb4/djp6sYeL8f7Y2YOH7jC8YJFqX7Lbgpp0qz0X8iiIFpTy2PLe3/M5As/zAI8Bq1TdzpfFgmLx7pOlST/j8cwGd/2VUlwXVX9zKeJlOQ1NWq3OZl2929STupxJwznJALsz62J52c7EpWVCplYZsYEMhj5WKilzydgzDtwRJRYCO2Y2kX4lkuzxx3PZQMhOyfmsbpGiEc9idmPT6rCEZedqgd2nYFehC8EzCi0Clg0W6ClY3YdSx1b5RSbF2qhilJpepgK2t01bUjHAr3vOHQifRCy5ZKm7nrjhmSO2XhiHEbFud5iwdK2m6qyQMZNou+nAn2g/wHTkf2jArgaVVQzYQ9Cf+AdlpAS7NXhdgzcaHPvHztsKdBx05ctegdF4uH/y+LV/qp2yobdIeKR/oQJ/WEqDVtjYIuBeqd+MaDinQTtF6+DBtd/CTUbYMCRTS5kRGvB3Ts+wTG/cgFs7NPwnHHLd0sageaMkXspAW9nDzTRQIyP+sIrSfHONFhRpK8d7wdq0H9h5rRENqK8CsKuE1Qp6PbfX00bDjTKuxJMorXUYf9ar2pa2NmmZhM7FtJDdkVzkvFhWln2oemIUGV9/yvQ1J3lKcf/VX+Uiuk4='), dec('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'))
+
+          replace_once('app.js', 'const RAK_MODULE_CACHE_VERSION = "1.5.38";', 'const RAK_MODULE_CACHE_VERSION = "1.5.39";')
+          replace_once('app.js', 'const RAK_DEV_UPDATE_BUILD = "v1.5.38";', 'const RAK_DEV_UPDATE_BUILD = "v1.5.39";')
+          replace_once('package.json', '"version": "1.5.38"', '"version": "1.5.39"')
+          replace_once('sw.js', "const CACHE_VERSION = 'v1.5.38';", "const CACHE_VERSION = 'v1.5.39';")
+
+          smoke = Path('tools/critical-runtime-smoke.mjs')
+          s = smoke.read_text()
+          read_anchor = "const shiftReportEntryFix = read('rak-shift-report-entry-fix.js');\n"
+          read_new = read_anchor + "const shiftReport = read('rak-shift-report.js');\n"
+          if s.count(read_anchor) != 1:
+              raise SystemExit('Smoke read anchor mismatch')
+          s = s.replace(read_anchor, read_new, 1)
+          assert_anchor = "assert(shiftReportEntryFix.includes('const anchor = vacationReportButton || nativeReportButton || adminButton;'), 'Report směny musí preferovat Report dovolené jako viditelnou kotvu pořadí');\n"
+          assert_new = assert_anchor + (
+              "assert(shiftReport.includes(\"const INDEX_ORDER = { AG: 0, AE: 0, AF: 1, AD: 1, AH: 2 };\"), 'Hlavní report modul musí držet ověřené pořadí indexů');\n"
+              "assert(shiftReport.includes(\"const REPORT_SEPARATOR = '__________';\"), 'Hlavní report modul musí držet oddělovače provozních bloků');\n"
+              "assert(shiftReport.includes(\"return sortReportRowsByIndexColor(formatShiftReportText(lines.join('\\\\n').trim()));\"), 'Finální text reportu se musí formátovat a řadit už v hlavním modulu');\n"
+          )
+          if s.count(assert_anchor) != 1:
+              raise SystemExit('Smoke assertion anchor mismatch')
+          smoke.write_text(s.replace(assert_anchor, assert_new, 1))
+          PY
+
+          node --check rak-shift-report.js
+          node --check tools/critical-runtime-smoke.mjs
+          npm run check
+
+      - name: Commit verified v1.5.39
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git rm .github/workflows/rak-v1539-safe-migrate.yml
+          git add app.js package.json sw.js rak-shift-report.js tools/critical-runtime-smoke.mjs
+          git commit -m "Move shift report formatting into main module in v1.5.39"
+          git push origin HEAD:development
