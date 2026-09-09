@@ -16,6 +16,8 @@ const stylesOverridesLegacyMidCss = read('styles-overrides-legacy-mid.css');
 const stylesOverridesLegacyLateCss = read('styles-overrides-legacy-late.css');
 const stylesViewportPolishCss = read('styles-viewport-polish.css');
 const stylesReleasePolishCss = read('styles-release-polish.css');
+const stylesMenuPolishCss = read('styles-menu-polish.css');
+const stylesAdminPolishCss = read('styles-admin-polish.css');
 const dashboardFitCss = read('styles-dashboard-fit.css');
 const dashboardPolishCss = read('styles-dashboard-polish.css');
 const dashboardLegacyCleanupTargetsV158 = [
@@ -57,6 +59,13 @@ assert(!legacyNavLayoutCssV159.includes('[data-page="games"]'), 'Mrtvý Games na
 assert(stylesViewportPolishCss.includes('html body nav.bottomNav'), 'Viewport polish musí dál vlastnit iOS pozici spodní lišty');
 assert(stylesReleasePolishCss.includes('html body nav.bottomNav'), 'Release polish musí dál vlastnit finální bottom-nav pozici');
 assert(stylesReleasePolishCss.includes('.page.active'), 'Release polish musí dál držet finální page shell');
+const legacyMenuAdminCssV160 = stylesOverridesLegacyEarlyCss + '\n' + stylesOverridesLegacyMidCss + '\n' + stylesOverridesLegacyLateCss;
+assert(stylesOverridesLegacyEarlyCss.includes('RaK v1.5.60 – proven menu/admin legacy dedupe'), 'Chybí v1.5.60 menu/admin cleanup marker');
+assert(stylesMenuPolishCss.includes('#menu .adminUsageCard'), 'Menu polish musí dál vlastnit admin usage karty');
+assert(stylesMenuPolishCss.includes('#appMenuBody .rakDevicePerfCard'), 'Menu polish musí dál vlastnit nastavení výkonu');
+assert(stylesAdminPolishCss.includes('#appMenuBody[data-admin-view="rotation"] #adminRotationEditor .appMenuAdminRotationTable'), 'Admin polish musí dál vlastnit tabulku Rozpisů');
+assert(stylesAdminPolishCss.includes('.adminRotationQuickRemove'), 'Admin polish musí dál vlastnit rychlé Odebrat');
+assert(legacyMenuAdminCssV160.length > 100000, 'v1.5.60 nesmí omylem vyprázdnit legacy CSS');
 const bootSelfTest = read('app-boot-selftest.js');
 const adminRotationJs = read('admin-rotation.js');
 const adminRotationOvertimeJs = read('admin-rotation-overtime.js');

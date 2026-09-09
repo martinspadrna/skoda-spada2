@@ -3320,38 +3320,19 @@ html body nav.bottomNav > #bottomNavScroll.bottomNavScroll > button.bottomNavMen
 #rotaceBackBtn.calcCloseBtn.rotaceBackBtn{
   top:calc(50% - 11px) !important;
 }
-#menu .adminUsageCard{
-  max-height:min(78dvh, 720px) !important;
-  overflow:hidden !important;
-  grid-template-rows:auto auto auto auto minmax(0, 1fr) auto auto !important;
-}
+
 #menu .adminUsageList{
-  max-height:min(44dvh, 420px) !important;
   min-height:0 !important;
-  overflow:auto !important;
-  overscroll-behavior:contain !important;
-  padding-right:4px !important;
 }
 #menu .adminUsageItem[open] .adminUsageBody{
-  max-height:min(35dvh, 310px) !important;
-  overflow:auto !important;
   overscroll-behavior:contain !important;
   padding-bottom:12px !important;
 }
-#menu .adminUsageDeviceList{
-  display:flex !important;
-  flex-direction:column !important;
-  gap:8px !important;
-  margin-top:4px !important;
-}
+
 #menu .adminUsageDeviceRow{
   display:flex !important;
   flex-direction:column !important;
   gap:5px !important;
-  padding:9px 10px !important;
-  border-radius:14px !important;
-  background:rgba(0,0,0,.13) !important;
-  border:1px solid rgba(255,255,255,.08) !important;
 }
 #menu .adminUsageDeviceHead{
   display:flex !important;
@@ -3586,15 +3567,8 @@ body.lowEndDevice nav.bottomNav > #bottomNavScroll.bottomNavScroll > button.bott
   padding:5px 4px !important;
 }
 
-#menu .adminUsageCard,
-#menu .adminUsageList,
-#menu .adminUsageItem[open] .adminUsageBody{
-  max-height:none !important;
-  overflow:visible !important;
-}
-#menu .adminUsageList{
-  padding-right:0 !important;
-}
+
+
 #menu .adminUsageUa,
 #menu .adminUsageDeviceText,
 #menu .adminUsageDeviceMeta{
@@ -3628,46 +3602,19 @@ html body #dashEportalLink{
   margin-bottom:3px !important;
 }
 
-#appMenuBody[data-admin-view="rotation"] #adminRotationEditor .appMenuAdminRotationTable{
-  border-spacing:0 !important;
-}
-#appMenuBody[data-admin-view="rotation"] #adminRotationEditor .appMenuAdminRotationTable th,
-#appMenuBody[data-admin-view="rotation"] #adminRotationEditor .appMenuAdminRotationTable td{
-  padding:1px !important;
-}
+
+
 #appMenuBody[data-admin-view="rotation"] #adminRotationEditor input[data-rot-field^="cell-"]{
   min-width:62px !important;
   max-width:64px !important;
   width:62px !important;
 }
-#appMenuBody[data-admin-view="rotation"] #adminRotationEditor .appMenuTableWrap:nth-of-type(1) .appMenuAdminTable,
-#appMenuBody[data-admin-view="rotation"] #adminRotationEditor .appMenuTableWrap:nth-of-type(2) .appMenuAdminTable{
-  min-width:620px !important;
-}
-#appMenuBody[data-admin-view="rotation"] #adminRotationEditor .appMenuAdminAbsenceTable{
-  border-spacing:0 !important;
-  min-width:330px !important;
-}
-#appMenuBody[data-admin-view="rotation"] #adminRotationEditor .appMenuAdminAbsenceTable th,
-#appMenuBody[data-admin-view="rotation"] #adminRotationEditor .appMenuAdminAbsenceTable td{
-  padding:0 1px !important;
-}
-#appMenuBody[data-admin-view="rotation"] #adminRotationEditor .appMenuAdminAbsenceTable input[data-note-field="date"]{
-  min-width:68px !important;
-  max-width:72px !important;
-}
-#appMenuBody[data-admin-view="rotation"] #adminRotationEditor .appMenuAdminAbsenceTable input[data-note-field="person"]{
-  min-width:92px !important;
-  max-width:116px !important;
-}
-#appMenuBody[data-admin-view="rotation"] #adminRotationEditor .appMenuAdminAbsenceTable input[data-note-field="code"]{
-  min-width:28px !important;
-  max-width:32px !important;
-  width:30px !important;
-  text-align:center !important;
-  padding-left:1px !important;
-  padding-right:1px !important;
-}
+
+
+
+
+
+
 #menu .adminReportDeleteBtn{
   border-color:rgba(255,110,130,.42) !important;
   color:#fff !important;
@@ -3685,21 +3632,11 @@ html body #dashEportalLink{
 
 
 /* RaK 1.2 (1.146) – Přehled připojení bez vnitřního scroll boxu. */
-#menu .adminUsageCard{
-  max-height:none !important;
-  overflow:visible !important;
-  grid-template-rows:none !important;
-}
+
 #menu .adminUsageList{
-  max-height:none !important;
   min-height:0 !important;
-  overflow:visible !important;
-  overscroll-behavior:auto !important;
-  padding-right:0 !important;
 }
 #menu .adminUsageItem[open] .adminUsageBody{
-  max-height:none !important;
-  overflow:visible !important;
   overscroll-behavior:auto !important;
 }
 

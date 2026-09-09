@@ -417,7 +417,6 @@ body.lowEndDevice .rakDevicePerfCard{
   line-height:1.1 !important;
 }
 #appMenuBody .rakDevicePerfCard{
-  padding:10px 12px !important;
   gap:7px !important;
 }
 #appMenuBody .rakDevicePerfText{
@@ -2179,9 +2178,6 @@ body.ladaMode .calcCorrectionHelpOverlay{
 
 /* v.1.5 (788): Administrace rozpisů – rychlé Odebrat a ochrana editace při oddálení. */
 .adminRotationQuickRemove{
-  position:fixed !important;
-  z-index:10050 !important;
-  min-width:188px !important;
   max-width:min(280px, calc(100vw - 16px)) !important;
   display:none !important;
   align-items:center !important;
@@ -2247,10 +2243,7 @@ body{
   -webkit-overflow-scrolling:touch !important;
   touch-action:pan-x pan-y !important;
 }
-#appMenuBody[data-admin-view="rotation"] #adminRotationEditor .appMenuTableWrap:nth-of-type(1) .appMenuAdminTable,
-#appMenuBody[data-admin-view="rotation"] #adminRotationEditor .appMenuTableWrap:nth-of-type(2) .appMenuAdminTable{
-  min-width:680px !important;
-}
+
 #appMenuBody[data-admin-view="rotation"] #adminRotationEditor .appMenuTableWrap:nth-of-type(3) .appMenuAdminTable{
   min-width:560px !important;
 }
@@ -2341,10 +2334,7 @@ body{
   -webkit-overflow-scrolling:touch !important;
   border-radius:16px !important;
 }
-#appMenuBody[data-admin-view="rotation"] #adminRotationEditor .appMenuTableWrap:nth-of-type(1) .appMenuAdminTable,
-#appMenuBody[data-admin-view="rotation"] #adminRotationEditor .appMenuTableWrap:nth-of-type(2) .appMenuAdminTable{
-  min-width:560px !important;
-}
+
 #appMenuBody[data-admin-view="rotation"] #adminRotationEditor .appMenuTableWrap:nth-of-type(3) .appMenuAdminTable{
   min-width:420px !important;
 }
@@ -2464,12 +2454,10 @@ body.ladaMode #appMenuBody[data-admin-view="rotation"] #adminRotationEditor .adm
   padding:2px 1px !important;
   border-right:1px solid rgba(255,255,255,.05) !important;
   border-bottom:1px solid rgba(255,255,255,.05) !important;
-  font-size:8px !important;
   line-height:1.05 !important;
   text-align:center !important;
   white-space:nowrap !important;
   overflow:hidden !important;
-  text-overflow:ellipsis !important;
   color:rgba(240,255,248,.88) !important;
 }
 #appMenuBody[data-admin-view="rotation"] #adminRotationEditor .adminRotationMiniTable th:first-child,

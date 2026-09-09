@@ -1,3 +1,8 @@
+/* RaK v1.5.60 – proven menu/admin legacy dedupe.
+   Legacy menu/admin deklarace se mažou pouze tehdy, když stejný selector ve stejné
+   media/supports větvi vlastní stejnou vlastnost v později načteném
+   styles-menu-polish.css nebo styles-admin-polish.css se stejnou/vyšší prioritou.
+   Obecné body/page/card/layout selectory jsou z tohoto průchodu záměrně vyloučené. */
 /* RaK v1.5.59 – proven nav/layout legacy dedupe.
    Odstraněno 1649 deklarací, které byly později kompletně přepsané stejným selectorem ve stejné cascade větvi.
    Zbytky navigace po Hrách: odstraněno/osekáno 4 selectorů/pravidel.
