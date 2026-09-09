@@ -183,7 +183,7 @@ if 'const stylesOverridesLegacyEarlyCss' not in critical:
         raise RuntimeError('critical smoke indexHtml read anchor not found')
     critical = critical.replace(read_anchor, read_insert, 1)
 
-assert_anchor = "assert(packageJson.version === cacheVersion, `package.json version ${packageJson.version} != app.js ${cacheVersion}`);"
+assert_anchor = "assert(String(packageJson.version) === swVersionMatch[1], 'package.json a sw.js mají rozdílnou build verzi');"
 css_checks = """
 assert(stylesOverridesLegacyEarlyCss.length > 100000, 'CSS legacy early vrstva je neočekávaně malá');
 assert(stylesOverridesLegacyMidCss.length > 100000, 'CSS legacy mid vrstva je neočekávaně malá');
