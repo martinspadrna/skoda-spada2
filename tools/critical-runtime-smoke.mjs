@@ -50,6 +50,9 @@ assert(!deferred.includes('app-postload-audits.js'), 'Post-load audity nemají b
 assert(idleAudits.includes('app-health-audits.js'), 'Health audity musí zůstat dostupné v idle fázi');
 assert(idleAudits.includes('app-postload-audits.js'), 'Post-load audit orchestrátor musí zůstat dostupný v idle fázi');
 const idleReleaseDiagnostics = [
+  'rak-storage-sync-audit.js',
+  'rak-boot-sequence-audit.js',
+  'rak-supabase-client-audit.js',
   'rak-export-release-audit.js',
   'rak-release-ops-audit.js',
   'rak-due-diligence-progress.js',
@@ -141,4 +144,4 @@ assert(String(packageJson.version) === swVersionMatch[1], 'package.json a sw.js 
 assert(dashboardShiftPatch.includes('window.RAK_PWA_BUILD'), 'Zobrazený testovací build není navázaný na aktuální PWA build');
 assert(dashboardShiftPatch.includes('--rak-dev-build-label'), 'Chybí bezpečné přepsání starého build labelu v O aplikaci');
 
-console.log('[critical-runtime-smoke] OK navigation+rotation+food baseline locked; stable qr.js boot; release diagnostics idle; version sync ' + packageJson.version + '; Games removed; XLSX+JSZip lazy; Supabase eager; DOM security eager');
+console.log('[critical-runtime-smoke] OK navigation+rotation+food baseline locked; stable qr.js boot; extended diagnostics idle; version sync ' + packageJson.version + '; Games removed; XLSX+JSZip lazy; Supabase eager; DOM security eager');
