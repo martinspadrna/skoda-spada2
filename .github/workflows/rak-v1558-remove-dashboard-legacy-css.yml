@@ -23,7 +23,9 @@ jobs:
         with:
           node-version: 22
       - name: Remove proven Dashboard legacy CSS
-        run: python3 tools/rak-v1558-remove-dashboard-legacy-css.py
+        run: |
+          sed -i 's/^checks = """$/checks = r"""/' tools/rak-v1558-remove-dashboard-legacy-css.py
+          python3 tools/rak-v1558-remove-dashboard-legacy-css.py
       - name: Verify Dashboard legacy ownership
         run: |
           node --check app-usage-smoke-v963.js
@@ -40,7 +42,6 @@ jobs:
             '#home .dashboardIconInline', '#home .dashboardIcon.dashboardIconInline', '#home .dashboardDot',
             '#dashKantyna .dashboardDot', '#dashJidelna .dashboardDot'
           ]
-          # Parse exact selector components, not substrings of descendant selectors.
           selectors = set()
           for m in re.finditer(r'([^{}]+)\{', clean):
             head = m.group(1).strip()
