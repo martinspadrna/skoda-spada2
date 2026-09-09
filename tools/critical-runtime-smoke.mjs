@@ -7,6 +7,7 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const read = (file) => fs.readFileSync(path.join(root, file), 'utf8');
 const appJs = read('app.js');
 const qrJs = read('qr.js');
+const statsJs = read('stats.js');
 const swJs = read('sw.js');
 const indexHtml = read('index.html');
 const bootSelfTest = read('app-boot-selftest.js');
@@ -89,6 +90,10 @@ assert(!devFixes.includes('scheduleReportSort'), 'Legacy plánování řazení r
 assert(!devFixes.includes('formatShiftReportText'), 'Formátování reportu už nesmí být duplicitně v rak-dev-fixes-v1512.js');
 assert(!devFixes.includes('MutationObserver'), 'Legacy reportový MutationObserver už nesmí zůstat v rak-dev-fixes-v1512.js');
 assert(devFixes.includes('window.getFirstMorningShiftDateInMonth = findFirstMorningShiftDateInMonth;'), 'Kalendářový fix první ranní směny musí zatím zůstat zachovaný');
+assert(statsJs.includes("let teams = ['A', 'B', 'C', 'D'];"), 'Nativní první ranní směna musí počítat všechny směnové týmy');
+assert(statsJs.includes("Array.isArray(window.SHIFT_CYCLE_ORDER)"), 'Nativní první ranní směna musí respektovat SHIFT_CYCLE_ORDER');
+assert(statsJs.includes("window.getTeamShiftState(probe, team)"), 'Nativní první ranní směna musí používat směnový engine pro všechny týmy');
+assert(!statsJs.includes('const candidates = rows'), 'Stats.js se nesmí vrátit k odvození první ranní jen z importovaných řádků');
 
 // Hry už nejsou součástí zdrojového HTML ani runtime bootu.
 assert(!appJs.includes('__rakDevGamesObserver'), 'Hry znovu používají globální MutationObserver');

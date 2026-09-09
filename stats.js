@@ -1500,24 +1500,32 @@ function isDashboardMorningShiftTime(now) {
 }
 
 function getFirstMorningShiftDateInMonth(now) {
-  const d = now instanceof Date ? now : new Date();
+  const d = now instanceof Date ? new Date(now.getTime()) : new Date();
   const year = d.getFullYear();
-  const month = d.getMonth() + 1;
-  const monthKey = month + "/" + String(year).slice(-2);
-  const monthData = app && app.rotation && app.rotation.months ? app.rotation.months[monthKey] : null;
-  const rows = monthData && monthData.hard && Array.isArray(monthData.hard.rows)
-    ? monthData.hard.rows
-    : (monthData && monthData.soft && Array.isArray(monthData.soft.rows) ? monthData.soft.rows : []);
+  const monthIndex = d.getMonth();
+  const daysInMonth = new Date(year, monthIndex + 1, 0).getDate();
+  let teams = ['A', 'B', 'C', 'D'];
+  try {
+    if (Array.isArray(window.SHIFT_CYCLE_ORDER) && window.SHIFT_CYCLE_ORDER.length) teams = window.SHIFT_CYCLE_ORDER.slice();
+  } catch (err) {}
 
-  const candidates = rows
-    .map(row => typeof parseDateToken === "function" ? parseDateToken(row && row.date) : null)
-    .filter(parsed => parsed && parsed.month === month && /^R/i.test(String(parsed.shift || "").trim()))
-    .map(parsed => parsed.day)
-    .filter(day => Number.isFinite(day))
-    .sort((a, b) => a - b);
+  if (typeof window.getTeamShiftState === 'function') {
+    for (let day = 1; day <= daysInMonth; day += 1) {
+      // 09:00 je bezpečně uvnitř ranní 6–18 i ranní 8h směny 6–14.
+      const probe = new Date(year, monthIndex, day, 9, 0, 0, 0);
+      for (const team of teams) {
+        try {
+          const state = window.getTeamShiftState(probe, team);
+          if (!state || !state.active) continue;
+          const label = String(state.label || '').trim();
+          if (/^R/i.test(label) || /rann/i.test(label)) return new Date(year, monthIndex, day, 6, 0, 0, 0);
+        } catch (err) {}
+      }
+    }
+  }
 
-  if (candidates.length) return new Date(year, month - 1, candidates[0], 6, 0, 0, 0);
-  return new Date(year, month - 1, 1, 6, 0, 0, 0);
+  // Bez směnového enginu zachováme bezpečný fallback na první den měsíce.
+  return new Date(year, monthIndex, 1, 6, 0, 0, 0);
 }
 
 function isSameCalendarDay(a, b) {
