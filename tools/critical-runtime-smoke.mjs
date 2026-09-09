@@ -73,7 +73,7 @@ assert(appJs.includes('await Promise.all(deferredFiles.map(loadScript))'), 'Boot
 assert(appJs.includes('installBottomNavBindings'), 'Chybí navázání spodní navigace');
 assert(appJs.includes('applyBottomNavMoreHardFix'), 'Chybí hard-fix tlačítka Více');
 assert(appJs.includes('installDelegatedAppActions'), 'Chybí delegované akce aplikace');
-assert(deferred.includes('rak-menu-report-order-v1513.js'), 'Stabilizační pořadí reportů musí zůstat boot-loaded do mobilního ověření nové kotvy');
+assert(!deferred.includes('rak-menu-report-order-v1513.js'), 'Legacy CSS stabilizátor pořadí reportů se po mobilním ověření nové kotvy nesmí vrátit do bootu');
 assert(shiftReportEntryFix.includes('const anchor = vacationReportButton || nativeReportButton || adminButton;'), 'Report směny musí preferovat Report dovolené jako viditelnou kotvu pořadí');
 
 // Hry už nejsou součástí zdrojového HTML ani runtime bootu.
