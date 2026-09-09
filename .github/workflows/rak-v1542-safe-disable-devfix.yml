@@ -1,0 +1,62 @@
+name: RaK v1.5.42 safe dev-fix disconnect
+
+on:
+  push:
+    branches: [development]
+    paths:
+      - '.github/workflows/rak-v1542-safe-disable-devfix.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: development
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Apply exact runtime disconnect
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          def replace_exact(path, old, new, count=1):
+              p = Path(path)
+              text = p.read_text()
+              found = text.count(old)
+              if found != count:
+                  raise SystemExit(f'{path}: expected {count} occurrence(s), found {found}: {old!r}')
+              p.write_text(text.replace(old, new, count))
+
+          replace_exact('app.js', 'const RAK_MODULE_CACHE_VERSION = "1.5.41";', 'const RAK_MODULE_CACHE_VERSION = "1.5.42";')
+          replace_exact('app.js', 'const RAK_DEV_UPDATE_BUILD = "v1.5.41";', 'const RAK_DEV_UPDATE_BUILD = "v1.5.42";')
+          replace_exact('app.js', '    "rak-dev-fixes-v1512.js",\n', '')
+          replace_exact('package.json', '"version": "1.5.41"', '"version": "1.5.42"')
+          replace_exact('sw.js', "const CACHE_VERSION = 'v1.5.41';", "const CACHE_VERSION = 'v1.5.42';")
+
+          smoke = Path('tools/critical-runtime-smoke.mjs')
+          text = smoke.read_text()
+          anchor = "assert(!deferred.includes('rak-menu-report-order-v1513.js'), 'Legacy CSS stabilizátor pořadí reportů se po mobilním ověření nové kotvy nesmí vrátit do bootu');"
+          insertion = anchor + "\nassert(!deferred.includes('rak-dev-fixes-v1512.js'), 'Historický rak-dev-fixes-v1512.js se po nativním převzetí reportu a kalendáře nesmí vrátit do runtime bootu');"
+          if text.count(anchor) != 1:
+              raise SystemExit('critical-runtime-smoke.mjs: menu-order anchor mismatch')
+          if "!deferred.includes('rak-dev-fixes-v1512.js')" in text:
+              raise SystemExit('critical-runtime-smoke.mjs: dev-fix runtime guard already exists')
+          smoke.write_text(text.replace(anchor, insertion, 1))
+          PY
+      - name: Full repository check
+        run: npm run check
+      - name: Commit only after checks pass
+        run: |
+          rm .github/workflows/rak-v1542-safe-disable-devfix.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add app.js package.json sw.js tools/critical-runtime-smoke.mjs .github/workflows/rak-v1542-safe-disable-devfix.yml
+          git diff --cached --check
+          git commit -m "Disconnect legacy dev-fixes runtime in v1.5.42"
+          git push origin HEAD:development
