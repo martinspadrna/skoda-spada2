@@ -35,8 +35,18 @@
   function whatsapp(root) {
     const text = getReport(root);
     if (!text) return;
-    window.open('https://wa.me/?text=' + encodeURIComponent(text), '_blank', 'noopener,noreferrer');
-    status(root, 'Otevírám WhatsApp…');
+    const href = 'whatsapp://send?text=' + encodeURIComponent(text);
+    const link = document.createElement('a');
+    link.href = href;
+    link.style.display = 'none';
+    link.setAttribute('aria-hidden', 'true');
+    document.body.appendChild(link);
+    try {
+      link.click();
+      status(root, 'Otevírám WhatsApp…');
+    } finally {
+      setTimeout(() => link.remove(), 0);
+    }
   }
 
   function install(root) {

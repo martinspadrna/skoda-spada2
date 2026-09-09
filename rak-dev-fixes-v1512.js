@@ -188,46 +188,7 @@
     scheduleReportSort();
   }
 
-  function setReportStatus(root, text) {
-    const status = root && root.querySelector ? root.querySelector('.rakShiftStatus') : null;
-    if (status) status.textContent = text;
-  }
-
-  function openWhatsAppWithoutBlankPage(root) {
-    sortReportPreview(root);
-    const preview = root && root.querySelector ? root.querySelector('.rakShiftPreview') : null;
-    const text = preview ? String(preview.textContent || '').trim() : '';
-    if (!text) return;
-
-    // V PWA nepoužíváme window.open(wa.me), protože na iOS může po návratu
-    // z WhatsAppu zůstat samostatné okno bílé. Custom scheme předá text přímo
-    // WhatsAppu a aktuální RaK stránku nenahrazuje ani neotvírá nové prázdné okno.
-    const href = 'whatsapp://send?text=' + encodeURIComponent(text);
-    const link = document.createElement('a');
-    link.href = href;
-    link.style.display = 'none';
-    link.setAttribute('aria-hidden', 'true');
-    document.body.appendChild(link);
-    try {
-      link.click();
-      setReportStatus(root, 'Otevírám WhatsApp…');
-    } finally {
-      setTimeout(() => link.remove(), 0);
-    }
-  }
-
-  function installWhatsAppReturnFix() {
-    document.addEventListener('click', event => {
-      const button = event.target && event.target.closest ? event.target.closest('[data-rak-share-action="whatsapp"]') : null;
-      if (!button) return;
-      const root = button.closest('#rakShiftReport');
-      if (!root) return;
-      event.preventDefault();
-      event.stopPropagation();
-      event.stopImmediatePropagation();
-      openWhatsAppWithoutBlankPage(root);
-    }, true);
-
+  function installReportReturnSortFix() {
     // Po návratu z externí aplikace pouze znovu srovnáme náhled; nic nepřerenderujeme,
     // takže rozepsaný report i scroll zůstanou na místě.
     window.addEventListener('focus', () => scheduleReportSort());
@@ -240,7 +201,7 @@
   function boot() {
     installFirstMorningCalendarFix();
     installReportIndexOrderFix();
-    installWhatsAppReturnFix();
+    installReportReturnSortFix();
   }
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot, { once: true });

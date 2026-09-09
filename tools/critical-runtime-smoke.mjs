@@ -12,6 +12,8 @@ const indexHtml = read('index.html');
 const bootSelfTest = read('app-boot-selftest.js');
 const dashboardShiftPatch = read('rak-dashboard-shift-label-v1515.js');
 const shiftReportEntryFix = read('rak-shift-report-entry-fix.js');
+const shiftReportShare = read('rak-shift-report-share.js');
+const devFixes = read('rak-dev-fixes-v1512.js');
 const lazyExternalLibs = read('rak-lazy-external-libs.js');
 const deferHeavyLibs = read('tools/defer-heavy-libs.mjs');
 const packageJson = JSON.parse(read('package.json'));
@@ -74,7 +76,12 @@ assert(appJs.includes('installBottomNavBindings'), 'Chybí navázání spodní n
 assert(appJs.includes('applyBottomNavMoreHardFix'), 'Chybí hard-fix tlačítka Více');
 assert(appJs.includes('installDelegatedAppActions'), 'Chybí delegované akce aplikace');
 assert(!deferred.includes('rak-menu-report-order-v1513.js'), 'Legacy CSS stabilizátor pořadí reportů se po mobilním ověření nové kotvy nesmí vrátit do bootu');
+assert(!fs.existsSync(path.join(root, 'rak-menu-report-order-v1513.js')), 'Legacy CSS stabilizátor pořadí reportů se nesmí vrátit do zdrojů');
 assert(shiftReportEntryFix.includes('const anchor = vacationReportButton || nativeReportButton || adminButton;'), 'Report směny musí preferovat Report dovolené jako viditelnou kotvu pořadí');
+assert(shiftReportShare.includes("const href = 'whatsapp://send?text='"), 'WhatsApp reportu musí používat ověřené přímé předání bez nového prázdného okna');
+assert(!shiftReportShare.includes("window.open('https://wa.me/?text='"), 'WhatsApp reportu se nesmí vrátit k window.open(wa.me) kvůli bílé stránce po návratu');
+assert(!devFixes.includes('openWhatsAppWithoutBlankPage'), 'WhatsApp workaround už nesmí zůstávat duplicitně v rak-dev-fixes-v1512.js');
+assert(devFixes.includes("window.addEventListener('pageshow', () => scheduleReportSort())"), 'Po návratu z externí aplikace se musí zachovat srovnání náhledu reportu');
 
 // Hry už nejsou součástí zdrojového HTML ani runtime bootu.
 assert(!appJs.includes('__rakDevGamesObserver'), 'Hry znovu používají globální MutationObserver');
