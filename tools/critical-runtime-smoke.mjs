@@ -85,7 +85,10 @@ assert(shiftReport.includes("return sortReportRowsByIndexColor(formatShiftReport
 assert(shiftReportShare.includes("const href = 'whatsapp://send?text='"), 'WhatsApp reportu musí používat ověřené přímé předání bez nového prázdného okna');
 assert(!shiftReportShare.includes("window.open('https://wa.me/?text='"), 'WhatsApp reportu se nesmí vrátit k window.open(wa.me) kvůli bílé stránce po návratu');
 assert(!devFixes.includes('openWhatsAppWithoutBlankPage'), 'WhatsApp workaround už nesmí zůstávat duplicitně v rak-dev-fixes-v1512.js');
-assert(devFixes.includes("window.addEventListener('pageshow', () => scheduleReportSort())"), 'Po návratu z externí aplikace se musí zachovat srovnání náhledu reportu');
+assert(!devFixes.includes('scheduleReportSort'), 'Legacy plánování řazení reportu se nesmí vrátit do rak-dev-fixes-v1512.js');
+assert(!devFixes.includes('formatShiftReportText'), 'Formátování reportu už nesmí být duplicitně v rak-dev-fixes-v1512.js');
+assert(!devFixes.includes('MutationObserver'), 'Legacy reportový MutationObserver už nesmí zůstat v rak-dev-fixes-v1512.js');
+assert(devFixes.includes('window.getFirstMorningShiftDateInMonth = findFirstMorningShiftDateInMonth;'), 'Kalendářový fix první ranní směny musí zatím zůstat zachovaný');
 
 // Hry už nejsou součástí zdrojového HTML ani runtime bootu.
 assert(!appJs.includes('__rakDevGamesObserver'), 'Hry znovu používají globální MutationObserver');
