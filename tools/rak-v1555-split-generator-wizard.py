@@ -10,14 +10,21 @@ SMOKE = ROOT / 'tools/critical-runtime-smoke.mjs'
 
 src = GEN.read_text(encoding='utf-8')
 start_marker = 'function adminRotationGeneratorCanReadEditorDraftFromDom() {'
+extra_marker = '// v1.5.54 – doplněné funkce přesunuté z admin-rotation.js.'
+wizard_extra_marker = 'function adminRotationAddGeneratorAllowedRange(result, fromKey, toKey) {'
 ready_marker = "try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleReady('admin-rotation-generator.js', 'loaded', { source: 'dynamic-loader' }); } catch (err) {}"
+
 start = src.find(start_marker)
+extra_start = src.find(extra_marker)
+wizard_extra_start = src.find(wizard_extra_marker)
 end = src.rfind(ready_marker)
-if start < 0 or end < 0 or end <= start:
-    raise RuntimeError('Generator wizard split markers not found')
+if min(start, extra_start, wizard_extra_start, end) < 0 or not (start < extra_start < wizard_extra_start < end):
+    raise RuntimeError('Generator wizard split markers not found in expected order')
 
 prefix = src[:start].rstrip()
-tail = src[start:end].strip()
+main_wizard = src[start:extra_start].strip()
+engine_extra = src[extra_start:wizard_extra_start].strip()
+wizard_extra = src[wizard_extra_start:end].strip()
 
 ics_line = "const ADMIN_ROTATION_GENERATOR_ABSENCE_ICS_URL = String(window.SUPABASE_CONFIG && window.SUPABASE_CONFIG.url || '').replace(/\\/$/, '') + '/functions/v1/rak-absence-calendar';"
 if ics_line not in prefix:
@@ -25,7 +32,7 @@ if ics_line not in prefix:
 prefix = prefix.replace(ics_line, '').replace('\n\n\n', '\n\n').rstrip()
 
 GEN.write_text(
-    prefix + '\n\n' + ready_marker + '\n',
+    prefix + '\n\n' + engine_extra + '\n\n' + ready_marker + '\n',
     encoding='utf-8'
 )
 
@@ -33,27 +40,36 @@ WIZ.write_text(
     "// RaK – průvodce generátoru, návrh, kalendář absencí a export oddělené od engine.\n"
     "try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleReady('admin-rotation-generator-wizard.js', 'loading', { source: 'dynamic-loader' }); } catch (err) {}\n\n"
     + ics_line + '\n\n'
-    + tail + '\n\n'
+    + main_wizard + '\n\n'
+    + wizard_extra + '\n\n'
     + "try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleReady('admin-rotation-generator-wizard.js', 'loaded', { source: 'dynamic-loader' }); } catch (err) {}\n",
     encoding='utf-8'
 )
 
 engine = GEN.read_text(encoding='utf-8')
 wizard = WIZ.read_text(encoding='utf-8')
-if 'function adminBuildRotationGenerationModel' not in engine:
-    raise RuntimeError('Engine lost generation model')
-if 'function adminRotationGeneratorRepairEmptyHardCells' not in engine:
-    raise RuntimeError('Engine lost repair logic')
-if 'function adminRotationGeneratorRenderWizard' not in wizard:
-    raise RuntimeError('Wizard renderer missing')
-if 'async function adminRotationGeneratorLoadCalendarAbsences' not in wizard:
-    raise RuntimeError('Calendar absence loader missing')
-if 'function adminRotationGeneratorDownloadExcel' not in wizard:
-    raise RuntimeError('Generator Excel export missing from wizard module')
+for required in (
+    'function adminBuildRotationGenerationModel',
+    'function adminRotationGeneratorRepairEmptyHardCells',
+    'function adminRotationNormalizeGeneratorSettings',
+    'function adminRotationHasGeneratorSettingsRow'
+):
+    if required not in engine:
+        raise RuntimeError('Engine lost required owner: ' + required)
+for required in (
+    'function adminRotationGeneratorRenderWizard',
+    'async function adminRotationGeneratorLoadCalendarAbsences',
+    'function adminRotationGeneratorDownloadExcel',
+    'function adminRotationGetAllowedGeneratorMonthKeys'
+):
+    if required not in wizard:
+        raise RuntimeError('Wizard lost required owner: ' + required)
 if 'function adminRotationGeneratorRenderWizard' in engine:
     raise RuntimeError('Wizard renderer still remains in engine')
 if 'ADMIN_ROTATION_GENERATOR_ABSENCE_ICS_URL' in engine:
     raise RuntimeError('ICS endpoint constant still remains in engine')
+if 'function adminRotationNormalizeGeneratorSettings' in wizard:
+    raise RuntimeError('Generator settings normalization leaked into wizard')
 
 app = APP.read_text(encoding='utf-8')
 app = app.replace('const RAK_MODULE_CACHE_VERSION = "1.5.54";', 'const RAK_MODULE_CACHE_VERSION = "1.5.55";')
@@ -84,7 +100,6 @@ if "const adminRotationGeneratorWizardJs = read('admin-rotation-generator-wizard
         raise RuntimeError('Smoke generator read anchor not found')
     smoke = smoke.replace(read_anchor, read_anchor + "\nconst adminRotationGeneratorWizardJs = read('admin-rotation-generator-wizard.js');", 1)
 
-# Retire the old v1.5.53 ownership guard before adding the new split guards.
 old_owner_guard = "assert(adminRotationGeneratorJs.includes('function adminRotationGeneratorRenderWizard'), 'Průvodce generátoru musí vlastnit admin-rotation-generator.js');"
 smoke = smoke.replace(old_owner_guard, "assert(!adminRotationGeneratorJs.includes('function adminRotationGeneratorRenderWizard'), 'Průvodce generátoru už nesmí zůstat v generator engine');")
 
@@ -93,11 +108,14 @@ checks = """
 assert(deferred.includes('admin-rotation-generator-wizard.js'), 'Průvodce generátoru musí zůstat součástí ověřeného bootu');
 assert(adminRotationGeneratorJs.includes('function adminBuildRotationGenerationModel'), 'Generator engine musí držet historický model');
 assert(adminRotationGeneratorJs.includes('function adminRotationGeneratorRepairEmptyHardCells'), 'Generator engine musí držet opravnou logiku');
+assert(adminRotationGeneratorJs.includes('function adminRotationNormalizeGeneratorSettings'), 'Generator engine musí držet normalizaci pravidel');
 assert(adminRotationGeneratorWizardJs.includes('function adminRotationGeneratorRenderWizard'), 'Wizard modul musí vlastnit průvodce generátoru');
 assert(adminRotationGeneratorWizardJs.includes('async function adminRotationGeneratorLoadCalendarAbsences'), 'Wizard modul musí vlastnit načtení absencí z kalendáře');
 assert(adminRotationGeneratorWizardJs.includes('function adminRotationGeneratorDownloadExcel'), 'Wizard modul musí vlastnit export návrhu do Excelu');
+assert(adminRotationGeneratorWizardJs.includes('function adminRotationGetAllowedGeneratorMonthKeys'), 'Wizard modul musí vlastnit výběr měsíců pro průvodce');
 assert(!adminRotationGeneratorJs.includes('function adminRotationGeneratorRenderWizard'), 'Wizard UI se nesmí vrátit do generator engine');
 assert(!adminRotationGeneratorJs.includes('ADMIN_ROTATION_GENERATOR_ABSENCE_ICS_URL'), 'Kalendářový endpoint se nesmí vrátit do generator engine');
+assert(!adminRotationGeneratorWizardJs.includes('function adminRotationNormalizeGeneratorSettings'), 'Normalizace pravidel se nesmí přesunout do wizardu');
 """
 if 'Wizard modul musí vlastnit průvodce generátoru' not in smoke:
     if assert_anchor not in smoke:
