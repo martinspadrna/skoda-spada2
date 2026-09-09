@@ -1,5 +1,5 @@
 // RaK 1.5 production PWA service worker – update-safe build.
-const CACHE_VERSION = 'v1.5.42';
+const CACHE_VERSION = 'v1.5.43';
 const SW_APP_VERSION = '1.5';
 const STATIC_CACHE = `rotace-static-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `rotace-runtime-${CACHE_VERSION}`;

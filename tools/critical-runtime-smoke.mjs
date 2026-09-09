@@ -15,7 +15,6 @@ const dashboardShiftPatch = read('rak-dashboard-shift-label-v1515.js');
 const shiftReportEntryFix = read('rak-shift-report-entry-fix.js');
 const shiftReport = read('rak-shift-report.js');
 const shiftReportShare = read('rak-shift-report-share.js');
-const devFixes = read('rak-dev-fixes-v1512.js');
 const lazyExternalLibs = read('rak-lazy-external-libs.js');
 const deferHeavyLibs = read('tools/defer-heavy-libs.mjs');
 const packageJson = JSON.parse(read('package.json'));
@@ -79,6 +78,7 @@ assert(appJs.includes('applyBottomNavMoreHardFix'), 'Chybí hard-fix tlačítka 
 assert(appJs.includes('installDelegatedAppActions'), 'Chybí delegované akce aplikace');
 assert(!deferred.includes('rak-menu-report-order-v1513.js'), 'Legacy CSS stabilizátor pořadí reportů se po mobilním ověření nové kotvy nesmí vrátit do bootu');
 assert(!deferred.includes('rak-dev-fixes-v1512.js'), 'Historický rak-dev-fixes-v1512.js se po nativním převzetí reportu a kalendáře nesmí vrátit do runtime bootu');
+assert(!fs.existsSync(path.join(root, 'rak-dev-fixes-v1512.js')), 'Historický rak-dev-fixes-v1512.js se po mobilním ověření odpojeného runtime nesmí vrátit do zdrojů');
 assert(!fs.existsSync(path.join(root, 'rak-menu-report-order-v1513.js')), 'Legacy CSS stabilizátor pořadí reportů se nesmí vrátit do zdrojů');
 assert(shiftReportEntryFix.includes('const anchor = vacationReportButton || nativeReportButton || adminButton;'), 'Report směny musí preferovat Report dovolené jako viditelnou kotvu pořadí');
 assert(shiftReport.includes("const INDEX_ORDER = { AG: 0, AE: 0, AF: 1, AD: 1, AH: 2 };"), 'Hlavní report modul musí držet ověřené pořadí indexů');
@@ -86,11 +86,6 @@ assert(shiftReport.includes("const REPORT_SEPARATOR = '__________';"), 'Hlavní 
 assert(shiftReport.includes("return sortReportRowsByIndexColor(formatShiftReportText(lines.join('\\n').trim()));"), 'Finální text reportu se musí formátovat a řadit už v hlavním modulu');
 assert(shiftReportShare.includes("const href = 'whatsapp://send?text='"), 'WhatsApp reportu musí používat ověřené přímé předání bez nového prázdného okna');
 assert(!shiftReportShare.includes("window.open('https://wa.me/?text='"), 'WhatsApp reportu se nesmí vrátit k window.open(wa.me) kvůli bílé stránce po návratu');
-assert(!devFixes.includes('openWhatsAppWithoutBlankPage'), 'WhatsApp workaround už nesmí zůstávat duplicitně v rak-dev-fixes-v1512.js');
-assert(!devFixes.includes('scheduleReportSort'), 'Legacy plánování řazení reportu se nesmí vrátit do rak-dev-fixes-v1512.js');
-assert(!devFixes.includes('formatShiftReportText'), 'Formátování reportu už nesmí být duplicitně v rak-dev-fixes-v1512.js');
-assert(!devFixes.includes('MutationObserver'), 'Legacy reportový MutationObserver už nesmí zůstat v rak-dev-fixes-v1512.js');
-assert(devFixes.includes('window.getFirstMorningShiftDateInMonth = findFirstMorningShiftDateInMonth;'), 'Kalendářový fix první ranní směny musí zatím zůstat zachovaný');
 assert(statsJs.includes("let teams = ['A', 'B', 'C', 'D'];"), 'Nativní první ranní směna musí počítat všechny směnové týmy');
 assert(statsJs.includes("Array.isArray(window.SHIFT_CYCLE_ORDER)"), 'Nativní první ranní směna musí respektovat SHIFT_CYCLE_ORDER');
 assert(statsJs.includes("window.getTeamShiftState(probe, team)"), 'Nativní první ranní směna musí používat směnový engine pro všechny týmy');
