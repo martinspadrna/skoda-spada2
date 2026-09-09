@@ -1,0 +1,45 @@
+name: RaK v1.5.54 rotation core split
+
+on:
+  push:
+    branches: [development]
+    paths:
+      - '.github/workflows/rak-v1554-split-admin-rotation-core.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  split:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout development
+        uses: actions/checkout@v4
+        with:
+          ref: development
+          fetch-depth: 0
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Apply rotation core split
+        run: python3 tools/rak-v1554-split-admin-rotation-core.py
+      - name: Syntax check touched rotation files
+        run: |
+          node --check admin-rotation-editor.js
+          node --check admin-rotation-overtime.js
+          node --check admin-rotation-generator.js
+          node --check admin-machine-settings.js
+          node --check admin-rotation.js
+          node --check app.js
+          node --check tools/critical-runtime-smoke.mjs
+      - name: Full repository check
+        run: npm run check
+      - name: Commit split after checks pass
+        run: |
+          rm -f .github/workflows/rak-v1554-split-admin-rotation-core.yml tools/rak-v1554-split-admin-rotation-core.py
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "Split rotation editor and machine settings in v1.5.54"
+          git push origin development
