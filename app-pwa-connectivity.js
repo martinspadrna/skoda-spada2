@@ -1,9 +1,47 @@
 // RaK 1.2 (1.155) – PWA, service worker a konektivita oddělené z app.js.
 try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleReady('app-pwa-connectivity.js', 'loaded', { source: 'dynamic-loader' }); } catch (err) {}
 
+function installRakPortraitOnlyPwaMode() {
+  if (window.__rakPortraitOnlyPwaInstalled) return;
+  let standalone = false;
+  try { standalone = !!(window.navigator && window.navigator.standalone === true) || !!(window.matchMedia && window.matchMedia('(display-mode: standalone)').matches); } catch (err) {}
+  if (!standalone) return;
+  window.__rakPortraitOnlyPwaInstalled = true;
+  const overlayId = 'rakPortraitOnlyOverlay';
+  const ensureOverlay = () => {
+    if (!document.body) return;
+    document.documentElement.classList.add('rakPortraitOnly');
+    let overlay = document.getElementById(overlayId);
+    if (!overlay) {
+      overlay = document.createElement('div');
+      overlay.id = overlayId;
+      overlay.setAttribute('role', 'status');
+      overlay.setAttribute('aria-live', 'polite');
+      overlay.innerHTML = '<div class="rakPortraitOnlyIcon" aria-hidden="true">↻</div><strong>Otoč telefon na výšku</strong><span>RaK je na mobilu uzamčený na výšku.</span>';
+      document.body.appendChild(overlay);
+    }
+    if (!document.getElementById('rakPortraitOnlyPwaStyle')) {
+      const style = document.createElement('style');
+      style.id = 'rakPortraitOnlyPwaStyle';
+      style.textContent = '#' + overlayId + '{display:none;}@media (orientation:landscape) and (max-height:700px){html.rakPortraitOnly #' + overlayId + '{display:flex!important;position:fixed;inset:0;z-index:2147483647;align-items:center;justify-content:center;flex-direction:column;gap:10px;padding:calc(20px + env(safe-area-inset-top)) calc(24px + env(safe-area-inset-right)) calc(20px + env(safe-area-inset-bottom)) calc(24px + env(safe-area-inset-left));box-sizing:border-box;text-align:center;background:radial-gradient(circle at 50% 35%,rgba(18,56,79,.98),rgba(5,8,22,.995) 68%);color:#f4fbff;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;}html.rakPortraitOnly #' + overlayId + ' .rakPortraitOnlyIcon{font-size:54px;line-height:1;font-weight:800;}html.rakPortraitOnly #' + overlayId + ' strong{font-size:24px;line-height:1.15;}html.rakPortraitOnly #' + overlayId + ' span{font-size:15px;line-height:1.35;opacity:.78;max-width:360px;}}';
+      document.head.appendChild(style);
+    }
+  };
+  const tryLock = () => {
+    try { const orientation = window.screen && window.screen.orientation; if (!orientation || typeof orientation.lock !== 'function') return; const result = orientation.lock('portrait-primary'); if (result && typeof result.catch === 'function') result.catch(() => {}); } catch (err) {}
+  };
+  ensureOverlay();
+  tryLock();
+  window.addEventListener('pageshow', tryLock);
+  window.addEventListener('orientationchange', ensureOverlay);
+  document.addEventListener('visibilitychange', () => { if (document.visibilityState !== 'hidden') { ensureOverlay(); tryLock(); } });
+  document.addEventListener('pointerdown', tryLock, { once: true, passive: true });
+}
+
 function installPwaAndConnectivityHooks() {
   if (window.__rotacePwaBootstrapped) return;
   window.__rotacePwaBootstrapped = true;
+  installRakPortraitOnlyPwaMode();
 
   const setConnectionFlag = () => {
     try {
@@ -21,6 +59,19 @@ function installPwaAndConnectivityHooks() {
   const SW_UPDATE_NOTICE_KEY = 'rotace_sw_update_notice_v1';
   const SW_UPDATE_PENDING_KEY = 'rotace_sw_update_pending_v1';
   const SW_UPDATE_SUPPRESS_KEY = 'rotace_sw_update_suppress_v1';
+  const DEV_BUILD = String(window.RAK_PWA_BUILD || window.RAK_DEV_BUILD || '').trim();
+  if (DEV_BUILD) {
+    window.RAK_DEV_BUILD = DEV_BUILD;
+    try {
+      const key = 'rak_dev_entry_prompt_reset_build';
+      if (localStorage.getItem(key) !== DEV_BUILD) {
+        sessionStorage.removeItem(SW_UPDATE_NOTICE_KEY);
+        sessionStorage.removeItem(SW_UPDATE_PENDING_KEY);
+        localStorage.removeItem(SW_UPDATE_SUPPRESS_KEY);
+        localStorage.setItem(key, DEV_BUILD);
+      }
+    } catch (err) {}
+  }
   const tabId = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
   let liveRefreshPromise = null;
   let lastLiveRefreshAt = 0;
