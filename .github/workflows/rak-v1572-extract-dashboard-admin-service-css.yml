@@ -5,6 +5,7 @@ on:
     branches: [development]
     paths:
       - '.github/workflows/rak-v1572-extract-dashboard-admin-service-css.yml'
+      - 'tools/rak-v1572-extract-dashboard-admin-service-css.py'
 
 permissions:
   contents: write
