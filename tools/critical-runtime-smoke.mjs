@@ -24,6 +24,7 @@ const stylesRotationMonthCss = read('styles-rotation-month.css');
 const stylesLowEndPerformanceCss = read('styles-low-end-performance.css');
 const stylesDashboardSyncCss = read('styles-dashboard-sync.css');
 const stylesAdminServiceCss = read('styles-admin-service.css');
+const stylesDevicePerformanceSettingsCss = read('styles-device-performance-settings.css');
 const stylesOverridesLegacyLateCss = read('styles-overrides-legacy-late.css');
 const stylesViewportPolishCss = read('styles-viewport-polish.css');
 const stylesReleasePolishCss = read('styles-release-polish.css');
@@ -152,6 +153,15 @@ assert(stylesAdminServiceCss.includes('RaK v1.5.73 – owner: Administrace servi
 assert(stylesAdminServiceCss.includes('.adminServicePrivacyNote{') && stylesAdminServiceCss.includes('.adminServiceActions{'), 'Admin service owner musí zachovat privacy-safe servisní blok');
 assert(!stylesAdminServiceCss.includes('.adminServiceGrid') && !stylesAdminServiceCss.includes('.adminServiceMetric'), 'Staré online metriky se nesmí vrátit do admin service CSS');
 assert(!stylesAdminServiceCss.includes('.dashboardSyncBadge') && !stylesAdminServiceCss.includes('.rakDevicePerfCard'), 'Admin service owner nesmí obsahovat Dashboard sync ani následující Nastavení/Výkon');
+assert(stylesDevicePerformanceSettingsCss.includes('RaK v1.5.75 – owner: Nastavení → Výkon / device performance card'), 'Chybí v1.5.75 device performance owner marker');
+assert(stylesDevicePerformanceSettingsCss.includes('.rakDevicePerfCard{') && stylesDevicePerformanceSettingsCss.includes('.rakDevicePerfActions{'), 'Device performance owner musí zachovat kartu a akce');
+assert(stylesDevicePerformanceSettingsCss.includes('body.ladaMode .rakDevicePerfCard') && stylesDevicePerformanceSettingsCss.includes('@media (max-width:390px)'), 'Device performance owner musí zachovat low-end variantu i mobilní layout');
+assert(!stylesDevicePerformanceSettingsCss.includes('#appMenuBody .appMenuProfileCard'), 'Device performance owner nesmí obsahovat následující širší Settings blok');
+assert(!stylesOverridesLegacyMidCss.includes('\n.rakDevicePerfCard{'), 'Čistý device performance blok se nesmí vrátit na čelo legacy-mid');
+const adminServiceCssPosV1575 = indexHtml.indexOf('styles-admin-service.css');
+const devicePerformanceCssPosV1575 = indexHtml.indexOf('styles-device-performance-settings.css');
+const legacyMidCssPosV1575 = indexHtml.indexOf('styles-overrides-legacy-mid.css');
+assert(adminServiceCssPosV1575 >= 0 && adminServiceCssPosV1575 < devicePerformanceCssPosV1575 && devicePerformanceCssPosV1575 < legacyMidCssPosV1575, 'Device performance owner musí zůstat na původní cascade hranici mezi admin service a legacy-mid');
 const usageRetirementMigrationV1574 = read('supabase/migrations/20260910115407_remove_legacy_usage_presence_tracking.sql');
 for (const retiredDbMarkerV1574 of ['rak_admin_service_snapshot_v2', 'rak_admin_usage_presence_v2', 'rak_usage_presence_admin', 'rak_usage_presence_touch', 'app_usage_events', 'app_usage_devices', 'rak_usage_presence']) {
   assert(usageRetirementMigrationV1574.includes('drop ') && usageRetirementMigrationV1574.includes(retiredDbMarkerV1574), 'v1.5.74 migration musí vyřazovat DB objekt ' + retiredDbMarkerV1574);
@@ -162,7 +172,7 @@ for (const retiredClientMarkerV1574 of ['APP_USAGE_', 'recordAppUsage', 'loadApp
 assert(!fs.existsSync(path.join(root, 'app-usage-smoke-v963.js')), 'Starý app usage smoke se nesmí vrátit');
 assert(!fs.existsSync(path.join(root, 'assets/docs/sql/supabase_app_usage_v963.sql')), 'Starý usage SQL scaffold se nesmí vrátit');
 assert(!stylesOverridesLegacyMidCss.includes('.dashboardSyncBadge{') && !stylesOverridesLegacyMidCss.includes('.adminServiceGrid{'), 'Dashboard sync/admin servis se nesmí vrátit do legacy-mid');
-assert(stylesOverridesLegacyMidCss.trimStart().startsWith('/* v.1.1 (725) – výkon zařízení / Láďův režim v nastavení */'), 'legacy-mid musí po v1.5.72 začínat přesně Nastavení/Výkon blokem');
+assert(stylesOverridesLegacyMidCss.trimStart().startsWith('/* v.1.5 (747): Více → Nastavení – kompaktnější profil, výkon a tlačítka ve dvou sloupcích. */'), 'legacy-mid musí po v1.5.75 začínat přesně širším Settings blokem');
 const lowEndPerformanceCssPosV1572 = indexHtml.indexOf('styles-low-end-performance.css');
 const dashboardSyncCssPosV1572 = indexHtml.indexOf('styles-dashboard-sync.css');
 const adminServiceCssPosV1572 = indexHtml.indexOf('styles-admin-service.css');
