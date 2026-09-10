@@ -2,16 +2,17 @@ name: RaK v1.5.76 large CSS ownership batch
 
 on:
   push:
-    branches: [development]
+    branches:
+      - development
     paths:
-      - '.github/workflows/rak-v1576-batch-css-and-vercel-budget.yml'
+      - .github/workflows/rak-v1576-batch-css-and-vercel-budget.yml
 
 permissions:
   contents: write
 
 jobs:
   migrate:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout development
         uses: actions/checkout@v4
@@ -24,185 +25,10 @@ jobs:
         with:
           node-version: 22
 
-      - name: Batch Settings and Calculators ownership move
+      - name: Apply large v1.5.76 batch
         shell: bash
         run: |
-          python3 - <<'PY'
-          from pathlib import Path
-          import json
-
-          root = Path('.')
-          legacy_path = root / 'styles-overrides-legacy-mid.css'
-          old_device_path = root / 'styles-device-performance-settings.css'
-          settings_path = root / 'styles-settings-runtime.css'
-          calc_path = root / 'styles-calculators-mid.css'
-          index_path = root / 'index.html'
-          smoke_path = root / 'tools/critical-runtime-smoke.mjs'
-          vercel_path = root / 'vercel.json'
-          ignore_path = root / 'tools/vercel-ignore-build.mjs'
-
-          legacy = legacy_path.read_text(encoding='utf-8')
-          old_device = old_device_path.read_text(encoding='utf-8')
-
-          settings_marker = '/* v.1.5 (747): Více → Nastavení – kompaktnější profil, výkon a tlačítka ve dvou sloupcích. */'
-          calc1_marker = '/* v.1.5 (747): Kalkulačky – rozbalené sekce Výpočet kusů/Korekce + kompaktní přehled. */'
-          perf_marker = '/* v.1.5 (747): Výkon zařízení – centrovaná tlačítka a výrazný aktivní Láďův režim. */'
-          calc2_marker = '/* v.1.5 (747): Kalkulačky – každý stroj na vlastním řádku a korekce jako čisté připravené stránky. */'
-          admin_marker = '/* v.1.5 (788): Administrace rozpisů – rychlé Odebrat a ochrana editace při oddálení. */'
-
-          assert legacy.startswith(settings_marker), 'legacy-mid nezačíná očekávaným Settings blokem'
-          p_calc1 = legacy.find(calc1_marker)
-          p_perf = legacy.find(perf_marker)
-          p_calc2 = legacy.find(calc2_marker)
-          p_admin = legacy.find(admin_marker)
-          assert 0 < p_calc1 < p_perf < p_calc2 < p_admin, 'neočekávané pořadí Settings/Calc/Admin markerů'
-
-          settings1 = legacy[:p_calc1].rstrip() + '\n\n'
-          calc1 = legacy[p_calc1:p_perf].rstrip() + '\n\n'
-          settings2 = legacy[p_perf:p_calc2].rstrip() + '\n\n'
-          calc2 = legacy[p_calc2:p_admin].rstrip() + '\n'
-          rest = legacy[p_admin:]
-
-          # Explicit family-separation proof before the only cross-family reorder.
-          settings_combined = settings1 + settings2
-          calc_combined = calc1 + calc2
-          for forbidden in ['#kalkulacky', '#korekce-', '.calcCorrection', '.calcFhb', '.calcHomeSection']:
-              assert forbidden not in settings_combined, f'Calculator marker pronikl do Settings chunku: {forbidden}'
-          for forbidden in ['#appMenuBody', '.rakDevicePerf', '.appMenuProfileCard', '.appMenuThemeCardWrap', '.appMenuSettingsGrid']:
-              assert forbidden not in calc_combined, f'Settings marker pronikl do Calculator chunku: {forbidden}'
-          assert rest.startswith(admin_marker), 'zbytek legacy-mid nezačíná přesně Admin Rotation blokem'
-          assert '.adminRotationQuickRemove{' not in calc_combined, 'Admin Rotation pronikl do Calculator owneru'
-          assert '#appMenuBody[data-admin-view="rotation"]' not in calc_combined, 'Admin Rotation selector pronikl do Calculator owneru'
-
-          assert old_device.startswith('/* RaK v1.5.75 – owner: Nastavení → Výkon / device performance card */'), 'nenalezen očekávaný v1.5.75 device owner'
-          assert not settings_path.exists() and not calc_path.exists(), 'v1.5.76 owner soubor už existuje'
-
-          settings_owner = (
-              '/* RaK v1.5.76 – owner: Nastavení / profil, výkon, vzhled a obecná nastavení */\n'
-              + old_device.rstrip() + '\n\n'
-              + settings1
-              + settings2
-          )
-          calc_owner = (
-              '/* RaK v1.5.76 – owner: Kalkulačky / hlavní menu, výpočet kusů a korekce */\n'
-              + calc1
-              + calc2
-          )
-
-          settings_path.write_text(settings_owner, encoding='utf-8')
-          calc_path.write_text(calc_owner, encoding='utf-8')
-          legacy_path.write_text(rest, encoding='utf-8')
-          old_device_path.unlink()
-
-          index = index_path.read_text(encoding='utf-8')
-          old_link = '<link rel="stylesheet" href="styles-device-performance-settings.css">'
-          settings_link = '<link rel="stylesheet" href="styles-settings-runtime.css">'
-          calc_link = '<link rel="stylesheet" href="styles-calculators-mid.css">'
-          assert index.count(old_link) == 1, 'neočekávaný počet starých device owner linků'
-          assert settings_link not in index and calc_link not in index, 'nové ownery už jsou v indexu'
-          index = index.replace(old_link, settings_link + '\n' + calc_link, 1)
-          index_path.write_text(index, encoding='utf-8')
-
-          smoke = smoke_path.read_text(encoding='utf-8')
-          old_read = "const stylesDevicePerformanceSettingsCss = read('styles-device-performance-settings.css');\n"
-          new_reads = "const stylesSettingsRuntimeCss = read('styles-settings-runtime.css');\nconst stylesCalculatorsMidCss = read('styles-calculators-mid.css');\nconst vercelIgnoreBuild = read('tools/vercel-ignore-build.mjs');\nconst vercelConfig = JSON.parse(read('vercel.json'));\n"
-          assert old_read in smoke, 'nenalezena v1.5.75 read kotva'
-          smoke = smoke.replace(old_read, new_reads, 1)
-
-          guard_start = "assert(stylesDevicePerformanceSettingsCss.includes('RaK v1.5.75 – owner: Nastavení → Výkon / device performance card'), 'Chybí v1.5.75 device performance owner marker');"
-          guard_end = "assert(adminServiceCssPosV1575 >= 0 && adminServiceCssPosV1575 < devicePerformanceCssPosV1575 && devicePerformanceCssPosV1575 < legacyMidCssPosV1575, 'Device performance owner musí zůstat na původní cascade hranici mezi admin service a legacy-mid');"
-          s = smoke.find(guard_start)
-          e = smoke.find(guard_end)
-          assert s >= 0 and e > s, 'nenalezen celý v1.5.75 guard blok'
-          e += len(guard_end)
-          new_guard = """assert(stylesSettingsRuntimeCss.includes('RaK v1.5.76 – owner: Nastavení / profil, výkon, vzhled a obecná nastavení'), 'Chybí v1.5.76 Settings owner marker');
-assert(stylesSettingsRuntimeCss.includes('RaK v1.5.75 – owner: Nastavení → Výkon / device performance card'), 'Settings owner musí zachovat v1.5.75 device performance základ');
-assert(stylesSettingsRuntimeCss.includes('#appMenuBody .appMenuProfileCard{') && stylesSettingsRuntimeCss.includes('#appMenuBody .appMenuSettingsGrid{'), 'Settings owner musí zachovat profil a obecná nastavení');
-assert(stylesSettingsRuntimeCss.includes('#appMenuBody .rakDevicePerfActions .rakLadaModeBtn.isActive{'), 'Settings owner musí zachovat aktivní Láďův režim');
-assert(!stylesSettingsRuntimeCss.includes('#kalkulacky') && !stylesSettingsRuntimeCss.includes('.calcCorrection'), 'Settings owner nesmí obsahovat Kalkulačky');
-assert(stylesCalculatorsMidCss.includes('RaK v1.5.76 – owner: Kalkulačky / hlavní menu, výpočet kusů a korekce'), 'Chybí v1.5.76 Calculator owner marker');
-assert(stylesCalculatorsMidCss.includes('#kalkulacky .calcHomeSection{') && stylesCalculatorsMidCss.includes('#korekce-frezky') && stylesCalculatorsMidCss.includes('#korekce-soustruhy'), 'Calculator owner musí zachovat hlavní menu i korekce');
-assert(!stylesCalculatorsMidCss.includes('#appMenuBody') && !stylesCalculatorsMidCss.includes('.adminRotationQuickRemove'), 'Calculator owner nesmí obsahovat Settings ani Admin Rotation');
-assert(!fs.existsSync(path.join(root, 'styles-device-performance-settings.css')), 'Starý v1.5.75 device owner se po konsolidaci nesmí vrátit');
-const adminServiceCssPosV1576 = indexHtml.indexOf('styles-admin-service.css');
-const settingsRuntimeCssPosV1576 = indexHtml.indexOf('styles-settings-runtime.css');
-const calculatorsMidCssPosV1576 = indexHtml.indexOf('styles-calculators-mid.css');
-const legacyMidCssPosV1576 = indexHtml.indexOf('styles-overrides-legacy-mid.css');
-assert(adminServiceCssPosV1576 >= 0 && adminServiceCssPosV1576 < settingsRuntimeCssPosV1576 && settingsRuntimeCssPosV1576 < calculatorsMidCssPosV1576 && calculatorsMidCssPosV1576 < legacyMidCssPosV1576, 'v1.5.76 ownery musí zůstat na cascade hranici před legacy-mid');
-assert(vercelConfig.ignoreCommand === 'node tools/vercel-ignore-build.mjs', 'Vercel musí používat helper-only ignore command');
-assert(vercelIgnoreBuild.includes('VERCEL_GIT_PREVIOUS_SHA') && vercelIgnoreBuild.includes('helperOnly'), 'Vercel ignore guard musí porovnávat změněné soubory');
-"""
-          smoke = smoke[:s] + new_guard + smoke[e:]
-
-          old_start = "assert(stylesOverridesLegacyMidCss.trimStart().startsWith('/* v.1.5 (747): Více → Nastavení – kompaktnější profil, výkon a tlačítka ve dvou sloupcích. */'), 'legacy-mid musí po v1.5.75 začínat přesně širším Settings blokem');"
-          new_start = "assert(stylesOverridesLegacyMidCss.trimStart().startsWith('/* v.1.5 (788): Administrace rozpisů – rychlé Odebrat a ochrana editace při oddálení. */'), 'legacy-mid musí po v1.5.76 začínat přesně Admin Rotation blokem');"
-          assert old_start in smoke, 'nenalezena překonaná v1.5.75 legacy start kotva'
-          smoke = smoke.replace(old_start, new_start, 1)
-          smoke_path.write_text(smoke, encoding='utf-8')
-
-          ignore_script = r'''#!/usr/bin/env node
-          import { execFileSync } from 'node:child_process';
-
-          const previous = String(process.env.VERCEL_GIT_PREVIOUS_SHA || '').trim();
-          if (!previous) {
-            console.log('[vercel-ignore-build] no previous deployment SHA; build');
-            process.exit(1);
-          }
-
-          let output = '';
-          try {
-            output = execFileSync('git', ['diff', '--name-only', previous + '..HEAD'], { encoding: 'utf8' });
-          } catch (error) {
-            console.log('[vercel-ignore-build] diff failed; build');
-            process.exit(1);
-          }
-
-          const files = output.split(/\r?\n/).map((value) => value.trim()).filter(Boolean);
-          if (!files.length) {
-            console.log('[vercel-ignore-build] no changed files; skip');
-            process.exit(0);
-          }
-
-          const helperOnly = files.every((file) =>
-            /^\.github\/workflows\/rak-v\d+.*\.ya?ml$/i.test(file) ||
-            /^tools\/rak-v\d+.*\.(?:py|mjs|js)$/i.test(file)
-          );
-
-          if (helperOnly) {
-            console.log('[vercel-ignore-build] helper-only commit; skip build:', files.join(', '));
-            process.exit(0);
-          }
-
-          console.log('[vercel-ignore-build] functional change present; build:', files.join(', '));
-          process.exit(1);
-          '''.replace('\n          ', '\n').lstrip()
-          ignore_path.write_text(ignore_script, encoding='utf-8')
-
-          vercel = json.loads(vercel_path.read_text(encoding='utf-8'))
-          vercel['ignoreCommand'] = 'node tools/vercel-ignore-build.mjs'
-          vercel_path.write_text(json.dumps(vercel, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
-
-          app_path = root / 'app.js'
-          app = app_path.read_text(encoding='utf-8')
-          assert app.count('1.5.75') >= 2, 'app.js není na očekávané 1.5.75'
-          app_path.write_text(app.replace('1.5.75', '1.5.76'), encoding='utf-8')
-
-          pkg_path = root / 'package.json'
-          pkg = json.loads(pkg_path.read_text(encoding='utf-8'))
-          assert pkg.get('version') == '1.5.75', 'package.json není na 1.5.75'
-          pkg['version'] = '1.5.76'
-          pkg_path.write_text(json.dumps(pkg, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
-
-          sw_path = root / 'sw.js'
-          sw = sw_path.read_text(encoding='utf-8')
-          assert "CACHE_VERSION = 'v1.5.75'" in sw, 'sw.js není na 1.5.75'
-          sw_path.write_text(sw.replace("CACHE_VERSION = 'v1.5.75'", "CACHE_VERSION = 'v1.5.76'", 1), encoding='utf-8')
-
-          print('v1.5.76 settings owner bytes:', len(settings_owner.encode('utf-8')))
-          print('v1.5.76 calculators owner bytes:', len(calc_owner.encode('utf-8')))
-          print('v1.5.76 extracted legacy bytes:', len((settings1 + calc1 + settings2 + calc2).encode('utf-8')))
-          print('v1.5.76 legacy-mid remaining bytes:', len(rest.encode('utf-8')))
-          PY
+          python3 -c "import base64;exec(base64.b64decode('CmZyb20gcGF0aGxpYiBpbXBvcnQgUGF0aAppbXBvcnQganNvbgoKcm9vdCA9IFBhdGgoJy4nKQpsZWdhY3lfcGF0aCA9IHJvb3QgLyAnc3R5bGVzLW92ZXJyaWRlcy1sZWdhY3ktbWlkLmNzcycKb2xkX2RldmljZV9wYXRoID0gcm9vdCAvICdzdHlsZXMtZGV2aWNlLXBlcmZvcm1hbmNlLXNldHRpbmdzLmNzcycKc2V0dGluZ3NfcGF0aCA9IHJvb3QgLyAnc3R5bGVzLXNldHRpbmdzLXJ1bnRpbWUuY3NzJwpjYWxjX3BhdGggPSByb290IC8gJ3N0eWxlcy1jYWxjdWxhdG9ycy1taWQuY3NzJwppbmRleF9wYXRoID0gcm9vdCAvICdpbmRleC5odG1sJwpzbW9rZV9wYXRoID0gcm9vdCAvICd0b29scy9jcml0aWNhbC1ydW50aW1lLXNtb2tlLm1qcycKdmVyY2VsX3BhdGggPSByb290IC8gJ3ZlcmNlbC5qc29uJwppZ25vcmVfcGF0aCA9IHJvb3QgLyAndG9vbHMvdmVyY2VsLWlnbm9yZS1idWlsZC5tanMnCgpsZWdhY3kgPSBsZWdhY3lfcGF0aC5yZWFkX3RleHQoZW5jb2Rpbmc9J3V0Zi04JykKb2xkX2RldmljZSA9IG9sZF9kZXZpY2VfcGF0aC5yZWFkX3RleHQoZW5jb2Rpbmc9J3V0Zi04JykKCnNldHRpbmdzX21hcmtlciA9ICcvKiB2LjEuNSAoNzQ3KTogVsOtY2Ug4oaSIE5hc3RhdmVuw60g4oCTIGtvbXBha3RuxJtqxaHDrSBwcm9maWwsIHbDvWtvbiBhIHRsYcSNw610a2EgdmUgZHZvdSBzbG91cGPDrWNoLiAqLycKY2FsYzFfbWFya2VyID0gJy8qIHYuMS41ICg3NDcpOiBLYWxrdWxhxI1reSDigJMgcm96YmFsZW7DqSBzZWtjZSBWw71wb8SNZXQga3Vzxa8vS29yZWtjZSArIGtvbXBha3Ruw60gcMWZZWhsZWQuICovJwpwZXJmX21hcmtlciA9ICcvKiB2LjEuNSAoNzQ3KTogVsO9a29uIHphxZnDrXplbsOtIOKAkyBjZW50cm92YW7DoSB0bGHEjcOtdGthIGEgdsO9cmF6bsO9IGFrdGl2bsOtIEzDocSPxa92IHJlxb5pbS4gKi8nCmNhbGMyX21hcmtlciA9ICcvKiB2LjEuNSAoNzQ3KTogS2Fsa3VsYcSNa3kg4oCTIGthxb5kw70gc3Ryb2ogbmEgdmxhc3Ruw61tIMWZw6Fka3UgYSBrb3Jla2NlIGpha28gxI1pc3TDqSBwxZlpcHJhdmVuw6kgc3Ryw6Fua3kuICovJwphZG1pbl9tYXJrZXIgPSAnLyogdi4xLjUgKDc4OCk6IEFkbWluaXN0cmFjZSByb3pwaXPFryDigJMgcnljaGzDqSBPZGVicmF0IGEgb2NocmFuYSBlZGl0YWNlIHDFmWkgb2Rkw6FsZW7DrS4gKi8nCgphc3NlcnQgbGVnYWN5LnN0YXJ0c3dpdGgoc2V0dGluZ3NfbWFya2VyKSwgJ2xlZ2FjeS1taWQgbmV6YcSNw61uw6Egb8SNZWvDoXZhbsO9bSBTZXR0aW5ncyBibG9rZW0nCnBfY2FsYzEgPSBsZWdhY3kuZmluZChjYWxjMV9tYXJrZXIpCnBfcGVyZiA9IGxlZ2FjeS5maW5kKHBlcmZfbWFya2VyKQpwX2NhbGMyID0gbGVnYWN5LmZpbmQoY2FsYzJfbWFya2VyKQpwX2FkbWluID0gbGVnYWN5LmZpbmQoYWRtaW5fbWFya2VyKQphc3NlcnQgMCA8IHBfY2FsYzEgPCBwX3BlcmYgPCBwX2NhbGMyIDwgcF9hZG1pbiwgJ25lb8SNZWvDoXZhbsOpIHBvxZlhZMOtIFNldHRpbmdzL0NhbGMvQWRtaW4gbWFya2Vyxa8nCgpzZXR0aW5nczEgPSBsZWdhY3lbOnBfY2FsYzFdLnJzdHJpcCgpICsgJ1xuXG4nCmNhbGMxID0gbGVnYWN5W3BfY2FsYzE6cF9wZXJmXS5yc3RyaXAoKSArICdcblxuJwpzZXR0aW5nczIgPSBsZWdhY3lbcF9wZXJmOnBfY2FsYzJdLnJzdHJpcCgpICsgJ1xuXG4nCmNhbGMyID0gbGVnYWN5W3BfY2FsYzI6cF9hZG1pbl0ucnN0cmlwKCkgKyAnXG4nCnJlc3QgPSBsZWdhY3lbcF9hZG1pbjpdCgpzZXR0aW5nc19jb21iaW5lZCA9IHNldHRpbmdzMSArIHNldHRpbmdzMgpjYWxjX2NvbWJpbmVkID0gY2FsYzEgKyBjYWxjMgpmb3IgZm9yYmlkZGVuIGluIFsnI2thbGt1bGFja3knLCAnI2tvcmVrY2UtJywgJy5jYWxjQ29ycmVjdGlvbicsICcuY2FsY0ZoYicsICcuY2FsY0hvbWVTZWN0aW9uJ106CiAgICBhc3NlcnQgZm9yYmlkZGVuIG5vdCBpbiBzZXR0aW5nc19jb21iaW5lZCwgZidDYWxjdWxhdG9yIG1hcmtlciBwcm9uaWtsIGRvIFNldHRpbmdzIGNodW5rdToge2ZvcmJpZGRlbn0nCmZvciBmb3JiaWRkZW4gaW4gWycjYXBwTWVudUJvZHknLCAnLnJha0RldmljZVBlcmYnLCAnLmFwcE1lbnVQcm9maWxlQ2FyZCcsICcuYXBwTWVudVRoZW1lQ2FyZFdyYXAnLCAnLmFwcE1lbnVTZXR0aW5nc0dyaWQnXToKICAgIGFzc2VydCBmb3JiaWRkZW4gbm90IGluIGNhbGNfY29tYmluZWQsIGYnU2V0dGluZ3MgbWFya2VyIHByb25pa2wgZG8gQ2FsY3VsYXRvciBjaHVua3U6IHtmb3JiaWRkZW59Jwphc3NlcnQgcmVzdC5zdGFydHN3aXRoKGFkbWluX21hcmtlciksICd6Ynl0ZWsgbGVnYWN5LW1pZCBuZXphxI3DrW7DoSBwxZllc27EmyBBZG1pbiBSb3RhdGlvbiBibG9rZW0nCmFzc2VydCAnLmFkbWluUm90YXRpb25RdWlja1JlbW92ZXsnIG5vdCBpbiBjYWxjX2NvbWJpbmVkCmFzc2VydCAnI2FwcE1lbnVCb2R5W2RhdGEtYWRtaW4tdmlldz0icm90YXRpb24iXScgbm90IGluIGNhbGNfY29tYmluZWQKYXNzZXJ0IG9sZF9kZXZpY2Uuc3RhcnRzd2l0aCgnLyogUmFLIHYxLjUuNzUg4oCTIG93bmVyOiBOYXN0YXZlbsOtIOKGkiBWw71rb24gLyBkZXZpY2UgcGVyZm9ybWFuY2UgY2FyZCAqLycpCmFzc2VydCBub3Qgc2V0dGluZ3NfcGF0aC5leGlzdHMoKSBhbmQgbm90IGNhbGNfcGF0aC5leGlzdHMoKQoKc2V0dGluZ3Nfb3duZXIgPSAoCiAgICAnLyogUmFLIHYxLjUuNzYg4oCTIG93bmVyOiBOYXN0YXZlbsOtIC8gcHJvZmlsLCB2w71rb24sIHZ6aGxlZCBhIG9iZWNuw6EgbmFzdGF2ZW7DrSAqL1xuJwogICAgKyBvbGRfZGV2aWNlLnJzdHJpcCgpICsgJ1xuXG4nCiAgICArIHNldHRpbmdzMSArIHNldHRpbmdzMgopCmNhbGNfb3duZXIgPSAoCiAgICAnLyogUmFLIHYxLjUuNzYg4oCTIG93bmVyOiBLYWxrdWxhxI1reSAvIGhsYXZuw60gbWVudSwgdsO9cG/EjWV0IGt1c8WvIGEga29yZWtjZSAqL1xuJwogICAgKyBjYWxjMSArIGNhbGMyCikKc2V0dGluZ3NfcGF0aC53cml0ZV90ZXh0KHNldHRpbmdzX293bmVyLCBlbmNvZGluZz0ndXRmLTgnKQpjYWxjX3BhdGgud3JpdGVfdGV4dChjYWxjX293bmVyLCBlbmNvZGluZz0ndXRmLTgnKQpsZWdhY3lfcGF0aC53cml0ZV90ZXh0KHJlc3QsIGVuY29kaW5nPSd1dGYtOCcpCm9sZF9kZXZpY2VfcGF0aC51bmxpbmsoKQoKaW5kZXggPSBpbmRleF9wYXRoLnJlYWRfdGV4dChlbmNvZGluZz0ndXRmLTgnKQpvbGRfbGluayA9ICc8bGluayByZWw9InN0eWxlc2hlZXQiIGhyZWY9InN0eWxlcy1kZXZpY2UtcGVyZm9ybWFuY2Utc2V0dGluZ3MuY3NzIj4nCnNldHRpbmdzX2xpbmsgPSAnPGxpbmsgcmVsPSJzdHlsZXNoZWV0IiBocmVmPSJzdHlsZXMtc2V0dGluZ3MtcnVudGltZS5jc3MiPicKY2FsY19saW5rID0gJzxsaW5rIHJlbD0ic3R5bGVzaGVldCIgaHJlZj0ic3R5bGVzLWNhbGN1bGF0b3JzLW1pZC5jc3MiPicKYXNzZXJ0IGluZGV4LmNvdW50KG9sZF9saW5rKSA9PSAxCmFzc2VydCBzZXR0aW5nc19saW5rIG5vdCBpbiBpbmRleCBhbmQgY2FsY19saW5rIG5vdCBpbiBpbmRleAppbmRleCA9IGluZGV4LnJlcGxhY2Uob2xkX2xpbmssIHNldHRpbmdzX2xpbmsgKyAnXG4nICsgY2FsY19saW5rLCAxKQppbmRleF9wYXRoLndyaXRlX3RleHQoaW5kZXgsIGVuY29kaW5nPSd1dGYtOCcpCgppZ25vcmVfc2NyaXB0ID0gIiIiIyEvdXNyL2Jpbi9lbnYgbm9kZQppbXBvcnQgeyBleGVjRmlsZVN5bmMgfSBmcm9tICdub2RlOmNoaWxkX3Byb2Nlc3MnOwoKY29uc3QgcHJldmlvdXMgPSBTdHJpbmcocHJvY2Vzcy5lbnYuVkVSQ0VMX0dJVF9QUkVWSU9VU19TSEEgfHwgJycpLnRyaW0oKTsKaWYgKCFwcmV2aW91cykgewogIGNvbnNvbGUubG9nKCdbdmVyY2VsLWlnbm9yZS1idWlsZF0gbm8gcHJldmlvdXMgZGVwbG95bWVudCBTSEE7IGJ1aWxkJyk7CiAgcHJvY2Vzcy5leGl0KDEpOwp9CgpsZXQgb3V0cHV0ID0gJyc7CnRyeSB7CiAgb3V0cHV0ID0gZXhlY0ZpbGVTeW5jKCdnaXQnLCBbJ2RpZmYnLCAnLS1uYW1lLW9ubHknLCBwcmV2aW91cyArICcuLkhFQUQnXSwgeyBlbmNvZGluZzogJ3V0ZjgnIH0pOwp9IGNhdGNoIChfKSB7CiAgY29uc29sZS5sb2coJ1t2ZXJjZWwtaWdub3JlLWJ1aWxkXSBkaWZmIGZhaWxlZDsgYnVpbGQnKTsKICBwcm9jZXNzLmV4aXQoMSk7Cn0KCmNvbnN0IGZpbGVzID0gb3V0cHV0LnNwbGl0KC9cXHI/XFxuLykubWFwKCh2YWx1ZSkgPT4gdmFsdWUudHJpbSgpKS5maWx0ZXIoQm9vbGVhbik7CmlmICghZmlsZXMubGVuZ3RoKSB7CiAgY29uc29sZS5sb2coJ1t2ZXJjZWwtaWdub3JlLWJ1aWxkXSBubyBjaGFuZ2VkIGZpbGVzOyBza2lwJyk7CiAgcHJvY2Vzcy5leGl0KDApOwp9Cgpjb25zdCBoZWxwZXJPbmx5ID0gZmlsZXMuZXZlcnkoKGZpbGUpID0+CiAgL15cXC5naXRodWJcXC93b3JrZmxvd3NcXC9yYWstdlxcZCsuKlxcLnlhP21sJC9pLnRlc3QoZmlsZSkgfHwKICAvXnRvb2xzXFwvcmFrLXZcXGQrLipcXC4oPzpweXxtanN8anMpJC9pLnRlc3QoZmlsZSkKKTsKCmlmIChoZWxwZXJPbmx5KSB7CiAgY29uc29sZS5sb2coJ1t2ZXJjZWwtaWdub3JlLWJ1aWxkXSBoZWxwZXItb25seSBjb21taXQ7IHNraXAgYnVpbGQ6JywgZmlsZXMuam9pbignLCAnKSk7CiAgcHJvY2Vzcy5leGl0KDApOwp9Cgpjb25zb2xlLmxvZygnW3ZlcmNlbC1pZ25vcmUtYnVpbGRdIGZ1bmN0aW9uYWwgY2hhbmdlIHByZXNlbnQ7IGJ1aWxkOicsIGZpbGVzLmpvaW4oJywgJykpOwpwcm9jZXNzLmV4aXQoMSk7CiIiIgppZ25vcmVfcGF0aC53cml0ZV90ZXh0KGlnbm9yZV9zY3JpcHQsIGVuY29kaW5nPSd1dGYtOCcpCgp2ZXJjZWwgPSBqc29uLmxvYWRzKHZlcmNlbF9wYXRoLnJlYWRfdGV4dChlbmNvZGluZz0ndXRmLTgnKSkKdmVyY2VsWydpZ25vcmVDb21tYW5kJ10gPSAnbm9kZSB0b29scy92ZXJjZWwtaWdub3JlLWJ1aWxkLm1qcycKdmVyY2VsX3BhdGgud3JpdGVfdGV4dChqc29uLmR1bXBzKHZlcmNlbCwgZW5zdXJlX2FzY2lpPUZhbHNlLCBpbmRlbnQ9MikgKyAnXG4nLCBlbmNvZGluZz0ndXRmLTgnKQoKc21va2UgPSBzbW9rZV9wYXRoLnJlYWRfdGV4dChlbmNvZGluZz0ndXRmLTgnKQpvbGRfcmVhZCA9ICJjb25zdCBzdHlsZXNEZXZpY2VQZXJmb3JtYW5jZVNldHRpbmdzQ3NzID0gcmVhZCgnc3R5bGVzLWRldmljZS1wZXJmb3JtYW5jZS1zZXR0aW5ncy5jc3MnKTtcbiIKbmV3X3JlYWRzID0gKAogICAgImNvbnN0IHN0eWxlc1NldHRpbmdzUnVudGltZUNzcyA9IHJlYWQoJ3N0eWxlcy1zZXR0aW5ncy1ydW50aW1lLmNzcycpO1xuIgogICAgImNvbnN0IHN0eWxlc0NhbGN1bGF0b3JzTWlkQ3NzID0gcmVhZCgnc3R5bGVzLWNhbGN1bGF0b3JzLW1pZC5jc3MnKTtcbiIKICAgICJjb25zdCB2ZXJjZWxJZ25vcmVCdWlsZCA9IHJlYWQoJ3Rvb2xzL3ZlcmNlbC1pZ25vcmUtYnVpbGQubWpzJyk7XG4iCiAgICAiY29uc3QgdmVyY2VsQ29uZmlnID0gSlNPTi5wYXJzZShyZWFkKCd2ZXJjZWwuanNvbicpKTtcbiIKKQphc3NlcnQgb2xkX3JlYWQgaW4gc21va2UKc21va2UgPSBzbW9rZS5yZXBsYWNlKG9sZF9yZWFkLCBuZXdfcmVhZHMsIDEpCgpndWFyZF9zdGFydCA9ICJhc3NlcnQoc3R5bGVzRGV2aWNlUGVyZm9ybWFuY2VTZXR0aW5nc0Nzcy5pbmNsdWRlcygnUmFLIHYxLjUuNzUg4oCTIG93bmVyOiBOYXN0YXZlbsOtIOKGkiBWw71rb24gLyBkZXZpY2UgcGVyZm9ybWFuY2UgY2FyZCcpLCAnQ2h5YsOtIHYxLjUuNzUgZGV2aWNlIHBlcmZvcm1hbmNlIG93bmVyIG1hcmtlcicpOyIKZ3VhcmRfZW5kID0gImFzc2VydChhZG1pblNlcnZpY2VDc3NQb3NWMTU3NSA+PSAwICYmIGFkbWluU2VydmljZUNzc1Bvc1YxNTc1IDwgZGV2aWNlUGVyZm9ybWFuY2VDc3NQb3NWMTU3NSAmJiBkZXZpY2VQZXJmb3JtYW5jZUNzc1Bvc1YxNTc1IDwgbGVnYWN5TWlkQ3NzUG9zVjE1NzUsICdEZXZpY2UgcGVyZm9ybWFuY2Ugb3duZXIgbXVzw60gesWvc3RhdCBuYSBwxa92b2Ruw60gY2FzY2FkZSBocmFuaWNpIG1lemkgYWRtaW4gc2VydmljZSBhIGxlZ2FjeS1taWQnKTsiCnMgPSBzbW9rZS5maW5kKGd1YXJkX3N0YXJ0KQplID0gc21va2UuZmluZChndWFyZF9lbmQpCmFzc2VydCBzID49IDAgYW5kIGUgPiBzCmUgKz0gbGVuKGd1YXJkX2VuZCkKbmV3X2d1YXJkID0gIiIiYXNzZXJ0KHN0eWxlc1NldHRpbmdzUnVudGltZUNzcy5pbmNsdWRlcygnUmFLIHYxLjUuNzYg4oCTIG93bmVyOiBOYXN0YXZlbsOtIC8gcHJvZmlsLCB2w71rb24sIHZ6aGxlZCBhIG9iZWNuw6EgbmFzdGF2ZW7DrScpLCAnQ2h5YsOtIHYxLjUuNzYgU2V0dGluZ3Mgb3duZXIgbWFya2VyJyk7CmFzc2VydChzdHlsZXNTZXR0aW5nc1J1bnRpbWVDc3MuaW5jbHVkZXMoJ1JhSyB2MS41Ljc1IOKAkyBvd25lcjogTmFzdGF2ZW7DrSDihpIgVsO9a29uIC8gZGV2aWNlIHBlcmZvcm1hbmNlIGNhcmQnKSwgJ1NldHRpbmdzIG93bmVyIG11c8OtIHphY2hvdmF0IHYxLjUuNzUgZGV2aWNlIHBlcmZvcm1hbmNlIHrDoWtsYWQnKTsKYXNzZXJ0KHN0eWxlc1NldHRpbmdzUnVudGltZUNzcy5pbmNsdWRlcygnI2FwcE1lbnVCb2R5IC5hcHBNZW51UHJvZmlsZUNhcmR7JykgJiYgc3R5bGVzU2V0dGluZ3NSdW50aW1lQ3NzLmluY2x1ZGVzKCcjYXBwTWVudUJvZHkgLmFwcE1lbnVTZXR0aW5nc0dyaWR7JyksICdTZXR0aW5ncyBvd25lciBtdXPDrSB6YWNob3ZhdCBwcm9maWwgYSBvYmVjbsOhIG5hc3RhdmVuw60nKTsKYXNzZXJ0KHN0eWxlc1NldHRpbmdzUnVudGltZUNzcy5pbmNsdWRlcygnI2FwcE1lbnVCb2R5IC5yYWtEZXZpY2VQZXJmQWN0aW9ucyAucmFrTGFkYU1vZGVCdG4uaXNBY3RpdmV7JyksICdTZXR0aW5ncyBvd25lciBtdXPDrSB6YWNob3ZhdCBha3Rpdm7DrSBMw6HEj8WvdiByZcW+aW0nKTsKYXNzZXJ0KCFzdHlsZXNTZXR0aW5nc1J1bnRpbWVDc3MuaW5jbHVkZXMoJyNrYWxrdWxhY2t5JykgJiYgIXN0eWxlc1NldHRpbmdzUnVudGltZUNzcy5pbmNsdWRlcygnLmNhbGNDb3JyZWN0aW9uJyksICdTZXR0aW5ncyBvd25lciBuZXNtw60gb2JzYWhvdmF0IEthbGt1bGHEjWt5Jyk7CmFzc2VydChzdHlsZXNDYWxjdWxhdG9yc01pZENzcy5pbmNsdWRlcygnUmFLIHYxLjUuNzYg4oCTIG93bmVyOiBLYWxrdWxhxI1reSAvIGhsYXZuw60gbWVudSwgdsO9cG/EjWV0IGt1c8WvIGEga29yZWtjZScpLCAnQ2h5YsOtIHYxLjUuNzYgQ2FsY3VsYXRvciBvd25lciBtYXJrZXInKTsKYXNzZXJ0KHN0eWxlc0NhbGN1bGF0b3JzTWlkQ3NzLmluY2x1ZGVzKCcja2Fsa3VsYWNreSAuY2FsY0hvbWVTZWN0aW9ueycpICYmIHN0eWxlc0NhbGN1bGF0b3JzTWlkQ3NzLmluY2x1ZGVzKCcja29yZWtjZS1mcmV6a3knKSAmJiBzdHlsZXNDYWxjdWxhdG9yc01pZENzcy5pbmNsdWRlcygnI2tvcmVrY2Utc291c3RydWh5JyksICdDYWxjdWxhdG9yIG93bmVyIG11c8OtIHphY2hvdmF0IGhsYXZuw60gbWVudSBpIGtvcmVrY2UnKTsKYXNzZXJ0KCFzdHlsZXNDYWxjdWxhdG9yc01pZENzcy5pbmNsdWRlcygnI2FwcE1lbnVCb2R5JykgJiYgIXN0eWxlc0NhbGN1bGF0b3JzTWlkQ3NzLmluY2x1ZGVzKCcuYWRtaW5Sb3RhdGlvblF1aWNrUmVtb3ZlJyksICdDYWxjdWxhdG9yIG93bmVyIG5lc23DrSBvYnNhaG92YXQgU2V0dGluZ3MgYW5pIEFkbWluIFJvdGF0aW9uJyk7CmFzc2VydCghZnMuZXhpc3RzU3luYyhwYXRoLmpvaW4ocm9vdCwgJ3N0eWxlcy1kZXZpY2UtcGVyZm9ybWFuY2Utc2V0dGluZ3MuY3NzJykpLCAnU3RhcsO9IHYxLjUuNzUgZGV2aWNlIG93bmVyIHNlIHBvIGtvbnNvbGlkYWNpIG5lc23DrSB2csOhdGl0Jyk7CmNvbnN0IGFkbWluU2VydmljZUNzc1Bvc1YxNTc2ID0gaW5kZXhIdG1sLmluZGV4T2YoJ3N0eWxlcy1hZG1pbi1zZXJ2aWNlLmNzcycpOwpjb25zdCBzZXR0aW5nc1J1bnRpbWVDc3NQb3NWMTU3NiA9IGluZGV4SHRtbC5pbmRleE9mKCdzdHlsZXMtc2V0dGluZ3MtcnVudGltZS5jc3MnKTsKY29uc3QgY2FsY3VsYXRvcnNNaWRDc3NQb3NWMTU3NiA9IGluZGV4SHRtbC5pbmRleE9mKCdzdHlsZXMtY2FsY3VsYXRvcnMtbWlkLmNzcycpOwpjb25zdCBsZWdhY3lNaWRDc3NQb3NWMTU3NiA9IGluZGV4SHRtbC5pbmRleE9mKCdzdHlsZXMtb3ZlcnJpZGVzLWxlZ2FjeS1taWQuY3NzJyk7CmFzc2VydChhZG1pblNlcnZpY2VDc3NQb3NWMTU3NiA+PSAwICYmIGFkbWluU2VydmljZUNzc1Bvc1YxNTc2IDwgc2V0dGluZ3NSdW50aW1lQ3NzUG9zVjE1NzYgJiYgc2V0dGluZ3NSdW50aW1lQ3NzUG9zVjE1NzYgPCBjYWxjdWxhdG9yc01pZENzc1Bvc1YxNTc2ICYmIGNhbGN1bGF0b3JzTWlkQ3NzUG9zVjE1NzYgPCBsZWdhY3lNaWRDc3NQb3NWMTU3NiwgJ3YxLjUuNzYgb3duZXJ5IG11c8OtIHrFr3N0YXQgbmEgY2FzY2FkZSBocmFuaWNpIHDFmWVkIGxlZ2FjeS1taWQnKTsKYXNzZXJ0KHZlcmNlbENvbmZpZy5pZ25vcmVDb21tYW5kID09PSAnbm9kZSB0b29scy92ZXJjZWwtaWdub3JlLWJ1aWxkLm1qcycsICdWZXJjZWwgbXVzw60gcG91xb7DrXZhdCBoZWxwZXItb25seSBpZ25vcmUgY29tbWFuZCcpOwphc3NlcnQodmVyY2VsSWdub3JlQnVpbGQuaW5jbHVkZXMoJ1ZFUkNFTF9HSVRfUFJFVklPVVNfU0hBJykgJiYgdmVyY2VsSWdub3JlQnVpbGQuaW5jbHVkZXMoJ2hlbHBlck9ubHknKSwgJ1ZlcmNlbCBpZ25vcmUgZ3VhcmQgbXVzw60gcG9yb3Zuw6F2YXQgem3Em27Em27DqSBzb3Vib3J5Jyk7IiIiCnNtb2tlID0gc21va2VbOnNdICsgbmV3X2d1YXJkICsgc21va2VbZTpdCgpvbGRfc3RhcnQgPSAiYXNzZXJ0KHN0eWxlc092ZXJyaWRlc0xlZ2FjeU1pZENzcy50cmltU3RhcnQoKS5zdGFydHNXaXRoKCcvKiB2LjEuNSAoNzQ3KTogVsOtY2Ug4oaSIE5hc3RhdmVuw60g4oCTIGtvbXBha3RuxJtqxaHDrSBwcm9maWwsIHbDvWtvbiBhIHRsYcSNw610a2EgdmUgZHZvdSBzbG91cGPDrWNoLiAqLycpLCAnbGVnYWN5LW1pZCBtdXPDrSBwbyB2MS41Ljc1IHphxI3DrW5hdCBwxZllc27EmyDFoWlyxaHDrW0gU2V0dGluZ3MgYmxva2VtJyk7IgpuZXdfc3RhcnQgPSAiYXNzZXJ0KHN0eWxlc092ZXJyaWRlc0xlZ2FjeU1pZENzcy50cmltU3RhcnQoKS5zdGFydHNXaXRoKCcvKiB2LjEuNSAoNzg4KTogQWRtaW5pc3RyYWNlIHJvenBpc8WvIOKAkyByeWNobMOpIE9kZWJyYXQgYSBvY2hyYW5hIGVkaXRhY2UgcMWZaSBvZGTDoWxlbsOtLiAqLycpLCAnbGVnYWN5LW1pZCBtdXPDrSBwbyB2MS41Ljc2IHphxI3DrW5hdCBwxZllc27EmyBBZG1pbiBSb3RhdGlvbiBibG9rZW0nKTsiCmFzc2VydCBvbGRfc3RhcnQgaW4gc21va2UKc21va2UgPSBzbW9rZS5yZXBsYWNlKG9sZF9zdGFydCwgbmV3X3N0YXJ0LCAxKQpzbW9rZV9wYXRoLndyaXRlX3RleHQoc21va2UsIGVuY29kaW5nPSd1dGYtOCcpCgphcHBfcGF0aCA9IHJvb3QgLyAnYXBwLmpzJwphcHAgPSBhcHBfcGF0aC5yZWFkX3RleHQoZW5jb2Rpbmc9J3V0Zi04JykKYXNzZXJ0IGFwcC5jb3VudCgnMS41Ljc1JykgPj0gMgphcHBfcGF0aC53cml0ZV90ZXh0KGFwcC5yZXBsYWNlKCcxLjUuNzUnLCAnMS41Ljc2JyksIGVuY29kaW5nPSd1dGYtOCcpCgpwa2dfcGF0aCA9IHJvb3QgLyAncGFja2FnZS5qc29uJwpwa2cgPSBqc29uLmxvYWRzKHBrZ19wYXRoLnJlYWRfdGV4dChlbmNvZGluZz0ndXRmLTgnKSkKYXNzZXJ0IHBrZy5nZXQoJ3ZlcnNpb24nKSA9PSAnMS41Ljc1Jwpwa2dbJ3ZlcnNpb24nXSA9ICcxLjUuNzYnCnBrZ19wYXRoLndyaXRlX3RleHQoanNvbi5kdW1wcyhwa2csIGVuc3VyZV9hc2NpaT1GYWxzZSwgaW5kZW50PTIpICsgJ1xuJywgZW5jb2Rpbmc9J3V0Zi04JykKCnN3X3BhdGggPSByb290IC8gJ3N3LmpzJwpzdyA9IHN3X3BhdGgucmVhZF90ZXh0KGVuY29kaW5nPSd1dGYtOCcpCmFzc2VydCAiQ0FDSEVfVkVSU0lPTiA9ICd2MS41Ljc1JyIgaW4gc3cKc3dfcGF0aC53cml0ZV90ZXh0KHN3LnJlcGxhY2UoIkNBQ0hFX1ZFUlNJT04gPSAndjEuNS43NSciLCAiQ0FDSEVfVkVSU0lPTiA9ICd2MS41Ljc2JyIsIDEpLCBlbmNvZGluZz0ndXRmLTgnKQoKcHJpbnQoJ3NldHRpbmdzIG93bmVyIGJ5dGVzJywgbGVuKHNldHRpbmdzX293bmVyLmVuY29kZSgndXRmLTgnKSkpCnByaW50KCdjYWxjdWxhdG9ycyBvd25lciBieXRlcycsIGxlbihjYWxjX293bmVyLmVuY29kZSgndXRmLTgnKSkpCnByaW50KCdleHRyYWN0ZWQgbGVnYWN5IGJ5dGVzJywgbGVuKChzZXR0aW5nczEgKyBjYWxjMSArIHNldHRpbmdzMiArIGNhbGMyKS5lbmNvZGUoJ3V0Zi04JykpKQpwcmludCgnbGVnYWN5LW1pZCByZW1haW5pbmcgYnl0ZXMnLCBsZW4ocmVzdC5lbmNvZGUoJ3V0Zi04JykpKQo='))"
 
       - name: Verify focused batch
         shell: bash
