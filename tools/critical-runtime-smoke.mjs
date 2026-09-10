@@ -18,6 +18,7 @@ const appMenuBugReportJsV1567 = read('app-menu-bug-report.js');
 const adminReportsJsV1567 = read('admin-reports.js');
 const supabaseBridgeJsV1567 = read('supabase-bridge.js');
 const stylesAdminReportsCss = read('styles-admin-reports.css');
+const stylesInteractionGuardCss = read('styles-interaction-guard.css');
 const stylesOverridesLegacyLateCss = read('styles-overrides-legacy-late.css');
 const stylesViewportPolishCss = read('styles-viewport-polish.css');
 const stylesReleasePolishCss = read('styles-release-polish.css');
@@ -118,6 +119,16 @@ assert(stylesAdminReportsCss.includes('#menu .adminReportsList'), 'Admin reports
 assert(stylesAdminReportsCss.includes('#menu .adminReportStatus-done'), 'Admin reports owner musí obsahovat statusy reportů');
 assert(!stylesOverridesLegacyMidCss.includes('#menu .adminReport'), 'Admin reports CSS se nesmí vrátit do legacy-mid');
 assert(!stylesOverridesLegacyMidCss.includes('bomberHeroRunA') && !stylesOverridesLegacyMidCss.includes('bomberHeroRunB'), 'Mrtvé Bomberman keyframes se nesmí vrátit');
+assert(stylesInteractionGuardCss.includes('RaK v1.5.68 – owner: globální app-like interaction/text-selection guard'), 'Chybí v1.5.68 interaction guard owner marker');
+assert(stylesInteractionGuardCss.includes('html, body, body *{'), 'Interaction guard musí dál blokovat globální označování textu');
+assert(stylesInteractionGuardCss.includes('[contenteditable="true"], .allowTextSelect, .selectableText'), 'Interaction guard musí zachovat textové výjimky');
+assert(stylesInteractionGuardCss.includes(':is(#soustruhy,#frezky,#brusy,.calcPage) input'), 'Interaction guard musí zachovat výjimku vstupů kalkulaček');
+assert(stylesOverridesLegacyMidCss.trimStart().startsWith('.appMenuFoldSection.adminRotationFold{'), 'legacy-mid musí po v1.5.68 začínat přesně adminRotationFold blokem');
+const adminReportsCssPosV1568 = indexHtml.indexOf('styles-admin-reports.css');
+const interactionGuardCssPosV1568 = indexHtml.indexOf('styles-interaction-guard.css');
+const legacyMidCssPosV1568 = indexHtml.indexOf('styles-overrides-legacy-mid.css');
+assert(adminReportsCssPosV1568 >= 0 && adminReportsCssPosV1568 < interactionGuardCssPosV1568 && interactionGuardCssPosV1568 < legacyMidCssPosV1568, 'Interaction guard musí zůstat na původní cascade hranici před legacy-mid');
+
 
 assert(!stylesOverridesLegacyMidCss.slice(0, 1200).includes('.appMenuReportCard'), 'Report směny se nesmí vrátit na čelo legacy-mid');
 const shiftReportCssPos = indexHtml.indexOf('styles-shift-report.css');

@@ -1,0 +1,31 @@
+/* RaK v1.5.68 – owner: globální app-like interaction/text-selection guard.
+   Historický v705 blok byl vytažen z čela styles-overrides-legacy-mid.css
+   beze změny deklarací a zůstává na stejné cascade pozici. */
+/* v.1.1 (705) – app-like text selection guard + kalkulačky/Reakce/Sudoku/Bubble/Bomberman */
+html, body, #app, .app, .page, .card, .glassCard, .bottomNav, .navItem, button, .btn, .tile, .calcTile, .modal{
+  -webkit-user-select:none !important;
+  user-select:none !important;
+  -webkit-touch-callout:none !important;
+}
+input, textarea, select, [contenteditable="true"], .allowTextSelect, .selectableText{
+  -webkit-user-select:text !important;
+  user-select:text !important;
+  -webkit-touch-callout:default !important;
+}
+
+
+/* v.1.1 (705) – tvrdší app-like režim bez označování textu mimo vstupní pole */
+html, body, body *{
+  -webkit-user-select:none !important;
+  user-select:none !important;
+  -webkit-touch-callout:none !important;
+}
+input, textarea, select, [contenteditable="true"], .allowTextSelect, .selectableText{
+  -webkit-user-select:text !important;
+  user-select:text !important;
+  -webkit-touch-callout:default !important;
+}
+:is(#soustruhy,#frezky,#brusy,.calcPage) input{
+  -webkit-user-select:text !important;
+  user-select:text !important;
+}
