@@ -77,7 +77,7 @@ if read_anchor not in critical:
     raise RuntimeError('v1.5.65 shift report smoke read anchor missing')
 if "const stylesAdminReportsCss = read('styles-admin-reports.css');" not in critical:
     critical = critical.replace(read_anchor, read_anchor + "\nconst stylesAdminReportsCss = read('styles-admin-reports.css');", 1)
-assert_anchor = "assert(stylesShiftReportCss.includes('.appMenuReportCard'), 'Shift report owner musí obsahovat .appMenuReportCard');"
+assert_anchor = "assert(stylesShiftReportCss.includes('.appMenuReportCard'), 'Shift-report owner musí obsahovat report card CSS');"
 if assert_anchor not in critical:
     raise RuntimeError('v1.5.65 shift report assertion anchor missing')
 checks = """\nassert(stylesAdminReportsCss.includes('RaK v1.5.66 – owner: Administrace → Reporty'), 'Chybí v1.5.66 admin reports owner marker');\nassert(stylesAdminReportsCss.includes('#menu .adminReportsList'), 'Admin reports owner musí obsahovat seznam reportů');\nassert(stylesAdminReportsCss.includes('#menu .adminReportStatus-done'), 'Admin reports owner musí obsahovat statusy reportů');\nassert(!stylesOverridesLegacyMidCss.includes('#menu .adminReport'), 'Admin reports CSS se nesmí vrátit do legacy-mid');\nassert(!stylesOverridesLegacyMidCss.includes('bomberHeroRunA') && !stylesOverridesLegacyMidCss.includes('bomberHeroRunB'), 'Mrtvé Bomberman keyframes se nesmí vrátit');\n"""
