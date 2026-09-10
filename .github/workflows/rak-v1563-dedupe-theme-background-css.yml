@@ -24,6 +24,18 @@ jobs:
           node-version: 22
       - name: Deduplicate proven theme and background CSS
         run: python3 tools/rak-v1563-dedupe-theme-background-css.py
+      - name: Normalize existing critical CSS reads
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('tools/critical-runtime-smoke.mjs')
+          text=p.read_text()
+          line="const stylesThemePropagationCss = read('styles-theme-propagation.css');"
+          parts=text.split(line)
+          if len(parts) > 2:
+              text=parts[0]+line+''.join(parts[1:])
+          p.write_text(text)
+          PY
       - name: Verify focused cleanup guards
         run: |
           node --check tools/critical-runtime-smoke.mjs
