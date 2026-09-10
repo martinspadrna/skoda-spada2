@@ -1,0 +1,23 @@
+/* RaK v1.5.69 – owner: Administrace → Rozpisy / skládací adminRotationFold */
+.appMenuFoldSection.adminRotationFold{
+  margin-top:12px !important;
+  border:1px solid var(--rakGlassStroke,rgba(255,255,255,.14)) !important;
+  border-radius:22px !important;
+  background:var(--rakGlassCardBg,rgba(255,255,255,.06)) !important;
+  overflow:hidden !important;
+}
+.appMenuFoldSection.adminRotationFold > summary{
+  cursor:pointer !important;
+  list-style:none !important;
+  padding:12px 14px !important;
+  font-weight:900 !important;
+  color:var(--soft,#e7fff0) !important;
+  display:flex !important;
+  align-items:center !important;
+  justify-content:space-between !important;
+}
+.appMenuFoldSection.adminRotationFold > summary::-webkit-details-marker{display:none !important;}
+.appMenuFoldSection.adminRotationFold > summary::after{content:'⌄';font-size:18px;line-height:1;opacity:.8;transform:rotate(0deg);transition:transform .18s ease;}
+.appMenuFoldSection.adminRotationFold:not([open]) > summary::after{transform:rotate(-90deg);}
+.appMenuFoldSection.adminRotationFold .tableWrap{margin:0 !important;border-top:1px solid rgba(255,255,255,.08) !important;border-radius:0 !important;}
+.appMenuFoldSection.adminRotationFold .smallText{padding:10px 12px 0 !important;}
