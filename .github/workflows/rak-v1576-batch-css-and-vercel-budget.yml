@@ -1,0 +1,245 @@
+name: RaK v1.5.76 large CSS ownership batch
+
+on:
+  push:
+    branches: [development]
+    paths:
+      - '.github/workflows/rak-v1576-batch-css-and-vercel-budget.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  migrate:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout development
+        uses: actions/checkout@v4
+        with:
+          ref: development
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Batch Settings and Calculators ownership move
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import json
+
+          root = Path('.')
+          legacy_path = root / 'styles-overrides-legacy-mid.css'
+          old_device_path = root / 'styles-device-performance-settings.css'
+          settings_path = root / 'styles-settings-runtime.css'
+          calc_path = root / 'styles-calculators-mid.css'
+          index_path = root / 'index.html'
+          smoke_path = root / 'tools/critical-runtime-smoke.mjs'
+          vercel_path = root / 'vercel.json'
+          ignore_path = root / 'tools/vercel-ignore-build.mjs'
+
+          legacy = legacy_path.read_text(encoding='utf-8')
+          old_device = old_device_path.read_text(encoding='utf-8')
+
+          settings_marker = '/* v.1.5 (747): Více → Nastavení – kompaktnější profil, výkon a tlačítka ve dvou sloupcích. */'
+          calc1_marker = '/* v.1.5 (747): Kalkulačky – rozbalené sekce Výpočet kusů/Korekce + kompaktní přehled. */'
+          perf_marker = '/* v.1.5 (747): Výkon zařízení – centrovaná tlačítka a výrazný aktivní Láďův režim. */'
+          calc2_marker = '/* v.1.5 (747): Kalkulačky – každý stroj na vlastním řádku a korekce jako čisté připravené stránky. */'
+          admin_marker = '/* v.1.5 (788): Administrace rozpisů – rychlé Odebrat a ochrana editace při oddálení. */'
+
+          assert legacy.startswith(settings_marker), 'legacy-mid nezačíná očekávaným Settings blokem'
+          p_calc1 = legacy.find(calc1_marker)
+          p_perf = legacy.find(perf_marker)
+          p_calc2 = legacy.find(calc2_marker)
+          p_admin = legacy.find(admin_marker)
+          assert 0 < p_calc1 < p_perf < p_calc2 < p_admin, 'neočekávané pořadí Settings/Calc/Admin markerů'
+
+          settings1 = legacy[:p_calc1].rstrip() + '\n\n'
+          calc1 = legacy[p_calc1:p_perf].rstrip() + '\n\n'
+          settings2 = legacy[p_perf:p_calc2].rstrip() + '\n\n'
+          calc2 = legacy[p_calc2:p_admin].rstrip() + '\n'
+          rest = legacy[p_admin:]
+
+          # Explicit family-separation proof before the only cross-family reorder.
+          settings_combined = settings1 + settings2
+          calc_combined = calc1 + calc2
+          for forbidden in ['#kalkulacky', '#korekce-', '.calcCorrection', '.calcFhb', '.calcHomeSection']:
+              assert forbidden not in settings_combined, f'Calculator marker pronikl do Settings chunku: {forbidden}'
+          for forbidden in ['#appMenuBody', '.rakDevicePerf', '.appMenuProfileCard', '.appMenuThemeCardWrap', '.appMenuSettingsGrid']:
+              assert forbidden not in calc_combined, f'Settings marker pronikl do Calculator chunku: {forbidden}'
+          assert rest.startswith(admin_marker), 'zbytek legacy-mid nezačíná přesně Admin Rotation blokem'
+          assert '.adminRotationQuickRemove{' not in calc_combined, 'Admin Rotation pronikl do Calculator owneru'
+          assert '#appMenuBody[data-admin-view="rotation"]' not in calc_combined, 'Admin Rotation selector pronikl do Calculator owneru'
+
+          assert old_device.startswith('/* RaK v1.5.75 – owner: Nastavení → Výkon / device performance card */'), 'nenalezen očekávaný v1.5.75 device owner'
+          assert not settings_path.exists() and not calc_path.exists(), 'v1.5.76 owner soubor už existuje'
+
+          settings_owner = (
+              '/* RaK v1.5.76 – owner: Nastavení / profil, výkon, vzhled a obecná nastavení */\n'
+              + old_device.rstrip() + '\n\n'
+              + settings1
+              + settings2
+          )
+          calc_owner = (
+              '/* RaK v1.5.76 – owner: Kalkulačky / hlavní menu, výpočet kusů a korekce */\n'
+              + calc1
+              + calc2
+          )
+
+          settings_path.write_text(settings_owner, encoding='utf-8')
+          calc_path.write_text(calc_owner, encoding='utf-8')
+          legacy_path.write_text(rest, encoding='utf-8')
+          old_device_path.unlink()
+
+          index = index_path.read_text(encoding='utf-8')
+          old_link = '<link rel="stylesheet" href="styles-device-performance-settings.css">'
+          settings_link = '<link rel="stylesheet" href="styles-settings-runtime.css">'
+          calc_link = '<link rel="stylesheet" href="styles-calculators-mid.css">'
+          assert index.count(old_link) == 1, 'neočekávaný počet starých device owner linků'
+          assert settings_link not in index and calc_link not in index, 'nové ownery už jsou v indexu'
+          index = index.replace(old_link, settings_link + '\n' + calc_link, 1)
+          index_path.write_text(index, encoding='utf-8')
+
+          smoke = smoke_path.read_text(encoding='utf-8')
+          old_read = "const stylesDevicePerformanceSettingsCss = read('styles-device-performance-settings.css');\n"
+          new_reads = "const stylesSettingsRuntimeCss = read('styles-settings-runtime.css');\nconst stylesCalculatorsMidCss = read('styles-calculators-mid.css');\nconst vercelIgnoreBuild = read('tools/vercel-ignore-build.mjs');\nconst vercelConfig = JSON.parse(read('vercel.json'));\n"
+          assert old_read in smoke, 'nenalezena v1.5.75 read kotva'
+          smoke = smoke.replace(old_read, new_reads, 1)
+
+          guard_start = "assert(stylesDevicePerformanceSettingsCss.includes('RaK v1.5.75 – owner: Nastavení → Výkon / device performance card'), 'Chybí v1.5.75 device performance owner marker');"
+          guard_end = "assert(adminServiceCssPosV1575 >= 0 && adminServiceCssPosV1575 < devicePerformanceCssPosV1575 && devicePerformanceCssPosV1575 < legacyMidCssPosV1575, 'Device performance owner musí zůstat na původní cascade hranici mezi admin service a legacy-mid');"
+          s = smoke.find(guard_start)
+          e = smoke.find(guard_end)
+          assert s >= 0 and e > s, 'nenalezen celý v1.5.75 guard blok'
+          e += len(guard_end)
+          new_guard = """assert(stylesSettingsRuntimeCss.includes('RaK v1.5.76 – owner: Nastavení / profil, výkon, vzhled a obecná nastavení'), 'Chybí v1.5.76 Settings owner marker');
+assert(stylesSettingsRuntimeCss.includes('RaK v1.5.75 – owner: Nastavení → Výkon / device performance card'), 'Settings owner musí zachovat v1.5.75 device performance základ');
+assert(stylesSettingsRuntimeCss.includes('#appMenuBody .appMenuProfileCard{') && stylesSettingsRuntimeCss.includes('#appMenuBody .appMenuSettingsGrid{'), 'Settings owner musí zachovat profil a obecná nastavení');
+assert(stylesSettingsRuntimeCss.includes('#appMenuBody .rakDevicePerfActions .rakLadaModeBtn.isActive{'), 'Settings owner musí zachovat aktivní Láďův režim');
+assert(!stylesSettingsRuntimeCss.includes('#kalkulacky') && !stylesSettingsRuntimeCss.includes('.calcCorrection'), 'Settings owner nesmí obsahovat Kalkulačky');
+assert(stylesCalculatorsMidCss.includes('RaK v1.5.76 – owner: Kalkulačky / hlavní menu, výpočet kusů a korekce'), 'Chybí v1.5.76 Calculator owner marker');
+assert(stylesCalculatorsMidCss.includes('#kalkulacky .calcHomeSection{') && stylesCalculatorsMidCss.includes('#korekce-frezky') && stylesCalculatorsMidCss.includes('#korekce-soustruhy'), 'Calculator owner musí zachovat hlavní menu i korekce');
+assert(!stylesCalculatorsMidCss.includes('#appMenuBody') && !stylesCalculatorsMidCss.includes('.adminRotationQuickRemove'), 'Calculator owner nesmí obsahovat Settings ani Admin Rotation');
+assert(!fs.existsSync(path.join(root, 'styles-device-performance-settings.css')), 'Starý v1.5.75 device owner se po konsolidaci nesmí vrátit');
+const adminServiceCssPosV1576 = indexHtml.indexOf('styles-admin-service.css');
+const settingsRuntimeCssPosV1576 = indexHtml.indexOf('styles-settings-runtime.css');
+const calculatorsMidCssPosV1576 = indexHtml.indexOf('styles-calculators-mid.css');
+const legacyMidCssPosV1576 = indexHtml.indexOf('styles-overrides-legacy-mid.css');
+assert(adminServiceCssPosV1576 >= 0 && adminServiceCssPosV1576 < settingsRuntimeCssPosV1576 && settingsRuntimeCssPosV1576 < calculatorsMidCssPosV1576 && calculatorsMidCssPosV1576 < legacyMidCssPosV1576, 'v1.5.76 ownery musí zůstat na cascade hranici před legacy-mid');
+assert(vercelConfig.ignoreCommand === 'node tools/vercel-ignore-build.mjs', 'Vercel musí používat helper-only ignore command');
+assert(vercelIgnoreBuild.includes('VERCEL_GIT_PREVIOUS_SHA') && vercelIgnoreBuild.includes('helperOnly'), 'Vercel ignore guard musí porovnávat změněné soubory');
+"""
+          smoke = smoke[:s] + new_guard + smoke[e:]
+
+          old_start = "assert(stylesOverridesLegacyMidCss.trimStart().startsWith('/* v.1.5 (747): Více → Nastavení – kompaktnější profil, výkon a tlačítka ve dvou sloupcích. */'), 'legacy-mid musí po v1.5.75 začínat přesně širším Settings blokem');"
+          new_start = "assert(stylesOverridesLegacyMidCss.trimStart().startsWith('/* v.1.5 (788): Administrace rozpisů – rychlé Odebrat a ochrana editace při oddálení. */'), 'legacy-mid musí po v1.5.76 začínat přesně Admin Rotation blokem');"
+          assert old_start in smoke, 'nenalezena překonaná v1.5.75 legacy start kotva'
+          smoke = smoke.replace(old_start, new_start, 1)
+          smoke_path.write_text(smoke, encoding='utf-8')
+
+          ignore_script = r'''#!/usr/bin/env node
+          import { execFileSync } from 'node:child_process';
+
+          const previous = String(process.env.VERCEL_GIT_PREVIOUS_SHA || '').trim();
+          if (!previous) {
+            console.log('[vercel-ignore-build] no previous deployment SHA; build');
+            process.exit(1);
+          }
+
+          let output = '';
+          try {
+            output = execFileSync('git', ['diff', '--name-only', previous + '..HEAD'], { encoding: 'utf8' });
+          } catch (error) {
+            console.log('[vercel-ignore-build] diff failed; build');
+            process.exit(1);
+          }
+
+          const files = output.split(/\r?\n/).map((value) => value.trim()).filter(Boolean);
+          if (!files.length) {
+            console.log('[vercel-ignore-build] no changed files; skip');
+            process.exit(0);
+          }
+
+          const helperOnly = files.every((file) =>
+            /^\.github\/workflows\/rak-v\d+.*\.ya?ml$/i.test(file) ||
+            /^tools\/rak-v\d+.*\.(?:py|mjs|js)$/i.test(file)
+          );
+
+          if (helperOnly) {
+            console.log('[vercel-ignore-build] helper-only commit; skip build:', files.join(', '));
+            process.exit(0);
+          }
+
+          console.log('[vercel-ignore-build] functional change present; build:', files.join(', '));
+          process.exit(1);
+          '''.replace('\n          ', '\n').lstrip()
+          ignore_path.write_text(ignore_script, encoding='utf-8')
+
+          vercel = json.loads(vercel_path.read_text(encoding='utf-8'))
+          vercel['ignoreCommand'] = 'node tools/vercel-ignore-build.mjs'
+          vercel_path.write_text(json.dumps(vercel, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
+
+          app_path = root / 'app.js'
+          app = app_path.read_text(encoding='utf-8')
+          assert app.count('1.5.75') >= 2, 'app.js není na očekávané 1.5.75'
+          app_path.write_text(app.replace('1.5.75', '1.5.76'), encoding='utf-8')
+
+          pkg_path = root / 'package.json'
+          pkg = json.loads(pkg_path.read_text(encoding='utf-8'))
+          assert pkg.get('version') == '1.5.75', 'package.json není na 1.5.75'
+          pkg['version'] = '1.5.76'
+          pkg_path.write_text(json.dumps(pkg, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
+
+          sw_path = root / 'sw.js'
+          sw = sw_path.read_text(encoding='utf-8')
+          assert "CACHE_VERSION = 'v1.5.75'" in sw, 'sw.js není na 1.5.75'
+          sw_path.write_text(sw.replace("CACHE_VERSION = 'v1.5.75'", "CACHE_VERSION = 'v1.5.76'", 1), encoding='utf-8')
+
+          print('v1.5.76 settings owner bytes:', len(settings_owner.encode('utf-8')))
+          print('v1.5.76 calculators owner bytes:', len(calc_owner.encode('utf-8')))
+          print('v1.5.76 extracted legacy bytes:', len((settings1 + calc1 + settings2 + calc2).encode('utf-8')))
+          print('v1.5.76 legacy-mid remaining bytes:', len(rest.encode('utf-8')))
+          PY
+
+      - name: Verify focused batch
+        shell: bash
+        run: |
+          node --check app.js
+          node --check tools/critical-runtime-smoke.mjs
+          node --check tools/vercel-ignore-build.mjs
+          node tools/critical-runtime-smoke.mjs
+          python3 - <<'PY'
+          from pathlib import Path
+          import json
+          legacy = Path('styles-overrides-legacy-mid.css').read_text(encoding='utf-8')
+          settings = Path('styles-settings-runtime.css').read_text(encoding='utf-8')
+          calc = Path('styles-calculators-mid.css').read_text(encoding='utf-8')
+          index = Path('index.html').read_text(encoding='utf-8')
+          assert legacy.startswith('/* v.1.5 (788): Administrace rozpisů – rychlé Odebrat a ochrana editace při oddálení. */')
+          assert '#appMenuBody .appMenuProfileCard{' in settings
+          assert '#kalkulacky .calcHomeSection{' in calc
+          assert '#appMenuBody' not in calc
+          assert not Path('styles-device-performance-settings.css').exists()
+          assert index.count('styles-settings-runtime.css') == 1
+          assert index.count('styles-calculators-mid.css') == 1
+          assert json.loads(Path('package.json').read_text(encoding='utf-8'))['version'] == '1.5.76'
+          assert json.loads(Path('vercel.json').read_text(encoding='utf-8'))['ignoreCommand'] == 'node tools/vercel-ignore-build.mjs'
+          print('focused v1.5.76 large ownership batch OK')
+          PY
+          git diff --check
+
+      - name: Full repository check
+        run: npm run check
+
+      - name: Commit v1.5.76 after checks pass
+        shell: bash
+        run: |
+          rm -f .github/workflows/rak-v1576-batch-css-and-vercel-budget.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "Consolidate Settings and Calculators legacy CSS in v1.5.76"
+          git push origin development
