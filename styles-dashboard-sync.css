@@ -1,0 +1,12 @@
+/* RaK v1.5.72 – owner: Dashboard ruční sync */
+/* v.1.1 (725) – dashboard ruční sync + administrace servis */
+.dashboardSyncBadge{
+  pointer-events:auto !important;
+  cursor:pointer !important;
+  user-select:none !important;
+  -webkit-user-select:none !important;
+  touch-action:manipulation !important;
+}
+.dashboardSyncBadge:active{
+  transform:scale(.97) !important;
+}
