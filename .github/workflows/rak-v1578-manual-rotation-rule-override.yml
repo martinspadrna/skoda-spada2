@@ -5,6 +5,7 @@ on:
     branches: [development]
     paths:
       - '.github/workflows/rak-v1578-manual-rotation-rule-override.yml'
+      - 'tools/rak-v1578-manual-rotation-rule-override.py'
 
 permissions:
   contents: write
