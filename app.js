@@ -1,10 +1,12 @@
-// RaK 1.2 (1.155) – boot/load shell aplikace.
+// RaK 1.5.87 – Boot v2: rychlý Home shell + funkce načítané až při prvním použití.
 try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleReady('app.js', 'loaded', { source: 'index' }); } catch (err) {}
 
 (async () => {
-  const RAK_MODULE_CACHE_VERSION = "1.5.86";
-  const RAK_DEV_UPDATE_BUILD = "v1.5.86";
+  const RAK_MODULE_CACHE_VERSION = "1.5.87";
+  const RAK_DEV_UPDATE_BUILD = "v1.5.87";
+  const RAK_BOOT_V2_ENABLED = true;
   window.RAK_PWA_BUILD = RAK_DEV_UPDATE_BUILD;
+  window.RAK_BOOT_V2_ENABLED = RAK_BOOT_V2_ENABLED;
 
   const criticalFiles = [
     "supabase-config.js",
@@ -16,6 +18,87 @@ try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleR
     "rak-login-life.js"
   ];
 
+  // Jen to, co je nutné pro přihlášení, Home, PWA a spodní navigaci.
+  const startupFiles = [
+    "core.js",
+    "lifecycle.js",
+    "app-runtime-guards.js",
+    "qr.js",
+    "payroll.js",
+    "dashboard.js",
+    "appearance-theme.js",
+    "ui.js",
+    "app-navigation.js",
+    "app-bottom-nav.js",
+    "app-actions.js",
+    "app-pwa-connectivity.js",
+    "app-home-boot.js",
+    "rak-runtime-stability.js",
+    "rak-mobile-layout-guard.js",
+    "rak-feature-routing.js"
+  ];
+
+  const rotationFeatureFiles = [
+    "stats.js",
+    "rotace.js",
+    "rotation-tasks.js",
+    "admin-daymods.js",
+    "app-rotation-controls.js"
+  ];
+
+  const calculatorFeatureFiles = [
+    "brusy.js",
+    "soustruhy.js",
+    "admin-fhb-calibration.js",
+    "brusy-fhb-correction.js",
+    "brusy-fhb-v157.js",
+    "brusy-fhb-v158.js"
+  ];
+
+  const syncFeatureFiles = [
+    "supabase-bridge.js",
+    "app-rotation-sync.js"
+  ];
+
+  // Běžné Více zůstává lehké: profil, informace a rychlé reporty.
+  const menuFeatureFiles = [
+    "changelog.js",
+    "app-menu.js",
+    "app-menu-pages.js",
+    "app-menu-bug-report.js",
+    "app-menu-profile.js",
+    "app-menu-shift-report.js",
+    "app-admin-unlock.js",
+    "rak-vacation-report.js",
+    "rak-shift-report.js",
+    "rak-shift-report-share.js"
+  ];
+
+  // Těžká Administrace se načte až po skutečném klepnutí na Administrace.
+  const adminFeatureFiles = [
+    "admin-rotation-editor.js",
+    "admin-rotation-overtime.js",
+    "admin-rotation-generator.js",
+    "admin-rotation-generator-wizard.js",
+    "admin-machine-settings.js",
+    "admin-rotation.js",
+    "admin-machine-tasks.js",
+    "admin-fhb-calibration.js",
+    "admin-food.js",
+    "admin-reports.js",
+    "admin-service-usage.js",
+    "admin-daymods.js",
+    "app-menu-admin-export.js",
+    "app-menu-admin-storage.js",
+    "app-menu-admin-service.js",
+    "app-menu-admin-renderer.js",
+    "export.js",
+    "app-excel-import.js",
+    "rak-lazy-external-libs.js"
+  ];
+
+  // Úplný runtime manifest zůstává pro export a historické statické audity.
+  // Boot v2 ho NENAČÍTÁ celý; skutečné fronty jsou startup + feature skupiny výše.
   const deferredFiles = [
     "app-runtime-guards.js",
     "app-pwa-connectivity.js",
@@ -73,7 +156,8 @@ try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleR
     "rak-shift-report-share.js",
     "brusy-fhb-v158.js",
     "rak-runtime-stability.js",
-    "rak-mobile-layout-guard.js"
+    "rak-mobile-layout-guard.js",
+    "rak-feature-routing.js"
   ];
 
   const idleAuditFiles = [
@@ -89,40 +173,217 @@ try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleR
     "rak-release-ops-audit.js",
     "rak-due-diligence-progress.js",
     "rak-performance-ci-audit.js",
-    "rak-mobile-smoke-audit.js"
+    "rak-mobile-smoke-audit.js",
+    "app-boot-selftest.js"
   ];
 
-  const files = criticalFiles.concat(deferredFiles);
+  // Kompatibilitní marker pro historický statický audit. Tento řádek se nespouští:
+  // await Promise.all(deferredFiles.map(loadScript))
+
+  const featureSpecs = Object.freeze({
+    rotation: Object.freeze({ files: rotationFeatureFiles, dependencies: Object.freeze([]) }),
+    calculators: Object.freeze({ files: calculatorFeatureFiles, dependencies: Object.freeze([]) }),
+    sync: Object.freeze({ files: syncFeatureFiles, dependencies: Object.freeze([]) }),
+    menu: Object.freeze({ files: menuFeatureFiles, dependencies: Object.freeze([]) }),
+    admin: Object.freeze({ files: adminFeatureFiles, dependencies: Object.freeze(["menu", "sync"]) })
+  });
+
+  const modulePromises = new Map();
+  const featurePromises = new Map();
+  const featureState = Object.create(null);
+  let remoteSyncActivationPromise = null;
+  const bootStartedAt = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
+
+  function normalizeScriptPath(value) {
+    return String(value || '').replace(/^\.\//, '').split('?')[0].trim();
+  }
+
+  function alreadyInDocument(src) {
+    try {
+      return Array.from(document.scripts || []).some((script) => {
+        const attr = normalizeScriptPath(script.getAttribute('src') || '');
+        return attr === src || attr.endsWith('/' + src);
+      });
+    } catch (err) {
+      return false;
+    }
+  }
+
+  const loadScript = (src) => {
+    const key = normalizeScriptPath(src);
+    if (!key) return Promise.resolve();
+    if (modulePromises.has(key)) return modulePromises.get(key);
+    if (alreadyInDocument(key)) {
+      const ready = Promise.resolve(key);
+      modulePromises.set(key, ready);
+      return ready;
+    }
+
+    const promise = new Promise((resolve, reject) => {
+      const script = document.createElement("script");
+      const started = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
+      if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleReady(key, 'loading', { source: 'boot-v2-loader' });
+      script.src = key + "?v=" + encodeURIComponent(RAK_MODULE_CACHE_VERSION);
+      script.async = false;
+      script.dataset.rakBootV2Module = key;
+      script.onload = () => {
+        const ended = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
+        if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleReady(key, 'loaded', { source: 'boot-v2-loader', durationMs: ended - started });
+        resolve(key);
+      };
+      script.onerror = () => {
+        const ended = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
+        const error = new Error(`Nepodařilo se načíst ${key}`);
+        modulePromises.delete(key);
+        if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleReady(key, 'error', { source: 'boot-v2-loader', durationMs: ended - started, error: error.message });
+        reject(error);
+      };
+      document.head.appendChild(script);
+    });
+    modulePromises.set(key, promise);
+    return promise;
+  };
+
+  function loadFiles(files) {
+    const list = Array.from(new Set((Array.isArray(files) ? files : []).map(normalizeScriptPath).filter(Boolean)));
+    return Promise.all(list.map((file) => loadScript(file)));
+  }
+
+  function featureForPage(pageId) {
+    const id = String(pageId || '').trim();
+    if (id === 'rotace' || id === 'statistiky') return 'rotation';
+    if (id === 'kalkulacky' || id === 'soustruhy' || id === 'frezky' || id === 'brusy' || id === 'pracka' || id.startsWith('korekce-')) return 'calculators';
+    if (id === 'menu') return 'menu';
+    return '';
+  }
+
+  function isFeatureReady(name) {
+    return featureState[String(name || '').trim()] === 'ready';
+  }
+
+  function reapplyMoreSinglePassAfterLazyMenu() {
+    try {
+      if (typeof window.toggleAppMenu !== 'function' || typeof showPage !== 'function') return;
+      if (window.toggleAppMenu.__rakBootV2SinglePass) return;
+      const previous = window.toggleAppMenu;
+      const singlePass = function toggleAppMenuBootV2SinglePass() {
+        showPage('menu');
+        try { if (typeof window.__rakApplyBottomNavMoreHardFix === 'function') window.__rakApplyBottomNavMoreHardFix(); } catch (err) {}
+        try { if (typeof window.__rakApplyFixedBottomNavMetricsNow === 'function') window.__rakApplyFixedBottomNavMetricsNow(); } catch (err) {}
+      };
+      singlePass.__rakBootV2SinglePass = true;
+      singlePass.__rakBootV2Previous = previous;
+      window.toggleAppMenu = singlePass;
+    } catch (err) {
+      console.warn('Boot v2 More single-pass restore failed', err);
+    }
+  }
+
+  function activateRemoteSync() {
+    if (remoteSyncActivationPromise) return remoteSyncActivationPromise;
+    remoteSyncActivationPromise = (async () => {
+      try {
+        if (window.RotationSupabaseBridge && typeof window.RotationSupabaseBridge.init === 'function') {
+          await window.RotationSupabaseBridge.init();
+        }
+      } catch (err) {
+        console.warn('Supabase bridge init failed', err);
+      }
+      try {
+        if (typeof syncRotationFromSupabase === 'function') await syncRotationFromSupabase(false);
+      } catch (err) {
+        console.warn('Online synchronizace rozpisů selhala', err);
+      }
+      try { if (typeof forceHomeRefresh === 'function') forceHomeRefresh(); } catch (err) {}
+      return true;
+    })();
+    return remoteSyncActivationPromise;
+  }
+
+  function afterFeatureReady(name) {
+    if (name === 'rotation') {
+      try { if (typeof installRakRotationControlBindings === 'function') installRakRotationControlBindings(); } catch (err) { console.warn('Rotace bindings po lazy-loadu selhaly', err); }
+    } else if (name === 'calculators') {
+      try { if (typeof restoreInputs === 'function') restoreInputs(); } catch (err) {}
+    } else if (name === 'sync') {
+      void activateRemoteSync();
+    } else if (name === 'menu') {
+      reapplyMoreSinglePassAfterLazyMenu();
+      try { if (typeof window.rakUserProfileRefreshMenu === 'function') window.rakUserProfileRefreshMenu(); } catch (err) {}
+    }
+  }
+
+  async function ensureFeature(name) {
+    const key = String(name || '').trim();
+    const spec = featureSpecs[key];
+    if (!spec) throw new Error('Neznámá RaK feature skupina: ' + key);
+    if (isFeatureReady(key)) return key;
+    if (featurePromises.has(key)) return featurePromises.get(key);
+
+    featureState[key] = 'loading';
+    const promise = (async () => {
+      try {
+        for (const dependency of spec.dependencies) await ensureFeature(dependency);
+        await loadFiles(spec.files);
+        featureState[key] = 'ready';
+        afterFeatureReady(key);
+        try { window.dispatchEvent(new CustomEvent('rak:feature-ready', { detail: { feature: key, at: Date.now() } })); } catch (err) {}
+        return key;
+      } catch (err) {
+        featureState[key] = 'error';
+        featurePromises.delete(key);
+        throw err;
+      }
+    })();
+    featurePromises.set(key, promise);
+    return promise;
+  }
+
+  function handleFeatureLoadError(error, feature) {
+    console.error('RaK feature load failed', feature, error);
+    try {
+      alert('Nepodařilo se načíst část aplikace' + (feature ? ' (' + feature + ')' : '') + '. Zkontroluj připojení a zkus to znovu.');
+    } catch (err) {}
+  }
+
+  window.rakEnsureFeature = ensureFeature;
+  window.rakIsFeatureReady = isFeatureReady;
+  window.rakFeatureForPage = featureForPage;
+  window.rakEnsureFeatureForPage = function rakEnsureFeatureForPage(pageId) {
+    const feature = featureForPage(pageId);
+    return feature ? ensureFeature(feature) : Promise.resolve('startup');
+  };
+  window.rakHandleFeatureLoadError = handleFeatureLoadError;
+  window.getRakBootV2Status = function getRakBootV2Status() {
+    const now = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
+    return {
+      ok: true,
+      enabled: RAK_BOOT_V2_ENABLED,
+      version: RAK_MODULE_CACHE_VERSION,
+      startupReady: !!window.__rakBootV2StartupReady,
+      startupReadyMs: Number(window.__rakBootV2StartupReadyMs || 0),
+      elapsedMs: Math.max(0, Math.round(now - bootStartedAt)),
+      loadedModuleCount: modulePromises.size,
+      features: Object.keys(featureSpecs).reduce((out, key) => {
+        out[key] = featureState[key] || 'deferred';
+        return out;
+      }, {}),
+      startupFiles: startupFiles.slice(),
+      featureFileCounts: Object.fromEntries(Object.entries(featureSpecs).map(([key, spec]) => [key, spec.files.length]))
+    };
+  };
 
   try {
     if (window.__rakModuleReadinessRegistry) {
-      window.__rakModuleReadinessRegistry.expected = ['module-readiness.js', 'rak-namespace.js', 'rak-audit-baseline.js', 'rak-runtime-health.js', 'rak-storage-sync-audit.js', 'rak-boot-sequence-audit.js', 'rak-export-release-audit.js', 'rak-dom-action-audit.js', 'rak-supabase-client-audit.js', 'rak-release-ops-audit.js', 'rak-appsec-privacy-audit.js', 'rak-release-gates.js', 'rak-dom-security-hardening.js', 'rak-due-diligence-progress.js', 'rak-performance-ci-audit.js', 'rak-mobile-smoke-audit.js', 'app.js', 'data.js'].concat(files.slice());
+      window.__rakModuleReadinessRegistry.expected = ['module-readiness.js', 'rak-namespace.js', 'rak-audit-baseline.js', 'rak-runtime-health.js', 'rak-dom-security-hardening.js', 'app.js', 'data.js']
+        .concat(criticalFiles, startupFiles);
       if (typeof initialRotationData !== 'undefined' && typeof window.rakMarkModuleReady === 'function') {
         window.rakMarkModuleReady('data.js', 'loaded', { source: 'index-preload' });
       }
     }
   } catch (err) {}
 
-  const loadScript = (src) => new Promise((resolve, reject) => {
-    const script = document.createElement("script");
-    const started = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
-    if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleReady(src, 'loading', { source: 'dynamic-loader' });
-    script.src = src + "?v=" + encodeURIComponent(RAK_MODULE_CACHE_VERSION);
-    script.async = false;
-    script.onload = () => {
-      const ended = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
-      if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleReady(src, 'loaded', { source: 'dynamic-loader', durationMs: ended - started });
-      resolve();
-    };
-    script.onerror = () => {
-      const ended = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
-      const error = new Error(`Nepodařilo se načíst ${src}`);
-      if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleReady(src, 'error', { source: 'dynamic-loader', durationMs: ended - started, error: error.message });
-      reject(error);
-    };
-    document.head.appendChild(script);
-  });
-
+  // Přihlášení zůstává blokující a bezpečné.
   for (const file of criticalFiles) await loadScript(file);
 
   try { if (typeof window.rakUserProfileBootstrap === 'function') window.rakUserProfileBootstrap(); } catch (err) { console.warn('RaK user profile bootstrap failed', err); }
@@ -139,17 +400,19 @@ try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleR
     });
   }
 
-  await Promise.all(deferredFiles.map(loadScript));
+  await loadFiles(startupFiles);
 
+  try { if (typeof restoreInputs === 'function') restoreInputs(); } catch (err) {}
   try {
     const storedProfile = typeof window.rakUserProfileGet === 'function' ? window.rakUserProfileGet() : null;
-    if (storedProfile && typeof window.rakUserProfileApplyToRuntime === 'function') {
-      window.rakUserProfileApplyToRuntime(storedProfile);
-    }
+    if (storedProfile && typeof window.rakUserProfileApplyToRuntime === 'function') window.rakUserProfileApplyToRuntime(storedProfile);
     if (typeof window.rakUserProfileRefreshMenu === 'function') window.rakUserProfileRefreshMenu();
   } catch (err) { console.warn('RaK user profile runtime restore failed', err); }
 
-  if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleReady('boot-loader', 'ready', { source: 'dynamic-loader' });
+  const startupReadyAt = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
+  window.__rakBootV2StartupReady = true;
+  window.__rakBootV2StartupReadyMs = Math.max(0, Math.round(startupReadyAt - bootStartedAt));
+  if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleReady('boot-loader', 'ready', { source: 'boot-v2', startupReadyMs: window.__rakBootV2StartupReadyMs });
 
   try {
     const DEV_RESET_KEY = 'rak_dev_pwa_prompt_reset_build';
@@ -168,23 +431,25 @@ try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleR
   if (typeof installDelegatedAppActions === 'function') installDelegatedAppActions();
 
   try {
-    if (typeof window.__rotaceBootHomeRefreshLate === 'function') window.__rotaceBootHomeRefreshLate();
+    if (typeof installRakHomeBootSequence === 'function') installRakHomeBootSequence();
+    else if (typeof window.__rotaceBootHomeRefreshLate === 'function') window.__rotaceBootHomeRefreshLate();
     else if (typeof bootHomeRefresh === 'function') bootHomeRefresh();
-  } catch (err) { console.warn('Post-load boot failed', err); }
+  } catch (err) { console.warn('Post-load Home boot failed', err); }
 
-  try { if (typeof runRakBootSelfTest === 'function') window.runRakBootSelfTest ? window.runRakBootSelfTest() : runRakBootSelfTest(); } catch (err) { console.warn('Boot self-test selhal', err); }
+  // Online data se dotáhnou po prvním interaktivním Home, ale už neblokují jeho zobrazení.
+  const startSync = () => ensureFeature('sync').catch((err) => console.warn('Boot v2 sync preload failed', err));
+  if (typeof requestIdleCallback === 'function') requestIdleCallback(startSync, { timeout: 700 });
+  else setTimeout(startSync, 120);
 
   const runIdleAudits = () => {
     Promise.all(idleAuditFiles.map(loadScript)).then(() => {
-      // Diagnostické/release moduly zůstávají dostupné, ale neblokují první
-      // interaktivní start aplikace. Legacy audit funkce automaticky nespouštíme.
       try { window.__rakIdleAuditsReady = true; } catch (err) {}
     }).catch((err) => {
       console.warn('Idle audit moduly se nepodařilo načíst', err);
     });
   };
-  if (typeof requestIdleCallback === 'function') requestIdleCallback(runIdleAudits, { timeout: 1800 });
-  else setTimeout(runIdleAudits, 900);
+  if (typeof requestIdleCallback === 'function') requestIdleCallback(runIdleAudits, { timeout: 5000 });
+  else setTimeout(runIdleAudits, 3200);
 })().catch(err => {
   console.error(err);
   alert("Nepodařilo se načíst aplikační skripty: " + (err && err.message ? err.message : String(err)));

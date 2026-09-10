@@ -1,57 +1,78 @@
-/* Připraveno pro další větší balík – kompaktnější Přehled: jména × skupiny strojů. */
+/* RaK v1.5.87 – kompaktní přehled jména × skupiny strojů + drobný update-logo polish. */
 
 html body .adminRotationGeneratorMachineSummary .adminRotationGeneratorMachineSummaryTable.appMenuTable.appMenuAdminTable {
-  width: 464px !important;
-  min-width: 464px !important;
-  max-width: 464px !important;
-  table-layout: fixed !important;
+  width:452px !important;
+  min-width:452px !important;
+  max-width:452px !important;
+  table-layout:fixed !important;
 }
 
-/* Jméno: přibližně o 40 % užší. */
+/* Jméno: skutečně přibližně o 40 % užší než původní ~100px sloupec. */
 html body .adminRotationGeneratorMachineSummary .adminRotationGeneratorMachineSummaryTable.appMenuTable.appMenuAdminTable th:first-child,
-html body .adminRotationGeneratorMachineSummary .adminRotationGeneratorMachineSummaryTable.appMenuTable.appMenuAdminTable td:first-child {
-  box-sizing: border-box !important;
-  width: 72px !important;
-  min-width: 72px !important;
-  max-width: 72px !important;
-  padding-left: 4px !important;
-  padding-right: 4px !important;
-  overflow: hidden !important;
-  text-overflow: ellipsis !important;
-  white-space: nowrap !important;
+html body .adminRotationGeneratorMachineSummary .adminRotationGeneratorMachineSummaryTable.appMenuTable.appMenuAdminTable td:first-child,
+html body #appMenuBody[data-admin-view="rotation"] #rakRuntimeAdminMachineSummary .adminRotationGeneratorMachineSummary .adminRotationGeneratorMachineSummaryTable.appMenuTable.appMenuAdminTable th:first-child,
+html body #appMenuBody[data-admin-view="rotation"] #rakRuntimeAdminMachineSummary .adminRotationGeneratorMachineSummary .adminRotationGeneratorMachineSummaryTable.appMenuTable.appMenuAdminTable td:first-child {
+  box-sizing:border-box !important;
+  width:60px !important;
+  min-width:60px !important;
+  max-width:60px !important;
+  padding-left:3px !important;
+  padding-right:3px !important;
+  overflow:hidden !important;
+  text-overflow:ellipsis !important;
+  white-space:nowrap !important;
+  background-color:#1b2020 !important;
+  background:#1b2020 !important;
+  background:color-mix(in srgb, var(--rakBgBase,#151822) 88%, var(--rakThemeAccentStrong,#7cff7c) 12%) !important;
 }
 
-/* TO + MO ponechány o něco širší kvůli čitelnosti. */
+/* TO + MO zůstávají čitelné, ale kompaktní. */
 html body .adminRotationGeneratorMachineSummary .adminRotationGeneratorMachineSummaryTable.appMenuTable.appMenuAdminTable th:nth-child(2),
 html body .adminRotationGeneratorMachineSummary .adminRotationGeneratorMachineSummaryTable.appMenuTable.appMenuAdminTable td:nth-child(2),
 html body .adminRotationGeneratorMachineSummary .adminRotationGeneratorMachineSummaryTable.appMenuTable.appMenuAdminTable th:nth-child(3),
 html body .adminRotationGeneratorMachineSummary .adminRotationGeneratorMachineSummaryTable.appMenuTable.appMenuAdminTable td:nth-child(3) {
-  box-sizing: border-box !important;
-  width: 46px !important;
-  min-width: 46px !important;
-  max-width: 46px !important;
-  padding-left: 2px !important;
-  padding-right: 2px !important;
-  text-align: center !important;
-  white-space: nowrap !important;
+  box-sizing:border-box !important;
+  width:46px !important;
+  min-width:46px !important;
+  max-width:46px !important;
+  padding-left:2px !important;
+  padding-right:2px !important;
+  text-align:center !important;
+  white-space:nowrap !important;
 }
 
-/* Strojové sloupce: přibližně o 50 % užší. */
+/* Strojové sloupce: přibližně o 50 % užší než původní široké sloupce. */
 html body .adminRotationGeneratorMachineSummary .adminRotationGeneratorMachineSummaryTable.appMenuTable.appMenuAdminTable th:nth-child(n+4),
 html body .adminRotationGeneratorMachineSummary .adminRotationGeneratorMachineSummaryTable.appMenuTable.appMenuAdminTable td:nth-child(n+4) {
-  box-sizing: border-box !important;
-  width: 50px !important;
-  min-width: 50px !important;
-  max-width: 50px !important;
-  padding-left: 2px !important;
-  padding-right: 2px !important;
-  text-align: center !important;
-  white-space: nowrap !important;
+  box-sizing:border-box !important;
+  width:50px !important;
+  min-width:50px !important;
+  max-width:50px !important;
+  padding-left:2px !important;
+  padding-right:2px !important;
+  text-align:center !important;
+  white-space:nowrap !important;
 }
 
-/* Přetlačí i ochranu min-width:620px ve stabilizační runtime vrstvě administrace. */
+/* Přetlačí i runtime ochranu min-width:620px v administraci. */
 html body #appMenuBody[data-admin-view="rotation"] #rakRuntimeAdminMachineSummary .adminRotationGeneratorMachineSummary .adminRotationGeneratorMachineSummaryTable.appMenuTable.appMenuAdminTable {
-  width: 464px !important;
-  min-width: 464px !important;
-  max-width: 464px !important;
+  width:452px !important;
+  min-width:452px !important;
+  max-width:452px !important;
+  table-layout:fixed !important;
+}
+
+/* Logo nabídky aktualizace: o kousek větší, stále celé díky contain. */
+html body .rakUpdateToast .rakUpdateToastBadge {
+  padding:3px !important;
+}
+html body .rakUpdateToast .rakUpdateToastBadge .rakRuntimeUpdateLogo {
+  width:35px !important;
+  height:35px !important;
+  min-width:35px !important;
+  min-height:35px !important;
+  max-width:35px !important;
+  max-height:35px !important;
+  object-fit:contain !important;
+  object-position:center !important;
 }

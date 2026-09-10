@@ -1,8 +1,8 @@
-// RaK v1.5.86 – lightweight mobile layout regression guard.
+// RaK v1.5.87 – lightweight mobile layout regression guard.
 (function installRakMobileLayoutGuard() {
   'use strict';
 
-  const BUILD = '1.5.86';
+  const BUILD = '1.5.87';
   const TOLERANCE_PX = 3;
   const history = [];
   let scheduled = false;
