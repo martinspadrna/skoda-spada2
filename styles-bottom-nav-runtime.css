@@ -1,0 +1,48 @@
+/* v.1.5 (792): Globální spodní lišta pevně ukotvená dole + obsah vždy nad ní. */
+/* RaK v1.5.77 – owner: globální spodní navigace / fixed bottom runtime */
+:root{
+  --bottom-nav-h:64px;
+  --rak-fixed-bottom-space:calc(var(--bottom-nav-h, 64px) + env(safe-area-inset-bottom) + 12px);
+}
+
+
+
+
+
+.bottomNavScroll,
+.bottomNavInner{
+  overflow:visible !important;
+}
+
+
+@media (max-width:390px){
+  .bottomNav{
+    bottom:0 !important;
+    padding:3px 4px max(5px, env(safe-area-inset-bottom)) !important;
+  }
+  @supports (width:100dvw){
+    .bottomNav{width:min(760px, calc(100dvw - 6px - env(safe-area-inset-left) - env(safe-area-inset-right))) !important;}
+  }
+  
+}
+
+
+
+/* v.1.5 (793): Spodní lišta opravdu dole bez plavání; obsah má vlastní rezervu nad ní. */
+:root{
+  --bottom-nav-h:56px;
+  --rak-fixed-bottom-space:calc(var(--bottom-nav-h, 56px) + 10px);
+}
+html{
+  height:100% !important;
+}
+body{
+  margin:0 !important;
+  overflow-x:hidden !important;
+}
+.bottomNav{
+  min-width:0 !important;
+  contain:layout paint style !important;
+  will-change:auto !important;
+  touch-action:manipulation !important;
+}
