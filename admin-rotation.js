@@ -605,6 +605,31 @@ function adminRotationValidateMonthRules(month, monthKey, options) {
     }
   }
 
+  // v1.5.78: ruční editor hlídá i stejného člověka samotného na frézkách dvě směny po sobě.
+  // Generátor tímto krokem neměníme; tohle varování vzniká jen při skutečné ruční změně před uložením.
+  if (opts.source === 'manual-save') {
+    const mfkf06IdxManual = adminRotationGeneratorMachineIndex(SOFT_MACHINE_HEADERS, 'MFKF06');
+    const mfkf10IdxManual = adminRotationGeneratorMachineIndex(SOFT_MACHINE_HEADERS, 'MFKF10');
+    let previousSoloMill = null;
+    softRows.forEach((row, rowIdx) => {
+      const dateLabel = String(row && row.date || '').trim();
+      if (!dateLabel) return;
+      const cells = Array.isArray(row && row.cells) ? row.cells : [];
+      const mfkf06 = adminRotationCanonicalName(cells[mfkf06IdxManual], knownNames);
+      const mfkf10 = adminRotationCanonicalName(cells[mfkf10IdxManual], knownNames);
+      const soloName = !mfkf06 && mfkf10 ? mfkf10 : '';
+      if (previousSoloMill && soloName && previousSoloMill.name === soloName) {
+        addIssue(
+          'error',
+          'consecutive-solo-mill',
+          String(previousSoloMill.dateLabel) + ' -> ' + dateLabel + ': ' + soloName + ' nesmí být sám na frézkách dvě směny po sobě.',
+          ''
+        );
+      }
+      previousSoloMill = soloName ? { name: soloName, dateLabel, rowIdx } : null;
+    });
+  }
+
   adminRotationGeneratorFindConsecutiveTnksIssues(month, monthKey, knownNames).forEach((issue) => {
     const prevDate = hardRows[issue.previousRowIdx] && hardRows[issue.previousRowIdx].date ? hardRows[issue.previousRowIdx].date : '';
     const currentDate = hardRows[issue.rowIdx] && hardRows[issue.rowIdx].date ? hardRows[issue.rowIdx].date : '';

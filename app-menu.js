@@ -213,6 +213,7 @@ function bindAppMenuHandlers(body) {
   body.addEventListener('change', (event) => {
     const target = event.target;
     if (!target || typeof target.matches !== 'function') return;
+    if (target.matches('[data-press-rotation-date]') && typeof app !== 'undefined' && app) app.adminRotationDirty = true;
     if (target.matches('#rakFullSettingsBackupFile')) {
       void handleFullSettingsBackupFileSelection(target, body);
       return;
@@ -1440,19 +1441,40 @@ function bindAppMenuHandlers(body) {
         if (typeof adminHandleRotationGeneratorWizardAction === 'function' && adminHandleRotationGeneratorWizardAction(adminAction, target, body)) return;
       }
       if (adminAction === 'save-rotation') {
-        const result = await saveAdminRotationFromDom(monthKey);
+        const isManualEdit = !!(typeof app !== 'undefined' && app && app.adminRotationDirty === true);
+        let saveOptions = null;
+        if (isManualEdit) {
+          const manualMonth = readAdminRotationFromDom(monthKey);
+          const overrideState = adminRotationBuildManualRuleOverrideState(monthKey, manualMonth);
+          if (overrideState.blockingIssues.length && !adminRotationConfirmManualRuleOverride(overrideState)) {
+            const cancelledStatus = document.getElementById('adminOnlineSaveStatus') || document.getElementById('adminRotationDraftStatus');
+            if (cancelledStatus) cancelledStatus.textContent = 'Uložení zrušeno · rozepsané změny zůstaly v editoru.';
+            return;
+          }
+          saveOptions = {
+            normalizedMonth: overrideState.normalized,
+            ruleCheck: overrideState.ruleCheck,
+            manualOverride: true,
+            allowRuleViolations: true,
+            manualOverrideIssues: overrideState.blockingIssues
+          };
+        }
+        const result = await saveAdminRotationFromDom(monthKey, saveOptions);
         const saveResult = result && result.saveResult ? result.saveResult : null;
         const ruleWarnings = result && result.ruleCheck && Array.isArray(result.ruleCheck.issues)
           ? result.ruleCheck.issues.filter((issue) => issue && issue.severity === 'warn')
           : [];
+        const manualOverrideIssues = result && Array.isArray(result.manualOverrideIssues) ? result.manualOverrideIssues : [];
         const baseText = saveResult && saveResult.ok === true
           ? (saveResult.queued
               ? 'Rozpis uložený lokálně ✓ · po připojení se synchronizuje'
               : ('Rozpis uložený online ✓ · měsíců: ' + String(saveResult.months || 0) + ' · řádků: ' + String(saveResult.entries || 0)))
           : 'Rozpis se nepodařilo uložit online.';
-        const statusText = ruleWarnings.length && typeof adminRotationFormatRuleIssues === 'function'
-          ? baseText + ' · Kontrola: ' + adminRotationFormatRuleIssues(ruleWarnings)
-          : baseText;
+        const statusText = manualOverrideIssues.length && typeof adminRotationFormatRuleIssues === 'function'
+          ? baseText + ' · Uloženo přes varování: ' + adminRotationFormatRuleIssues(manualOverrideIssues)
+          : (ruleWarnings.length && typeof adminRotationFormatRuleIssues === 'function'
+              ? baseText + ' · Kontrola: ' + adminRotationFormatRuleIssues(ruleWarnings)
+              : baseText);
         if (saveResult && saveResult.ok === true) renderAdminMenuBody(body, currentView);
         const statusEl = document.getElementById('adminOnlineSaveStatus');
         if (statusEl) statusEl.textContent = saveResult && saveResult.ok === true

@@ -9,6 +9,9 @@ const appJs = read('app.js');
 const qrJs = read('qr.js');
 const statsJs = read('stats.js');
 const dashboardJs = read('dashboard.js');
+const adminRotationJsV1578 = read('admin-rotation.js');
+const adminRotationEditorJsV1578 = read('admin-rotation-editor.js');
+const appMenuJsV1578 = read('app-menu.js');
 const swJs = read('sw.js');
 const indexHtml = read('index.html');
 const stylesOverridesLegacyEarlyCss = read('styles-overrides-legacy-early.css');
@@ -504,5 +507,14 @@ for (const deadGameCssMarker of ['#games', 'body.gamesOpen', 'body.gamesCompactM
 }
 assert(!/\.(?:games|game|ttt|snake|arcade|ships|flap|gomoku)[A-Za-z0-9_-]*\b/i.test(legacyCssWithoutComments), 'Po odstranění Her zůstal herní legacy CSS selector');
 
+
+assert(adminRotationJsV1578.includes("opts.source === 'manual-save'"), 'v1.5.78 solo-frézka kontrola musí být jen pro ruční uložení');
+assert(adminRotationJsV1578.includes("'consecutive-solo-mill'"), 'v1.5.78 chybí kontrola 2× sám na frézkách');
+assert(adminRotationEditorJsV1578.includes('function adminRotationBuildManualRuleOverrideState'), 'v1.5.78 chybí porovnání ručních porušení proti uloženému rozpisu');
+assert(adminRotationEditorJsV1578.includes('function adminRotationConfirmManualRuleOverride'), 'v1.5.78 chybí potvrzení ruční výjimky');
+assert(adminRotationEditorJsV1578.includes('opts.allowRuleViolations !== true'), 'v1.5.78 save musí zůstat přísný bez explicitní ruční výjimky');
+assert(appMenuJsV1578.includes('const isManualEdit = !!'), 'v1.5.78 potvrzení musí být navázané jen na ruční editaci');
+assert(appMenuJsV1578.includes('allowRuleViolations: true'), 'v1.5.78 ruční potvrzení musí umět explicitně povolit uložení');
+assert(appMenuJsV1578.includes("target.matches('[data-press-rotation-date]')") && appMenuJsV1578.includes('app.adminRotationDirty = true'), 'v1.5.78 změna rotace TNKS01/TPKW01 musí označit editor jako ručně změněný');
 
 console.log('[critical-runtime-smoke] OK navigation+rotation+food baseline locked; stable qr.js boot; extended diagnostics idle; version sync ' + packageJson.version + '; Games removed; XLSX+JSZip lazy; Supabase eager; DOM security eager');

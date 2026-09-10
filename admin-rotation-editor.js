@@ -845,13 +845,51 @@ function readAdminRotationFromDom(monthKey) {
 }
 
 
-async function saveAdminRotationFromDom(monthKey) {
+function adminRotationRuleIssueSignature(issue) {
+  const item = issue && typeof issue === 'object' ? issue : {};
+  return [item.severity, item.type, item.message, item.detail].map((value) => String(value || '').trim()).join('\u0001');
+}
+
+function adminRotationBuildManualRuleOverrideState(monthKey, normalizedMonth) {
+  const normalized = normalizedMonth || readAdminRotationFromDom(monthKey);
+  const ruleCheck = adminRotationValidateMonthRules(normalized, monthKey, { source: 'manual-save' });
+  const baseline = app.rotation && app.rotation.months ? app.rotation.months[monthKey] : null;
+  const baselineCheck = baseline
+    ? adminRotationValidateMonthRules(baseline, monthKey, { source: 'manual-save' })
+    : { ok: true, issues: [] };
+  const baselineKeys = new Set((Array.isArray(baselineCheck.issues) ? baselineCheck.issues : []).map(adminRotationRuleIssueSignature));
+  const newIssues = (Array.isArray(ruleCheck.issues) ? ruleCheck.issues : [])
+    .filter((issue) => !baselineKeys.has(adminRotationRuleIssueSignature(issue)));
+  const blockingIssues = newIssues.filter((issue) => issue && issue.severity === 'error');
+  return { normalized, ruleCheck, baselineCheck, newIssues, blockingIssues };
+}
+
+function adminRotationConfirmManualRuleOverride(state) {
+  const blocking = state && Array.isArray(state.blockingIssues) ? state.blockingIssues : [];
+  if (!blocking.length) return true;
+  const limit = 10;
+  const lines = blocking.slice(0, limit).map((issue, idx) => String(idx + 1) + '. ' + String(issue && issue.message || 'Porušení pravidla'));
+  if (blocking.length > limit) lines.push('… a dalších ' + String(blocking.length - limit) + ' porušení.');
+  const text = [
+    'Ruční změna porušuje pravidla rozpisu:',
+    '',
+    ...lines,
+    '',
+    'Chceš rozpis přesto uložit?',
+    '',
+    'OK = Uložit i přes varování',
+    'Zrušit = Zpět a opravit'
+  ].join('\n');
+  return window.confirm(text);
+}
+
+async function saveAdminRotationFromDom(monthKey, options) {
   if (!monthKey) throw new Error('Chybí měsíc.');
+  const opts = options || {};
   const previousRotationSnapshot = app.rotation ? JSON.parse(JSON.stringify(app.rotation)) : null;
-  const fallback = app.rotation && app.rotation.months ? app.rotation.months[monthKey] : null;
-  const normalized = readAdminRotationFromDom(monthKey);
-  const ruleCheck = adminRotationValidateMonthRules(normalized, monthKey, { source: 'save' });
-  if (!ruleCheck.ok) {
+  const normalized = opts.normalizedMonth || readAdminRotationFromDom(monthKey);
+  const ruleCheck = opts.ruleCheck || adminRotationValidateMonthRules(normalized, monthKey, { source: opts.manualOverride ? 'manual-save' : 'save' });
+  if (!ruleCheck.ok && opts.allowRuleViolations !== true) {
     throw new Error('Rozpis nejde uložit: ' + adminRotationFormatRuleIssues(ruleCheck.issues.filter((issue) => issue.severity === 'error')));
   }
   const candidateRotation = app.rotation ? JSON.parse(JSON.stringify(app.rotation)) : { months: {} };
@@ -866,13 +904,17 @@ async function saveAdminRotationFromDom(monthKey) {
         try { await createRotationSaveBackup(previousRotationSnapshot, monthKey); } catch (err) {}
       }
       if (typeof rakAdminLogChange === 'function') {
-        try { await rakAdminLogChange('Rozpis', 'Uložen měsíc ' + String(monthKey || '')); } catch (err) {}
+        try {
+          const overrideCount = Array.isArray(opts.manualOverrideIssues) ? opts.manualOverrideIssues.length : 0;
+          await rakAdminLogChange('Rozpis', 'Uložen měsíc ' + String(monthKey || '') + (overrideCount ? ' · ruční výjimky: ' + String(overrideCount) : ''));
+        } catch (err) {}
       }
     }
   }
+  const manualOverrideIssues = Array.isArray(opts.manualOverrideIssues) ? opts.manualOverrideIssues.slice() : [];
   if (!saveResult || saveResult.ok === false) {
     if (typeof app !== 'undefined' && app) app.adminRotationDirty = true;
-    return { normalized, saveResult: saveResult || { ok: false, reason: 'admin-required' }, ruleCheck, preservedDraft: true };
+    return { normalized, saveResult: saveResult || { ok: false, reason: 'admin-required' }, ruleCheck, manualOverrideIssues, preservedDraft: true };
   }
   app.rotation = normalizedRotation;
   app.selectedMonth = monthKey;
@@ -884,9 +926,8 @@ async function saveAdminRotationFromDom(monthKey) {
   try {
     if (typeof adminRotationGeneratorClearPendingDraft === 'function') adminRotationGeneratorClearPendingDraft(monthKey);
   } catch (err) {}
-  return { normalized, saveResult, ruleCheck };
+  return { normalized, saveResult, ruleCheck, manualOverrideIssues };
 }
-
 
 
 function adminShowRotationSelectedRemove(input) {
