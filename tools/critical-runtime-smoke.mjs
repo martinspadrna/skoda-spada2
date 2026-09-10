@@ -16,11 +16,13 @@ const stylesOverridesLegacyMidCss = read('styles-overrides-legacy-mid.css');
 const stylesOverridesLegacyLateCss = read('styles-overrides-legacy-late.css');
 const stylesViewportPolishCss = read('styles-viewport-polish.css');
 const stylesReleasePolishCss = read('styles-release-polish.css');
+const stylesThemePolishCss = read('styles-theme-polish.css');
+const stylesThemePropagationCss = read('styles-theme-propagation.css');
 const stylesRotationTasksCss = read('styles-rotation-tasks.css');
 const stylesMenuPolishCss = read('styles-menu-polish.css');
 const stylesAdminPolishCss = read('styles-admin-polish.css');
 const stylesStatsPolishCss = read('styles-stats-polish.css');
-const stylesThemePropagationCss = read('styles-theme-propagation.css');
+
 const dashboardFitCss = read('styles-dashboard-fit.css');
 const dashboardPolishCss = read('styles-dashboard-polish.css');
 const dashboardLegacyCleanupTargetsV158 = [
@@ -82,6 +84,11 @@ assert(stylesViewportPolishCss.includes('#rotace.page.active #rotaceNamesPanel.a
 assert(stylesReleasePolishCss.includes('#rotace.page.active #rotaceNamesPanel.active #namesGrid'), 'Release polish musí dál vlastnit Rotace names dock');
 assert(stylesRotationTasksCss.includes('.rotaceShiftTaskCard'), 'Rotation task stylesheet musí dál vlastnit denní úkoly Rotace');
 assert(legacyRotationCssV162.length > 100000, 'v1.5.62 nesmí omylem vyprázdnit legacy CSS');
+
+assert(stylesOverridesLegacyEarlyCss.includes('RaK v1.5.63 – proven theme/background legacy dedupe'), 'Chybí v1.5.63 theme cleanup marker');
+assert(stylesThemePolishCss.includes('--rakThemeAccentStrong'), 'Theme polish musí dál vlastnit theme proměnné');
+assert(stylesThemePolishCss.includes('background:var(--rakAppBackground'), 'Theme polish musí dál vlastnit app background');
+assert(stylesThemePropagationCss.length > 500, 'Theme propagation owner nesmí zmizet');
 const bootSelfTest = read('app-boot-selftest.js');
 const adminRotationJs = read('admin-rotation.js');
 const adminRotationOvertimeJs = read('admin-rotation-overtime.js');

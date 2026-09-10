@@ -1,3 +1,6 @@
+/* RaK v1.5.63 – proven theme/background legacy dedupe.
+   Cleanup je omezený na :root/html/body a jejich stavové varianty.
+   Dashboard, Rotace, menu, admin, karty a další komponenty jsou záměrně mimo scope. */
 /* RaK v1.5.62 – proven Rotace legacy dedupe + inventory.
    Cleanup je omezený na uživatelskou Rotaci (#rotace/#rotaceNamesPanel/#namesGrid/.rotace*/.rotation*).
    Admin Rozpisy jsou záměrně vyloučené. Deklarace se mažou jen při přesném selectoru,
@@ -2326,9 +2329,6 @@ body.lowEndDevice textarea{
 
 /* v.1.1 (541) – průhlednější iOS glass polish napříč appkou bez změny rozměrů/layoutu. */
 :root{
-  --rakGlassPanelBg:linear-gradient(180deg, rgba(255,255,255,.105), rgba(255,255,255,.026)), rgba(8,14,12,.34);
-  --rakGlassCardBg:linear-gradient(180deg, rgba(255,255,255,.092), rgba(255,255,255,.022)), rgba(9,15,12,.30);
-  --rakGlassSoftBg:linear-gradient(180deg, rgba(255,255,255,.075), rgba(255,255,255,.018)), rgba(9,15,12,.24);
   --rakGlassStroke:rgba(255,255,255,.135);
   --rakGlassStrokeSoft:rgba(255,255,255,.10);
   --rakGlassBlur:28px;
@@ -2416,9 +2416,6 @@ body.lowEndDevice .bottomNavBtn{
 
 /* v.1.1 (542) – další bezpečný krok iOS glass polish: průhlednější sklo + silnější blur bez změny layoutu. */
 :root{
-  --rakGlassPanelBg:linear-gradient(180deg, rgba(255,255,255,.095), rgba(255,255,255,.020)), rgba(8,14,12,.255);
-  --rakGlassCardBg:linear-gradient(180deg, rgba(255,255,255,.082), rgba(255,255,255,.018)), rgba(9,15,12,.225);
-  --rakGlassSoftBg:linear-gradient(180deg, rgba(255,255,255,.065), rgba(255,255,255,.014)), rgba(9,15,12,.195);
   --rakGlassStroke:rgba(255,255,255,.155);
   --rakGlassStrokeSoft:rgba(255,255,255,.112);
   --rakGlassBlur:32px;
@@ -2487,9 +2484,6 @@ body.lowEndDevice .appMenuSettingsCard{
 
 /* v.1.1 (543) – další jemná vrstva iOS glass: hodně průhledné, rozmazané pozadí bez změny rozměrů. */
 :root{
-  --rakGlassPanelBg:linear-gradient(180deg, rgba(255,255,255,.086), rgba(255,255,255,.016)), rgba(7,13,11,.205);
-  --rakGlassCardBg:linear-gradient(180deg, rgba(255,255,255,.074), rgba(255,255,255,.014)), rgba(8,14,12,.182);
-  --rakGlassSoftBg:linear-gradient(180deg, rgba(255,255,255,.058), rgba(255,255,255,.012)), rgba(8,14,12,.155);
   --rakGlassStroke:rgba(255,255,255,.175);
   --rakGlassStrokeSoft:rgba(255,255,255,.125);
   --rakGlassBlur:36px;
@@ -2629,9 +2623,7 @@ body.lowEndDevice #brusy .indexGrid .bbtn{
   --rakBgAccent:rgba(56,189,248,.24);
 }
 
-body{
-  background-attachment:fixed !important;
-}
+
 body::before{
   background:var(--rakAppBackgroundOverlay, transparent) !important;
   opacity:1 !important;
@@ -2652,7 +2644,6 @@ body::after{
 }
 body.lightweightMode,
 body.lowEndDevice{
-  background:var(--rakAppBackgroundLite, var(--bg)) !important;
   background-attachment:scroll !important;
 }
 body.lightweightMode::before,
@@ -2901,12 +2892,7 @@ body:not(.lightweightMode):not(.lowEndDevice) .foodScheduleWindowLine--nextOpen{
   border:1px solid rgba(255,255,255,.22) !important;
   color:inherit !important;
 }
-body.lightweightMode .foodScheduleNowBox,
-body.lowEndDevice .foodScheduleNowBox{
-  backdrop-filter:none !important;
-  -webkit-backdrop-filter:none !important;
-  box-shadow:0 10px 22px rgba(0,0,0,.16) !important;
-}
+
 @media (max-width:420px){
   .foodScheduleNowBox{padding:11px 12px !important;}
   .foodScheduleNowMain{font-size:14px !important;}
@@ -2979,20 +2965,8 @@ body.lightweightMode,
 body.lowEndDevice{
   --rakGlassBlur:0px !important;
   --rakGlassBlurSoft:0px !important;
-  --rakGlassPanelBg:linear-gradient(180deg, rgba(255,255,255,.070), rgba(255,255,255,.018)), rgba(8,14,12,.72) !important;
-  --rakGlassCardBg:linear-gradient(180deg, rgba(255,255,255,.060), rgba(255,255,255,.014)), rgba(8,14,12,.66) !important;
-  --rakGlassSoftBg:linear-gradient(180deg, rgba(255,255,255,.050), rgba(255,255,255,.012)), rgba(8,14,12,.58) !important;
 }
-body.lightweightMode *,
-body.lightweightMode *::before,
-body.lightweightMode *::after,
-body.lowEndDevice *,
-body.lowEndDevice *::before,
-body.lowEndDevice *::after{
-  animation:none !important;
-  transition:none !important;
-  scroll-behavior:auto !important;
-}
+
 body.lightweightMode .dashboardShell,
 body.lowEndDevice .dashboardShell,
 body.lightweightMode .dashboardHeroCard,
@@ -3816,7 +3790,6 @@ body.ladaMode *::after{
   transition-duration:0s !important;
   animation-duration:.001ms !important;
   animation-iteration-count:1 !important;
-  scroll-behavior:auto !important;
 }
 body.ladaMode img,
 body.ladaMode svg,
@@ -3890,7 +3863,6 @@ body.lowEndDevice *{
   transition-duration:0s !important;
   animation-duration:0s !important;
   animation-delay:0s !important;
-  scroll-behavior:auto !important;
 }
 
 body.ladaMode .dashboardHeroCard::before,

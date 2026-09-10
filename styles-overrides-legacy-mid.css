@@ -183,7 +183,6 @@ body.lowEndDevice{
 body.ladaMode *,
 body.lightweightMode *,
 body.lowEndDevice *{
-  scroll-behavior:auto !important;
   transition-duration:0s !important;
   transition-delay:0s !important;
   animation-duration:.001ms !important;
@@ -283,17 +282,7 @@ body.lowEndDevice .qrModalOverlay{
   box-shadow:none !important;
   filter:none !important;
 }
-body.ladaMode img,
-body.ladaMode canvas,
-body.ladaMode svg,
-body.lightweightMode img,
-body.lightweightMode canvas,
-body.lightweightMode svg,
-body.lowEndDevice img,
-body.lowEndDevice canvas,
-body.lowEndDevice svg{
-  filter:none !important;
-}
+
 body.ladaMode #home .dashboardCard,
 body.lightweightMode #home .dashboardCard,
 body.lowEndDevice #home .dashboardCard{

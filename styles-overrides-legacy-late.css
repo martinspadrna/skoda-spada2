@@ -216,11 +216,7 @@ body{
 #menu.page.active{
   padding-bottom:calc(var(--rak-fixed-bottom-space, 74px) + 8px) !important;
 }
-body.lightweightMode .bottomNav,
-body.lowEndDevice .bottomNav{
-  backdrop-filter:blur(8px) saturate(125%) !important;
-  -webkit-backdrop-filter:blur(8px) saturate(125%) !important;
-}
+
 
 @media (max-width:390px){
   :root{
@@ -523,7 +519,6 @@ body.lightweightMode .bottomNav,
 body.lowEndDevice .bottomNav{
   background:rgba(8,14,24,.38) !important;
   border-color:rgba(255,255,255,.03) !important;
-  box-shadow:0 -5px 16px rgba(0,0,0,.14) !important;
 }
 body.lightweightMode .bottomNavBtn.active::before,
 body.lowEndDevice .bottomNavBtn.active::before{
@@ -1087,10 +1082,7 @@ body.lowEndDevice .appMenuKeepaliveCard {
 body.lightweightMode .bottomNav,
 body.ladaMode .bottomNav{
   background:linear-gradient(180deg, #0b1410 0%, #070d0a 100%) !important;
-  -webkit-backdrop-filter:none !important;
-  backdrop-filter:none !important;
   border-color:rgba(124,255,124,.22) !important;
-  box-shadow:0 -6px 18px rgba(0,0,0,.34), inset 0 1px 0 rgba(255,255,255,.045) !important;
 }
 body.lightweightMode .bottomNavScroll,
 body.ladaMode .bottomNavScroll,
@@ -1222,9 +1214,7 @@ body.lowEndDevice #rotace.page.active #rotaceNamesPanel.active #namesGrid{
 /* v.1.5 (928) – Rotace: stabilní adaptivní dock jmen bez cuknutí při přepnutí. */
 :root{
   --rak-rotace-names-dock-gap:10px;
-  --rak-rotace-names-dock-bottom:calc(74px + env(safe-area-inset-bottom));
   --rak-rotace-names-dock-max-height:min(34dvh, 136px);
-  --rak-rotace-names-content-bottom:calc(var(--rak-rotace-names-dock-bottom) + var(--rak-rotace-names-dock-max-height) + 24px);
 }
 #rotace #rotaceNamesPanel.active{
   padding-bottom:var(--rak-rotace-names-content-bottom) !important;
@@ -1432,9 +1422,7 @@ body.ladaMode #home .dashboardCard::after{
 
 /* v.1.5 (930) – Rotace: stabilní dock bez doskoku + vrácená velikost panelů se jmény. */
 :root{
-  --rak-rotace-names-dock-bottom:calc(82px + env(safe-area-inset-bottom));
   --rak-rotace-names-dock-max-height:min(38dvh, 156px);
-  --rak-rotace-names-content-bottom:calc(var(--rak-rotace-names-dock-bottom) + var(--rak-rotace-names-dock-max-height) + 26px);
 }
 
 #rotace.page.active #rotaceNamesPanel.active #namesGrid{
