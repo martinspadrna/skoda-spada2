@@ -1,0 +1,23 @@
+/* RaK v1.5.66 – owner: Administrace → Reporty.
+   Obsah byl vytažen z čela styles-overrides-legacy-mid.css a zůstává na stejné cascade pozici.
+   Mrtvé Bomberman keyframes z původního historického bloku se nepřenášejí. */
+/* v.1.1 (693) - Administrace reportů + logické hry */
+#menu .adminReportsCard .adminReportsFolder{display:flex;flex-direction:column;gap:10px;}
+#menu .adminReportsToolbar{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:8px 0 4px;}
+#menu .adminReportsList{display:flex;flex-direction:column;gap:8px;max-height:52vh;overflow:auto;overscroll-behavior:contain;padding-right:2px;}
+#menu .adminReportItem{border:1px solid rgba(255,255,255,.12);border-radius:18px;background:rgba(255,255,255,.045);overflow:hidden;}
+#menu .adminReportSummary{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 12px;cursor:pointer;list-style:none;}
+#menu .adminReportSummary::-webkit-details-marker{display:none;}
+#menu .adminReportSummary span{display:flex;flex-direction:column;gap:2px;min-width:0;}
+#menu .adminReportSummary small{color:var(--muted);font-size:.78rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:220px;}
+#menu .adminReportStatus{font-size:.72rem;font-style:normal;border-radius:999px;padding:5px 8px;background:rgba(255,255,255,.08);white-space:nowrap;}
+#menu .adminReportStatus-new{background:rgba(250,204,21,.16);color:#fde68a;}
+#menu .adminReportStatus-seen{background:rgba(56,189,248,.16);color:#bae6fd;}
+#menu .adminReportStatus-done{background:rgba(74,222,128,.16);color:#bbf7d0;}
+#menu .adminReportStatus-ignored{background:rgba(148,163,184,.14);color:#cbd5e1;}
+#menu .adminReportBody{padding:0 12px 12px;display:flex;flex-direction:column;gap:8px;}
+#menu .adminReportMessage{font-size:.9rem;line-height:1.35;color:var(--soft);white-space:pre-wrap;border-radius:14px;background:rgba(0,0,0,.18);padding:10px;}
+#menu .adminReportDevice{max-height:58px;overflow:auto;overscroll-behavior:contain;}
+#menu .adminReportActions{gap:8px;flex-wrap:wrap;}
+
+

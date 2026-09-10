@@ -14,6 +14,7 @@ const indexHtml = read('index.html');
 const stylesOverridesLegacyEarlyCss = read('styles-overrides-legacy-early.css');
 const stylesOverridesLegacyMidCss = read('styles-overrides-legacy-mid.css');
 const stylesShiftReportCss = read('styles-shift-report.css');
+const stylesAdminReportsCss = read('styles-admin-reports.css');
 const stylesOverridesLegacyLateCss = read('styles-overrides-legacy-late.css');
 const stylesViewportPolishCss = read('styles-viewport-polish.css');
 const stylesReleasePolishCss = read('styles-release-polish.css');
@@ -99,6 +100,12 @@ for (const cssFile of activePolishCssFiles) {
 
 assert(stylesShiftReportCss.includes('RaK v1.5.65 – vlastník vzhledu Reportu směny'), 'Chybí v1.5.65 shift-report CSS owner marker');
 assert(stylesShiftReportCss.includes('.appMenuReportCard'), 'Shift-report owner musí obsahovat report card CSS');
+assert(stylesAdminReportsCss.includes('RaK v1.5.66 – owner: Administrace → Reporty'), 'Chybí v1.5.66 admin reports owner marker');
+assert(stylesAdminReportsCss.includes('#menu .adminReportsList'), 'Admin reports owner musí obsahovat seznam reportů');
+assert(stylesAdminReportsCss.includes('#menu .adminReportStatus-done'), 'Admin reports owner musí obsahovat statusy reportů');
+assert(!stylesOverridesLegacyMidCss.includes('#menu .adminReport'), 'Admin reports CSS se nesmí vrátit do legacy-mid');
+assert(!stylesOverridesLegacyMidCss.includes('bomberHeroRunA') && !stylesOverridesLegacyMidCss.includes('bomberHeroRunB'), 'Mrtvé Bomberman keyframes se nesmí vrátit');
+
 assert(!stylesOverridesLegacyMidCss.slice(0, 1200).includes('.appMenuReportCard'), 'Report směny se nesmí vrátit na čelo legacy-mid');
 const shiftReportCssPos = indexHtml.indexOf('styles-shift-report.css');
 const legacyMidCssPos = indexHtml.indexOf('styles-overrides-legacy-mid.css');
