@@ -48,7 +48,7 @@ new_guard = """assert(stylesDevicePerformanceSettingsCss.includes('RaK v1.5.75 �
 assert(stylesDevicePerformanceSettingsCss.includes('.rakDevicePerfCard{') && stylesDevicePerformanceSettingsCss.includes('.rakDevicePerfActions{'), 'Device performance owner musí zachovat kartu a akce');
 assert(stylesDevicePerformanceSettingsCss.includes('body.ladaMode .rakDevicePerfCard') && stylesDevicePerformanceSettingsCss.includes('@media (max-width:390px)'), 'Device performance owner musí zachovat low-end variantu i mobilní layout');
 assert(!stylesDevicePerformanceSettingsCss.includes('#appMenuBody .appMenuProfileCard'), 'Device performance owner nesmí obsahovat následující širší Settings blok');
-assert(!stylesOverridesLegacyMidCss.slice(0, 1800).includes('.rakDevicePerfCard{'), 'Čistý device performance blok se nesmí vrátit na čelo legacy-mid');
+assert(!stylesOverridesLegacyMidCss.includes('\\n.rakDevicePerfCard{'), 'Čistý device performance blok se nesmí vrátit na čelo legacy-mid');
 const adminServiceCssPosV1575 = indexHtml.indexOf('styles-admin-service.css');
 const devicePerformanceCssPosV1575 = indexHtml.indexOf('styles-device-performance-settings.css');
 const legacyMidCssPosV1575 = indexHtml.indexOf('styles-overrides-legacy-mid.css');
