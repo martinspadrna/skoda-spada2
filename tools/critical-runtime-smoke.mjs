@@ -13,6 +13,7 @@ const swJs = read('sw.js');
 const indexHtml = read('index.html');
 const stylesOverridesLegacyEarlyCss = read('styles-overrides-legacy-early.css');
 const stylesOverridesLegacyMidCss = read('styles-overrides-legacy-mid.css');
+const stylesShiftReportCss = read('styles-shift-report.css');
 const stylesOverridesLegacyLateCss = read('styles-overrides-legacy-late.css');
 const stylesViewportPolishCss = read('styles-viewport-polish.css');
 const stylesReleasePolishCss = read('styles-release-polish.css');
@@ -95,6 +96,13 @@ for (const cssFile of activePolishCssFiles) {
   const css = read(cssFile).replace(/\/\*[\s\S]*?\*\//g, '');
   assert(!/#games|\.games/i.test(css), `Dead Games selector returned to ${cssFile}`);
 }
+
+assert(stylesShiftReportCss.includes('RaK v1.5.65 – vlastník vzhledu Reportu směny'), 'Chybí v1.5.65 shift-report CSS owner marker');
+assert(stylesShiftReportCss.includes('.appMenuReportCard'), 'Shift-report owner musí obsahovat report card CSS');
+assert(!stylesOverridesLegacyMidCss.slice(0, 1200).includes('.appMenuReportCard'), 'Report směny se nesmí vrátit na čelo legacy-mid');
+const shiftReportCssPos = indexHtml.indexOf('styles-shift-report.css');
+const legacyMidCssPos = indexHtml.indexOf('styles-overrides-legacy-mid.css');
+assert(shiftReportCssPos >= 0 && legacyMidCssPos > shiftReportCssPos, 'Shift-report owner musí být načten bezprostředně před legacy-mid');
 const bootSelfTest = read('app-boot-selftest.js');
 const adminRotationJs = read('admin-rotation.js');
 const adminRotationOvertimeJs = read('admin-rotation-overtime.js');
