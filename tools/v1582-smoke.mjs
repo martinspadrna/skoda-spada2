@@ -6,6 +6,16 @@ import { fileURLToPath } from 'node:url';
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const read = (file) => fs.readFileSync(path.join(root, file), 'utf8');
 const assert = (condition, message) => { if (!condition) throw new Error('[v1.5.82-smoke] ' + message); };
+const versionAtLeast = (actual, minimum) => {
+  const a = String(actual || '').split('.').map((part) => Number(part) || 0);
+  const b = String(minimum || '').split('.').map((part) => Number(part) || 0);
+  const len = Math.max(a.length, b.length);
+  for (let i = 0; i < len; i += 1) {
+    if ((a[i] || 0) > (b[i] || 0)) return true;
+    if ((a[i] || 0) < (b[i] || 0)) return false;
+  }
+  return true;
+};
 
 const helper = read('rak-v1582-fixes.js');
 const app = read('app.js');
@@ -13,11 +23,11 @@ const styles = read('styles.css');
 const sw = read('sw.js');
 const pkg = JSON.parse(read('package.json'));
 
-assert(pkg.version === '1.5.82', 'package.json musí být 1.5.82');
-assert(app.includes('RAK_MODULE_CACHE_VERSION = "1.5.82"'), 'app.js musí mít cache verzi 1.5.82');
-assert(app.includes('RAK_DEV_UPDATE_BUILD = "v1.5.82"'), 'app.js musí mít PWA build v1.5.82');
-assert(sw.includes("CACHE_VERSION = 'v1.5.82'"), 'sw.js musí mít cache v1.5.82');
+assert(versionAtLeast(pkg.version, '1.5.82'), 'package.json musí být minimálně 1.5.82');
 assert(app.includes('"rak-v1582-fixes.js"'), 'helper v1.5.82 musí být v deferred loaderu');
+assert(/RAK_MODULE_CACHE_VERSION\s*=\s*["']1\.5\.\d+["']/.test(app), 'app.js musí mít platnou 1.5.x cache verzi');
+assert(/RAK_DEV_UPDATE_BUILD\s*=\s*["']v1\.5\.\d+["']/.test(app), 'app.js musí mít platný 1.5.x PWA build');
+assert(/CACHE_VERSION\s*=\s*["']v1\.5\.\d+["']/.test(sw), 'sw.js musí mít platnou 1.5.x cache verzi');
 
 assert(!fs.existsSync(path.join(root, 'styles-mobile-pwa.css')), 'chybný v1.5.81 mobile stylesheet musí být odstraněný');
 assert(!styles.includes('styles-mobile-pwa.css'), 'styles.css nesmí importovat chybný v1.5.81 mobile stylesheet');
@@ -42,4 +52,4 @@ assert(helper.includes("{ open: wasOpen, admin: true }"), 'admin přehled musí 
 assert(helper.includes('html body #home.page.active .dashboardShell'), 'Dashboard trial musí cílit jen na hlavní shell');
 assert(helper.includes('border-width:0!important'), 'vnější Dashboard rámeček musí být odstraněný');
 
-console.log('[v1.5.82-smoke] OK update popup + report indexes + grouped rotation summary + dashboard border trial; v1.5.81 mobile batch removed');
+console.log('[v1.5.82-smoke] OK v1.5.82 funkce zachované na aktuální verzi; v1.5.81 mobile batch odstraněný');
