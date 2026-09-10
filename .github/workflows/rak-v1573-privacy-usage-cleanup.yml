@@ -24,7 +24,7 @@ jobs:
         with:
           node-version: '22'
 
-      - name: Normalize v1.5.73 retry guard
+      - name: Normalize v1.5.73 retry guards
         run: |
           python3 - <<'PY'
           from pathlib import Path
@@ -40,8 +40,13 @@ jobs:
           assert menu.count(snapshot_line) == 2, f'očekávány 2 zbývající snapshot loady po odstranění handlerů, nalezeno {menu.count(snapshot_line)}'
           menu = menu.replace(snapshot_line, '', 2)'''
           assert old in text, 'nenalezena retry kotva snapshot loadu'
-          p.write_text(text.replace(old, new, 1), encoding='utf-8')
-          print('v1.5.73 retry guard normalized')
+          text = text.replace(old, new, 1)
+          old_css_write = "write(menu_css_name, menu_css)"
+          new_css_write = "write(menu_css_name, menu_css.rstrip() + '\\n')"
+          assert old_css_write in text, 'nenalezena kotva zápisu styles-menu-polish.css'
+          text = text.replace(old_css_write, new_css_write, 1)
+          p.write_text(text, encoding='utf-8')
+          print('v1.5.73 retry guards normalized')
           PY
 
       - name: Remove privacy usage tracking remnants
