@@ -44,7 +44,7 @@ for (const dead of [
 assert.doesNotMatch(appJs, /rak-v1582-fixes|rak-v1583-more-fix|rak-v1584-fixes/, 'retired hotfixes must not be runtime dependencies');
 
 assert.match(pkg.scripts['vercel-build'], /tools\/defer-heavy-libs\.mjs/, 'Vercel build must still strip heavyweight eager libraries before checks');
-assert.match(deferTool, /xlsx\.full\.min\.js/, 'XLSX build-time deferral guard must remain');
-assert.match(deferTool, /jszip\.min\.js/, 'JSZip build-time deferral guard must remain');
+assert.ok(deferTool.includes('XLSX zůstal v index.html jako eager script.'), 'XLSX build-time deferral guard must remain');
+assert.ok(deferTool.includes('JSZip zůstal v index.html jako eager script.'), 'JSZip build-time deferral guard must remain');
 
 console.log('[v1.5.86-smoke] OK compact rotation summary + lighter PWA install + mobile layout guard + retired hotfix cleanup');
