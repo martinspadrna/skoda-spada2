@@ -1,43 +1,6 @@
 // RaK 1.2 (1.155) – Administrace servisu a oznámení oddělené z hlavního UI modulu.
 try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleReady('admin-service-usage.js', 'loaded', { source: 'dynamic-loader' }); } catch (err) {}
 
-function formatAdminServiceCount(value) {
-  if (value === null || typeof value === 'undefined') return '—';
-  return String(Number(value || 0) || 0);
-}
-
-function formatAdminUsageDate(value, includeSeconds) {
-  try {
-    const d = value ? new Date(value) : null;
-    if (!d || Number.isNaN(d.getTime())) return '—';
-    const opts = includeSeconds
-      ? { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' }
-      : { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' };
-    return d.toLocaleString('cs-CZ', opts);
-  } catch (err) { return '—'; }
-}
-
-function getAdminServiceSnapshotCache() {
-  return app && app.adminServiceSnapshot && typeof app.adminServiceSnapshot === 'object' ? app.adminServiceSnapshot : null;
-}
-
-async function loadAdminServiceSnapshotFromSupabase() {
-  if (window.RotationSupabaseBridge && typeof window.RotationSupabaseBridge.getAdminServiceSnapshot === 'function') {
-    const result = await window.RotationSupabaseBridge.getAdminServiceSnapshot();
-    app.adminServiceSnapshot = result || null;
-    return result;
-  }
-  app.adminServiceSnapshot = { ok: false, reason: 'missing-bridge', counts: {} };
-  return app.adminServiceSnapshot;
-}
-
-async function cleanupAdminExpiredInvites() {
-  if (window.RotationSupabaseBridge && typeof window.RotationSupabaseBridge.cleanupExpiredGameInvites === 'function') {
-    return window.RotationSupabaseBridge.cleanupExpiredGameInvites();
-  }
-  return { ok: false, reason: 'missing-bridge' };
-}
-
 function adminServiceStatusItemHtml(label, value, detail, state) {
   const safeState = state || 'ok';
   return [
@@ -49,91 +12,44 @@ function adminServiceStatusItemHtml(label, value, detail, state) {
   ].join('');
 }
 
-function buildAdminServiceStatusHtml(snapshot, sync, profileUi, pwa) {
-  const counts = snapshot && snapshot.counts ? snapshot.counts : {};
-  const pendingInvites = Number(counts.game_invites_pending || 0) || 0;
-  const newReports = Number(counts.bug_reports_new || 0) || 0;
-  const activeSessions = Number(counts.game_sessions_active || 0) || 0;
-  const loadedAt = snapshot && snapshot.at ? formatAdminUsageDate(snapshot.at, true) : '';
-  const syncLabel = sync ? String(sync.label || sync.kind || sync.status || 'stav známý') : 'nenačteno';
+function buildAdminServiceHtml() {
+  const sync = typeof getSupabaseSyncStatus === 'function' ? getSupabaseSyncStatus() : null;
+  const pwa = typeof getPwaHardeningStatus === 'function' ? getPwaHardeningStatus() : null;
+  const offline = typeof navigator !== 'undefined' && navigator.onLine === false;
+  const syncLabel = offline ? 'offline' : (sync ? String(sync.label || sync.kind || sync.status || 'stav známý') : 'nenačteno');
   const updatePending = !!(pwa && pwa.updateToastVisible);
-  const profileLabel = profileUi && profileUi.account ? String(profileUi.account) : 'bez profilu';
-  const issues = newReports + pendingInvites;
   const items = [
-    {
-      label: 'Online stav',
-      value: snapshot ? (snapshot.ok ? 'načteno' : 'chyba') : 'nenačteno',
-      detail: snapshot ? (snapshot.ok ? ('Poslední načtení: ' + (loadedAt || 'teď') + '.') : ('Důvod: ' + String(snapshot.reason || (snapshot.error && snapshot.error.message) || 'zkontroluj připojení.'))) : 'Klikni na Načíst stav.',
-      state: snapshot && snapshot.ok ? 'ok' : 'warn'
-    },
     {
       label: 'Synchronizace',
       value: syncLabel,
-      detail: 'Ruční synchronizace je dostupná tlačítkem níže.',
-      state: sync ? 'ok' : 'info'
+      detail: offline ? 'Zařízení je offline.' : 'Ruční synchronizace pracovních dat je dostupná tlačítkem níže.',
+      state: offline ? 'warn' : (sync ? 'ok' : 'info')
     },
     {
-      label: 'K řešení',
-      value: String(issues),
-      detail: String(newReports) + ' nové reporty · ' + String(pendingInvites) + ' čekající pozvánky.',
-      state: issues ? 'warn' : 'ok'
-    },
-    {
-      label: 'Provoz',
-      value: String(activeSessions) + ' aktivní session',
-      detail: 'profil ' + profileLabel + (updatePending ? ' · čeká update.' : '.'),
-      state: updatePending ? 'warn' : 'info'
+      label: 'Aktualizace',
+      value: updatePending ? 'čeká update' : 'bez čekajícího updatu',
+      detail: 'Kontrola aktualizace ověří novou verzi PWA bez sledování používání.',
+      state: updatePending ? 'warn' : 'ok'
     }
   ];
-  return [
-    '<div class="adminServiceStatus" id="adminServiceStatus">',
-    '  <div class="appMenuSubTitle">Stav servisu</div>',
-    '  <div class="smallText uMb10">Rychlá kontrola před údržbou. Tlačítka níže teprve spouští synchronizaci, aktualizaci nebo úklid.</div>',
-    '  <div class="adminServiceStatusGrid">',
-    items.map((item) => adminServiceStatusItemHtml(item.label, item.value, item.detail, item.state)).join(''),
-    '  </div>',
-    '</div>'
-  ].join('');
-}
-
-function buildAdminServiceHtml() {
-  const snapshot = getAdminServiceSnapshotCache();
-  const counts = snapshot && snapshot.counts ? snapshot.counts : {};
-  const sync = snapshot && snapshot.sync ? snapshot.sync : (typeof getSupabaseSyncStatus === 'function' ? getSupabaseSyncStatus() : null);
-  const profileUi = typeof getProfileUiSyncStatus === 'function' ? getProfileUiSyncStatus() : null;
-  const pwa = typeof getPwaHardeningStatus === 'function' ? getPwaHardeningStatus() : null;
-  const statusText = snapshot
-    ? (snapshot.ok ? ('Načteno ' + new Date(snapshot.at || Date.now()).toLocaleString('cs-CZ')) : 'Servisní stav se nepodařilo načíst.')
-    : 'Klikni na Načíst stav a uvidíš online počty.';
-  const rows = [
-    ['Hráčské profily', counts.game_accounts],
-    ['Herní statistiky', counts.game_stats],
-    ['Profilový vzhled', counts.profile_ui_settings],
-    ['Pozvánky celkem', counts.game_invites],
-    ['Čekající pozvánky', counts.game_invites_pending],
-    ['Session celkem', counts.game_sessions],
-    ['Aktivní session', counts.game_sessions_active],
-    ['Nové reporty', counts.bug_reports_new]
-  ].map(pair => '<div class="adminServiceMetric"><span>' + escapeHtml(pair[0]) + '</span><b>' + escapeHtml(formatAdminServiceCount(pair[1])) + '</b></div>').join('');
   return [
     '<div class="appMenuCard appMenuAdminCard adminServiceCard">',
     '  <div class="appMenuCardTitle">Servis / synchronizace</div>',
     '  <div class="appMenuText">',
-    '    <div>Tady je rychlá údržba appky: sync rozpisu, herních statistik, kontrola aktualizace a úklid starých pozvánek.</div>',
-    '    <div class="smallText" id="adminOnlineSaveStatus">' + escapeHtml(statusText) + '</div>',
+    '    <div>Rychlá údržba appky: synchronizace pracovních dat, kontrola aktualizace, reporty chyb a export.</div>',
+    '    <div class="smallText" id="adminOnlineSaveStatus">Servisní akce se spustí až po klepnutí na tlačítko.</div>',
     '  </div>',
-    buildAdminServiceStatusHtml(snapshot, sync, profileUi, pwa),
-    '  <div class="adminServiceGrid">' + rows + '</div>',
-    '  <div class="adminServiceDiag smallText">',
-    sync ? ('Online stav: ' + escapeHtml(sync.label || sync.kind || '—') + '<br>') : '',
-    profileUi ? ('Profilový vzhled: ' + escapeHtml(profileUi.account || 'bez profilu') + ' · theme ' + escapeHtml(profileUi.themeId || '—') + ' · pozadí ' + escapeHtml(profileUi.backgroundId || '—') + '<br>') : '',
-    pwa ? ('PWA: poslední kontrola ' + escapeHtml(pwa.lastUpdateCheckAgoMs === null ? '—' : Math.round(Number(pwa.lastUpdateCheckAgoMs || 0) / 1000) + ' s') + ' · čeká update ' + escapeHtml(pwa.updateToastVisible ? 'ano' : 'ne')) : '',
+    '  <div class="adminServiceStatus" id="adminServiceStatus">',
+    '    <div class="appMenuSubTitle">Stav servisu</div>',
+    '    <div class="adminServiceStatusGrid">',
+    items.map((item) => adminServiceStatusItemHtml(item.label, item.value, item.detail, item.state)).join(''),
+    '    </div>',
     '  </div>',
+    '  <div class="adminServicePrivacyNote smallText">Servis nevede přehled připojených zařízení ani běžného používání aplikace.</div>',
     '  <div class="appMenuActionRow adminServiceActions">',
     '    <button type="button" class="appMenuAction isActive" data-admin-action="service-sync-now">Vynutit synchronizaci</button>',
     '    <button type="button" class="appMenuAction" data-admin-action="service-update-check">Kontrola aktualizace</button>',
-    '    <button type="button" class="appMenuAction" data-admin-action="service-load-status">Načíst stav</button>',
-    '    <button type="button" class="appMenuAction" data-admin-action="service-clean-invites">Vyčistit pozvánky</button>',
+    '    <button type="button" class="appMenuAction" data-admin-action="open-reports">Reporty chyb</button>',
     '    <button type="button" class="appMenuAction" data-admin-action="export">Export ZIP (stáhnout app)</button>',
     '    <button type="button" class="appMenuAction" data-admin-action="back-admin">Zpět</button>',
     '  </div>',

@@ -68,7 +68,6 @@ function appMenuAdminModeSet() {
     'backups',
     'settings-backups',
     'announcement',
-    'usage',
     'export',
     'reports',
     'service'
@@ -891,19 +890,11 @@ function bindAppMenuHandlers(body) {
         openAppMenu('admin-service');
         return;
       }
-      if (adminAction === 'service-load-status') {
-        const statusEl = document.getElementById('adminOnlineSaveStatus');
-        if (statusEl) statusEl.textContent = 'Načítám servisní stav…';
-        await loadAdminServiceSnapshotFromSupabase();
-        renderAdminMenuBody(body, 'service');
-        return;
-      }
       if (adminAction === 'service-sync-now') {
         const statusEl = document.getElementById('adminOnlineSaveStatus');
-        if (statusEl) statusEl.textContent = 'Synchronizuji rozpis, hry a update…';
+        if (statusEl) statusEl.textContent = 'Synchronizuji pracovní data…';
         if (typeof runDashboardManualSync === 'function') await runDashboardManualSync('admin-service-sync');
         else if (typeof window.__rotaceTriggerLiveRefresh === 'function') await window.__rotaceTriggerLiveRefresh('admin-service-sync', { force: true });
-        await loadAdminServiceSnapshotFromSupabase();
         renderAdminMenuBody(body, 'service');
         return;
       }
@@ -912,15 +903,6 @@ function bindAppMenuHandlers(body) {
         if (statusEl) statusEl.textContent = 'Kontroluji aktualizaci…';
         if (typeof window.__rotaceForcePwaUpdateCheck === 'function') await window.__rotaceForcePwaUpdateCheck('admin-service');
         if (typeof window.__rotaceRequestPwaCacheStatus === 'function') window.__rotaceRequestPwaCacheStatus('admin-service');
-        renderAdminMenuBody(body, 'service');
-        return;
-      }
-      if (adminAction === 'service-clean-invites') {
-        const statusEl = document.getElementById('adminOnlineSaveStatus');
-        if (statusEl) statusEl.textContent = 'Čistím prošlé pozvánky…';
-        const result = await cleanupAdminExpiredInvites();
-        if (!result || result.ok === false) throw (result && result.error ? result.error : new Error('Úklid pozvánek se nepovedl.'));
-        await loadAdminServiceSnapshotFromSupabase();
         renderAdminMenuBody(body, 'service');
         return;
       }
@@ -2012,8 +1994,7 @@ function openAppMenu(view) {
       bindAppMenuHandlers(body);
       void (async () => {
         try {
-          await loadAdminServiceSnapshotFromSupabase();
-          renderAdminMenuBody(body, 'service');
+            renderAdminMenuBody(body, 'service');
         } catch (err) {
           console.warn('Admin service preload failed', err);
           renderAdminMenuBody(body, 'service');

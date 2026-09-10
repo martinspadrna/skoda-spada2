@@ -46,7 +46,7 @@ function renderAppMenuSettingsPage(body, versionText) {
       const privacyCard = [
         '<details class="appMenuCard appMenuSettingsCard">',
         '  <summary class="appMenuCardTitle">Soukromí a data</summary>',
-        '  <div class="appMenuText">RaK nepoužívá reklamní cookies ani rutinní sledování používání.</div>',
+        '  <div class="appMenuText">RaK nepoužívá reklamní cookies ani rutinní sledování používání. Při běžném používání neodesílá přehled připojených zařízení ani navštívené části aplikace.</div>',
         '  <div class="appMenuText smallText">V tomto zařízení zůstává jen profil pro zapamatování přihlášení (jméno a osobní číslo), nastavení a poslední data potřebná pro práci bez internetu. Profil smažeš tlačítkem Odhlásit.</div>',
         '  <div class="appMenuText smallText">Pracovní data se synchronizují do RaK databáze. Pokud odešleš report chyby, přidá se k němu verze aplikace a základní technické údaje nutné k opravě.</div>',
         '</details>'

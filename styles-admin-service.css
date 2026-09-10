@@ -1,49 +1,12 @@
-/* RaK v1.5.72 – owner: Administrace servis */
-.adminServiceGrid{
-  display:grid !important;
-  grid-template-columns:repeat(2,minmax(0,1fr)) !important;
-  gap:10px !important;
-  margin:12px 0 !important;
-}
-.adminServiceMetric{
-  min-height:54px !important;
-  padding:10px 12px !important;
-  border-radius:18px !important;
-  border:1px solid rgba(255,255,255,.10) !important;
-  background:rgba(255,255,255,.055) !important;
-  display:flex !important;
-  flex-direction:column !important;
-  justify-content:space-between !important;
-  gap:5px !important;
-}
-.adminServiceMetric span{
-  font-size:11px !important;
-  line-height:1.15 !important;
-  color:rgba(238,247,238,.68) !important;
-}
-.adminServiceMetric b{
-  font-size:18px !important;
-  line-height:1 !important;
-  color:var(--rakThemeAccent,#7CFF7C) !important;
-}
-.adminServiceDiag{
-  margin-top:8px !important;
-  padding:10px 12px !important;
-  border-radius:16px !important;
-  background:rgba(0,0,0,.16) !important;
+/* RaK v1.5.73 – owner: Administrace servis / privacy-safe stav */
+.adminServicePrivacyNote{
+  margin-top:10px !important;
+  padding:9px 11px !important;
+  border-radius:14px !important;
   border:1px solid rgba(255,255,255,.08) !important;
+  background:rgba(255,255,255,.035) !important;
+  color:rgba(238,247,238,.72) !important;
 }
 .adminServiceActions{
   margin-top:12px !important;
 }
-@media (max-width:380px){
-  .adminServiceGrid{grid-template-columns:1fr !important;}
-}
-body.lightweightMode .adminServiceMetric,
-body.lowEndDevice .adminServiceMetric,
-body.ladaMode .adminServiceMetric{
-  backdrop-filter:none !important;
-  -webkit-backdrop-filter:none !important;
-  box-shadow:none !important;
-}
-

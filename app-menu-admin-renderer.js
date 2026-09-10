@@ -14,8 +14,8 @@ function renderAdminMenuBody(body, section) {
     { action: 'open-service', label: 'Servis / synchronizace' }
   ];
   const adminServiceDetail = (typeof rakAdminCanManageAdmins === 'function' && rakAdminCanManageAdmins())
-    ? 'Připojení, reporty, synchronizace a správa adminů.'
-    : 'Připojení, reporty a synchronizace. Hesla a další adminy spravuje jen hlavní admin.';
+    ? 'Reporty, synchronizace, aktualizace a správa adminů.'
+    : 'Reporty, synchronizace a aktualizace. Hesla a další adminy spravuje jen hlavní admin.';
   if (typeof rakAdminCanManageAdmins === 'function' && rakAdminCanManageAdmins()) {
     adminServiceActions.unshift({ action: 'open-admin-accounts', label: 'Správci' });
     adminServiceActions.push({ action: 'open-settings-backups', label: 'Zálohy nastavení' });
