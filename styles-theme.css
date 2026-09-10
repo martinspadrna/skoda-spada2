@@ -1126,24 +1126,13 @@ body.reduceMotion *, body.reduceMotion *::before, body.reduceMotion *::after{ani
 .appMenuActionRow .appMenuAction{flex:1 1 140px;}
 .appMenuSecretHint{font-size:12px;
   opacity:.72;}
-.tttWinHistory{margin-top:12px;}
-.tttWinTable{width:100%;
-  border-collapse:separate;
-  border-spacing:0 8px;}
-.tttWinTable th{font-size:11px;
-  text-align:left;
-  color:rgba(239,246,241,.70);
-  padding:0 8px 3px;}
-.tttWinTable td{background:rgba(12,16,13,.82);
-  border-top:1px solid rgba(124,255,124,.08);
-  border-bottom:1px solid rgba(124,255,124,.08);
-  padding:8px 8px;
-  font-size:12px;}
-.tttWinTable tr td:first-child{border-left:1px solid rgba(124,255,124,.08);
-  border-radius:14px 0 0 14px;}
-.tttWinTable tr td:last-child{border-right:1px solid rgba(124,255,124,.08);
-  border-radius:0 14px 14px 0;}
-.tttWinTable .muted{opacity:.72;}
+
+
+
+
+
+
+
 .dashboardHeroCard{position:relative !important;padding-right:128px !important;}
 .dashboardSyncBadge{position:absolute !important;top:12px !important;right:12px !important;z-index:3 !important;display:inline-flex !important;align-items:center !important;gap:6px !important;padding:7px 10px !important;border-radius:999px !important;border:1px solid rgba(124,255,124,.18) !important;background:rgba(12,16,14,.66) !important;backdrop-filter:blur(14px) saturate(150%) !important;-webkit-backdrop-filter:blur(14px) saturate(150%) !important;color:rgba(238,247,238,.82) !important;font-size:11px !important;line-height:1 !important;font-weight:700 !important;letter-spacing:.02em !important;box-shadow:0 10px 30px rgba(0,0,0,.18) !important;pointer-events:none !important;max-width:calc(100% - 24px) !important;white-space:nowrap !important;overflow:hidden !important;text-overflow:ellipsis !important;}
 .dashboardSyncBadge--online{border-color:rgba(124,255,124,.22) !important;background:rgba(10,28,16,.70) !important;color:#d7ffe0 !important;}
@@ -1154,7 +1143,7 @@ body.reduceMotion *, body.reduceMotion *::before, body.reduceMotion *::after{ani
 .bottomNavMenuBtn{position:sticky !important;right:0 !important;margin-left:auto !important;z-index:4 !important;background:linear-gradient(180deg, rgba(14,19,16,.92), rgba(10,14,12,.98)) !important;box-shadow:-8px 0 18px rgba(0,0,0,.18) !important;}
 .bottomNavGamesBtn{margin-right:8px !important;}
 .bottomNavGamesBtn .bottomNavIcon svg{stroke-width:1.8 !important;}
-#games .calcTileIcon svg{stroke:currentColor !important;}
+
 .bottomNav{display:flex !important;align-items:center !important;gap:6px !important;}
 .bottomNavScroll{display:flex !important;align-items:center !important;gap:4px !important;flex:1 1 auto !important;min-width:0 !important;overflow-x:auto !important;overflow-y:hidden !important;-webkit-overflow-scrolling:touch !important;scroll-snap-type:x proximity !important;scrollbar-width:none !important;}
 .bottomNavInner{display:flex !important;align-items:center !important;gap:4px !important;flex-wrap:nowrap !important;min-width:max-content !important;padding-right:8px !important;}
@@ -1175,7 +1164,7 @@ body.reduceMotion *, body.reduceMotion *::before, body.reduceMotion *::after{ani
 .bottomNavMenuBtn{flex:0 0 38px !important; position:sticky !important; right:0 !important; margin-left:auto !important; z-index:5 !important; width:38px !important; min-width:38px !important; max-width:38px !important;}
 .bottomNavMenuBtn .moreIcon{width:22px !important;height:22px !important;transform:translateY(-11px) !important;display:block !important;}
 .bottomNavGamesBtn{margin-right:2px !important;}
-.gamesAccountSelected{flex:1 1 auto !important; min-width:0 !important; min-height:44px !important; display:flex !important; align-items:center !important; justify-content:center !important; padding:0 14px !important; border-radius:14px !important; border:1px solid rgba(124,255,124,.18) !important; background:rgba(255,255,255,.04) !important; color:#e7fff0 !important; font-weight:650 !important; letter-spacing:.02em !important;}
+
 .rakUpdateToast{position:fixed;left:50%;bottom:calc(92px + env(safe-area-inset-bottom));transform:translateX(-50%) translateY(16px);width:min(560px, calc(100vw - 16px));z-index:260;display:flex;align-items:center;gap:10px;padding:12px 12px 12px 11px;border-radius:22px;border:1px solid rgba(124,255,124,.18);background:rgba(9,13,11,.80);backdrop-filter:blur(18px) saturate(155%);-webkit-backdrop-filter:blur(18px) saturate(155%);box-shadow:0 20px 46px rgba(0,0,0,.36), inset 0 1px 0 rgba(255,255,255,.04);color:#eef7ee;opacity:0;pointer-events:none;transition:transform .24s ease, opacity .24s ease;contain:layout style paint;}
 .rakUpdateToast.isVisible{opacity:1;transform:translateX(-50%) translateY(0);pointer-events:auto;}
 .rakUpdateToastBadge{width:42px;height:42px;border-radius:15px;display:grid;place-items:center;flex:0 0 42px;background:linear-gradient(180deg, rgba(124,255,124,.14), rgba(124,255,124,.06));border:1px solid rgba(124,255,124,.16);box-shadow:0 10px 20px rgba(0,0,0,.18) inset, 0 0 24px rgba(124,255,124,.10);font-weight:800;letter-spacing:.03em;color:#dfffe3;font-size:13px;}

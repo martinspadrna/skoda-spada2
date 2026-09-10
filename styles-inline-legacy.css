@@ -41,8 +41,8 @@
 .bottomNavMenuBtn .moreIcon{width:18px !important;
     height:18px !important;
     transform:translateY(-2px) !important;}
-body.tttOpen .bottomNav{z-index: 10020 !important;}
-body.tttOpen #tttOverlay{inset: 0 0 calc(70px + env(safe-area-inset-bottom)) 0 !important;}
+
+
 #rotaceNamesPanel{padding-bottom: calc(10px + env(safe-area-inset-bottom)) !important;}
 #rotaceNamesPanel .listItem{min-height:52px !important;
     padding:8px 10px !important;}
@@ -82,7 +82,7 @@ body.tttOpen #tttOverlay{inset: 0 0 calc(70px + env(safe-area-inset-bottom)) 0 !
   -webkit-overflow-scrolling:touch !important;
   scrollbar-width:none !important;
   scroll-snap-type:x proximity !important;}
-.bottomNavScroll::-webkit-scrollbar, .gamesStatsCardId, .bottomNavMenuBtn .bottomNavLabel, .tttClose, #rotaceNamesPanel .rotaceHint{display:none !important;}
+.bottomNavScroll::-webkit-scrollbar, .bottomNavMenuBtn .bottomNavLabel, #rotaceNamesPanel .rotaceHint{display:none !important;}
 .bottomNavInner{display:flex !important;
   align-items:center !important;
   flex-wrap:nowrap !important;
@@ -124,13 +124,13 @@ body.tttOpen #tttOverlay{inset: 0 0 calc(70px + env(safe-area-inset-bottom)) 0 !
 #statsMachineGrid .listItem{padding:3px 1px !important;
   min-height:32px !important;}
 #statsMachineGrid .statsMachineTile{padding:3px 1px !important;}
-.gamesStatsCard{border-radius:16px !important;border:1px solid rgba(124,255,124,.12) !important;background:rgba(255,255,255,.035) !important;padding:10px !important;box-shadow:0 10px 28px rgba(0,0,0,.16) !important;}
-.gamesStatsCard.isActive{border-color:rgba(124,255,124,.24) !important;background:rgba(124,255,124,.05) !important;}
-.gamesStatsCardHead{display:flex !important;align-items:flex-start !important;justify-content:space-between !important;gap:8px !important;margin-bottom:6px !important;}
-.gamesStatsCardName{font-weight:700 !important;font-size:13px !important;line-height:1.1 !important;}
-.gamesStatsCardTotal{font-size:11px !important;font-weight:700 !important;color:#dfffe3 !important;white-space:nowrap !important;}
-.gamesStatsCardBody{display:grid !important;gap:3px !important;}
-.gamesStatsCardLine{font-size:10px !important;line-height:1.2 !important;color:rgba(231,255,240,.82) !important;}
+
+
+
+
+
+
+
 @media (max-width: 700px){.bottomNavBtn{flex-basis:56px !important;width:56px !important;min-width:56px !important;max-width:56px !important;}.bottomNavMenuBtn{flex-basis:38px !important;width:38px !important;min-width:38px !important;max-width:38px !important;}}
 .bottomNav{padding:3px 5px calc(3px + env(safe-area-inset-bottom)) !important;
     gap:5px !important;}
@@ -389,11 +389,11 @@ body.tttOpen #tttOverlay{inset: 0 0 calc(70px + env(safe-area-inset-bottom)) 0 !
 #statsMachineGrid .statsTileTitle{transform:scaleX(.89) !important;
     transform-origin:center !important;
     display:inline-block !important;}
-.tttStartScreen .tttCard{padding:12px !important;}
-.tttStartScreen .tttSectionTitle{margin-bottom:10px !important;}
-.tttToggleRow, .tttLevelRow{grid-template-columns:repeat(1, minmax(0, 1fr)) !important;}
-.tttBoardWrap{inset:52px 8px 74px !important;}
-.tttBoard{--tttCellSize: clamp(19px, 5.2vw, 24px) !important;}
+
+
+
+
+
 
 
 .bottomNav{padding:0 0 calc(0px + env(safe-area-inset-bottom)) !important;
@@ -467,16 +467,12 @@ body.tttOpen #tttOverlay{inset: 0 0 calc(70px + env(safe-area-inset-bottom)) 0 !
     padding:6px 6px !important;}
 #statsNameGrid .statsTileTitle, #statsMachineGrid .statsTileTitle{font-size:14px !important;
     line-height:1.03 !important;}
-.tttModeCard .tttToggleRow{grid-template-columns:repeat(3, minmax(0, 1fr)) !important;}
-.tttActionCard .tttPrimaryBtn{min-height:52px !important;
-    font-size:17px !important;
-    font-weight:800 !important;
-    background:linear-gradient(180deg, rgba(124,255,124,.24), rgba(124,255,124,.12)) !important;
-    border:1px solid rgba(124,255,124,.28) !important;}
-.tttActionCard .tttSecondaryBtn{margin-top:10px !important;}
-.tttInviteCard .tttToggleRow{grid-template-columns:repeat(2, minmax(0, 1fr)) !important;}
-.tttInviteCard .tttBtn{min-height:46px !important;}
-body.tttOpen #tttOverlay{inset:0 0 calc(60px + env(safe-area-inset-bottom)) 0 !important;}
+
+
+
+
+
+
 .bottomNav{padding:0 2px calc(0px + env(safe-area-inset-bottom)) !important;
     gap:2px !important;
     border-radius:16px !important;}
@@ -512,13 +508,11 @@ body.tttOpen #tttOverlay{inset:0 0 calc(60px + env(safe-area-inset-bottom)) 0 !i
     line-height:1.03 !important;}
 #statsMachineGrid .listItem, #statsMachineGrid .statsMachineTile{width:80% !important;
     justify-self:center !important;}
-.tttHeader{justify-content:flex-start !important;
-    gap:8px !important;}
-.tttCard{border-radius:20px !important;}
-.tttBtn{border-radius:18px !important;}
-.tttBoard{gap:0 !important;
-    background:rgba(124,255,124,.05) !important;}
-.tttCell{border-width:1px !important;}
+
+
+
+
+
 #home .dashboardShell{margin-top:4px !important;
     transform:translateY(-6px) !important;}
 .bottomNav{width:calc(100% - 8px) !important;
@@ -559,8 +553,8 @@ body.tttOpen #tttOverlay{inset:0 0 calc(60px + env(safe-area-inset-bottom)) 0 !i
     height:17px !important;
     margin:0 auto !important;
     transform:none !important;}
-body.tttOpen .bottomNav{z-index:12050 !important;}
-body.tttOpen #tttOverlay{inset:0 0 calc(48px + env(safe-area-inset-bottom)) 0 !important;}
+
+
 #rotaceNamesPanel .listItem{min-height:46px !important;
     padding:9px 8px !important;}
 .rotacePersonTitle{margin-bottom:8px !important;}

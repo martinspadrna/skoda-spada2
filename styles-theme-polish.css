@@ -54,134 +54,30 @@ body::after{
     z-index:0 !important;
   }
 }
-.page,
-.page.active,
-#home,
-#rotace,
-#statistiky,
-#rozpisy,
-#kalkulacky,
-#games,
-#soustruhy,
-#frezky,
-#brusy,
-.calcPage{
+.page, .page.active, #home, #rotace, #statistiky, #rozpisy, #kalkulacky, #soustruhy, #frezky, #brusy, .calcPage{
   background:transparent !important;
   background-color:transparent !important;
 }
-.headerBar,
-.dashboardShell,
-.dashboardHeroCard,
-.dashboardCard,
-.tile,
-.card,
-.personCard,
-.adminBox,
-.listItem,
-.calcPanel,
-.calcTile,
-.calcResultCard,
-.calcInfoCard,
-.brusDetails,
-.subNav,
-.bgrid,
-.indexGrid,
-.statsSummary .tile,
-.appMenuSheet,
-.appMenuCard,
-.appMenuAction,
-.appMenuThemeCard,
-.appMenuBackgroundCard,
-.appMenuThemeSummary,
-.appMenuAdminCard,
-.appMenuSubSection,
-.appMenuTableWrap,
-.foodScheduleModal,
-.foodScheduleRow,
-.personScheduleModal,
-.personScheduleRow,
-.calendarModal,
-.qrModal,
-.rakUpdateToast,
-#games .gamesShellTop,
-#games .gamesAccountCard,
-#games .gamesActiveAccountBar,
-#games .gamesLaunchTile,
-#games .gamesStatsCard,
-#games .arcadePanel,
-#games .gameBoard{
+.headerBar, .dashboardShell, .dashboardHeroCard, .dashboardCard, .tile, .card, .personCard, .adminBox, .listItem, .calcPanel, .calcTile, .calcResultCard, .calcInfoCard, .brusDetails, .subNav, .bgrid, .indexGrid, .statsSummary .tile, .appMenuSheet, .appMenuCard, .appMenuAction, .appMenuThemeCard, .appMenuBackgroundCard, .appMenuThemeSummary, .appMenuAdminCard, .appMenuSubSection, .appMenuTableWrap, .foodScheduleModal, .foodScheduleRow, .personScheduleModal, .personScheduleRow, .calendarModal, .qrModal, .rakUpdateToast{
   border-color:var(--rakThemeStrokeSoft, rgba(255,255,255,.12)) !important;
   box-shadow:
     0 16px 40px rgba(0,0,0,.22),
     inset 0 1px 0 rgba(255,255,255,.10),
     inset 0 -1px 0 color-mix(in srgb, var(--rakThemeAccentStrong) 10%, transparent) !important;
 }
-.dashboardShell,
-.appMenuSheet,
-.foodScheduleModal,
-.personScheduleModal,
-.calendarModal,
-.qrModal,
-#games .gamesShellTop{
+.dashboardShell, .appMenuSheet, .foodScheduleModal, .personScheduleModal, .calendarModal, .qrModal{
   background:var(--rakGlassPanelBg) !important;
   background-color:color-mix(in srgb, var(--panel, rgba(8,14,12,.44)) 48%, transparent) !important;
   -webkit-backdrop-filter:blur(26px) saturate(180%) !important;
   backdrop-filter:blur(26px) saturate(180%) !important;
 }
-.dashboardHeroCard,
-.dashboardCard,
-.tile,
-.card,
-.personCard,
-.adminBox,
-.listItem,
-.calcPanel,
-.calcTile,
-.calcResultCard,
-.calcInfoCard,
-.brusDetails,
-.appMenuCard,
-.appMenuAction,
-.appMenuThemeCard,
-.appMenuBackgroundCard,
-.appMenuThemeSummary,
-.appMenuAdminCard,
-.appMenuSubSection,
-.appMenuTableWrap,
-.foodScheduleRow,
-.personScheduleRow,
-.rakUpdateToast,
-#games .gamesAccountCard,
-#games .gamesActiveAccountBar,
-#games .gamesLaunchTile,
-#games .gamesStatsCard,
-#games .arcadePanel,
-#games .gameBoard{
+.dashboardHeroCard, .dashboardCard, .tile, .card, .personCard, .adminBox, .listItem, .calcPanel, .calcTile, .calcResultCard, .calcInfoCard, .brusDetails, .appMenuCard, .appMenuAction, .appMenuThemeCard, .appMenuBackgroundCard, .appMenuThemeSummary, .appMenuAdminCard, .appMenuSubSection, .appMenuTableWrap, .foodScheduleRow, .personScheduleRow, .rakUpdateToast{
   background:var(--rakGlassCardBg) !important;
   background-color:color-mix(in srgb, var(--panel2, rgba(8,14,12,.36)) 40%, transparent) !important;
   -webkit-backdrop-filter:blur(22px) saturate(170%) !important;
   backdrop-filter:blur(22px) saturate(170%) !important;
 }
-button:not(.bottomNavBtn):not(.bottomNavMenuBtn),
-input,
-select,
-textarea,
-.bbtn,
-.btn,
-.pillBtn,
-.tabBtn,
-.subNavBtn,
-.resetBtn,
-.calcPrimaryBtn,
-.calcCloseBtn,
-.homeBtn,
-.appMenuInlineInput,
-.appMenuInput,
-.appMenuSelect,
-.appMenuTextarea,
-.appMenuInlineClearBtn,
-.gameControlBtn,
-.gameControlBtnSmall{
+button:not(.bottomNavBtn):not(.bottomNavMenuBtn), input, select, textarea, .bbtn, .btn, .pillBtn, .tabBtn, .subNavBtn, .resetBtn, .calcPrimaryBtn, .calcCloseBtn, .homeBtn, .appMenuInlineInput, .appMenuInput, .appMenuSelect, .appMenuTextarea, .appMenuInlineClearBtn{
   border-color:var(--rakThemeStrokeSoft, rgba(255,255,255,.13)) !important;
   background:var(--rakGlassSoftBg) !important;
   color:var(--text, #fff) !important;
@@ -206,19 +102,7 @@ button.primary,
     0 0 28px var(--rakThemeGlowSoft, rgba(124,255,124,.18)),
     inset 0 1px 0 rgba(255,255,255,.14) !important;
 }
-h1,
-h2,
-h3,
-.sectionTitle,
-.dashboardAppTitle,
-.dashboardTitle,
-.dashboardValue,
-.calcHeaderTitleOneLine,
-.appMenuTitle,
-.appMenuCardTitle,
-.appMenuThemeTitle,
-.gamesTitle,
-#games .gameTitle{
+h1, h2, h3, .sectionTitle, .dashboardAppTitle, .dashboardTitle, .dashboardValue, .calcHeaderTitleOneLine, .appMenuTitle, .appMenuCardTitle, .appMenuThemeTitle{
   color:var(--soft, #eef7ff) !important;
 }
 .dashboardLabel,
@@ -229,12 +113,7 @@ h3,
 .rotaceMiniLabel{
   color:color-mix(in srgb, var(--soft, #eef7ff) 68%, transparent) !important;
 }
-a,
-.dashboardDot.is-open,
-.calcTileIcon,
-.bottomNavBtn.active .bottomNavIcon,
-.appMenuThemeSummaryChevron,
-.gameMetricValue{
+a, .dashboardDot.is-open, .calcTileIcon, .bottomNavBtn.active .bottomNavIcon, .appMenuThemeSummaryChevron{
   color:var(--rakThemeAccentStrong, var(--green2, #7CFF7C)) !important;
 }
 .bottomNav,
@@ -252,26 +131,15 @@ nav.bottomNav{
   border-color:color-mix(in srgb, var(--rakThemeAccentStrong) 76%, rgba(255,255,255,.22)) !important;
   box-shadow:0 0 0 1px color-mix(in srgb, var(--rakThemeAccentStrong) 20%, transparent) inset, 0 12px 26px rgba(0,0,0,.18), 0 0 18px color-mix(in srgb, var(--rakThemeAccentStrong) 16%, transparent) !important;
 }
-.appMenuOverlay,
-.foodScheduleOverlay,
-.personScheduleOverlay,
-.calendarOverlay,
-.qrModalOverlay,
-.tttOverlay{
+.appMenuOverlay, .foodScheduleOverlay, .personScheduleOverlay, .calendarOverlay, .qrModalOverlay{
   background:
     var(--rakAppBackgroundOverlay, transparent),
     color-mix(in srgb, var(--rakBgBase, #050816) 56%, transparent) !important;
   -webkit-backdrop-filter:blur(18px) saturate(150%) !important;
   backdrop-filter:blur(18px) saturate(150%) !important;
 }
-body.gamesOpen #games .gamesStage{
-  background:var(--rakAppBackground, var(--bg, #050816)) !important;
-  background-color:var(--rakBgBase, var(--bg, #050816)) !important;
-}
-body.gamesOpen #games .gamesStage::before{
-  background:var(--rakAppBackgroundOverlay, transparent) !important;
-  opacity:1 !important;
-}
+
+
 .appMenuTable,
 .appMenuAdminTable,
 .appMenuAdminTableDense,

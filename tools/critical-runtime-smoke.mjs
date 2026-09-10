@@ -89,6 +89,12 @@ assert(stylesOverridesLegacyEarlyCss.includes('RaK v1.5.63 – proven theme/back
 assert(stylesThemePolishCss.includes('--rakThemeAccentStrong'), 'Theme polish musí dál vlastnit theme proměnné');
 assert(stylesThemePolishCss.includes('background:var(--rakAppBackground'), 'Theme polish musí dál vlastnit app background');
 assert(stylesThemePropagationCss.length > 500, 'Theme propagation owner nesmí zmizet');
+
+const activePolishCssFiles = ['styles-dashboard-fit.css','styles-admin-polish.css','styles-menu-polish.css','styles-stats-polish.css','styles-viewport-polish.css','styles-theme-polish.css','styles-release-polish.css','styles-dashboard-polish.css','styles-theme-propagation.css','styles-rotation-tasks.css'];
+for (const cssFile of activePolishCssFiles) {
+  const css = read(cssFile).replace(/\/\*[\s\S]*?\*\//g, '');
+  assert(!/#games|\.games/i.test(css), `Dead Games selector returned to ${cssFile}`);
+}
 const bootSelfTest = read('app-boot-selftest.js');
 const adminRotationJs = read('admin-rotation.js');
 const adminRotationOvertimeJs = read('admin-rotation-overtime.js');
