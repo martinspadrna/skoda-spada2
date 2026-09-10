@@ -24,6 +24,26 @@ jobs:
         with:
           node-version: '22'
 
+      - name: Normalize v1.5.73 retry guard
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('tools/rak-v1573-privacy-usage-cleanup.py')
+          text = p.read_text(encoding='utf-8')
+          old = '''menu = require_replace(
+              menu,
+              "        await loadAdminServiceSnapshotFromSupabase();\\n",
+              '',
+              'snapshot po ruční synchronizaci',
+          )'''
+          new = '''snapshot_line = "        await loadAdminServiceSnapshotFromSupabase();\\n"
+          assert menu.count(snapshot_line) == 2, f'očekávány 2 zbývající snapshot loady po odstranění handlerů, nalezeno {menu.count(snapshot_line)}'
+          menu = menu.replace(snapshot_line, '', 2)'''
+          assert old in text, 'nenalezena retry kotva snapshot loadu'
+          p.write_text(text.replace(old, new, 1), encoding='utf-8')
+          print('v1.5.73 retry guard normalized')
+          PY
+
       - name: Remove privacy usage tracking remnants
         run: python3 tools/rak-v1573-privacy-usage-cleanup.py
 
