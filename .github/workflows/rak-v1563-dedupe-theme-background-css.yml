@@ -1,0 +1,48 @@
+name: RaK v1.5.63 theme background CSS cleanup
+
+on:
+  push:
+    branches: [development]
+    paths:
+      - '.github/workflows/rak-v1563-dedupe-theme-background-css.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout development
+        uses: actions/checkout@v4
+        with:
+          ref: development
+          fetch-depth: 0
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Deduplicate proven theme and background CSS
+        run: python3 tools/rak-v1563-dedupe-theme-background-css.py
+      - name: Verify focused cleanup guards
+        run: |
+          node --check tools/critical-runtime-smoke.mjs
+          node tools/critical-runtime-smoke.mjs
+          python3 - <<'PY'
+          from pathlib import Path
+          files=[Path('styles-overrides-legacy-early.css'),Path('styles-overrides-legacy-mid.css'),Path('styles-overrides-legacy-late.css')]
+          assert 'RaK v1.5.63 – proven theme/background legacy dedupe' in files[0].read_text()
+          print('Legacy CSS bytes:', [len(p.read_text()) for p in files])
+          print('Theme polish bytes:', len(Path('styles-theme-polish.css').read_text()))
+          print('Viewport polish bytes:', len(Path('styles-viewport-polish.css').read_text()))
+          PY
+      - name: Full repository check
+        run: npm run check
+      - name: Commit cleanup after checks pass
+        run: |
+          rm -f .github/workflows/rak-v1563-dedupe-theme-background-css.yml tools/rak-v1563-dedupe-theme-background-css.py
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "Deduplicate theme and background legacy CSS in v1.5.63"
+          git push origin development
