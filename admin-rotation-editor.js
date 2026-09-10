@@ -845,23 +845,47 @@ function readAdminRotationFromDom(monthKey) {
 }
 
 
-function adminRotationRuleIssueSignature(issue) {
-  const item = issue && typeof issue === 'object' ? issue : {};
-  return [item.severity, item.type, item.message, item.detail].map((value) => String(value || '').trim()).join('\u0001');
+function adminRotationComparableMonth(value) {
+  const month = value && typeof value === 'object' ? value : {};
+  const normalizeRows = (section) => (Array.isArray(section && section.rows) ? section.rows : []).map((row) => ({
+    date: String(row && row.date || '').trim(),
+    cells: (Array.isArray(row && row.cells) ? row.cells : []).map((cell) => String(cell || '').trim())
+  }));
+  const notes = (Array.isArray(month.notes) ? month.notes : []).map((note) => ({
+    date: String(note && note.date || '').trim(),
+    person: String(note && note.person || '').trim(),
+    code: String(note && note.code || '').trim(),
+    shift: String(note && note.shift || '').trim(),
+    text: String(note && note.text || '').trim()
+  })).sort((a, b) => JSON.stringify(a).localeCompare(JSON.stringify(b), 'cs'));
+  const pressRotationOverrides = Object.entries(month.pressRotationOverrides || {})
+    .map(([key, value]) => [String(key), String(value)])
+    .sort((a, b) => a[0].localeCompare(b[0], 'cs'));
+  return JSON.stringify({
+    hard: normalizeRows(month.hard),
+    soft: normalizeRows(month.soft),
+    notes,
+    pressRotationOverrides
+  });
+}
+
+function adminRotationHasManualDomChanges(monthKey, normalizedMonth) {
+  const current = normalizedMonth || readAdminRotationFromDom(monthKey);
+  let baseline = null;
+  try {
+    if (typeof adminRotationGeneratorGetPendingDraft === 'function') baseline = adminRotationGeneratorGetPendingDraft(monthKey);
+  } catch (err) {}
+  if (!baseline) baseline = app.rotation && app.rotation.months ? app.rotation.months[monthKey] : null;
+  if (!baseline) return true;
+  return adminRotationComparableMonth(current) !== adminRotationComparableMonth(baseline);
 }
 
 function adminRotationBuildManualRuleOverrideState(monthKey, normalizedMonth) {
   const normalized = normalizedMonth || readAdminRotationFromDom(monthKey);
   const ruleCheck = adminRotationValidateMonthRules(normalized, monthKey, { source: 'manual-save' });
-  const baseline = app.rotation && app.rotation.months ? app.rotation.months[monthKey] : null;
-  const baselineCheck = baseline
-    ? adminRotationValidateMonthRules(baseline, monthKey, { source: 'manual-save' })
-    : { ok: true, issues: [] };
-  const baselineKeys = new Set((Array.isArray(baselineCheck.issues) ? baselineCheck.issues : []).map(adminRotationRuleIssueSignature));
-  const newIssues = (Array.isArray(ruleCheck.issues) ? ruleCheck.issues : [])
-    .filter((issue) => !baselineKeys.has(adminRotationRuleIssueSignature(issue)));
-  const blockingIssues = newIssues.filter((issue) => issue && issue.severity === 'error');
-  return { normalized, ruleCheck, baselineCheck, newIssues, blockingIssues };
+  const blockingIssues = (Array.isArray(ruleCheck.issues) ? ruleCheck.issues : [])
+    .filter((issue) => issue && issue.severity === 'error');
+  return { normalized, ruleCheck, blockingIssues };
 }
 
 function adminRotationConfirmManualRuleOverride(state) {

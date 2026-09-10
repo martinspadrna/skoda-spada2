@@ -515,6 +515,14 @@ assert(adminRotationEditorJsV1578.includes('function adminRotationConfirmManualR
 assert(adminRotationEditorJsV1578.includes('opts.allowRuleViolations !== true'), 'v1.5.78 save musí zůstat přísný bez explicitní ruční výjimky');
 assert(appMenuJsV1578.includes('const isManualEdit = !!'), 'v1.5.78 potvrzení musí být navázané jen na ruční editaci');
 assert(appMenuJsV1578.includes('allowRuleViolations: true'), 'v1.5.78 ruční potvrzení musí umět explicitně povolit uložení');
-assert(appMenuJsV1578.includes("target.matches('[data-press-rotation-date]')") && appMenuJsV1578.includes('app.adminRotationDirty = true'), 'v1.5.78 změna rotace TNKS01/TPKW01 musí označit editor jako ručně změněný');
+
+assert(!adminRotationEditorJsV1578.includes('baselineKeys') && !adminRotationEditorJsV1578.includes('baselineCheck'), 'v1.5.79 ruční save nesmí filtrovat jen nové chyby proti uloženému rozpisu');
+assert(adminRotationEditorJsV1578.includes('function adminRotationHasManualDomChanges'), 'v1.5.79 chybí DOM fallback pro skutečnou ruční změnu');
+assert(adminRotationEditorJsV1578.includes(".filter((issue) => issue && issue.severity === 'error')"), 'v1.5.79 musí před ručním uložením vzít všechny aktuální chyby');
+assert(appMenuJsV1578.includes('adminRotationHasManualDomChanges(monthKey, manualMonth)'), 'v1.5.79 save musí použít DOM fallback ruční změny');
+assert(appMenuJsV1578.includes("target.matches('[data-rot-field], [data-note-field], [data-press-rotation-date]')"), 'v1.5.79 change musí značit všechny ruční rozpisové vstupy');
+assert(appMenuJsV1578.indexOf('adminRotationConfirmManualRuleOverride(overrideState)') < appMenuJsV1578.indexOf('saveAdminRotationFromDom(monthKey, saveOptions)'), 'v1.5.79 potvrzení musí proběhnout před uložením');
+assert(stylesAdminRotationEditorCss.includes('RaK v1.5.79 – Kontrola měsíce celá viditelná'), 'v1.5.79 chybí CSS guard panelu Kontrola měsíce');
+assert(stylesAdminRotationEditorCss.includes('max-height:none !important') && stylesAdminRotationEditorCss.includes('overflow:visible !important'), 'v1.5.79 Kontrola měsíce nesmí mít pevný ořez');
 
 console.log('[critical-runtime-smoke] OK navigation+rotation+food baseline locked; stable qr.js boot; extended diagnostics idle; version sync ' + packageJson.version + '; Games removed; XLSX+JSZip lazy; Supabase eager; DOM security eager');

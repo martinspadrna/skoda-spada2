@@ -213,7 +213,9 @@ function bindAppMenuHandlers(body) {
   body.addEventListener('change', (event) => {
     const target = event.target;
     if (!target || typeof target.matches !== 'function') return;
-    if (target.matches('[data-press-rotation-date]') && typeof app !== 'undefined' && app) app.adminRotationDirty = true;
+    if (target.matches('[data-rot-field], [data-note-field], [data-press-rotation-date]') && typeof app !== 'undefined' && app) {
+      app.adminRotationDirty = true;
+    }
     if (target.matches('#rakFullSettingsBackupFile')) {
       void handleFullSettingsBackupFileSelection(target, body);
       return;
@@ -1441,10 +1443,14 @@ function bindAppMenuHandlers(body) {
         if (typeof adminHandleRotationGeneratorWizardAction === 'function' && adminHandleRotationGeneratorWizardAction(adminAction, target, body)) return;
       }
       if (adminAction === 'save-rotation') {
-        const isManualEdit = !!(typeof app !== 'undefined' && app && app.adminRotationDirty === true);
+        const manualMonth = readAdminRotationFromDom(monthKey);
+        const isManualEdit = !!(
+          (typeof app !== 'undefined' && app && app.adminRotationDirty === true)
+          || (typeof adminRotationHasManualDomChanges === 'function'
+              && adminRotationHasManualDomChanges(monthKey, manualMonth))
+        );
         let saveOptions = null;
         if (isManualEdit) {
-          const manualMonth = readAdminRotationFromDom(monthKey);
           const overrideState = adminRotationBuildManualRuleOverrideState(monthKey, manualMonth);
           if (overrideState.blockingIssues.length && !adminRotationConfirmManualRuleOverride(overrideState)) {
             const cancelledStatus = document.getElementById('adminOnlineSaveStatus') || document.getElementById('adminRotationDraftStatus');

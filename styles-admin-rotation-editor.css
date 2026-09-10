@@ -292,3 +292,13 @@ body.ladaMode #appMenuBody[data-admin-view="rotation"] #adminRotationEditor .adm
 #appMenuBody[data-admin-view="rotation"] #adminRotationEditor .appMenuInlineFieldWrapCanRemove{
   position:relative !important;
 }
+
+/* RaK v1.5.79 – Kontrola měsíce celá viditelná bez vnitřního ořezu na iPhonu. */
+#appMenuBody[data-admin-view="rotation"] #adminRotationEditor .appMenuFreeNamesBox{
+  max-height:none !important;
+  overflow:visible !important;
+}
+#appMenuBody[data-admin-view="rotation"] #adminRotationEditor .appMenuMonthCheckList{
+  max-height:none !important;
+  overflow:visible !important;
+}
