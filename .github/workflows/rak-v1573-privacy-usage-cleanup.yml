@@ -1,0 +1,72 @@
+name: RaK v1.5.73 privacy usage cleanup
+
+on:
+  push:
+    branches: [development]
+    paths:
+      - '.github/workflows/rak-v1573-privacy-usage-cleanup.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  migrate:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout development
+        uses: actions/checkout@v4
+        with:
+          ref: development
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Remove privacy usage tracking remnants
+        run: python3 tools/rak-v1573-privacy-usage-cleanup.py
+
+      - name: Verify focused privacy cleanup
+        run: |
+          node --check supabase-bridge.js
+          node --check admin-service-usage.js
+          node --check app-menu.js
+          node --check app-menu-admin-renderer.js
+          node --check app-menu-pages.js
+          node --check tools/critical-runtime-smoke.mjs
+          node tools/critical-runtime-smoke.mjs
+          python3 - <<'PY'
+          from pathlib import Path
+          import json
+          bridge = Path('supabase-bridge.js').read_text(encoding='utf-8')
+          service = Path('admin-service-usage.js').read_text(encoding='utf-8')
+          menu = Path('app-menu.js').read_text(encoding='utf-8')
+          renderer = Path('app-menu-admin-renderer.js').read_text(encoding='utf-8')
+          css = Path('styles-menu-polish.css').read_text(encoding='utf-8')
+          forbidden_bridge = ['APP_USAGE_', 'rak_usage_presence', 'recordAppUsage', 'loadAppUsage', 'scheduleAppUsage', 'appUsageStatus']
+          assert all(token not in bridge for token in forbidden_bridge)
+          assert '.adminUsage' not in css
+          assert 'service-load-status' not in menu and 'service-clean-invites' not in menu
+          assert "    'usage'," not in menu
+          assert 'Připojení, reporty' not in renderer
+          assert 'Servis nevede přehled připojených zařízení ani běžného používání aplikace.' in service
+          assert not Path('app-usage-smoke-v963.js').exists()
+          assert not Path('assets/docs/sql/supabase_app_usage_v963.sql').exists()
+          assert json.loads(Path('package.json').read_text(encoding='utf-8'))['version'] == '1.5.73'
+          assert "CACHE_VERSION = 'v1.5.73'" in Path('sw.js').read_text(encoding='utf-8')
+          print('focused privacy cleanup OK')
+          PY
+          git diff --check
+
+      - name: Full repository check
+        run: npm run check
+
+      - name: Commit cleanup after checks pass
+        run: |
+          rm -f .github/workflows/rak-v1573-privacy-usage-cleanup.yml tools/rak-v1573-privacy-usage-cleanup.py
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "Remove legacy connection usage tracking in v1.5.73"
+          git push origin development
