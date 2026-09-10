@@ -27,7 +27,78 @@ jobs:
       - name: Retire complete legacy-mid layer
         shell: bash
         run: |
-          python3 -c "import base64;exec(base64.b64decode('CmZyb20gcGF0aGxpYiBpbXBvcnQgUGF0aAppbXBvcnQganNvbgoKcm9vdCA9IFBhdGgoJy4nKQpsZWdhY3lfcGF0aCA9IHJvb3QgLyAnc3R5bGVzLW92ZXJyaWRlcy1sZWdhY3ktbWlkLmNzcycKYWRtaW5fcGF0aCA9IHJvb3QgLyAnc3R5bGVzLWFkbWluLXJvdGF0aW9uLWVkaXRvci5jc3MnCm5hdl9wYXRoID0gcm9vdCAvICdzdHlsZXMtYm90dG9tLW5hdi1ydW50aW1lLmNzcycKaW5kZXhfcGF0aCA9IHJvb3QgLyAnaW5kZXguaHRtbCcKc21va2VfcGF0aCA9IHJvb3QgLyAndG9vbHMvY3JpdGljYWwtcnVudGltZS1zbW9rZS5tanMnCgpsZWdhY3kgPSBsZWdhY3lfcGF0aC5yZWFkX3RleHQoZW5jb2Rpbmc9J3V0Zi04JykKYWRtaW5fbWFya2VyID0gJy8qIHYuMS41ICg3ODgpOiBBZG1pbmlzdHJhY2Ugcm96cGlzxa8g4oCTIHJ5Y2hsw6kgT2RlYnJhdCBhIG9jaHJhbmEgZWRpdGFjZSBwxZlpIG9kZMOhbGVuw60uICovJwpuYXZfbWFya2VyID0gJy8qIHYuMS41ICg3OTIpOiBHbG9iw6FsbsOtIHNwb2Ruw60gbGnFoXRhIHBldm7EmyB1a290dmVuw6EgZG9sZSArIG9ic2FoIHbFvmR5IG5hZCBuw60uICovJwoKYXNzZXJ0IGxlZ2FjeS5zdGFydHN3aXRoKGFkbWluX21hcmtlciksICdsZWdhY3ktbWlkIG5lemHEjcOtbmEgb8SNZWvDoXZhbsO9bSBBZG1pbiBSb3RhdGlvbiBibG9rZW0nCnBfbmF2ID0gbGVnYWN5LmZpbmQobmF2X21hcmtlcikKYXNzZXJ0IHBfbmF2ID4gMCwgJ25lbmFsZXplbiBtYXJrZXIgZ2xvYsOhbG7DrSBzcG9kbsOtIGxpxaF0eScKCmFkbWluX2NodW5rID0gbGVnYWN5WzpwX25hdl0ucnN0cmlwKCkgKyAnXG4nCm5hdl9jaHVuayA9IGxlZ2FjeVtwX25hdjpdLnJzdHJpcCgpICsgJ1xuJwoKYXNzZXJ0ICcuYWRtaW5Sb3RhdGlvblF1aWNrUmVtb3ZleycgaW4gYWRtaW5fY2h1bmsKYXNzZXJ0ICcjYXBwTWVudUJvZHlbZGF0YS1hZG1pbi12aWV3PSJyb3RhdGlvbiJdICNhZG1pblJvdGF0aW9uRWRpdG9yIC5hZG1pblJvdGF0aW9uU2F2ZURvY2t7JyBpbiBhZG1pbl9jaHVuawphc3NlcnQgJyNhcHBNZW51Qm9keVtkYXRhLWFkbWluLXZpZXc9InJvdGF0aW9uIl0gI2FkbWluUm90YXRpb25FZGl0b3IgLmFkbWluUm90YXRpb25Db21wYWN0T3ZlcnZpZXd7JyBpbiBhZG1pbl9jaHVuawphc3NlcnQgJy5ib3R0b21OYXZ7JyBub3QgaW4gYWRtaW5fY2h1bmsKYXNzZXJ0IG5hdl9jaHVuay5zdGFydHN3aXRoKG5hdl9tYXJrZXIpCmFzc2VydCAnLmJvdHRvbU5hdnsnIGluIG5hdl9jaHVuawphc3NlcnQgJy0tYm90dG9tLW5hdi1oOjU2cHg7JyBpbiBuYXZfY2h1bmsKYXNzZXJ0ICdhZG1pblJvdGF0aW9uJyBub3QgaW4gbmF2X2NodW5rCmFzc2VydCBub3QgYWRtaW5fcGF0aC5leGlzdHMoKSBhbmQgbm90IG5hdl9wYXRoLmV4aXN0cygpLCAndjEuNS43NyBvd25lciBzb3Vib3IgdXogZXhpc3R1amUnCgpkZWYgYWRkX293bmVyX21hcmtlcihjaHVuaywgbWFya2VyLCBvd25lcik6CiAgICBhc3NlcnQgY2h1bmsuc3RhcnRzd2l0aChtYXJrZXIpCiAgICByZXR1cm4gbWFya2VyICsgJ1xuJyArIG93bmVyICsgY2h1bmtsZW4obWFya2VyKTpdCgphZG1pbl9vd25lciA9IGFkZF9vd25lcl9tYXJrZXIoCiAgICBhZG1pbl9jaHVuaywKICAgIGFkbWluX21hcmtlciwKICAgICcvKiBSYUsgdjEuNS43NyDigJMgb3duZXI6IEFkbWluaXN0cmFjZSDihpIgUm96cGlzeSAvIGVkaXRvciwgaU9TIGlucHV0IGd1YXJkIGEgbcSbc8OtxI1uw60gcMWZZWhsZWQgKi8nCikKbmF2X293bmVyID0gYWRkX293bmVyX21hcmtlcigKICAgIG5hdl9jaHVuaywKICAgIG5hdl9tYXJrZXIsCiAgICAnLyogUmFLLHYxLjUuNzcg4oCTIG93bmVyOiBnbG9iw6FsbsOtIHNwb2Ruw60gbmF2aWdhY2UgLyBmaXhlZCBib3R0b20gcnVudGltZSAqLycKKQoKYWRtaW5fcGF0aC53cml0ZV90ZXh0KGFkbWluX293bmVyLCBlbmNvZGluZz0ndXRmLTgnKQpuYXZfcGF0aC53cml0ZV90ZXh0KG5hdl9vd25lciwgZW5jb2Rpbmc9J3V0Zi04JykKbGVnYWN5X3BhdGgudW5saW5rKCkKCmluZGV4ID0gaW5kZXhfcGF0aC5yZWFkX3RleHQoZW5jb2Rpbmc9J3V0Zi04JykKb2xkX2xpbmsgPSAnPGxpbmsgcmVsPSJzdHlsZXNoZWV0IiBocmVmPSJzdHlsZXMtb3ZlcnJpZGVzLWxlZ2FjeS1taWQuY3NzIj4nCmFkbWluX2xpbmsgPSAnPGxpbmsgcmVsPSJzdHlsZXNoZWV0IiBocmVmPSJzdHlsZXMtYWRtaW4tcm90YXRpb24tZWRpdG9yLmNzcyI+JwpuYXZfbGluayA9ICc8bGluayByZWw9InN0eWxlc2hlZXQiIGhyZWY9InN0eWxlcy1ib3R0b20tbmF2LXJ1bnRpbWUuY3NzIj4nCmFzc2VydCBpbmRleC5jb3VudChvbGRfbGluaykgPT0gMSwgJ25lb8SNZWvDoXZhbsO9IHBvxI1ldCBsZWdhY3ktbWlkIGxpbmvFr2wnCmFzc2VydCBhZG1pbl9saW5rIG5vdCBpbiBpbmRleCBhbmQgbmF2X2xpbmsgbm90IGluIGluZGV4CmluZGV4ID0gaW5kZXgucmVwbGFjZShvbGRfbGluaywgYWRtaW5fbGluayArICdcblxuJyArIG5hdl9saW5rLCAxKQppbmRleF9wYXRoLndyaXRlX3RleHQoaW5kZXgsIGVuY29kaW5nPSd1dGYtOCcpCgpzbW9rZSA9IHNtb2tlX3BhdGgucmVhZF90ZXh0KGVuY29kaW5nPSd1dGYtOCcpCm9sZF9yZWFkID0gImNvbnN0IHN0eWxlc092ZXJyaWRlc0xlZ2FjeU1pZENzcyA9IHJlYWQoJ3N0eWxlcy1vdmVycmlkZXMtbGVnYWN5LW1pZC5jc3MnKTtcbiIKbmV3X3JlYWQgPSAoCiAgICAiY29uc3Qgc3R5bGVzQWRtaW5Sb3RhdGlvbkVkaXRvckNzcyA9IHJlYWQoJ3N0eWxlcy1hZG1pbi1yb3RhdGlvbi1lZGl0b3IuY3NzJyk7XG4iCiAgICAiY29uc3Qgc3R5bGVzQm90dG9tTmF2UnVudGltZUNzcyA9IHJlYWQoJ3N0eWxlcy1ib3R0b20tbmF2LXJ1bnRpbWUuY3NzJyk7XG4iCiAgICAiY29uc3Qgc3R5bGVzT3ZlcnJpZGVzTGVnYWN5TWlkQ3NzID0gc3R5bGVzQWRtaW5Sb3RhdGlvbkVkaXRvckNzcyArICdcXG4nICsgc3R5bGVzQm90dG9tTmF2UnVudGltZUNzcyO1xuIikKYXNzZXJ0IG9sZF9yZWFkIGluIHNtb2tlLCAnbmVuYWxlemVuYSBsZWdhY3ktbWlkIHJlYWQga290dmEnCnNtb2tlID0gc21va2UucmVwbGFjZShvbGRfcmVhZCwgbmV3X3JlYWQsIDEpCgpvbGRfcG9zX2V4cHIgPSAiaW5kZXhIdG1sLmluZGV4T2YoJ3N0eWxlcy1vdmVycmlkZXMtbGVnYWN5LW1pZC5jc3MnKSIKY291bnRfcG9zID0gc21va2UuY291bnQob2xkX3Bvc19leHByKQphc3NlcnQgY291bnRfcG9zID49IDYsIGYnbmVvxI1la8OhdmFuxJsgbcOhbG8gbGVnYWN5LW1pZCBjYXNjYWRlIGtvdGV2OiB7Y291bnRfcG9zfScKc21va2UgPSBzbW9rZS5yZXBsYWNlKG9sZF9wb3NfZXhwciwgImluZGV4SHRtbC5pbmRleE9mKCdzdHlsZXMtYm90dG9tLW5hdi1ydW50aW1lLmNzcycpIikKCmFuY2hvciA9ICJhc3NlcnQodmVyY2VsSWdub3JlQnVpbGQuaW5jbHVkZXMoJ1ZFUkNFTF9HSVRfUFJFVklPVVNfU0hBJykgJiYgdmVyY2VsSWdub3JlQnVpbGQuaW5jbHVkZXMoJ2hlbHBlck9ubHknKSwgJ1ZlcmNlbCBpZ25vcmUgZ3VhcmQgbXVzw60gcG9yb3Zuw6F2YXQgem3Em27Em27DqSBzb3Vib3J5Jyk7Igphc3NlcnQgYW5jaG9yIGluIHNtb2tlLCAnbmVuYWxlemVuYSB2MS41Ljc2IFZlcmNlbCBndWFyZCBrb3R2YScKbmV3X2d1YXJkID0gcicnJwphc3NlcnQoIWZzLmV4aXN0c1N5bmMocGF0aC5qb2luKHJvb3QsICdzdHlsZXMtb3ZlcnJpZGVzLWxlZ2FjeS1taWQuY3NzJykpLCAndjEuNS43NyBtdXNpIGxlZ2FjeS1taWQgZnl6aWNreSBvZHN0cmFuaXQnKTsKYXNzZXJ0KCFpbmRleEh0bWwuaW5jbHVkZXMoJ3N0eWxlcy1vdmVycmlkZXMtbGVnYWN5LW1pZC5jc3MnKSwgJ3YxLjUuNzcgbmVzbWkgbGVnYWN5LW1pZCBkYWwgTmHEmcOtdGF0Jyk7CmFzc2VydChzdHlsZXNBZG1pblJvdGF0aW9uRWRpdG9yQ3NzLnN0YXJ0c1dpdGgoJy8qIHYuMS41ICg3ODgpOiBBZG1pbmlzdHJhY2Ugcm96cGlzxa8g4oCTIHJ5Y2hsw6kgT2RlYnJhdCBhIG9jaHJhbmEgZWRpdGFjZSBwxZlpIG9kZMOhbGVuw60uICovJyksICdBZG1pbiBSb3RhdGlvbiBlZGl0b3Igb3duZXIgbXVzw60gemFjaG92YXQgcMWvdm9kbsOtIHBydm7DrSBjYXNjYWRlIGJsb2snKTsKYXNzZXJ0KHN0eWxlc0FkbWluUm90YXRpb25FZGl0b3JDc3MuaW5jbHVkZXMoJ1JhSyB2MS41Ljc3IOKAkyBvd25lcjogQWRtaW5pc3RyYWNlIOKGkiBSb3pwaXN5IC8gZWRpdG9yLCBpT1MgaW5wdXQgZ3VhcmQgYSBtxJtzw63EjW7DrSBwxZllbWhsZWQnKSwgJ0NoeWJpIHYxLjUuNzcgQWRtaW4gUm90YXRpb24gZWRpdG9yIG93bmVyIG1hcmtlcicpOwphc3NlcnQoc3R5bGVzQWRtaW5Sb3RhdGlvbkVkaXRvckNzcy5pbmNsdWRlcygnLmFkbWluUm90YXRpb25RdWlja1JlbW92ZXsnKSAmJiBzdHlsZXNBZG1pblJvdGF0aW9uRWRpdG9yQ3NzLmluY2x1ZGVzKCcuYWRtaW5Sb3RhdGlvblNhdmVEb2NreycpICYmIHN0eWxlc0FkbWluUm90YXRpb25FZGl0b3JDc3MuaW5jbHVkZXMoJy5hZG1pblJvdGF0aW9uQ29tcGFjdE92ZXJ2aWV3eycpLCAnQWRtaW4gUm90YXRpb24gZWRpdG9yIG93bmVyIG11c2kgemFjaG92YXQgZWRpdG9yb3ZlIGJsb2t5Jyk7CmFzc2VydCgic3R5bGVzQWRtaW5Sb3RhdGlvbkVkaXRvckNzcy5pbmNsdWRlcygnLmJvdHRvbU5hdnsnKSA9PSBGYWxzZSwgJ0FkbWluIFJvdGF0aW9uIGVkaXRvciBvd25lciBuZXNtw60gb2JzYWhvdmF0IHNwb2Ruw60gbmF2aWdhY2knKTsKYXNzZXJ0KHN0eWxlc0JvdHRvbU5hdlJ1bnRpbWVDc3Muc3RhcnRzV2l0aCgnLyogdi4xLjUgKDc5Mik6IEdsb2LDoWxuw60gc3BvZG7DrSBsacWhdGEgcGV2bsSbIHVrb3R2ZW7DoSBkb2xlICsgb2JzYWggdsW+ZHkgbmFkIG7DrS4gKi8nKSwgJ0JvdHRvbS1uYXYgb3duZXIgbXVzw60gemFjaG92YXQgcMWvdm9kbsOtIHBydm7DrSBuYXYgYmxvaycpOwphc3NlcnQoc3R5bGVzQm90dG9tTmF2UnVudGltZUNzcy5pbmNsdWRlcygnUmFLLHYxLjUuNzcg4oCTIG93bmVyOiBnbG9iw6FsbsOtIHNwb2Ruw60gbmF2aWdhY2UgLyBmaXhlZCBib3R0b20gcnVudGltZScpLCAnQ2h5YmkgdjEuNS43NyBib3R0b20tbmF2IG93bmVyIG1hcmtlcicpOwphc3NlcnQoc3R5bGVzQm90dG9tTmF2UnVudGltZUNzcy5pbmNsdWRlcygnLS1ib3R0b20tbmF2LWg6NTZweDsnKSAmJiBzdHlsZXNCb3R0b21OYXZSdW50aW1lQ3NzLmluY2x1ZGVzKCcuYm90dG9tTmF2eycpLCAnQm90dG9tLW5hdiBvd25lciBtdXNpIHphY2hvdmF0IGZpeGVkLW5hdiBydW50aW1lJyk7CmFzc2VydCghc3R5bGVzQm90dG9tTmF2UnVudGltZUNzcy5pbmNsdWRlcygnYWRtaW5Sb3RhdGlvbicpLCAnQm90dG9tLW5hdiBvd25lciBuZXNtw60gb2JzYWhvdmF0IEFkbWluaXN0cmFjaSBSb3pwaXPFrycpOwpjb25zdCBjYWxjdWxhdG9yc01pZENzc1Bvc1YxNTc3ID0gaW5kZXhIdG1sLmluZGV4T2YoJ3N0eWxlcy1jYWxjdWxhdG9ycy1taWQuY3NzJyk7CmNvbnN0IGFkbWluUm90YXRpb25FZGl0b3JDc3NQb3NWMTU3NyA9IGluZGV4SHRtbC5pbmRleE9mKCdzdHlsZXMtYWRtaW4tcm90YXRpb24tZWRpdG9yLmNzcycpOwpjb25zdCBib3R0b21OYXZSdW50aW1lQ3NzUG9zVjE1NzcgPSBpbmRleEh0bWwuaW5kZXhPZignc3R5bGVzLWJvdHRvbS1uYXYtcnVudGltZS5jc3MnKTsKYXNzZXJ0KGNhbGN1bGF0b3JzTWlkQ3NzUG9zVjE1NzcgPj0gMCAmJiBjYWxjdWxhdG9yc01pZENzc1Bvc1YxNTc3IDwgYWRtaW5Sb3RhdGlvbkVkaXRvckNzc1Bvc1YxNTc3ICYmIGFkbWluUm90YXRpb25FZGl0b3JDc3NQb3NWMTU3NyA8IGJvdHRvbU5hdlJ1bnRpbWVDc3NQb3NWMTU3NywgJ3YxLjUuNzcgbXVzaSB6YWNob3ZhdCBwb8WZYWTDrSBDYWxjdWxhdG9ycyDihpIgQWRtaW4gUm90YXRpb24g4oaSIEJvdHRvbSBOYXYnKTsKJycnCnNtb2tlID0gc21va2UucmVwbGFjZShhbmNob3IsIGFuY2hvciArICdcXG4nICsgbmV3X2d1YXJkLnN0cmlwKCksIDEpCnNtb2tlX3BhdGgud3JpdGVfdGV4dChzbW9rZSwgZW5jb2Rpbmc9J3V0Zi04JykKCmFwcF9wYXRoID0gcm9vdCAvICdhcHAuanMnCmFwcCA9IGFwcF9wYXRoLnJlYWRfdGV4dChlbmNvZGluZz0ndXRmLTgnKQphc3NlcnQgYXBwLmNvdW50KCcxLjUuNzYnKSA+PSAyLCAnYXBwLmpzIG5lbsOtIG5hIG/SjWVrw6F2YW7DqSAxLjUuNzYnCmFwcF9wYXRoLndyaXRlX3RleHQoYXBwLnJlcGxhY2UoJzEuNS43NicsICcxLjUuNzcnKSwgZW5jb2Rpbmc9J3V0Zi04JykKCnBrZ19wYXRoID0gcm9vdCAvICdwYWNrYWdlLmpzb24nCnBrZyA9IGpzb24ubG9hZHMocGtnX3BhdGgucmVhZF90ZXh0KGVuY29kaW5nPSd1dGYtOCcpKQphc3NlcnQgcGtnLmdldCgndmVyc2lvbicpID09ICcxLjUuNzYnLCAncGFja2FnZS5qc29uIG5lbsOtIG5hIDEuNS43NicKcGtnWyd2ZXJzaW9uJ10gPSAnMS41Ljc3Jwpwa2dfcGF0aC53cml0ZV90ZXh0KGpzb24uZHVtcHMocGtnLCBlbnN1cmVfYXNjaWk9RmFsc2UsIGluZGVudD0yKSArICdcbiIsIGVuY29kaW5nPSd1dGYtOCcpCgpzd19wYXRoID0gcm9vdCAvICdzdy5qcycKc3cgPSBzd19wYXRoLnJlYWRfdGV4dChlbmNvZGluZz0ndXRmLTgnKQphc3NlcnQgIkNBQ0hFX1ZFUlNJT04gPSAndjEuNS43NiciIGluIHN3LCAnc3cuanMgbmVuw60gbmEgMS41Ljc2Jwpzd19wYXRoLndyaXRlX3RleHQoc3cucmVwbGFjZSgiQ0FDSEVfVkVSU0lPTiA9ICd2MS41Ljc2JyIsICJDQUNIRV9WRVJTSU9OID0gJ3YxLjUuNzcnIiwgMSksIGVuY29kaW5nPSd1dGYtOCcpCgpwcmludCgndjEuNS43NyByZW1vdmVkIGxlZ2FjeS1taWQgYnl0ZXM6JywgbGVuKGxlZ2FjeS5lbmNvZGUoJ3V0Zi04JykpKQpwcmludCgndjEuNS43NyBhZG1pbiByb3RhdGlvbiBvd25lciBieXRlczonLCBsZW4oYWRtaW5fb3duZXIuZW5jb2RlKCd1dGYtOCcpKSkKcHJpbnQoJ3YxLjUuNzcyIGJvdHRvbSBuYXYgb3duZXIgYnl0ZXM6JywgbGVuKG5hdl9vd25lci5lbmNvZGUoJ3V0Zi04JykpKQpwcmludCgndjEuNS43NyByZXBsYWNlZCBoaXN0b3JpY2FsIGNhc2NhZGUgYW5jaG9yczonLCBjb3VudF9wb3MpCg=='))"
+          python3 - <<'PY'
+          from pathlib import Path
+          import json
+          r = Path('.')
+          lp = r / 'styles-overrides-legacy-mid.css'
+          ap = r / 'styles-admin-rotation-editor.css'
+          np = r / 'styles-bottom-nav-runtime.css'
+          ip = r / 'index.html'
+          sp = r / 'tools/critical-runtime-smoke.mjs'
+          x = lp.read_text(encoding='utf-8')
+          am = '/* v.1.5 (788): Administrace rozpisů – rychlé Odebrat a ochrana editace při oddálení. */'
+          nm = '/* v.1.5 (792): Globální spodní lišta pevně ukotvená dole + obsah vždy nad ní. */'
+          assert x.startswith(am)
+          p = x.find(nm)
+          assert p > 0
+          a = x[:p].rstrip() + '\n'
+          n = x[p:].rstrip() + '\n'
+          assert '.adminRotationQuickRemove{' in a and '.adminRotationSaveDock{' in a and '.adminRotationCompactOverview{' in a and '.bottomNav{' not in a
+          assert n.startswith(nm) and '.bottomNav{' in n and '--bottom-nav-h:56px;' in n and 'adminRotation' not in n
+          assert not ap.exists() and not np.exists()
+          a = a.replace(am, am + '\n/* RaK v1.5.77 – owner: Administrace → Rozpisy / editor + iOS guard */', 1)
+          n = n.replace(nm, nm + '\n/* RaK v1.5.77 – owner: globální spodní navigace / fixed bottom runtime */', 1)
+          ap.write_text(a, encoding='utf-8')
+          np.write_text(n, encoding='utf-8')
+          lp.unlink()
+          h = ip.read_text(encoding='utf-8')
+          old = '<link rel="stylesheet" href="styles-overrides-legacy-mid.css">'
+          new = '<link rel="stylesheet" href="styles-admin-rotation-editor.css">\n<link rel="stylesheet" href="styles-bottom-nav-runtime.css">'
+          assert h.count(old) == 1
+          ip.write_text(h.replace(old, new, 1), encoding='utf-8')
+          s = sp.read_text(encoding='utf-8')
+          oldread = "const stylesOverridesLegacyMidCss = read('styles-overrides-legacy-mid.css');\n"
+          newread = "const stylesAdminRotationEditorCss = read('styles-admin-rotation-editor.css');\nconst stylesBottomNavRuntimeCss = read('styles-bottom-nav-runtime.css');\nconst stylesOverridesLegacyMidCss = stylesAdminRotationEditorCss + '\\n' + stylesBottomNavRuntimeCss;\n"
+          assert oldread in s
+          s = s.replace(oldread, newread, 1)
+          oldpos = "indexHtml.indexOf('styles-overrides-legacy-mid.css')"
+          c = s.count(oldpos)
+          assert c >= 6
+          s = s.replace(oldpos, "indexHtml.indexOf('styles-bottom-nav-runtime.css')")
+          anchor = "assert(vercelIgnoreBuild.includes('VERCEL_GIT_PREVIOUS_SHA') && vercelIgnoreBuild.includes('helperOnly'), 'Vercel ignore guard musí porovnávat změněné soubory');"
+          assert anchor in s
+          g = """assert(!fs.existsSync(path.join(root, 'styles-overrides-legacy-mid.css')), 'v1.5.77 legacy-mid musí být odstraněn');
+          assert(!indexHtml.includes('styles-overrides-legacy-mid.css'), 'v1.5.77 legacy-mid nesmí být v indexu');
+          assert(stylesAdminRotationEditorCss.includes('RaK v1.5.77 – owner: Administrace → Rozpisy / editor + iOS guard'), 'Chybí v1.5.77 admin rotation editor owner');
+          assert(stylesAdminRotationEditorCss.includes('.adminRotationQuickRemove{') && stylesAdminRotationEditorCss.includes('.adminRotationSaveDock{') && stylesAdminRotationEditorCss.includes('.adminRotationCompactOverview{'), 'Admin rotation editor owner je neúplný');
+          assert(!stylesAdminRotationEditorCss.includes('.bottomNav{'), 'Admin rotation editor nesmí obsahovat bottom nav');
+          assert(stylesBottomNavRuntimeCss.includes('RaK v1.5.77 – owner: globální spodní navigace / fixed bottom runtime'), 'Chybí v1.5.77 bottom nav owner');
+          assert(stylesBottomNavRuntimeCss.includes('--bottom-nav-h:56px;') && stylesBottomNavRuntimeCss.includes('.bottomNav{'), 'Bottom nav owner je neúplný');
+          assert(!stylesBottomNavRuntimeCss.includes('adminRotation'), 'Bottom nav owner nesmí obsahovat admin rotation');
+          const adminRotationEditorCssPosV1577 = indexHtml.indexOf('styles-admin-rotation-editor.css');
+          const bottomNavRuntimeCssPosV1577 = indexHtml.indexOf('styles-bottom-nav-runtime.css');
+          assert(adminRotationEditorCssPosV1577 >= 0 && adminRotationEditorCssPosV1577 < bottomNavRuntimeCssPosV1577, 'v1.5.77 owner pořadí musí být Admin Rotation → Bottom Nav');"""
+          s = s.replace(anchor, anchor + '\n' + g.strip(), 1)
+          sp.write_text(s, encoding='utf-8')
+          pth = r / 'app.js'
+          t = pth.read_text(encoding='utf-8')
+          assert t.count('1.5.76') >= 2
+          pth.write_text(t.replace('1.5.76', '1.5.77'), encoding='utf-8')
+          pth = r / 'package.json'
+          j = json.loads(pth.read_text(encoding='utf-8'))
+          assert j['version'] == '1.5.76'
+          j['version'] = '1.5.77'
+          pth.write_text(json.dumps(j, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
+          pth = r / 'sw.js'
+          t = pth.read_text(encoding='utf-8')
+          assert "CACHE_VERSION = 'v1.5.76'" in t
+          pth.write_text(t.replace("CACHE_VERSION = 'v1.5.76'", "CACHE_VERSION = 'v1.5.77'", 1), encoding='utf-8')
+          print('legacy-mid removed bytes', len(x.encode()))
+          print('admin owner bytes', len(a.encode()))
+          print('bottom nav owner bytes', len(n.encode()))
+          print('cascade anchors migrated', c)
+          PY
 
       - name: Verify focused retirement
         shell: bash
