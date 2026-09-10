@@ -55,6 +55,9 @@ smoke = smoke.replace(
     read_anchor + "const stylesDashboardSyncCss = read('styles-dashboard-sync.css');\nconst stylesAdminServiceCss = read('styles-admin-service.css');\n",
     1,
 )
+obsolete_v1571 = "assert(stylesOverridesLegacyMidCss.trimStart().startsWith('/* v.1.1 (725) – dashboard ruční sync + administrace servis */'), 'legacy-mid musí po v1.5.71 začínat přesně Dashboard/admin servis blokem');\n"
+assert obsolete_v1571 in smoke, 'nenalezena překonaná v1.5.71 legacy-mid kotva'
+smoke = smoke.replace(obsolete_v1571, '', 1)
 assert_anchor = "assert(rotationMonthCssPosV1571 >= 0 && rotationMonthCssPosV1571 < lowEndPerformanceCssPosV1571 && lowEndPerformanceCssPosV1571 < legacyMidCssPosV1571, 'Low-end performance owner musí zůstat na původní cascade hranici před legacy-mid');\n"
 assert assert_anchor in smoke, 'nenalezena v1.5.71 assert kotva'
 new_asserts = r"""assert(stylesDashboardSyncCss.includes('RaK v1.5.72 – owner: Dashboard ruční sync'), 'Chybí v1.5.72 Dashboard sync owner marker');
@@ -87,7 +90,6 @@ sw = read('sw.js')
 assert "CACHE_VERSION = 'v1.5.71'" in sw
 write('sw.js', sw.replace("CACHE_VERSION = 'v1.5.71'", "CACHE_VERSION = 'v1.5.72'", 1))
 
-# Exact declaration-content preservation proof: only owner marker comments are new.
 assert read('styles-dashboard-sync.css').split('\n', 1)[1] == dashboard_chunk
 assert read('styles-admin-service.css').split('\n', 1)[1] == admin_chunk
 assert read(legacy_name).startswith(next_marker)
