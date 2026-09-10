@@ -1,0 +1,206 @@
+/* RaK v1.5.76 – owner: Nastavení / profil, výkon, vzhled a obecná nastavení */
+/* RaK v1.5.75 – owner: Nastavení → Výkon / device performance card */
+/* v.1.1 (725) – výkon zařízení / Láďův režim v nastavení */
+.rakDevicePerfCard{
+  border-color:rgba(124,255,124,.18) !important;
+}
+.rakDevicePerfCard .appMenuCardTitle::after{
+  content:"";
+  display:inline-block;
+  width:8px;
+  height:8px;
+  margin-left:8px;
+  border-radius:999px;
+  background:var(--rakThemeAccent,#7CFF7C);
+  box-shadow:0 0 18px rgba(124,255,124,.42);
+  vertical-align:middle;
+}
+.rakDevicePerfActions{
+  margin-top:12px !important;
+  display:grid !important;
+  grid-template-columns:repeat(3,minmax(0,1fr)) !important;
+  gap:8px !important;
+}
+.rakDevicePerfActions .appMenuAction{
+  min-height:42px !important;
+  padding:9px 10px !important;
+  font-size:12px !important;
+  line-height:1.15 !important;
+}
+body.ladaMode .rakDevicePerfCard,
+body.lightweightMode .rakDevicePerfCard,
+body.lowEndDevice .rakDevicePerfCard{
+  backdrop-filter:none !important;
+  -webkit-backdrop-filter:none !important;
+  box-shadow:none !important;
+}
+@media (max-width:390px){
+  .rakDevicePerfActions{grid-template-columns:1fr !important;}
+}
+
+/* v.1.5 (747): Více → Nastavení – kompaktnější profil, výkon a tlačítka ve dvou sloupcích. */
+#appMenuBody .appMenuProfileCard{
+  padding:10px 12px !important;
+  gap:7px !important;
+}
+#appMenuBody .appMenuProfileCard .appMenuCardTitle,
+#appMenuBody .rakDevicePerfCard .appMenuCardTitle,
+#appMenuBody .appMenuAppSettingsCard .appMenuCardTitle,
+#appMenuBody .appMenuThemeCardWrap .appMenuCardTitle{
+  margin-bottom:6px !important;
+  font-size:14px !important;
+  line-height:1.15 !important;
+}
+#appMenuBody .appMenuProfileCard .dashboardLabel{
+  font-size:10px !important;
+  line-height:1.1 !important;
+}
+#appMenuBody .rakDevicePerfCard{
+  gap:7px !important;
+}
+#appMenuBody .rakDevicePerfText{
+  gap:3px !important;
+  font-size:12px !important;
+  line-height:1.18 !important;
+}
+#appMenuBody .rakDevicePerfText .smallText{
+  font-size:10.5px !important;
+  line-height:1.18 !important;
+}
+#appMenuBody .rakDevicePerfActions{
+  margin-top:6px !important;
+  grid-template-columns:repeat(3, minmax(0, 1fr)) !important;
+  gap:6px !important;
+}
+#appMenuBody .rakDevicePerfActions .appMenuAction{
+  min-height:34px !important;
+  padding:7px 6px !important;
+  font-size:11.5px !important;
+  line-height:1.08 !important;
+  border-radius:13px !important;
+}
+#appMenuBody .appMenuAppSettingsCard{
+  padding:10px 12px !important;
+  gap:8px !important;
+}
+#appMenuBody .appMenuSettingsGrid{
+  display:grid !important;
+  grid-template-columns:repeat(2, minmax(0, 1fr)) !important;
+  gap:7px !important;
+}
+#appMenuBody .appMenuSettingsGrid .appMenuSettingBtn{
+  min-height:38px !important;
+  padding:8px 9px !important;
+  justify-content:center !important;
+  text-align:center !important;
+  font-size:12px !important;
+  line-height:1.12 !important;
+  border-radius:14px !important;
+}
+#appMenuBody .appMenuSettingsGrid .appMenuDangerBtn{
+  grid-column:auto !important;
+}
+#appMenuBody .appMenuThemeCardWrap{
+  padding:10px 12px !important;
+  gap:8px !important;
+}
+#appMenuBody .appMenuThemeAccordion{
+  gap:7px !important;
+}
+#appMenuBody .appMenuThemeSummary{
+  min-height:38px !important;
+  padding:8px 10px !important;
+  border-radius:14px !important;
+}
+#appMenuBody .appMenuThemeSummaryTitle{
+  font-size:12px !important;
+  line-height:1.05 !important;
+}
+#appMenuBody .appMenuThemeSummaryMeta{
+  font-size:10.5px !important;
+  line-height:1.1 !important;
+  white-space:nowrap !important;
+  overflow:hidden !important;
+  text-overflow:ellipsis !important;
+}
+#appMenuBody .appMenuThemeAccordionBody{
+  gap:8px !important;
+  padding-top:2px !important;
+}
+#appMenuBody .appMenuThemeGrid,
+#appMenuBody .appMenuBackgroundGrid{
+  grid-template-columns:repeat(2, minmax(0, 1fr)) !important;
+  gap:7px !important;
+  margin-top:0 !important;
+}
+#appMenuBody .appMenuThemeCard,
+#appMenuBody .appMenuBackgroundCard{
+  grid-template-columns:34px minmax(0, 1fr) !important;
+  gap:7px !important;
+  padding:8px !important;
+  min-height:50px !important;
+  border-radius:15px !important;
+}
+#appMenuBody .appMenuThemeSwatch,
+#appMenuBody .appMenuBackgroundSwatch{
+  width:34px !important;
+  height:34px !important;
+  border-radius:12px !important;
+}
+#appMenuBody .appMenuThemeTitle{
+  font-size:11.5px !important;
+  line-height:1.08 !important;
+  white-space:nowrap !important;
+  overflow:hidden !important;
+  text-overflow:ellipsis !important;
+}
+#appMenuBody .appMenuThemeBadge{
+  font-size:9.5px !important;
+  line-height:1.05 !important;
+  white-space:nowrap !important;
+  overflow:hidden !important;
+  text-overflow:ellipsis !important;
+}
+#appMenuBody .appMenuStandaloneBack{
+  width:100% !important;
+  min-height:42px !important;
+  margin-top:0 !important;
+  justify-content:center !important;
+  text-align:center !important;
+  border-radius:16px !important;
+}
+@media (max-width:390px){
+  #appMenuBody .rakDevicePerfActions{
+    grid-template-columns:repeat(3, minmax(0, 1fr)) !important;
+  }
+  #appMenuBody .appMenuSettingsGrid,
+  #appMenuBody .appMenuThemeGrid,
+  #appMenuBody .appMenuBackgroundGrid{
+    grid-template-columns:repeat(2, minmax(0, 1fr)) !important;
+  }
+  #appMenuBody .appMenuSettingsGrid .appMenuSettingBtn,
+  #appMenuBody .rakDevicePerfActions .appMenuAction{
+    font-size:11px !important;
+    padding-left:5px !important;
+    padding-right:5px !important;
+  }
+}
+
+/* v.1.5 (747): Výkon zařízení – centrovaná tlačítka a výrazný aktivní Láďův režim. */
+#appMenuBody .rakDevicePerfActions .appMenuAction{
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  text-align:center !important;
+  white-space:normal !important;
+}
+#appMenuBody .rakDevicePerfActions .rakLadaModeBtn.isActive{
+  color:#061008 !important;
+  -webkit-text-fill-color:#061008 !important;
+  background:linear-gradient(180deg, var(--green2, #7CFF7C), var(--green, #39FF14)) !important;
+  border-color:rgba(255,255,255,.62) !important;
+  box-shadow:0 0 0 1px rgba(255,255,255,.22), 0 0 22px var(--rakThemeGlow, rgba(124,255,124,.36)) !important;
+  text-shadow:none !important;
+  font-weight:950 !important;
+}
+

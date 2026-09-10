@@ -64,5 +64,6 @@
         }
       ]
     }
-  ]
+  ],
+  "ignoreCommand": "node tools/vercel-ignore-build.mjs"
 }
