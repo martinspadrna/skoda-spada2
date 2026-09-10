@@ -14,6 +14,9 @@ const indexHtml = read('index.html');
 const stylesOverridesLegacyEarlyCss = read('styles-overrides-legacy-early.css');
 const stylesOverridesLegacyMidCss = read('styles-overrides-legacy-mid.css');
 const stylesShiftReportCss = read('styles-shift-report.css');
+const appMenuBugReportJsV1567 = read('app-menu-bug-report.js');
+const adminReportsJsV1567 = read('admin-reports.js');
+const supabaseBridgeJsV1567 = read('supabase-bridge.js');
 const stylesAdminReportsCss = read('styles-admin-reports.css');
 const stylesOverridesLegacyLateCss = read('styles-overrides-legacy-late.css');
 const stylesViewportPolishCss = read('styles-viewport-polish.css');
@@ -100,6 +103,16 @@ for (const cssFile of activePolishCssFiles) {
 
 assert(stylesShiftReportCss.includes('RaK v1.5.65 – vlastník vzhledu Reportu směny'), 'Chybí v1.5.65 shift-report CSS owner marker');
 assert(stylesShiftReportCss.includes('.appMenuReportCard'), 'Shift-report owner musí obsahovat report card CSS');
+assert(appMenuBugReportJsV1567.includes('getBugReportBuildVersion'), 'v1.5.67 report musí používat přesný build');
+assert(appMenuBugReportJsV1567.includes('appearanceId: appearance.id'), 'v1.5.67 report musí ukládat jednotný appearanceId');
+assert(!appMenuBugReportJsV1567.includes('const theme = String(typeof getThemePreference'), 'v1.5.67 report nesmí dál skládat samostatný theme');
+assert(!appMenuBugReportJsV1567.includes('const background = String(typeof getBackgroundPreference'), 'v1.5.67 report nesmí dál skládat samostatné pozadí');
+assert(adminReportsJsV1567.includes("appearance.label ? ('Vzhled ' + String(appearance.label))"), 'Admin report musí zobrazovat jediný Vzhled');
+assert(!adminReportsJsV1567.includes("device.theme ? ('Theme ' + String(device.theme))"), 'Admin report nesmí zobrazovat legacy Theme');
+assert(!adminReportsJsV1567.includes("device.background ? ('Pozadí ' + String(device.background))"), 'Admin report nesmí zobrazovat legacy Pozadí');
+assert(supabaseBridgeJsV1567.includes('appearanceId: String(source.appearanceId'), 'Supabase report payload musí ukládat appearanceId');
+assert(!supabaseBridgeJsV1567.includes("theme: String(source.theme || '').slice(0, 80)"), 'Supabase report payload nesmí ukládat samostatný theme');
+
 assert(stylesAdminReportsCss.includes('RaK v1.5.66 – owner: Administrace → Reporty'), 'Chybí v1.5.66 admin reports owner marker');
 assert(stylesAdminReportsCss.includes('#menu .adminReportsList'), 'Admin reports owner musí obsahovat seznam reportů');
 assert(stylesAdminReportsCss.includes('#menu .adminReportStatus-done'), 'Admin reports owner musí obsahovat statusy reportů');

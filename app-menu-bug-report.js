@@ -15,15 +15,39 @@ function getBugReportAccount() {
   return null;
 }
 
+function getBugReportBuildVersion() {
+  try {
+    const build = String((typeof window !== 'undefined' && window.RAK_PWA_BUILD) || '').trim().replace(/^v/i, '');
+    if (build) return build;
+  } catch (err) {}
+  return String((typeof getRakCurrentAppVersion === 'function' ? getRakCurrentAppVersion() : '') || '—').trim() || '—';
+}
+
+function getBugReportAppearanceMeta() {
+  let id = '';
+  try {
+    if (typeof getAppearancePreference === 'function') id = String(getAppearancePreference() || '').trim();
+  } catch (err) {}
+  if (!id) {
+    try { id = String(document.documentElement.dataset.rakTheme || document.documentElement.dataset.rakBackground || '').trim(); } catch (err) {}
+  }
+  let label = '';
+  try {
+    const defs = Array.isArray(window.RAK_APPEARANCE_DEFS) ? window.RAK_APPEARANCE_DEFS : [];
+    const item = defs.find((entry) => String(entry && entry.id || '') === id);
+    label = String(item && item.label || '').trim();
+  } catch (err) {}
+  return { id: id || '—', label: label || id || '—' };
+}
+
 function buildBugReportPayload() {
   const account = getBugReportAccount();
   const typeEl = document.getElementById('bugReportType');
   const textEl = document.getElementById('bugReportText');
   const type = String(typeEl && typeEl.value || 'Chyba').trim() || 'Chyba';
   const text = String(textEl && textEl.value || '').trim();
-  const version = getRakCurrentAppVersion() || '—';
-  const theme = String(typeof getThemePreference === 'function' ? getThemePreference() : (document.documentElement.dataset.rakTheme || '—'));
-  const background = String(typeof getBackgroundPreference === 'function' ? getBackgroundPreference() : (document.documentElement.dataset.rakBackground || '—'));
+  const version = getBugReportBuildVersion();
+  const appearance = getBugReportAppearanceMeta();
   return {
     id: 'report-' + Date.now(),
     type,
@@ -33,8 +57,8 @@ function buildBugReportPayload() {
     version,
     page: String(document.querySelector('.page.active')?.id || '—'),
     game: String((typeof app !== 'undefined' && app.activeGameShell) || ''),
-    theme,
-    background,
+    appearanceId: appearance.id,
+    appearanceLabel: appearance.label,
     online: !!(typeof navigator !== 'undefined' && navigator.onLine),
     userAgent: String(navigator.userAgent || ''),
     createdAt: new Date().toISOString(),
@@ -50,7 +74,7 @@ function formatBugReportMessage(report) {
     'Verze: ' + String(report.version || '—'),
     'Kdy: ' + String(report.createdAtLocal || '—'),
     'Stránka: ' + String(report.page || '—') + (report.game ? ' · hra: ' + report.game : ''),
-    'Vzhled aplikace: ' + String((typeof getAppearancePreference === 'function' ? getAppearancePreference() : report.theme) || '—'),
+    'Vzhled aplikace: ' + String(report.appearanceLabel || report.appearanceId || '—'),
     'Online: ' + (report.online ? 'ano' : 'ne'),
     '',
     'Text:',

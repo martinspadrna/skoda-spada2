@@ -2808,9 +2808,10 @@
     const source = entry && typeof entry === 'object' ? entry : {};
     const text = String(source.text || source.message || '').trim().slice(0, 4000);
     const route = [String(source.page || '').trim(), String(source.game || '').trim()].filter(Boolean).join(' · ').slice(0, 300);
+    const legacyAppearanceId = String(source.theme || source.background || '').trim();
     const deviceInfo = {
-      theme: String(source.theme || '').slice(0, 80),
-      background: String(source.background || '').slice(0, 80),
+      appearanceId: String(source.appearanceId || source.appearance || legacyAppearanceId || '').slice(0, 80),
+      appearanceLabel: String(source.appearanceLabel || '').slice(0, 120),
       online: !!source.online,
       createdAtLocal: String(source.createdAtLocal || '').slice(0, 120),
       viewport: typeof window !== 'undefined' ? { width: window.innerWidth || 0, height: window.innerHeight || 0, dpr: window.devicePixelRatio || 1 } : {},

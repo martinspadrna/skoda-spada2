@@ -33,6 +33,33 @@ function normalizeAdminReportStatusLabel(value) {
   return 'Nové';
 }
 
+function formatAdminReportVersion(value) {
+  const raw = String(value || '').trim();
+  if (!raw) return '';
+  return /^v/i.test(raw) ? raw : ('v' + raw);
+}
+
+function resolveAdminReportAppearance(deviceInfo) {
+  const device = deviceInfo && typeof deviceInfo === 'object' ? deviceInfo : {};
+  const explicitId = String(device.appearanceId || device.appearance || '').trim();
+  const legacyTheme = String(device.theme || '').trim();
+  const legacyBackground = String(device.background || '').trim();
+  let id = explicitId;
+  let legacyAmbiguous = false;
+  if (!id && legacyTheme && legacyBackground && legacyTheme !== legacyBackground) legacyAmbiguous = true;
+  if (!id && !legacyAmbiguous) id = legacyTheme || legacyBackground;
+  let label = String(device.appearanceLabel || '').trim();
+  if (!label && id) {
+    try {
+      const defs = Array.isArray(window.RAK_APPEARANCE_DEFS) ? window.RAK_APPEARANCE_DEFS : [];
+      const item = defs.find((entry) => String(entry && entry.id || '') === id);
+      label = String(item && item.label || '').trim();
+    } catch (err) {}
+  }
+  if (legacyAmbiguous) return { id: '', label: 'starší oddělené nastavení' };
+  return { id, label: label || id };
+}
+
 function getAdminReportsCache() {
   return Array.isArray(app.adminBugReports) ? app.adminBugReports : [];
 }
@@ -135,11 +162,11 @@ function buildAdminReportsHtml() {
     const id = escapeHtml(String(row.id || ''));
     const status = String(row.status || 'new');
     const device = row.device_info && typeof row.device_info === 'object' ? row.device_info : {};
+    const appearance = resolveAdminReportAppearance(device);
     const meta = [
-      row.app_version ? String(row.app_version) : '',
+      row.app_version ? formatAdminReportVersion(row.app_version) : '',
       row.route ? String(row.route) : '',
-      device.theme ? ('Theme ' + String(device.theme)) : '',
-      device.background ? ('Pozadí ' + String(device.background)) : ''
+      appearance.label ? ('Vzhled ' + String(appearance.label)) : ''
     ].filter(Boolean).join(' · ');
     return [
       '<details class="adminReportItem" data-report-id="' + id + '">',
@@ -274,9 +301,10 @@ function normalizeLocalBugReportsForAdmin() {
       ? parseLocalStorageJsonCached(getAdminReportsStorageKey(), [])
       : JSON.parse(localStorage.getItem(getAdminReportsStorageKey()) || '[]');
     return (Array.isArray(raw) ? raw : []).map((report, idx) => {
+      const legacyAppearanceId = String(report.theme || report.background || '').trim();
       const device = {
-        theme: report.theme || '',
-        background: report.background || '',
+        appearanceId: report.appearanceId || report.appearance || legacyAppearanceId || '',
+        appearanceLabel: report.appearanceLabel || '',
         source: 'local-backup',
         sourceId: report.id || ('local-' + idx),
         game: report.game || '',
