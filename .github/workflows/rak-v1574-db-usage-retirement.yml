@@ -1,0 +1,62 @@
+name: RaK v1.5.74 DB usage retirement source sync
+
+on:
+  push:
+    branches: [development]
+    paths:
+      - '.github/workflows/rak-v1574-db-usage-retirement.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  migrate:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout development
+        uses: actions/checkout@v4
+        with:
+          ref: development
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Record DB retirement migration and bump v1.5.74
+        run: python3 tools/rak-v1574-db-usage-retirement.py
+
+      - name: Verify focused DB retirement source guard
+        run: |
+          node --check app.js
+          node --check supabase-bridge.js
+          node --check tools/critical-runtime-smoke.mjs
+          node tools/critical-runtime-smoke.mjs
+          python3 - <<'PY'
+          from pathlib import Path
+          import json
+          migration = Path('supabase/migrations/20260910115407_remove_legacy_usage_presence_tracking.sql').read_text(encoding='utf-8')
+          bridge = Path('supabase-bridge.js').read_text(encoding='utf-8')
+          for token in ['rak_admin_service_snapshot_v2','rak_admin_usage_presence_v2','rak_usage_presence_admin','rak_usage_presence_touch','app_usage_events','app_usage_devices','rak_usage_presence']:
+              assert token in migration
+          for token in ['APP_USAGE_','recordAppUsage','loadAppUsage','scheduleAppUsage','rak_usage_presence']:
+              assert token not in bridge
+          assert json.loads(Path('package.json').read_text(encoding='utf-8'))['version'] == '1.5.74'
+          assert 'RAK_MODULE_CACHE_VERSION = "1.5.74"' in Path('app.js').read_text(encoding='utf-8')
+          assert "CACHE_VERSION = 'v1.5.74'" in Path('sw.js').read_text(encoding='utf-8')
+          print('focused v1.5.74 DB retirement source guard OK')
+          PY
+          git diff --check
+
+      - name: Full repository check
+        run: npm run check
+
+      - name: Commit v1.5.74 after checks pass
+        run: |
+          rm -f .github/workflows/rak-v1574-db-usage-retirement.yml tools/rak-v1574-db-usage-retirement.py
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "Record retired connection tracking DB migration in v1.5.74"
+          git push origin development
