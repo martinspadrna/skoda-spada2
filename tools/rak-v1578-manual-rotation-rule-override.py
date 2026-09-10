@@ -34,7 +34,7 @@ insert = r'''  // v1.5.78: ruční editor hlídá i stejného člověka samotné
   }
 
 '''
-assert 'consecutive-solo-mill' not in text, 'same-month solo-mill rule already exists unexpectedly'
+assert "'consecutive-solo-mill'" not in text, 'same-month solo-mill rule already exists unexpectedly'
 text = text.replace(anchor, insert + anchor, 1)
 path.write_text(text, encoding='utf-8')
 
