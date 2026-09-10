@@ -1,0 +1,120 @@
+/* RaK v1.5.81 – mobile/PWA viewport finishing pass.
+   1) dynamic viewport: active pages use 100dvh where supported
+   2) iOS safe-area: bottom reserve includes the home indicator
+   3) bottom navigation: content keeps a dedicated non-overlap reserve
+   4) responsive clamps + short-height breakpoint for compact phones
+   5) long labels/names: min-width:0 + safe wrapping without layout blowout
+   6) responsive media/canvas: never force the page wider than the viewport
+   Visual ownership stays in the existing glass/neon/theme polish layers. */
+
+:root{
+  --rak-v1581-mobile-gap:clamp(8px,2.4vw,14px);
+  --rak-v1581-mobile-inline:clamp(10px,3vw,18px);
+  --rak-v1581-safe-bottom:env(safe-area-inset-bottom, 0px);
+  --rak-v1581-nav-reserve:calc(var(--bottom-nav-h, 64px) + var(--rak-v1581-safe-bottom) + 34px);
+}
+
+@supports (height:100dvh){
+  html,
+  html body{
+    min-height:100dvh !important;
+  }
+  html body .page.active{
+    min-height:100dvh !important;
+  }
+}
+
+@media (max-width:760px){
+  html body .page.active{
+    box-sizing:border-box !important;
+    max-width:100% !important;
+    overflow-x:clip !important;
+  }
+
+  /* Rotace has its own larger names-dock reserve in the late polish layers. */
+  html body .page.active:not(#rotace){
+    padding-bottom:var(--rak-v1581-nav-reserve) !important;
+    scroll-padding-bottom:var(--rak-v1581-nav-reserve) !important;
+  }
+
+  html body #home.page.active{
+    height:100dvh !important;
+    min-height:100dvh !important;
+    max-height:100dvh !important;
+    overflow-y:auto !important;
+    -webkit-overflow-scrolling:touch;
+  }
+
+  html body nav.bottomNav .bottomNavScroll,
+  html body .bottomNav .bottomNavScroll{
+    padding-bottom:max(6px, var(--rak-v1581-safe-bottom)) !important;
+  }
+
+  html body .page.active :is(
+    .dashboardGrid,
+    .dashboardCard,
+    .tile,
+    .listItem,
+    .calcTile,
+    .appMenuCard,
+    .appMenuSection,
+    .statsNameTile,
+    .rotaceNameTile
+  ){
+    min-width:0 !important;
+  }
+
+  html body .page.active :is(.dashboardGrid,.calcGrid,.rotaceQuickLinks){
+    gap:var(--rak-v1581-mobile-gap) !important;
+  }
+
+  html body .page.active :is(
+    .tileTitle,
+    .dashboardCardTitle,
+    .rotaceTileTitle,
+    .statsTileTitle,
+    .appMenuCardTitle,
+    .smallText
+  ){
+    min-width:0 !important;
+    max-width:100% !important;
+    white-space:normal !important;
+    overflow-wrap:anywhere !important;
+    word-break:normal !important;
+  }
+
+  html body #rotace.page.active #rotaceNamesPanel.active #namesGrid :is(.rotaceTileTitle,.listItem,.rotaceNameTile),
+  html body #statsNameGrid :is(.statsTileTitle,.statsNameTile){
+    min-width:0 !important;
+  }
+
+  html body #rotace.page.active #rotaceNamesPanel.active #namesGrid .rotaceTileTitle,
+  html body #statsNameGrid .statsNameTile .statsTileTitle{
+    font-size:clamp(10px,3vw,13px) !important;
+    line-height:1.12 !important;
+    white-space:normal !important;
+    overflow-wrap:anywhere !important;
+  }
+
+  html body .page.active :is(img,svg,video,canvas){
+    max-width:100% !important;
+    box-sizing:border-box !important;
+  }
+}
+
+@media (max-width:430px){
+  html body .page.active :is(.tileTitle,.dashboardCardTitle,.appMenuCardTitle){
+    font-size:clamp(11px,3.25vw,14px) !important;
+    line-height:1.15 !important;
+  }
+}
+
+@media (max-width:760px) and (max-height:740px){
+  html body #home.page.active .dashboardShell{
+    padding-top:clamp(7px,1.8vh,11px) !important;
+    padding-bottom:clamp(7px,1.8vh,11px) !important;
+  }
+  html body #home.page.active .dashboardGrid{
+    gap:clamp(7px,1.6vh,10px) !important;
+  }
+}
