@@ -513,16 +513,24 @@ assert(adminRotationJsV1578.includes("'consecutive-solo-mill'"), 'v1.5.78 chybí
 assert(adminRotationEditorJsV1578.includes('function adminRotationBuildManualRuleOverrideState'), 'v1.5.78 chybí porovnání ručních porušení proti uloženému rozpisu');
 assert(adminRotationEditorJsV1578.includes('function adminRotationConfirmManualRuleOverride'), 'v1.5.78 chybí potvrzení ruční výjimky');
 assert(adminRotationEditorJsV1578.includes('opts.allowRuleViolations !== true'), 'v1.5.78 save musí zůstat přísný bez explicitní ruční výjimky');
-assert(appMenuJsV1578.includes('const isManualEdit = !!'), 'v1.5.78 potvrzení musí být navázané jen na ruční editaci');
 assert(appMenuJsV1578.includes('allowRuleViolations: true'), 'v1.5.78 ruční potvrzení musí umět explicitně povolit uložení');
 
 assert(!adminRotationEditorJsV1578.includes('baselineKeys') && !adminRotationEditorJsV1578.includes('baselineCheck'), 'v1.5.79 ruční save nesmí filtrovat jen nové chyby proti uloženému rozpisu');
 assert(adminRotationEditorJsV1578.includes('function adminRotationHasManualDomChanges'), 'v1.5.79 chybí DOM fallback pro skutečnou ruční změnu');
 assert(adminRotationEditorJsV1578.includes(".filter((issue) => issue && issue.severity === 'error')"), 'v1.5.79 musí před ručním uložením vzít všechny aktuální chyby');
-assert(appMenuJsV1578.includes('adminRotationHasManualDomChanges(monthKey, manualMonth)'), 'v1.5.79 save musí použít DOM fallback ruční změny');
 assert(appMenuJsV1578.includes("target.matches('[data-rot-field], [data-note-field], [data-press-rotation-date]')"), 'v1.5.79 change musí značit všechny ruční rozpisové vstupy');
 assert(appMenuJsV1578.indexOf('adminRotationConfirmManualRuleOverride(overrideState)') < appMenuJsV1578.indexOf('saveAdminRotationFromDom(monthKey, saveOptions)'), 'v1.5.79 potvrzení musí proběhnout před uložením');
 assert(stylesAdminRotationEditorCss.includes('RaK v1.5.79 – Kontrola měsíce celá viditelná'), 'v1.5.79 chybí CSS guard panelu Kontrola měsíce');
 assert(stylesAdminRotationEditorCss.includes('max-height:none !important') && stylesAdminRotationEditorCss.includes('overflow:visible !important'), 'v1.5.79 Kontrola měsíce nesmí mít pevný ořez');
+
+assert(adminRotationEditorJsV1578.includes('async function adminRotationConfirmManualRuleOverride'), 'v1.5.80 override dialog musí být async custom modal');
+assert(adminRotationEditorJsV1578.includes("saveBtn.textContent = 'Přesto uložit';"), 'v1.5.80 dialog musí mít tlačítko Přesto uložit');
+assert(adminRotationEditorJsV1578.includes("closeBtn.textContent = 'Zavřít';"), 'v1.5.80 dialog musí mít tlačítko Zavřít');
+assert(!adminRotationEditorJsV1578.includes('window.confirm(text)'), 'v1.5.80 override nesmí používat nativní confirm');
+assert(appMenuJsV1578.includes('const overrideState = adminRotationBuildManualRuleOverrideState(monthKey, manualMonth);'), 'v1.5.80 save musí validovat aktuální DOM vždy');
+assert(appMenuJsV1578.includes('const confirmed = await adminRotationConfirmManualRuleOverride(overrideState);'), 'v1.5.80 save musí čekat na vlastní dvoutlačítkový dialog');
+assert(appMenuJsV1578.indexOf('const confirmed = await adminRotationConfirmManualRuleOverride(overrideState);') < appMenuJsV1578.indexOf('saveAdminRotationFromDom(monthKey, saveOptions)'), 'v1.5.80 potvrzení Přesto uložit musí proběhnout před uložením');
+assert(stylesAdminRotationEditorCss.includes('RaK v1.5.80 – vlastní dialog pro vědomé uložení chybného rozpisu'), 'v1.5.80 chybí CSS custom override dialogu');
+assert(stylesAdminRotationEditorCss.includes('.adminRotationRuleOverrideSave') && stylesAdminRotationEditorCss.includes('.adminRotationRuleOverrideClose'), 'v1.5.80 chybí styly obou dialogových tlačítek');
 
 console.log('[critical-runtime-smoke] OK navigation+rotation+food baseline locked; stable qr.js boot; extended diagnostics idle; version sync ' + packageJson.version + '; Games removed; XLSX+JSZip lazy; Supabase eager; DOM security eager');

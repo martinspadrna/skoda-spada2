@@ -1444,15 +1444,14 @@ function bindAppMenuHandlers(body) {
       }
       if (adminAction === 'save-rotation') {
         const manualMonth = readAdminRotationFromDom(monthKey);
-        const isManualEdit = !!(
-          (typeof app !== 'undefined' && app && app.adminRotationDirty === true)
-          || (typeof adminRotationHasManualDomChanges === 'function'
-              && adminRotationHasManualDomChanges(monthKey, manualMonth))
-        );
-        let saveOptions = null;
-        if (isManualEdit) {
-          const overrideState = adminRotationBuildManualRuleOverrideState(monthKey, manualMonth);
-          if (overrideState.blockingIssues.length && !adminRotationConfirmManualRuleOverride(overrideState)) {
+        const overrideState = adminRotationBuildManualRuleOverrideState(monthKey, manualMonth);
+        let saveOptions = {
+          normalizedMonth: overrideState.normalized,
+          ruleCheck: overrideState.ruleCheck
+        };
+        if (overrideState.blockingIssues.length) {
+          const confirmed = await adminRotationConfirmManualRuleOverride(overrideState);
+          if (!confirmed) {
             const cancelledStatus = document.getElementById('adminOnlineSaveStatus') || document.getElementById('adminRotationDraftStatus');
             if (cancelledStatus) cancelledStatus.textContent = 'Uložení zrušeno · rozepsané změny zůstaly v editoru.';
             return;

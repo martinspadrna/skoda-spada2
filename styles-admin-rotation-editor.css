@@ -302,3 +302,94 @@ body.ladaMode #appMenuBody[data-admin-view="rotation"] #adminRotationEditor .adm
   max-height:none !important;
   overflow:visible !important;
 }
+
+
+/* RaK v1.5.80 – vlastní dialog pro vědomé uložení chybného rozpisu. */
+.adminRotationRuleOverrideModal{
+  position:fixed !important;
+  inset:0 !important;
+  z-index:100000 !important;
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  padding:16px max(14px,env(safe-area-inset-right)) max(16px,env(safe-area-inset-bottom)) max(14px,env(safe-area-inset-left)) !important;
+  background:rgba(3,8,18,.72) !important;
+  backdrop-filter:blur(12px) saturate(1.12) !important;
+  -webkit-backdrop-filter:blur(12px) saturate(1.12) !important;
+}
+.adminRotationRuleOverrideCard{
+  width:min(520px,100%) !important;
+  max-height:calc(100dvh - 36px - env(safe-area-inset-bottom)) !important;
+  overflow:auto !important;
+  -webkit-overflow-scrolling:touch !important;
+  padding:18px !important;
+  border-radius:24px !important;
+  border:1px solid rgba(255,255,255,.16) !important;
+  background:linear-gradient(155deg,rgba(31,35,55,.98),rgba(15,22,38,.98)) !important;
+  color:rgba(248,251,255,.96) !important;
+  box-shadow:0 24px 70px rgba(0,0,0,.52),inset 0 1px 0 rgba(255,255,255,.12) !important;
+}
+.adminRotationRuleOverrideTitle{
+  font-size:20px !important;
+  line-height:1.15 !important;
+  font-weight:950 !important;
+  color:#fff !important;
+}
+.adminRotationRuleOverrideIntro{
+  margin-top:8px !important;
+  font-size:13px !important;
+  line-height:1.4 !important;
+  color:rgba(239,244,252,.76) !important;
+}
+.adminRotationRuleOverrideList{
+  margin-top:14px !important;
+  padding:10px !important;
+  border-radius:16px !important;
+  background:rgba(255,82,105,.08) !important;
+  border:1px solid rgba(255,105,125,.18) !important;
+}
+.adminRotationRuleOverrideIssue,
+.adminRotationRuleOverrideMore{
+  font-size:12px !important;
+  line-height:1.35 !important;
+  color:rgba(255,236,239,.94) !important;
+}
+.adminRotationRuleOverrideIssue + .adminRotationRuleOverrideIssue,
+.adminRotationRuleOverrideMore{
+  margin-top:6px !important;
+}
+.adminRotationRuleOverrideActions{
+  display:grid !important;
+  grid-template-columns:1fr 1fr !important;
+  gap:10px !important;
+  margin-top:16px !important;
+}
+.adminRotationRuleOverrideBtn{
+  min-height:46px !important;
+  margin:0 !important;
+  border-radius:15px !important;
+  font-size:14px !important;
+  font-weight:950 !important;
+  touch-action:manipulation !important;
+}
+.adminRotationRuleOverrideClose{
+  border:1px solid rgba(255,255,255,.18) !important;
+  background:rgba(255,255,255,.08) !important;
+  color:rgba(248,251,255,.94) !important;
+}
+.adminRotationRuleOverrideSave{
+  border:1px solid rgba(255,132,92,.38) !important;
+  background:linear-gradient(135deg,rgba(255,76,104,.94),rgba(255,145,68,.92)) !important;
+  color:#fff !important;
+  box-shadow:0 10px 24px rgba(255,78,102,.18) !important;
+}
+body.lightweightMode .adminRotationRuleOverrideModal,
+body.lowEndDevice .adminRotationRuleOverrideModal,
+body.ladaMode .adminRotationRuleOverrideModal{
+  backdrop-filter:none !important;
+  -webkit-backdrop-filter:none !important;
+}
+@media (max-width:420px){
+  .adminRotationRuleOverrideActions{grid-template-columns:1fr !important;}
+  .adminRotationRuleOverrideSave{order:-1 !important;}
+}

@@ -888,23 +888,92 @@ function adminRotationBuildManualRuleOverrideState(monthKey, normalizedMonth) {
   return { normalized, ruleCheck, blockingIssues };
 }
 
-function adminRotationConfirmManualRuleOverride(state) {
+async function adminRotationConfirmManualRuleOverride(state) {
   const blocking = state && Array.isArray(state.blockingIssues) ? state.blockingIssues : [];
   if (!blocking.length) return true;
-  const limit = 10;
-  const lines = blocking.slice(0, limit).map((issue, idx) => String(idx + 1) + '. ' + String(issue && issue.message || 'Porušení pravidla'));
-  if (blocking.length > limit) lines.push('… a dalších ' + String(blocking.length - limit) + ' porušení.');
-  const text = [
-    'Ruční změna porušuje pravidla rozpisu:',
-    '',
-    ...lines,
-    '',
-    'Chceš rozpis přesto uložit?',
-    '',
-    'OK = Uložit i přes varování',
-    'Zrušit = Zpět a opravit'
-  ].join('\n');
-  return window.confirm(text);
+
+  const previous = document.getElementById('adminRotationRuleOverrideModal');
+  if (previous) previous.remove();
+
+  return await new Promise((resolve) => {
+    const overlay = document.createElement('div');
+    overlay.id = 'adminRotationRuleOverrideModal';
+    overlay.className = 'adminRotationRuleOverrideModal';
+    overlay.setAttribute('role', 'dialog');
+    overlay.setAttribute('aria-modal', 'true');
+    overlay.setAttribute('aria-labelledby', 'adminRotationRuleOverrideTitle');
+
+    const card = document.createElement('div');
+    card.className = 'adminRotationRuleOverrideCard';
+
+    const title = document.createElement('div');
+    title.id = 'adminRotationRuleOverrideTitle';
+    title.className = 'adminRotationRuleOverrideTitle';
+    title.textContent = 'Chyba v rozpisu';
+
+    const intro = document.createElement('div');
+    intro.className = 'adminRotationRuleOverrideIntro';
+    intro.textContent = 'V rozpisu jsou chyby. Můžeš se vrátit a opravit je, nebo rozpis vědomě uložit i přesto.';
+
+    const list = document.createElement('div');
+    list.className = 'adminRotationRuleOverrideList';
+    const limit = 10;
+    blocking.slice(0, limit).forEach((issue, idx) => {
+      const row = document.createElement('div');
+      row.className = 'adminRotationRuleOverrideIssue';
+      row.textContent = String(idx + 1) + '. ' + String(issue && issue.message || 'Porušení pravidla');
+      list.appendChild(row);
+    });
+    if (blocking.length > limit) {
+      const more = document.createElement('div');
+      more.className = 'adminRotationRuleOverrideMore';
+      more.textContent = '… a dalších ' + String(blocking.length - limit) + ' chyb.';
+      list.appendChild(more);
+    }
+
+    const actions = document.createElement('div');
+    actions.className = 'adminRotationRuleOverrideActions';
+
+    const closeBtn = document.createElement('button');
+    closeBtn.type = 'button';
+    closeBtn.className = 'adminRotationRuleOverrideBtn adminRotationRuleOverrideClose';
+    closeBtn.textContent = 'Zavřít';
+
+    const saveBtn = document.createElement('button');
+    saveBtn.type = 'button';
+    saveBtn.className = 'adminRotationRuleOverrideBtn adminRotationRuleOverrideSave';
+    saveBtn.textContent = 'Přesto uložit';
+
+    actions.append(closeBtn, saveBtn);
+    card.append(title, intro, list, actions);
+    overlay.appendChild(card);
+    document.body.appendChild(overlay);
+
+    let settled = false;
+    const finish = (value) => {
+      if (settled) return;
+      settled = true;
+      document.removeEventListener('keydown', onKeyDown, true);
+      overlay.remove();
+      resolve(!!value);
+    };
+    const onKeyDown = (event) => {
+      if (event.key !== 'Escape') return;
+      event.preventDefault();
+      finish(false);
+    };
+
+    closeBtn.addEventListener('click', () => finish(false), { once: true });
+    saveBtn.addEventListener('click', () => finish(true), { once: true });
+    overlay.addEventListener('click', (event) => {
+      if (event.target === overlay) finish(false);
+    });
+    document.addEventListener('keydown', onKeyDown, true);
+
+    requestAnimationFrame(() => {
+      try { closeBtn.focus({ preventScroll: true }); } catch (err) { try { closeBtn.focus(); } catch (err2) {} }
+    });
+  });
 }
 
 async function saveAdminRotationFromDom(monthKey, options) {
