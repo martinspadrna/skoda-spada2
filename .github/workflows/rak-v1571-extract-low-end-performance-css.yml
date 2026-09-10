@@ -1,0 +1,69 @@
+name: RaK v1.5.71 low-end performance CSS ownership move
+
+on:
+  push:
+    branches: [development]
+    paths:
+      - 'tools/rak-v1571-extract-low-end-performance-css.py'
+      - '.github/workflows/rak-v1571-extract-low-end-performance-css.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  migrate:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout development
+        uses: actions/checkout@v4
+        with:
+          ref: development
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Move low-end performance CSS to owner
+        run: python3 tools/rak-v1571-extract-low-end-performance-css.py
+
+      - name: Verify ownership and cascade position
+        run: |
+          node --check tools/critical-runtime-smoke.mjs
+          node tools/critical-runtime-smoke.mjs
+          python3 - <<'PY'
+          from pathlib import Path
+          import json
+          i = Path('index.html').read_text(encoding='utf-8')
+          a = i.index('styles-rotation-month.css')
+          b = i.index('styles-low-end-performance.css')
+          c = i.index('styles-overrides-legacy-mid.css')
+          assert a < b < c
+          owner = Path('styles-low-end-performance.css').read_text(encoding='utf-8')
+          legacy = Path('styles-overrides-legacy-mid.css').read_text(encoding='utf-8')
+          assert 'body.ladaMode' in owner
+          assert 'body.lightweightMode' in owner
+          assert 'body.lowEndDevice' in owner
+          assert 'content-visibility:hidden' in owner
+          assert '.dashboardSyncBadge' not in owner
+          assert '.adminServiceGrid' not in owner
+          assert legacy.startswith('/* v.1.1 (725) – dashboard ruční sync + administrace servis */')
+          assert '1.5.71' in Path('app.js').read_text(encoding='utf-8')
+          assert json.loads(Path('package.json').read_text(encoding='utf-8'))['version'] == '1.5.71'
+          assert "CACHE_VERSION = 'v1.5.71'" in Path('sw.js').read_text(encoding='utf-8')
+          print('low-end owner bytes:', len(owner.encode('utf-8')), 'cascade positions:', a, b, c)
+          PY
+          git diff --check
+
+      - name: Full repository check
+        run: npm run check
+
+      - name: Commit migration after checks pass
+        run: |
+          rm -f .github/workflows/rak-v1571-extract-low-end-performance-css.yml tools/rak-v1571-extract-low-end-performance-css.py
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "Move low-end performance CSS to owner in v1.5.71"
+          git push origin development
