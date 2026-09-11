@@ -3,6 +3,7 @@ import fs from 'node:fs';
 import vm from 'node:vm';
 
 const read = (file) => fs.readFileSync(file, 'utf8');
+const stripCssComments = (value) => String(value || '').replace(/\/\*[\s\S]*?\*\//g, '');
 const app = read('app.js');
 const pkg = JSON.parse(read('package.json'));
 const sw = read('sw.js');
@@ -14,6 +15,7 @@ const adminRenderer = read('app-menu-admin-renderer.js');
 const compactCss = read('styles-rotation-summary-compact.css');
 const bottomNavCss = read('styles-bottom-nav-runtime.css');
 const viewportCss = read('styles-viewport-polish.css');
+const viewportClean = stripCssComments(viewportCss);
 const dashboardAudit = read('tools/dashboard-css-overlap-audit.mjs');
 
 assert.equal(pkg.version, '1.5.92', 'package version must be 1.5.92');
@@ -86,10 +88,10 @@ for (const prop of ['width:46px !important', 'height:46px !important', 'min-widt
   assert(compactCss.includes(prop), `update logo missing ${prop}`);
 }
 assert(bottomNavCss.includes('--bottom-nav-h:56px;'), 'canonical bottom-nav height missing');
-assert(viewportCss.includes('height:100dvh !important;') && viewportCss.includes('overflow-y:auto !important;'), 'canonical mobile Home scroll owner missing');
-assert(viewportCss.includes('grid-template-rows:repeat(4, auto) !important;'), 'Dashboard four-row overflow guard missing');
-assert(!viewportCss.includes('--rak-nav-ios-start-bottom'), 'dead iOS start-bottom alias returned');
-assert(!viewportCss.includes('--rak-start-viewport-h:100dvh'), 'dead early viewport value returned');
+assert(viewportClean.includes('height:100dvh !important;') && viewportClean.includes('overflow-y:auto !important;'), 'canonical mobile Home scroll owner missing');
+assert(viewportClean.includes('grid-template-rows:repeat(4, auto) !important;'), 'Dashboard four-row overflow guard missing');
+assert(!viewportClean.includes('--rak-nav-ios-start-bottom'), 'dead iOS start-bottom alias returned');
+assert(!viewportClean.includes('--rak-start-viewport-h:100dvh'), 'dead early viewport value returned');
 
 assert(pkg.scripts.check.includes('tools/dashboard-css-overlap-audit.mjs'), 'Dashboard overlap audit must run in npm check');
 assert(pkg.scripts.check.includes('tools/v1592-smoke.mjs'), 'v1.5.92 smoke must run in npm check');
