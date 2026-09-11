@@ -152,18 +152,10 @@ html.rakStableBootViewport{
   }
 }
 
-/* RaK 1.2 – mobilní Dashboard: vnější rám se vždy řídí skutečnou výškou obsahu.
-   Pozdější styles-dashboard-polish.css používá dashboardGrid jako shrinkovatelný flex item (flex:0 1 auto),
-   takže se box gridu mohl zmenšit, zatímco jeho pevné řádky přetékaly přes spodní border shellu.
-   Vyšší specificita tady záměrně vítězí i proti pozdější Dashboard polish vrstvě. */
+/* RaK v1.5.90 – Point 4 / průchod 2: odstraněný superseded mobilní #home blok.
+   Jeho height:auto / overflow-y:visible / menší spodní padding byly ve stejném souboru
+   vždy přepsané následujícím kanonickým scrollovacím blokem. Shell a grid guardy zůstávají. */
 @media (max-width:700px){
-  html body #home.page.active{
-    height:auto !important;
-    min-height:100dvh !important;
-    overflow-x:hidden !important;
-    overflow-y:visible !important;
-    padding-bottom:calc(var(--bottom-nav-h, 64px) + env(safe-area-inset-bottom) + 24px) !important;
-  }
   html body #home.page.active .dashboardShell{
     height:auto !important;
     max-height:none !important;

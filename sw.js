@@ -1,5 +1,5 @@
-// RaK 1.5 production PWA service worker – v1.5.89 warm-start cache.
-const CACHE_VERSION = 'v1.5.89';
+// RaK 1.5 production PWA service worker – v1.5.90 warm-start cache.
+const CACHE_VERSION = 'v1.5.90';
 const SW_APP_VERSION = '1.5';
 const STATIC_CACHE = `rotace-static-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `rotace-runtime-${CACHE_VERSION}`;
@@ -64,29 +64,29 @@ const WARM_START = [
   './assets/nav-icons/rotace-green.png',
   './assets/nav-icons/kalkulacky-gray.png',
   './assets/nav-icons/kalkulacky-green.png',
-  './supabase-config.js?v=1.5.89',
-  './rak-user-profile.js?v=1.5.89',
-  './rak-auth-gate.js?v=1.5.89',
-  './rak-account-access.js?v=1.5.89',
-  './rak-login-splash.js?v=1.5.89',
-  './rak-login-fix.js?v=1.5.89',
-  './rak-login-life.js?v=1.5.89',
-  './core.js?v=1.5.89',
-  './lifecycle.js?v=1.5.89',
-  './app-runtime-guards.js?v=1.5.89',
-  './qr.js?v=1.5.89',
-  './payroll.js?v=1.5.89',
-  './dashboard.js?v=1.5.89',
-  './appearance-theme.js?v=1.5.89',
-  './ui.js?v=1.5.89',
-  './app-navigation.js?v=1.5.89',
-  './app-bottom-nav.js?v=1.5.89',
-  './app-actions.js?v=1.5.89',
-  './app-pwa-connectivity.js?v=1.5.89',
-  './app-home-boot.js?v=1.5.89',
-  './rak-runtime-stability.js?v=1.5.89',
-  './rak-mobile-layout-guard.js?v=1.5.89',
-  './rak-feature-routing.js?v=1.5.89'
+  './supabase-config.js?v=1.5.90',
+  './rak-user-profile.js?v=1.5.90',
+  './rak-auth-gate.js?v=1.5.90',
+  './rak-account-access.js?v=1.5.90',
+  './rak-login-splash.js?v=1.5.90',
+  './rak-login-fix.js?v=1.5.90',
+  './rak-login-life.js?v=1.5.90',
+  './core.js?v=1.5.90',
+  './lifecycle.js?v=1.5.90',
+  './app-runtime-guards.js?v=1.5.90',
+  './qr.js?v=1.5.90',
+  './payroll.js?v=1.5.90',
+  './dashboard.js?v=1.5.90',
+  './appearance-theme.js?v=1.5.90',
+  './ui.js?v=1.5.90',
+  './app-navigation.js?v=1.5.90',
+  './app-bottom-nav.js?v=1.5.90',
+  './app-actions.js?v=1.5.90',
+  './app-pwa-connectivity.js?v=1.5.90',
+  './app-home-boot.js?v=1.5.90',
+  './rak-runtime-stability.js?v=1.5.90',
+  './rak-mobile-layout-guard.js?v=1.5.90',
+  './rak-feature-routing.js?v=1.5.90'
 ];
 
 const STATIC_EXT = /\.(?:js|css|png|jpg|jpeg|webp|svg|ico|json|webmanifest)$/i;

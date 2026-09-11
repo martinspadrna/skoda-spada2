@@ -1,5 +1,5 @@
 // Ověřené doladění citlivosti výpočtu korekcí pro frézky / FHB.
-// Záznamy i aktivní model se ukládají jen přes zabezpečené admin nastavení.
+// RaK 1.5.90: Frézky i Brusy mají nativní samostatný skládací blok už při renderu.
 (function installAdminFhbCalibration() {
   'use strict';
 
@@ -166,6 +166,9 @@
     return [
       '<div class="appMenuSettingsList adminFhbCalibration">',
       '<div class="smallText">Zapiš hodnoty z protokolu před korekcí, o kolik ses ve stroji pohnul, a výsledek po korekci. Korekce může být zapsaná jako <b>35</b> nebo <b>0,035</b>. Aplikace sama nic nemění: doporučení se promítne až tlačítkem níže.</div>',
+      '<details class="rakCorrectionMachineFold" data-rak-correction-group="frezky">',
+      '<summary><span>Frézky FHB · MFKF06 + MFKF10</span><small>měření, nastavení výpočtu a záznamy</small></summary>',
+      '<div class="rakCorrectionMachineFoldBody">',
       '<div class="adminFhbCalibrationForm">',
       '<div class="adminFhbCalibrationFieldset"><b>Protokol před korekcí</b><div class="adminFhbCalibrationTwo"><label>L<input class="appMenuInput" data-fhb-calibration-field="protocolLeft" inputmode="decimal" placeholder="levá"></label><label>P<input class="appMenuInput" data-fhb-calibration-field="protocolRight" inputmode="decimal" placeholder="pravá"></label></div></div>',
       '<div class="adminFhbCalibrationFieldset"><b>Změna ve stroji</b><div class="adminFhbCalibrationTwo"><label>Konicita<input class="appMenuInput" data-fhb-calibration-field="taperDelta" inputmode="decimal" placeholder="např. +35"></label><label>fhβ<input class="appMenuInput" data-fhb-calibration-field="shiftDelta" inputmode="decimal" placeholder="např. -20"></label></div></div>',
@@ -179,7 +182,14 @@
       recommendationRow('fhβ', analysis.samples.shift.length, analysis.values.shift, settings.activeModel.shiftSensitivityPer001, analysis.ready.shift),
       '</div><button type="button" class="appMenuAction" data-admin-action="apply-fhb-calibration"' + applyDisabled + '>Potvrdit doporučené nastavení</button></div>',
       '<div class="adminFhbCalibrationHistory"><div class="appMenuCardTitle">Záznamy</div>' + recordsHtml + '</div>',
-      '<div class="appMenuCard adminFhbCalibrationSoon"><b>Brusy</b><span>Korekce pro brusy doplníme až s hotovou kalkulačkou FHB a profilem brusek.</span></div>',
+      '</div>',
+      '</details>',
+      '<details class="rakCorrectionMachineFold" data-rak-correction-group="brusy">',
+      '<summary><span>Brusy FHB · TBKR01 + TBKR07</span><small>připravujeme</small></summary>',
+      '<div class="rakCorrectionMachineFoldBody">',
+      '<div class="appMenuCard adminFhbCalibrationSoon"><b>Brusy FHB</b><span>Korekce pro brusy doplníme až s hotovou kalkulačkou FHB a profilem brusek.</span></div>',
+      '</div>',
+      '</details>',
       '</div>'
     ].join('');
   }
