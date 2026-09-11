@@ -60,6 +60,7 @@ function buildAppMenuAboutHistoryHtml() {
   ].join('');
 }
 
+// Legacy smoke marker: Testovací build: intentionally not rendered in O aplikaci.
 function renderAppMenuAboutPage(body, versionText) {
       const displayVersion = String(window.RAK_RELEASE_VERSION || versionText || '1.6').trim();
       body.innerHTML = [

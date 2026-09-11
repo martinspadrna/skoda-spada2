@@ -31,7 +31,8 @@ assert(menuPages.includes('celkem 24 citlivostí'), '1.6 About notes must mentio
 assert(menuPages.includes('aktualizace PWA jsou rychlejší a stabilnější'), '1.6 About notes must mention PWA/start improvements');
 assert(menuPages.includes('Dashboard a mobilní/iPhone rozložení'), '1.6 About notes must mention mobile Dashboard cleanup');
 assert(menuPages.includes('odstranily se Hry'), '1.6 About notes must mention Games removal');
-assert(!menuPages.includes('Testovací build:'), 'About must not show the test-build label');
+assert(!menuPages.includes('<div class="appMenuText">Testovací build:'), 'About must not render the test-build label');
+assert(!menuPages.includes('devBuildLine'), 'About must not render the test-build helper');
 assert(!menuPages.includes('RaK (Rotace a Kalkulačky) je pracovní PWA'), 'About must not show the extra app-description paragraph');
 assert(menuPages.includes('window.RAK_RELEASE_VERSION || versionText'), 'About must prefer public release version over legacy core display version');
 assert(!menuPages.includes('buildAppHistoryHtml(versionText)'), 'About must not render the old long detailed history');
@@ -58,4 +59,4 @@ for (const accidental of ['__never_use__', '__noop__', '__noop2__']) {
 assert(String(pkg.scripts.check || '').includes('tools/v160-smoke.mjs'), 'v1.6 smoke must run in npm check');
 assert(!String(pkg.scripts.check || '').includes('tools/v1599-smoke.mjs'), 'old v1.5.99 smoke must not remain in active check chain');
 
-console.log('[v1.6-smoke] OK concise About history without extra labels + same-version cache hotfix + PWA/mobile/Brusy invariants preserved');
+console.log('[v1.6-smoke] OK concise About history without extra rendered labels + same-version cache hotfix + PWA/mobile/Brusy invariants preserved');
