@@ -1,9 +1,9 @@
-// RaK 1.5.96 – Boot v2 + PWA warm-start + indexed Brusy calibration + section-wrapper polish.
+// RaK 1.5.97 – Boot v2 + PWA warm-start + indexed Brusy calibration + consolidated Dashboard CSS owners.
 try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleReady('app.js', 'loaded', { source: 'index' }); } catch (err) {}
 
 (async () => {
-  const RAK_MODULE_CACHE_VERSION = "1.5.96";
-  const RAK_DEV_UPDATE_BUILD = "v1.5.96";
+  const RAK_MODULE_CACHE_VERSION = "1.5.97";
+  const RAK_DEV_UPDATE_BUILD = "v1.5.97";
   const RAK_BOOT_V2_ENABLED = true;
   window.RAK_PWA_BUILD = RAK_DEV_UPDATE_BUILD;
   window.RAK_BOOT_V2_ENABLED = RAK_BOOT_V2_ENABLED;
