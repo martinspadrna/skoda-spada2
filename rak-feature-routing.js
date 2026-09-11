@@ -36,6 +36,17 @@
     return null;
   }
 
+  function ensureFeatureWithAuthOrder(feature) {
+    if (typeof window.rakEnsureFeature !== 'function') return Promise.resolve(feature || '');
+    const key = String(feature || '').trim();
+    // app-admin-unlock.js se nesmí spustit před Supabase bridge: jinak owner účet
+    // nedokáže obnovit uloženou relaci a při startu zbytečně vyžádá heslo.
+    if (key === 'menu' || key === 'admin') {
+      return window.rakEnsureFeature('sync').then(() => window.rakEnsureFeature(key));
+    }
+    return window.rakEnsureFeature(key);
+  }
+
   function startFeature(target) {
     if (!target || !target.element || !target.feature || typeof window.rakEnsureFeature !== 'function') return null;
     if (typeof window.rakIsFeatureReady === 'function' && window.rakIsFeatureReady(target.feature)) return null;
@@ -43,7 +54,7 @@
       target.element.classList.add('rakFeatureLoading');
       target.element.setAttribute('aria-busy', 'true');
     } catch (_) {}
-    return window.rakEnsureFeature(target.feature);
+    return ensureFeatureWithAuthOrder(target.feature);
   }
 
   // Pointerdown získá náskok před clickem. Pointer-events ale nevypínáme,
@@ -91,8 +102,8 @@
   }, true);
 
   // Boot v2 má Home zobrazit jako první, ale uživatel nemá platit několikasekundovou
-  // penalizaci při každém prvním klepnutí. Jakmile je Home interaktivní, běžné sekce
-  // se okamžitě zahřejí na pozadí. Administrace se zahřeje až po nich a po sync závislosti.
+  // penalizaci při každém prvním klepnutí. Nejdřív ale připravíme sync/auth bridge,
+  // aby app-admin-unlock mohl tiše obnovit existující admin relaci bez startup promptu.
   let warmupStarted = false;
   function startBackgroundWarmup() {
     if (warmupStarted || typeof window.rakEnsureFeature !== 'function') return;
@@ -102,12 +113,18 @@
     }
     warmupStarted = true;
     const common = ['menu', 'rotation', 'calculators'];
-    Promise.allSettled(common.map((feature) => window.rakEnsureFeature(feature))).then(() => {
+    window.rakEnsureFeature('sync').then(() => {
+      return Promise.allSettled(common.map((feature) => window.rakEnsureFeature(feature)));
+    }).then(() => {
       setTimeout(() => {
         if (typeof window.rakEnsureFeature !== 'function') return;
         window.rakEnsureFeature('admin').catch((err) => console.warn('Boot v2 admin warmup failed', err));
       }, 80);
-    }).catch(() => {});
+    }).catch((err) => {
+      console.warn('Boot v2 sync-first warmup failed', err);
+      // Běžné Rotace/Kalkulačky necháme dostupné i při problému se sítí.
+      Promise.allSettled(['rotation', 'calculators'].map((feature) => window.rakEnsureFeature(feature))).catch(() => {});
+    });
   }
   setTimeout(startBackgroundWarmup, 0);
 
@@ -134,7 +151,7 @@
 
   try {
     if (typeof window.rakMarkModuleReady === 'function') {
-      window.rakMarkModuleReady('rak-feature-routing.js', 'loaded', { source: 'boot-v2-loader', build: '1.5.87-hotfix1' });
+      window.rakMarkModuleReady('rak-feature-routing.js', 'loaded', { source: 'boot-v2-loader', build: '1.5.87-hotfix2' });
     }
   } catch (_) {}
 })();

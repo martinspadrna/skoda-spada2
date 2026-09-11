@@ -56,10 +56,13 @@ assert.match(routing, /event\.stopImmediatePropagation\(\)/, 'first lazy click m
 assert.match(routing, /el\.click\(\)/, 'held navigation click must replay after loading');
 assert.doesNotMatch(routing, /pointer-events\s*:\s*none/i, 'loading state must not suppress Safari click delivery');
 assert.match(routing, /adminBindRotationZoomGuardBootV2Stub/, 'menu must have safe admin zoom stub before lazy admin modules exist');
-assert.match(routing, /Promise\.allSettled\(common\.map\(\(feature\) => window\.rakEnsureFeature\(feature\)\)\)/, 'common navigation features must warm in background after Home');
+assert.match(routing, /function ensureFeatureWithAuthOrder\(feature\)/, 'menu/admin routes must have explicit auth ordering helper');
+assert.match(routing, /key === 'menu' \|\| key === 'admin'[\s\S]*rakEnsureFeature\('sync'\)\.then\(\(\) => window\.rakEnsureFeature\(key\)\)/, 'menu/admin must load sync bridge before admin auth module');
+assert.match(routing, /rakEnsureFeature\('sync'\)\.then\(\(\) => \{[\s\S]*Promise\.allSettled\(common\.map\(\(feature\) => window\.rakEnsureFeature\(feature\)\)\)/, 'background warmup must prepare sync before common navigation features');
 assert.match(routing, /const common = \['menu', 'rotation', 'calculators'\]/, 'menu, rotation and calculators must all warm after Home');
 assert.match(routing, /window\.rakEnsureFeature\('admin'\)/, 'admin must warm after common features');
 assert.match(routing, /addEventListener\('rak:feature-ready'/, 'admin post-load hook must restore real admin guard');
+assert.match(routing, /build: '1\.5\.87-hotfix2'/, 'routing hotfix marker must identify auth-order fix');
 
 assert.match(compactCss, /width:60px\s*!important;/, 'name column must be about 40% narrower');
 assert.match(compactCss, /background:#1b2020\s*!important;/, 'name column must have opaque fallback background');
@@ -77,4 +80,4 @@ assert(sw.includes("'./assets/rak-login-crab.png'"), 'base login mascot should s
 assert(!sw.includes('rak-login-crab-step.png'), 'step animation must stay out of SW core precache');
 assert(!sw.includes('rak-login-crab-tap.png'), 'tap animation must stay out of SW core precache');
 
-console.log('[v1.5.87-smoke] OK Boot v2 + background warmup + admin menu guard + compact opaque names + larger update logo');
+console.log('[v1.5.87-smoke] OK Boot v2 + sync-first admin auth restore + background warmup + admin menu guard + compact opaque names + larger update logo');
