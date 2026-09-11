@@ -1,5 +1,5 @@
 // Ověřené doladění citlivosti výpočtu korekcí pro frézky / FHB.
-// RaK 1.5.91: Frézky i Brusy mají vlastní nativní fold; Brusy se plní přímo přes brus FHB builder bez DOM přesouvání po renderu.
+// RaK 1.5.92: Frézky i Brusy mají vlastní nativní fold; skutečný Brusy FHB builder se skládá přímo při renderu, bez placeholderu a bez DOM přesouvání.
 (function installAdminFhbCalibration() {
   'use strict';
 
@@ -164,6 +164,9 @@
         '</div>').join('')
       : '<div class="smallText">Zatím nejsou žádná měření. Pro spolehlivý návrh potřebuje každý směr alespoň tři čisté záznamy — vždy měň jen konicitu, nebo jen fhβ.</div>';
     const applyDisabled = analysis.changes.length ? '' : ' disabled';
+    const brusyHtml = typeof window.buildAdminBrusFhbCorrectionHtml === 'function'
+      ? String(window.buildAdminBrusFhbCorrectionHtml() || '')
+      : '<div class="smallText" data-rak-brusy-builder-error="1">Nastavení brusů se nepodařilo načíst.</div>';
     return [
       '<div class="appMenuSettingsList adminFhbCalibration">',
       '<div class="smallText">Zapiš hodnoty z protokolu před korekcí, o kolik ses ve stroji pohnul, a výsledek po korekci. Korekce může být zapsaná jako <b>35</b> nebo <b>0,035</b>. Aplikace sama nic nemění: doporučení se promítne až tlačítkem níže.</div>',
@@ -188,7 +191,7 @@
       '<details class="rakCorrectionMachineFold" data-rak-correction-group="brusy">',
       '<summary><span>Brusy FHB · TBKR01 + TBKR07</span><small>nastavení brusů</small></summary>',
       '<div class="rakCorrectionMachineFoldBody">',
-      '<div class="appMenuCard adminFhbCalibrationSoon"><b>Brusy</b><span>Načítám nastavení TBKR01 a TBKR07…</span></div>',
+      brusyHtml,
       '</div>',
       '</details>',
       '</div>'

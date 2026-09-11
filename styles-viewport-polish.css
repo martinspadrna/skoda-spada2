@@ -9,7 +9,6 @@
 html body nav.bottomNav{
   position:fixed !important;
   top:auto !important;
-  bottom:var(--rak-nav-ios-start-bottom) !important;
   transform:translate3d(-50%,0,0) !important;
   height:auto !important;
   max-height:none !important;
@@ -37,10 +36,6 @@ html body nav.bottomNav{
 /* RaK 1.2 (1.146) – admin/rozpis polish přesunutý do styles-admin-polish.css. */
 
 /* RaK 1.2 (1.146) – iOS start: okamžité dosednutí bez černého spodku při prvním otevření. */
-:root{
-  --rak-nav-ios-start-bottom:0px !important;
-  --rak-start-viewport-h:100dvh;
-}
 html,
 body{
   min-height:100svh !important;
@@ -141,10 +136,11 @@ html.rakStableBootViewport{
   }
 }
 
-/* RaK v1.5.90 – Point 4 / průchod 3: viewport owner cleanup.
-   Odstraněná byla jen první hodnota --rak-nav-ios-start-bottom a dva media wrappery,
-   které byly vždy přepsané pozdějším bottom:0 !important. Dashboard fallback výšky lišty
-   jsou sjednocené na kanonických 56px; reálná CSS proměnná má stále přednost. */
+/* RaK v1.5.92 – Point 4 / bezpečný viewport cleanup.
+   Odstraněný je jen mrtvý časný bottom přes --rak-nav-ios-start-bottom a časná hodnota
+   --rak-start-viewport-h:100dvh; oba vlastníky byly v téže vrstvě vždy přebité pozdějšími
+   kanonickými hodnotami bottom:0 a --rak-start-viewport-h:100svh. Dashboard scroll owner,
+   safe-area, Rotace dock i fallbacky spodní navigace zůstávají funkčně stejné. */
 @media (max-width:700px){
   html body #home.page.active .dashboardShell{
     height:auto !important;

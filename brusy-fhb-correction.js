@@ -1,4 +1,4 @@
-// RaK 1.5 – Brusy / FHB korekce + admin kalibrace podle reálných protokolů.
+// RaK 1.5.92 – Brusy / FHB korekce + admin kalibrace; admin HTML se exportuje přímo pro nativní fold Nastavení korekcí.
 (function installBrusFhbCorrection() {
   'use strict';
 
@@ -347,7 +347,7 @@
     }).join('') : '<div class="smallText">Zatím nejsou žádná měření brusů. Aktivní výchozí model je vlevo 2,00 a vpravo 1,50 µm FHB na 1 µm korekce.</div>';
 
     return [
-      '<div class="adminBrusFhbCalibration">',
+      '<div class="adminBrusFhbCalibration" data-rak-brusy-real-section="1">',
       '<div class="appMenuSubTitle">Brusy · FHB</div>',
       '<div class="smallText">Zapiš hodnotu před korekcí, skutečnou korekci ve stroji a výsledek po korekci. Kalkulačka používá medián měření, takže jedna výjimka model nerozhodí. Změna se aktivuje až ručním potvrzením.</div>',
       '<div class="adminBrusFhbForm">',
@@ -375,22 +375,6 @@
       '<div class="adminBrusFhbHistory"><div class="appMenuCardTitle">Měření brusů</div>' + recordsHtml + '</div>',
       '</div>'
     ].join('');
-  }
-
-  function patchAdminBuilder() {
-    const original = window.buildAdminFhbCorrectionCalibrationHtml;
-    if (typeof original !== 'function' || original.__brusFhbWrapped) return false;
-    const wrapped = function wrappedAdminFhbCorrectionCalibrationHtml() {
-      let html = String(original.apply(this, arguments) || '');
-      const brusHtml = buildAdminHtml();
-      const placeholder = /<div class="appMenuCard adminFhbCalibrationSoon"><b>Brusy<\/b><span>[\s\S]*?<\/span><\/div>/;
-      html = placeholder.test(html) ? html.replace(placeholder, brusHtml) : (html + brusHtml);
-      return html;
-    };
-    wrapped.__brusFhbWrapped = true;
-    wrapped.__brusFhbOriginal = original;
-    window.buildAdminFhbCorrectionCalibrationHtml = wrapped;
-    return true;
   }
 
   function adminField(root, name) {
@@ -526,14 +510,9 @@
     }
   }, true);
 
+  window.buildAdminBrusFhbCorrectionHtml = buildAdminHtml;
   installStyles();
   installCalculatorUi();
-  patchAdminBuilder();
-  let patchTries = 0;
-  const patchTimer = setInterval(() => {
-    patchTries += 1;
-    if (patchAdminBuilder() || patchTries > 40) clearInterval(patchTimer);
-  }, 100);
 
   window.RAK_BRUS_FHB_KPO_TARGETS = KPO_TARGETS;
   window.getBrusFhbCorrectionCalibrationSettings = getSettings;
