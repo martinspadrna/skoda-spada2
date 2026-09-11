@@ -1,4 +1,4 @@
-// RaK 1.5.10 – Brusy/FHB: zjednodušené popisky, výrazné indexy, spolehlivé ignorování prázdných polí a DEV update probe.
+// RaK 1.5.93 – Brusy/FHB: zjednodušené popisky, výrazné indexy, spolehlivé ignorování prázdných polí a DEV update probe.
 (function installBrusFhbV158() {
   'use strict';
 
@@ -13,7 +13,9 @@ html body #korekce-brusy .brus157Warning,
 html body #korekce-brusy .brus157KpoSide > small,
 html body #korekce-brusy .brus157Measure > small,
 html body #korekce-brusy .brus157ResultTop > b,
-html body #korekce-brusy .brus157Movement{
+html body #korekce-brusy .brus157Movement,
+html body .adminBrusFhbCalibration .brus157AdminWarning,
+html body .adminBrusFhbCalibration .brus157AdminProgramHint{
   display:none !important;
 }
 html body #korekce-brusy .brus157Card{gap:10px !important;}
@@ -56,6 +58,10 @@ html body #korekce-brusy .brus157ChoiceGroup[data-brus157-select="index"] .brus1
       const parent = badge.closest('.calcTileText');
       if (parent && /Brusy/i.test(parent.textContent || '')) badge.remove();
     });
+  }
+
+  function removeAdminSideWarning() {
+    document.querySelectorAll('.adminBrusFhbCalibration .brus157AdminWarning, .adminBrusFhbCalibration .brus157AdminProgramHint').forEach((node) => node.remove());
   }
 
   function cleanResultText() {
@@ -137,12 +143,14 @@ html body #korekce-brusy .brus157ChoiceGroup[data-brus157-select="index"] .brus1
 
   installStyles();
   removeDevelopmentBadge();
+  removeAdminSideWarning();
   cleanResultText();
   void probeDevelopmentUpdate('module-load');
   window.setTimeout(() => { void probeDevelopmentUpdate('after-boot'); }, 1400);
 
   const observer = new MutationObserver(() => {
     removeDevelopmentBadge();
+    removeAdminSideWarning();
     cleanResultText();
     pruneBlankResults(window.__rakBrusFhbBlankKeys);
   });

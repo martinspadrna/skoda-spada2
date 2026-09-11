@@ -60,11 +60,6 @@ html body nav.bottomNav{
   bottom:0 !important;
   transition:none !important;
 }
-@supports (-webkit-touch-callout:none){
-  html body nav.bottomNav{
-    bottom:0 !important;
-  }
-}
 
 /* RaK 1.2 (1.146) – admin/rozpis polish přesunutý do styles-admin-polish.css. */
 
@@ -72,10 +67,6 @@ html body nav.bottomNav{
 :root{
   --rak-start-viewport-h:100svh !important;
   --rak-start-viewport-dynamic-h:100dvh !important;
-}
-html,
-body{
-  background-color:#07111c !important;
 }
 html{
   min-height:100% !important;
@@ -136,11 +127,11 @@ html.rakStableBootViewport{
   }
 }
 
-/* RaK v1.5.92 – Point 4 / bezpečný viewport cleanup.
-   Odstraněný je jen mrtvý časný bottom přes --rak-nav-ios-start-bottom a časná hodnota
-   --rak-start-viewport-h:100dvh; oba vlastníky byly v téže vrstvě vždy přebité pozdějšími
-   kanonickými hodnotami bottom:0 a --rak-start-viewport-h:100svh. Dashboard scroll owner,
-   safe-area, Rotace dock i fallbacky spodní navigace zůstávají funkčně stejné. */
+/* RaK v1.5.93 – Point 4 / bezpečný viewport cleanup.
+   K předchozímu odstranění mrtvého --rak-nav-ios-start-bottom a časné 100dvh hodnoty
+   přibyl jen duplicitní iOS @supports bottom:0 vlastník a identická deklarace background-color
+   na html/body. Kanonický pozdější iOS blok, Dashboard scroll owner, safe-area, Rotace dock
+   i fallbacky spodní navigace zůstávají funkčně stejné. */
 @media (max-width:700px){
   html body #home.page.active .dashboardShell{
     height:auto !important;

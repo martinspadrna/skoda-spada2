@@ -1,6 +1,6 @@
-// RaK 1.5 production PWA service worker – v1.5.92 warm-start cache.
-const CACHE_VERSION = 'v1.5.92';
-const SW_APP_VERSION = '1.5';
+// RaK 1.5 production PWA service worker – v1.5.93 warm-start cache + confirmed-update navigation.
+const CACHE_VERSION = 'v1.5.93';
+const SW_APP_VERSION = '1.5.93';
 const STATIC_CACHE = `rotace-static-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `rotace-runtime-${CACHE_VERSION}`;
 const PREWARM_CACHE = `rotace-prewarm-${CACHE_VERSION}`;
@@ -64,29 +64,29 @@ const WARM_START = [
   './assets/nav-icons/rotace-green.png',
   './assets/nav-icons/kalkulacky-gray.png',
   './assets/nav-icons/kalkulacky-green.png',
-  './supabase-config.js?v=1.5.92',
-  './rak-user-profile.js?v=1.5.92',
-  './rak-auth-gate.js?v=1.5.92',
-  './rak-account-access.js?v=1.5.92',
-  './rak-login-splash.js?v=1.5.92',
-  './rak-login-fix.js?v=1.5.92',
-  './rak-login-life.js?v=1.5.92',
-  './core.js?v=1.5.92',
-  './lifecycle.js?v=1.5.92',
-  './app-runtime-guards.js?v=1.5.92',
-  './qr.js?v=1.5.92',
-  './payroll.js?v=1.5.92',
-  './dashboard.js?v=1.5.92',
-  './appearance-theme.js?v=1.5.92',
-  './ui.js?v=1.5.92',
-  './app-navigation.js?v=1.5.92',
-  './app-bottom-nav.js?v=1.5.92',
-  './app-actions.js?v=1.5.92',
-  './app-pwa-connectivity.js?v=1.5.92',
-  './app-home-boot.js?v=1.5.92',
-  './rak-runtime-stability.js?v=1.5.92',
-  './rak-mobile-layout-guard.js?v=1.5.92',
-  './rak-feature-routing.js?v=1.5.92'
+  './supabase-config.js?v=1.5.93',
+  './rak-user-profile.js?v=1.5.93',
+  './rak-auth-gate.js?v=1.5.93',
+  './rak-account-access.js?v=1.5.93',
+  './rak-login-splash.js?v=1.5.93',
+  './rak-login-fix.js?v=1.5.93',
+  './rak-login-life.js?v=1.5.93',
+  './core.js?v=1.5.93',
+  './lifecycle.js?v=1.5.93',
+  './app-runtime-guards.js?v=1.5.93',
+  './qr.js?v=1.5.93',
+  './payroll.js?v=1.5.93',
+  './dashboard.js?v=1.5.93',
+  './appearance-theme.js?v=1.5.93',
+  './ui.js?v=1.5.93',
+  './app-navigation.js?v=1.5.93',
+  './app-bottom-nav.js?v=1.5.93',
+  './app-actions.js?v=1.5.93',
+  './app-pwa-connectivity.js?v=1.5.93',
+  './app-home-boot.js?v=1.5.93',
+  './rak-runtime-stability.js?v=1.5.93',
+  './rak-mobile-layout-guard.js?v=1.5.93',
+  './rak-feature-routing.js?v=1.5.93'
 ];
 
 const STATIC_EXT = /\.(?:js|css|png|jpg|jpeg|webp|svg|ico|json|webmanifest)$/i;
@@ -191,7 +191,14 @@ self.addEventListener('activate', event => {
     clients.forEach(client => {
       try { client.postMessage({ type: 'sw-activated', version: CACHE_VERSION, appVersion: SW_APP_VERSION }); } catch (_) {}
       if (approvedUpdateClientId && client.id === approvedUpdateClientId && typeof client.navigate === 'function') {
-        navigations.push(client.navigate(client.url).catch(() => null));
+        try {
+          const nextUrl = new URL(client.url);
+          nextUrl.searchParams.set('_rak_update', CACHE_VERSION + '-' + Date.now().toString(36));
+          nextUrl.searchParams.set('_rak_update_reason', 'sw-activate');
+          navigations.push(client.navigate(nextUrl.href).catch(() => null));
+        } catch (_) {
+          navigations.push(client.navigate(client.url).catch(() => null));
+        }
       }
     });
     if (navigations.length) await Promise.all(navigations);

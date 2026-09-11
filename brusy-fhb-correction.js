@@ -1,4 +1,4 @@
-// RaK 1.5.92 – Brusy / FHB korekce + admin kalibrace; admin HTML se exportuje přímo pro nativní fold Nastavení korekcí.
+// RaK 1.5.93 – Brusy / FHB korekce + admin kalibrace; párové zadání obou vřeten v jednom měření.
 (function installBrusFhbCorrection() {
   'use strict';
 
@@ -94,6 +94,7 @@
     if (Math.abs(before) > 100 || Math.abs(after) > 100) return null;
     return {
       id: String(row.id || (Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 8))).slice(0, 48),
+      batchId: String(row.batchId || '').trim().slice(0, 48),
       at: String(row.at || new Date().toISOString()).slice(0, 40),
       machine,
       index,
@@ -328,47 +329,89 @@
     const values = analysis.samples[machine][side];
     const proposed = analysis.medians[machine][side];
     const isReady = analysis.ready[machine][side];
-    const label = side === 'left' ? 'vlevo' : 'vpravo';
+    const label = side === 'left' ? 'levé vřeteno' : 'pravé vřeteno';
     const state = isReady ? (Math.abs(proposed - current) >= 0.10 ? 'doporučení ' + fmt(proposed, 2) : 'potvrzeno') : ('chybí ' + Math.max(0, MIN_SAMPLES - values.length) + ' vz.');
     return '<div class="adminBrusFhbMetric"><span>' + esc(machine + ' · ' + label) + '</span><b>' + esc(fmt(current, 2)) + '</b><small>' + esc(values.length + '/' + MIN_SAMPLES + ' · ' + state) + '</small></div>';
+  }
+
+  function historyGroups(records) {
+    const safe = Array.isArray(records) ? records : [];
+    const groups = [];
+    const used = new Set();
+    safe.forEach((row) => {
+      if (!row || used.has(row.id)) return;
+      if (row.batchId) {
+        const batch = safe.filter((candidate) => candidate && candidate.batchId === row.batchId);
+        batch.forEach((candidate) => used.add(candidate.id));
+        groups.push(batch);
+      } else {
+        used.add(row.id);
+        groups.push([row]);
+      }
+    });
+    return groups;
+  }
+
+  function historyGroupHtml(group) {
+    const rows = Array.isArray(group) ? group.filter(Boolean) : [];
+    if (!rows.length) return '';
+    const first = rows[0];
+    const left = rows.find((row) => row.side === 'left');
+    const right = rows.find((row) => row.side === 'right');
+    const isPair = !!(first.batchId && left && right);
+    if (isPair) {
+      const leftRate = (left.before - left.after) / left.correction;
+      const rightRate = (right.before - right.after) / right.correction;
+      return '<div class="adminBrusFhbRecord">' +
+        '<div><b>' + esc(recordDate(first.at) + ' · ' + first.machine + ' · ' + first.index) + '</b><span>' +
+          esc('Před L/P ' + left.before + ' / ' + right.before + ' → po ' + left.after + ' / ' + right.after + ' · korekce ' + signed(first.correction, 0) + ' µm') +
+        '</span></div>' +
+        '<small>odezva L/P ' + esc(fmt(leftRate, 2) + ' / ' + fmt(rightRate, 2)) + ' µm FHB/µm' + (first.note ? (' · ' + esc(first.note)) : '') + '</small>' +
+        '<button type="button" class="appMenuInlineClearBtn" data-brus-fhb-cal-action="remove" data-batch-id="' + esc(first.batchId) + '" aria-label="Smazat záznam obou vřeten">×</button>' +
+        '</div>';
+    }
+    const row = first;
+    const rate = (row.before - row.after) / row.correction;
+    return '<div class="adminBrusFhbRecord">' +
+      '<div><b>' + esc(recordDate(row.at) + ' · ' + row.machine + ' · ' + row.index + ' · ' + row.c + ' · ' + (row.side === 'left' ? 'L' : 'P')) + '</b><span>' + esc(row.before + ' → ' + row.after + ' · korekce ' + signed(row.correction, 0) + ' µm') + '</span></div>' +
+      '<small>odezva ' + esc(fmt(rate, 2)) + ' µm FHB/µm' + (row.note ? (' · ' + esc(row.note)) : '') + '</small>' +
+      '<button type="button" class="appMenuInlineClearBtn" data-brus-fhb-cal-action="remove" data-record-id="' + esc(row.id) + '" aria-label="Smazat záznam">×</button>' +
+      '</div>';
   }
 
   function buildAdminHtml() {
     const settings = getSettings();
     const analysis = derive(settings);
-    const records = settings.records.slice(0, 24);
-    const recordsHtml = records.length ? records.map((row) => {
-      const rate = (row.before - row.after) / row.correction;
-      return '<div class="adminBrusFhbRecord">' +
-        '<div><b>' + esc(recordDate(row.at) + ' · ' + row.machine + ' · ' + row.index + ' · ' + row.c + ' · ' + (row.side === 'left' ? 'L' : 'P')) + '</b><span>' + esc(row.before + ' → ' + row.after + ' · korekce ' + signed(row.correction, 0) + ' µm') + '</span></div>' +
-        '<small>odezva ' + esc(fmt(rate, 2)) + ' µm FHB/µm' + (row.note ? (' · ' + esc(row.note)) : '') + '</small>' +
-        '<button type="button" class="appMenuInlineClearBtn" data-brus-fhb-cal-action="remove" data-record-id="' + esc(row.id) + '" aria-label="Smazat záznam">×</button>' +
-        '</div>';
-    }).join('') : '<div class="smallText">Zatím nejsou žádná měření brusů. Aktivní výchozí model je vlevo 2,00 a vpravo 1,50 µm FHB na 1 µm korekce.</div>';
+    const groups = historyGroups(settings.records).slice(0, 24);
+    const recordsHtml = groups.length
+      ? groups.map(historyGroupHtml).join('')
+      : '<div class="smallText">Zatím nejsou žádná měření brusů. Aktivní výchozí model je pro levé vřeteno 2,00 a pro pravé 1,50 µm FHB na 1 µm korekce.</div>';
 
     return [
       '<div class="adminBrusFhbCalibration" data-rak-brusy-real-section="1">',
       '<div class="appMenuSubTitle">Brusy · FHB</div>',
-      '<div class="smallText">Zapiš hodnotu před korekcí, skutečnou korekci ve stroji a výsledek po korekci. Kalkulačka používá medián měření, takže jedna výjimka model nerozhodí. Změna se aktivuje až ručním potvrzením.</div>',
-      '<div class="adminBrusFhbForm">',
-      '<div class="adminBrusFhbThree">',
+      '<div class="smallText">Vyber brus a index. Zapiš FHB na obou vřetenech před korekcí, skutečnou korekci ve stroji a hodnoty po korekci. Jedním uložením se zapíšou oba kalibrační vzorky.</div>',
+      '<div class="adminBrusFhbForm adminFhbCalibrationForm">',
+      '<div class="adminFhbCalibrationTwo">',
       '<label>Stroj<select class="appMenuSelect" data-brus-fhb-cal-field="machine"><option>TBKR01</option><option>TBKR07</option></select></label>',
       '<label>Index<select class="appMenuSelect" data-brus-fhb-cal-field="index"><option>AD</option><option>AE</option><option>AH</option></select></label>',
-      '<label>Měření<select class="appMenuSelect" data-brus-fhb-cal-field="c"><option>C1</option><option>C2</option></select></label>',
       '</div>',
-      '<div class="adminBrusFhbTwo">',
-      '<label>Strana<select class="appMenuSelect" data-brus-fhb-cal-field="side"><option value="left">Vlevo · Zpět/Schub</option><option value="right">Vpravo · Tah/Zug</option></select></label>',
+      '<div class="adminFhbCalibrationFieldset"><b>Před korekcí</b><div class="adminFhbCalibrationTwo">',
+      '<label>L<input class="appMenuInput" inputmode="decimal" data-brus-fhb-cal-field="beforeLeft" placeholder="levé vřeteno"></label>',
+      '<label>P<input class="appMenuInput" inputmode="decimal" data-brus-fhb-cal-field="beforeRight" placeholder="pravé vřeteno"></label>',
+      '</div></div>',
+      '<div class="adminFhbCalibrationFieldset"><b>Provedená korekce</b>',
       '<label>Korekce [µm]<input class="appMenuInput" inputmode="decimal" data-brus-fhb-cal-field="correction" placeholder="např. +2"></label>',
       '</div>',
-      '<div class="adminBrusFhbTwo">',
-      '<label>FHB před<input class="appMenuInput" inputmode="decimal" data-brus-fhb-cal-field="before" placeholder="např. 15"></label>',
-      '<label>FHB po<input class="appMenuInput" inputmode="decimal" data-brus-fhb-cal-field="after" placeholder="např. 12"></label>',
-      '</div>',
-      '<label>Poznámka<input class="appMenuInput" maxlength="160" data-brus-fhb-cal-field="note" placeholder="volitelné"></label>',
-      '<button type="button" class="appMenuAction isActive" data-brus-fhb-cal-action="save">Uložit měření brusu</button>',
+      '<div class="adminFhbCalibrationFieldset"><b>Po korekci</b><div class="adminFhbCalibrationTwo">',
+      '<label>L<input class="appMenuInput" inputmode="decimal" data-brus-fhb-cal-field="afterLeft" placeholder="levé vřeteno"></label>',
+      '<label>P<input class="appMenuInput" inputmode="decimal" data-brus-fhb-cal-field="afterRight" placeholder="pravé vřeteno"></label>',
+      '</div></div>',
+      '<label class="adminFhbCalibrationNote">Poznámka<input class="appMenuInput" maxlength="160" data-brus-fhb-cal-field="note" placeholder="volitelné"></label>',
+      '<button type="button" class="appMenuAction isActive" data-brus-fhb-cal-action="save">Uložit obě vřetena</button>',
       '</div>',
       '<div class="adminBrusFhbModel"><div class="appMenuCardTitle">Aktivní citlivost kalkulačky</div>',
-      '<div class="smallText">Číslo říká, o kolik µm se typicky změní FHB při korekci stroje o 1 µm. Pro změnu potřebujeme nejméně tři použitelné záznamy pro daný stroj a stranu.</div>',
+      '<div class="smallText">Číslo říká, o kolik µm se typicky změní FHB při korekci stroje o 1 µm. Pro změnu potřebujeme nejméně tři použitelné záznamy pro daný brus a každé vřeteno.</div>',
       '<div class="adminBrusFhbMetrics">' + MACHINES.flatMap((machine) => SIDES.map((side) => modelMetricHtml(machine, side, settings, analysis))).join('') + '</div>',
       '<button type="button" class="appMenuAction" data-brus-fhb-cal-action="apply"' + (analysis.changes.length ? '' : ' disabled') + '>Potvrdit doporučené nastavení brusů</button>',
       '</div>',
@@ -381,44 +424,66 @@
     return root.querySelector('[data-brus-fhb-cal-field="' + name + '"]')?.value || '';
   }
 
-  function readAdminRecord() {
+  function readAdminRecords() {
     const root = document.querySelector('.adminBrusFhbCalibration');
     if (!root) return null;
-    return cleanRecord({
-      machine: adminField(root, 'machine'),
-      index: adminField(root, 'index'),
-      c: adminField(root, 'c'),
-      side: adminField(root, 'side'),
-      before: adminField(root, 'before'),
-      correction: adminField(root, 'correction'),
-      after: adminField(root, 'after'),
-      note: adminField(root, 'note')
+    const machine = adminField(root, 'machine');
+    const index = adminField(root, 'index');
+    const correction = adminField(root, 'correction');
+    const note = adminField(root, 'note');
+    const at = new Date().toISOString();
+    const batchId = 'pair-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 7);
+    const left = cleanRecord({
+      machine,
+      index,
+      c: 'C1',
+      side: 'left',
+      before: adminField(root, 'beforeLeft'),
+      correction,
+      after: adminField(root, 'afterLeft'),
+      note,
+      at,
+      batchId
     });
+    const right = cleanRecord({
+      machine,
+      index,
+      c: 'C2',
+      side: 'right',
+      before: adminField(root, 'beforeRight'),
+      correction,
+      after: adminField(root, 'afterRight'),
+      note,
+      at,
+      batchId
+    });
+    return left && right ? { records: [left, right], batchId } : null;
   }
 
   async function handleAdminAction(button) {
     const action = String(button.dataset.brusFhbCalAction || '');
     const status = document.getElementById('adminOnlineSaveStatus');
     if (action === 'save') {
-      const record = readAdminRecord();
-      if (!record) throw new Error('Doplň stroj, index, stranu, FHB před/po a nenulovou korekci.');
-      if (status) status.textContent = 'Ukládám měření brusu…';
+      const pair = readAdminRecords();
+      if (!pair) throw new Error('Doplň brus, index, FHB na obou vřetenech před i po korekci a nenulovou korekci.');
+      if (status) status.textContent = 'Ukládám měření obou vřeten…';
       await refreshSettingsOnline();
       const settings = getSettings();
-      settings.records = [record].concat(settings.records).slice(0, MAX_RECORDS);
+      settings.records = pair.records.concat(settings.records).slice(0, MAX_RECORDS);
       await persistSettings(settings);
       if (typeof openAppMenu === 'function') openAppMenu('admin-correction-settings');
       const next = document.getElementById('adminOnlineSaveStatus');
-      if (next) next.textContent = 'Měření brusu uložené online ✓';
+      if (next) next.textContent = 'Měření obou vřeten uložené online ✓';
       return;
     }
     if (action === 'remove') {
       const id = String(button.dataset.recordId || '');
-      if (!id || !confirm('Smazat toto kalibrační měření brusu?')) return;
+      const batchId = String(button.dataset.batchId || '');
+      if ((!id && !batchId) || !confirm('Smazat toto kalibrační měření brusu?')) return;
       if (status) status.textContent = 'Mažu měření brusu…';
       await refreshSettingsOnline();
       const settings = getSettings();
-      settings.records = settings.records.filter((row) => row.id !== id);
+      settings.records = settings.records.filter((row) => batchId ? row.batchId !== batchId : row.id !== id);
       await persistSettings(settings);
       if (typeof openAppMenu === 'function') openAppMenu('admin-correction-settings');
       return;
@@ -470,13 +535,13 @@
 #korekce-brusy .brusFhbResultMeta,#korekce-brusy .brusFhbResultFoot{font-size:11px;line-height:1.35;color:rgba(232,245,255,.72);margin-top:4px}
 .adminBrusFhbCalibration{margin-top:16px;padding-top:14px;border-top:1px solid rgba(180,255,190,.18);display:flex;flex-direction:column;gap:12px}
 .adminBrusFhbForm,.adminBrusFhbModel,.adminBrusFhbHistory{display:flex;flex-direction:column;gap:9px;padding:11px;border:1px solid rgba(180,255,190,.17);border-radius:14px;background:rgba(5,18,37,.35)}
-.adminBrusFhbThree{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}.adminBrusFhbTwo{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+.adminBrusFhbTwo{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
 .adminBrusFhbForm label{display:flex;flex-direction:column;gap:4px;font-size:11px;color:rgba(232,245,255,.74)}
 .adminBrusFhbMetrics{display:grid;grid-template-columns:1fr 1fr;gap:7px}.adminBrusFhbMetric{display:flex;flex-direction:column;gap:2px;padding:9px;border-radius:12px;background:rgba(5,22,42,.62);border:1px solid rgba(156,220,255,.15)}
 .adminBrusFhbMetric span{font-size:11px;color:rgba(232,245,255,.70)}.adminBrusFhbMetric b{font-size:18px;color:var(--green2,#aaff67)}.adminBrusFhbMetric small{font-size:10px;color:rgba(232,245,255,.58)}
 .adminBrusFhbRecord{position:relative;display:flex;flex-direction:column;gap:3px;padding:9px 34px 9px 9px;border-radius:11px;background:rgba(4,17,34,.58);border:1px solid rgba(160,210,255,.12)}
 .adminBrusFhbRecord>div{display:flex;flex-direction:column;gap:2px}.adminBrusFhbRecord b{font-size:11px}.adminBrusFhbRecord span,.adminBrusFhbRecord small{font-size:10px;color:rgba(232,245,255,.68)}.adminBrusFhbRecord .appMenuInlineClearBtn{position:absolute;right:6px;top:50%;transform:translateY(-50%)}
-@media(max-width:390px){.adminBrusFhbThree{grid-template-columns:1fr}.adminBrusFhbMetrics{grid-template-columns:1fr}.adminBrusFhbTwo{grid-template-columns:1fr 1fr}#korekce-brusy .brusFhbKpo{grid-template-columns:1fr 1fr}}
+@media(max-width:390px){.adminBrusFhbMetrics{grid-template-columns:1fr}.adminBrusFhbTwo{grid-template-columns:1fr 1fr}#korekce-brusy .brusFhbKpo{grid-template-columns:1fr 1fr}}
 `;
     document.head.appendChild(style);
   }

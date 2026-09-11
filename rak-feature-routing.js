@@ -1,8 +1,74 @@
-// RaK v1.5.89 – Boot v2 routing + stabilní korekční folds po Point 3.
+// RaK v1.5.93 – Boot v2 routing + stabilní korekční folds + iOS PWA update reload guard.
 (function installRakFeatureRouting() {
   'use strict';
   if (window.__rakFeatureRoutingInstalled) return;
   window.__rakFeatureRoutingInstalled = true;
+
+  // iOS standalone PWA někdy ignoruje location.reload() po převzetí nového service workeru.
+  // Po potvrzené aktualizaci proto provedeme ještě verzovanou navigaci na skutečně novou URL.
+  // Guard se nespouští jen při zobrazení toastu – vyžaduje pending + suppress, které vzniknou až po klepnutí na Aktualizovat.
+  (function installRakConfirmedUpdateReloadGuard() {
+    if (window.__rakConfirmedUpdateReloadGuardInstalled) return;
+    window.__rakConfirmedUpdateReloadGuardInstalled = true;
+    const PENDING_KEY = 'rotace_sw_update_pending_v1';
+    const SUPPRESS_KEY = 'rotace_sw_update_suppress_v1';
+    let navigationStarted = false;
+    let clickFallbackTimer = 0;
+
+    const readStorage = (storage, key) => {
+      try { return String(storage.getItem(key) || '').trim(); } catch (_) { return ''; }
+    };
+    const updateWasApproved = () => !!(readStorage(sessionStorage, PENDING_KEY) && readStorage(localStorage, SUPPRESS_KEY));
+    const freshUrl = (reason) => {
+      const url = new URL(window.location.href);
+      const build = String(window.RAK_PWA_BUILD || window.RAK_DEV_BUILD || 'v1.5.93').replace(/\s+/g, '');
+      url.searchParams.set('_rak_update', build + '-' + Date.now().toString(36));
+      url.searchParams.set('_rak_update_reason', String(reason || 'confirmed').slice(0, 32));
+      return url.href;
+    };
+    const forceFreshNavigation = (reason) => {
+      if (navigationStarted || !updateWasApproved()) return false;
+      navigationStarted = true;
+      const target = freshUrl(reason);
+      const replaceNow = () => {
+        try { window.location.replace(target); }
+        catch (_) { try { window.location.href = target; } catch (_) {} }
+      };
+      // Nativní timer záměrně není registrovaný v lifecycle cleanupu; musí přežít i rozběhnutý starý reload.
+      window.setTimeout(replaceNow, 140);
+      window.setTimeout(() => {
+        try {
+          if (document.visibilityState !== 'hidden') window.location.href = target;
+        } catch (_) { replaceNow(); }
+      }, 1400);
+      return true;
+    };
+    const scheduleClickFallback = () => {
+      if (clickFallbackTimer) window.clearTimeout(clickFallbackTimer);
+      clickFallbackTimer = window.setTimeout(() => {
+        clickFallbackTimer = 0;
+        forceFreshNavigation('update-click-fallback');
+      }, 3600);
+    };
+
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.addEventListener('controllerchange', () => {
+        forceFreshNavigation('controllerchange');
+      });
+      navigator.serviceWorker.addEventListener('message', (event) => {
+        const data = event && event.data ? event.data : null;
+        if (data && data.type === 'sw-activated') forceFreshNavigation('sw-activated');
+      });
+    }
+    document.addEventListener('click', (event) => {
+      const target = event && event.target && typeof event.target.closest === 'function'
+        ? event.target.closest('.rakUpdateToastAction')
+        : null;
+      if (target) scheduleClickFallback();
+    }, false);
+
+    window.__rakForceConfirmedUpdateReload = forceFreshNavigation;
+  })();
 
   if (typeof window.adminBindRotationZoomGuard !== 'function') {
     const adminZoomStub = function adminBindRotationZoomGuardBootV2Stub() {};
@@ -264,8 +330,6 @@
     if (source && source.closest('#appMenuBody [data-admin-action="open-correction-settings"]')) {
       scheduleCorrectionSettingsEnhance();
     } else if (menuBody && String(menuBody.dataset.adminView || '') === 'correction-settings') {
-      // Uložení/smazání měření renderuje celý obsah znovu. Po každé akci proto
-      // obnovíme oba foldy; stará verze hlídala jen první render a Brusy mohly zůstat venku.
       scheduleCorrectionSettingsEnhance();
     }
 
@@ -362,7 +426,7 @@
 
   try {
     if (typeof window.rakMarkModuleReady === 'function') {
-      window.rakMarkModuleReady('rak-feature-routing.js', 'loaded', { source: 'boot-v2-loader', build: '1.5.89' });
+      window.rakMarkModuleReady('rak-feature-routing.js', 'loaded', { source: 'boot-v2-loader', build: '1.5.93' });
     }
   } catch (_) {}
 })();
