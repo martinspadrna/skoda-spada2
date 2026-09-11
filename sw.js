@@ -1,6 +1,6 @@
-// RaK 1.5 production PWA service worker – v1.5.97 warm-start cache + confirmed-update navigation.
-const CACHE_VERSION = 'v1.5.97';
-const SW_APP_VERSION = '1.5.97';
+// RaK 1.5 production PWA service worker – v1.5.98 warm-start cache + confirmed-update navigation.
+const CACHE_VERSION = 'v1.5.98';
+const SW_APP_VERSION = '1.5.98';
 const STATIC_CACHE = `rotace-static-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `rotace-runtime-${CACHE_VERSION}`;
 const PREWARM_CACHE = `rotace-prewarm-${CACHE_VERSION}`;
@@ -64,29 +64,29 @@ const WARM_START = [
   './assets/nav-icons/rotace-green.png',
   './assets/nav-icons/kalkulacky-gray.png',
   './assets/nav-icons/kalkulacky-green.png',
-  './supabase-config.js?v=1.5.97',
-  './rak-user-profile.js?v=1.5.97',
-  './rak-auth-gate.js?v=1.5.97',
-  './rak-account-access.js?v=1.5.97',
-  './rak-login-splash.js?v=1.5.97',
-  './rak-login-fix.js?v=1.5.97',
-  './rak-login-life.js?v=1.5.97',
-  './core.js?v=1.5.97',
-  './lifecycle.js?v=1.5.97',
-  './app-runtime-guards.js?v=1.5.97',
-  './qr.js?v=1.5.97',
-  './payroll.js?v=1.5.97',
-  './dashboard.js?v=1.5.97',
-  './appearance-theme.js?v=1.5.97',
-  './ui.js?v=1.5.97',
-  './app-navigation.js?v=1.5.97',
-  './app-bottom-nav.js?v=1.5.97',
-  './app-actions.js?v=1.5.97',
-  './app-pwa-connectivity.js?v=1.5.97',
-  './app-home-boot.js?v=1.5.97',
-  './rak-runtime-stability.js?v=1.5.97',
-  './rak-mobile-layout-guard.js?v=1.5.97',
-  './rak-feature-routing.js?v=1.5.97'
+  './supabase-config.js?v=1.5.98',
+  './rak-user-profile.js?v=1.5.98',
+  './rak-auth-gate.js?v=1.5.98',
+  './rak-account-access.js?v=1.5.98',
+  './rak-login-splash.js?v=1.5.98',
+  './rak-login-fix.js?v=1.5.98',
+  './rak-login-life.js?v=1.5.98',
+  './core.js?v=1.5.98',
+  './lifecycle.js?v=1.5.98',
+  './app-runtime-guards.js?v=1.5.98',
+  './qr.js?v=1.5.98',
+  './payroll.js?v=1.5.98',
+  './dashboard.js?v=1.5.98',
+  './appearance-theme.js?v=1.5.98',
+  './ui.js?v=1.5.98',
+  './app-navigation.js?v=1.5.98',
+  './app-bottom-nav.js?v=1.5.98',
+  './app-actions.js?v=1.5.98',
+  './app-pwa-connectivity.js?v=1.5.98',
+  './app-home-boot.js?v=1.5.98',
+  './rak-runtime-stability.js?v=1.5.98',
+  './rak-mobile-layout-guard.js?v=1.5.98',
+  './rak-feature-routing.js?v=1.5.98'
 ];
 
 const STATIC_EXT = /\.(?:js|css|png|jpg|jpeg|webp|svg|ico|json|webmanifest)$/i;

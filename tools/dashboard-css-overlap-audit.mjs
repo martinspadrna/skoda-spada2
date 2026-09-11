@@ -30,6 +30,17 @@ for (const deadRevision of ['v.1.5 (944)', 'v.1.5 (945)', 'v.1.5 (954)', 'v.1.5 
 assert(fit.includes('v.1.5 (948)'), 'device-specific 390x844 / 412x892 owners must remain');
 assert(fit.includes('v.1.5 (953)'), 'general hero centering owner must remain');
 
+// Point 4 / v1.5.98: polish vrstva už nesmí obsahovat první přepsaný glass/low-end
+// mezistav. Kanonický matnější glass i finální low-end owner musí zůstat.
+assert(polish.includes('RaK v1.5.98 – odstraněné prokazatelně přepsané glass/low-end/food/dot/typography mezivrstvy'), 'v1.5.98 Dashboard polish cleanup marker missing');
+assert(!polish.includes('rgba(5,9,16,.34) 68%'), 'superseded strong Dashboard glass variables returned');
+assert(!polish.includes('rgba(5,9,16,.40) 70%'), 'superseded strong Dashboard glass variables returned');
+assert(polish.includes('rgba(5,9,16,.24) 64%'), 'canonical matte Dashboard glass owner missing');
+assert(polish.includes('html body:is(.ladaMode,.lowEndDevice,.lightweightMode) #home.page.active .dashboardShell'), 'final low-end Dashboard shell owner missing');
+assert(polish.includes('inline-size:14px !important;') && polish.includes('block-size:14px !important;'), 'canonical food status dot owner missing');
+assert(polish.includes('font-size:clamp(12.1px, 3.25vw, 14.6px) !important;'), 'canonical Dashboard label typography missing');
+assert(polish.includes('font-size:clamp(15.5px, 4.45vw, 20.4px) !important;'), 'canonical Dashboard value typography missing');
+
 // Point 4 / viewport cleanup: starý startovní bottom alias ani časná 100dvh hodnota
 // se nesmí vrátit. Kanonické iOS/PWA a mobilní Home ownery musí zůstat.
 assert(!viewportClean.includes('--rak-nav-ios-start-bottom'), 'dead iOS start-bottom alias returned');
@@ -55,6 +66,6 @@ function selectorCounts(source) {
 const combined = selectorCounts(fitClean + '\n' + polishClean);
 const repeated = [...combined.entries()].filter(([, count]) => count > 1).sort((a, b) => b[1] - a[1]);
 assert(repeated.length > 0, 'Dashboard overlap audit unexpectedly found no repeated selectors');
-assert(repeated.length < 124, `Point 4 cleanup must reduce repeated Dashboard selectors below baseline 124; got ${repeated.length}`);
+assert(repeated.length < 117, `Point 4 v1.5.98 cleanup must reduce repeated Dashboard selectors below baseline 117; got ${repeated.length}`);
 const top = repeated.slice(0, 8).map(([selector, count]) => `${count}× ${selector}`).join(' | ');
-console.log(`[dashboard-css-overlap-audit] OK repeated=${repeated.length}; viewport-dead-start-owners=0; compact-history=consolidated; top=${top}`);
+console.log(`[dashboard-css-overlap-audit] OK repeated=${repeated.length}; viewport-dead-start-owners=0; compact-history=consolidated; polish-dead-layers=removed; top=${top}`);

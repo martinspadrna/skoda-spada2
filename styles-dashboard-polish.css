@@ -5,91 +5,8 @@
    1.96: Dashboard override selector lock v1.96 – nové vizuální Dashboard úpravy nepatří do styles-overrides.css; aktivní vlastnictví držet v dashboard-fit/polish vrstvě.
    1.97: Dashboard scope guard v1.97 – dashboard-fit/polish vrstvy nesmí upravovat spodní lištu, menu ani admin přehled; to patří do jejich vlastních vrstev.
    1.98: Dashboard release isolation guard v1.98 – Dashboard cleanup nesmí tahat export Rozpisů ani herní styly do Dashboard vrstev.
-   1.100: Dashboard CSS guard series complete v1.100 – série Dashboard CSS guardů 1.90–1.100 je uzavřená; další práce má být konkrétní funkční/vizuální požadavek. */
-#home.page.active .dashboardShell{
-  --rak-dash-glass-bg: color-mix(in srgb, rgba(5,9,16,.34) 68%, var(--theme-surface, rgba(255,255,255,.10)) 32%) !important;
-  --rak-dash-glass-bg-strong: color-mix(in srgb, rgba(5,9,16,.40) 70%, var(--theme-surface, rgba(255,255,255,.12)) 30%) !important;
-  --rak-dash-glass-border: color-mix(in srgb, var(--rakThemeAccent, var(--theme-accent, var(--green2))) 24%, rgba(255,255,255,.26)) !important;
-  --rak-dash-glass-glow: color-mix(in srgb, var(--rakThemeAccent, var(--theme-accent, var(--green2))) 11%, transparent) !important;
-}
-#home.page.active .dashboardShell,
-body:not(.lightweightMode):not(.lowEndDevice):not(.ladaMode) #home.page.active .dashboardShell{
-  background:
-    radial-gradient(circle at 9% 0%, color-mix(in srgb, var(--rakThemeAccent, var(--theme-accent, #7cff7c)) 10%, transparent), transparent 42%),
-    linear-gradient(180deg, rgba(255,255,255,.058), rgba(255,255,255,.018)),
-    rgba(5,9,16,.24) !important;
-  border-color: color-mix(in srgb, var(--rakThemeAccent, var(--theme-accent, #7cff7c)) 20%, rgba(255,255,255,.22)) !important;
-  -webkit-backdrop-filter: blur(30px) saturate(1.45) contrast(1.02) !important;
-  backdrop-filter: blur(30px) saturate(1.45) contrast(1.02) !important;
-  box-shadow: 0 20px 56px rgba(0,0,0,.22), inset 0 1px 0 rgba(255,255,255,.14) !important;
-}
-body:not(.lightweightMode):not(.lowEndDevice):not(.ladaMode) #home .dashboardHeroCard,
-body:not(.lightweightMode):not(.lowEndDevice):not(.ladaMode) #home .dashboardCard,
-body:not(.lightweightMode):not(.lowEndDevice):not(.ladaMode) #home .tile.dashboardCard{
-  background:
-    linear-gradient(145deg, rgba(255,255,255,.076), rgba(255,255,255,.022) 58%, rgba(255,255,255,.010)) !important;
-  background-color: color-mix(in srgb, rgba(5,9,16,.36) 68%, var(--theme-surface, rgba(255,255,255,.10)) 32%) !important;
-  border-color: color-mix(in srgb, var(--rakThemeAccent, var(--theme-accent, #7cff7c)) 22%, rgba(255,255,255,.24)) !important;
-  -webkit-backdrop-filter: blur(32px) saturate(1.48) contrast(1.03) !important;
-  backdrop-filter: blur(32px) saturate(1.48) contrast(1.03) !important;
-  box-shadow:
-    0 16px 42px rgba(0,0,0,.20),
-    inset 0 1px 0 rgba(255,255,255,.17),
-    inset 0 -1px 0 rgba(255,255,255,.030),
-    0 0 0 1px rgba(255,255,255,.030) !important;
-}
-#home .dashboardHeroCard::before,
-#home .dashboardCard::before{
-  opacity:.34 !important;
-  background:
-    linear-gradient(135deg, rgba(255,255,255,.13), transparent 34%),
-    radial-gradient(circle at 14% 0%, color-mix(in srgb, var(--rakThemeAccent, var(--theme-accent, #7cff7c)) 9%, transparent), transparent 42%) !important;
-}
-#home .dashboardHeroCard::after,
-#home .dashboardCard::after{
-  opacity:.16 !important;
-}
-#home .dashboardCardClickable:hover{
-  border-color: color-mix(in srgb, var(--rakThemeAccent, var(--theme-accent, #7cff7c)) 30%, rgba(255,255,255,.24)) !important;
-  box-shadow:
-    0 18px 44px rgba(0,0,0,.22),
-    inset 0 1px 0 rgba(255,255,255,.18),
-    0 0 18px color-mix(in srgb, var(--rakThemeAccent, var(--theme-accent, #7cff7c)) 8%, transparent) !important;
-}
-.dashboardAnnouncementBar{
-  background: linear-gradient(145deg, rgba(255,255,255,.070), rgba(255,255,255,.020)) !important;
-  background-color: color-mix(in srgb, rgba(5,9,16,.36) 68%, var(--theme-surface, rgba(255,255,255,.10)) 32%) !important;
-  border-color: color-mix(in srgb, var(--rakThemeAccent, var(--theme-accent, #7cff7c)) 22%, rgba(255,255,255,.24)) !important;
-  -webkit-backdrop-filter: blur(30px) saturate(1.45) !important;
-  backdrop-filter: blur(30px) saturate(1.45) !important;
-  box-shadow:0 14px 36px rgba(0,0,0,.20), inset 0 1px 0 rgba(255,255,255,.15) !important;
-}
-body.lightweightMode #home .dashboardHeroCard,
-body.lightweightMode #home .dashboardCard,
-body.lightweightMode #home .tile.dashboardCard,
-body.lowEndDevice #home .dashboardHeroCard,
-body.lowEndDevice #home .dashboardCard,
-body.lowEndDevice #home .tile.dashboardCard,
-body.ladaMode #home .dashboardHeroCard,
-body.ladaMode #home .dashboardCard,
-body.ladaMode #home .tile.dashboardCard{
-  background:rgba(255,255,255,.075) !important;
-  border-color:rgba(255,255,255,.15) !important;
-  box-shadow:0 8px 20px rgba(0,0,0,.14), inset 0 1px 0 rgba(255,255,255,.10) !important;
-}
-body.lightweightMode #home.page.active .dashboardShell,
-body.lowEndDevice #home.page.active .dashboardShell,
-body.ladaMode #home.page.active .dashboardShell,
-body.lightweightMode .dashboardAnnouncementBar,
-body.lowEndDevice .dashboardAnnouncementBar,
-body.ladaMode .dashboardAnnouncementBar{
-  background:rgba(255,255,255,.075) !important;
-  border-color:rgba(255,255,255,.15) !important;
-  box-shadow:0 8px 20px rgba(0,0,0,.14), inset 0 1px 0 rgba(255,255,255,.09) !important;
-  -webkit-backdrop-filter:none !important;
-  backdrop-filter:none !important;
-}
-
+   1.100: Dashboard CSS guard series complete v1.100 – série Dashboard CSS guardů 1.90–1.100 je uzavřená; další práce má být konkrétní funkční/vizuální požadavek.
+   RaK v1.5.98 – odstraněné prokazatelně přepsané glass/low-end/food/dot/typography mezivrstvy; výsledné ownery zůstávají beze změny. */
 
 /* 1.2 (1.146) – Dashboard: ještě matnější a průhlednější glass, bez zásahu do spodní lišty. */
 #home.page.active .dashboardShell{
@@ -504,31 +421,7 @@ html body:not(.lightweightMode):not(.lowEndDevice) .foodScheduleOverlay.isVisibl
 }
 
 
-/* 1.2 (1.146) – Dashboard finální doladění po mobilním testu.
-   Panely zůstávají velké a stejně vysoké; jen jídlo dostane delší řádek a hero panel s oznámením víc prostoru dole. */
-#home.page.active #dashKantyna.dashboardCardFood .dashboardValue,
-#home.page.active #dashJidelna.dashboardCardFood .dashboardValue{
-  grid-column:1 / -1 !important;
-  width:100% !important;
-  max-width:100% !important;
-  font-size:clamp(13.2px, 3.55vw, 16px) !important;
-  line-height:1.05 !important;
-  letter-spacing:-.035em !important;
-  white-space:nowrap !important;
-  overflow:visible !important;
-  text-overflow:clip !important;
-}
-#home.page.active #dashKantyna.dashboardCardFood .dashboardMeta,
-#home.page.active #dashJidelna.dashboardCardFood .dashboardMeta{
-  grid-column:1 / -1 !important;
-  width:100% !important;
-  max-width:100% !important;
-  font-size:clamp(9.1px, 2.35vw, 10.6px) !important;
-  line-height:1.08 !important;
-  white-space:nowrap !important;
-  overflow:visible !important;
-  text-overflow:clip !important;
-}
+/* 1.2 (1.146) – Dashboard finální doladění po mobilním testu: hero panel s oznámením má víc prostoru dole. */
 #dashboardAnnouncementBar:not([hidden]) + #dashHero.dashboardHeroCard{
   min-height:150px !important;
   padding-bottom:24px !important;
@@ -564,11 +457,6 @@ html body:not(.lightweightMode):not(.lowEndDevice) .foodScheduleOverlay.isVisibl
   }
 }
 @media (max-width:370px){
-  #home.page.active #dashKantyna.dashboardCardFood .dashboardValue,
-  #home.page.active #dashJidelna.dashboardCardFood .dashboardValue{
-    font-size:12.8px !important;
-    letter-spacing:-.045em !important;
-  }
   #dashboardAnnouncementBar:not([hidden]) + #dashHero.dashboardHeroCard{
     min-height:134px !important;
     padding-bottom:20px !important;
@@ -1325,30 +1213,7 @@ html body:not(.lightweightMode):not(.lowEndDevice) .foodScheduleOverlay.isVisibl
   }
 }
 
-/* 1.2 (1.146) – Dashboard mobile finální stabilizace: horní směnový panel o cca 10 % nižší,
-   běžné panely se drží uvnitř shellu a stavové kolečko je vždy kruh. */
-#home.page.active #dashKantyna .dashboardDot,
-#home.page.active #dashJidelna .dashboardDot,
-#home.page.active #dashKantyna .dashboardDot.is-open,
-#home.page.active #dashJidelna .dashboardDot.is-open,
-#home.page.active #dashKantyna .dashboardDot.is-closed,
-#home.page.active #dashJidelna .dashboardDot.is-closed{
-  display:block !important;
-  width:14px !important;
-  height:14px !important;
-  min-width:14px !important;
-  min-height:14px !important;
-  max-width:14px !important;
-  max-height:14px !important;
-  flex:0 0 14px !important;
-  aspect-ratio:1 / 1 !important;
-  border-radius:50% !important;
-  box-sizing:border-box !important;
-  padding:0 !important;
-  margin-left:auto !important;
-  align-self:center !important;
-  transform:none !important;
-}
+/* 1.2 (1.146) – Dashboard mobile finální stabilizace: běžné panely se drží uvnitř shellu. */
 @media (min-width:380px) and (max-width:440px) and (min-height:830px) and (max-height:940px){
   #home.page.active .dashboardShell{
     display:flex !important;
@@ -1522,25 +1387,7 @@ html body:not(.lightweightMode):not(.lowEndDevice) .foodScheduleOverlay.isVisibl
 }
 
 
-/* 1.2 (1.146) – Dashboard: mírně větší písmo a kompaktnější horní směnový panel. */
-#home.page.active .dashboardLabel{
-  font-size:clamp(11.7px, 3.12vw, 14px) !important;
-  line-height:1.08 !important;
-}
-#home.page.active .dashboardValue,
-#home.page.active .dashboardCardFood .dashboardValue,
-#home.page.active #dashKantyna.dashboardCardFood .dashboardValue,
-#home.page.active #dashJidelna.dashboardCardFood .dashboardValue{
-  font-size:clamp(14.8px, 4.25vw, 19.4px) !important;
-  line-height:1.08 !important;
-}
-#home.page.active .dashboardMeta,
-#home.page.active .dashboardCardFood .dashboardMeta,
-#home.page.active #dashKantyna.dashboardCardFood .dashboardMeta,
-#home.page.active #dashJidelna.dashboardCardFood .dashboardMeta{
-  font-size:clamp(10.6px, 2.8vw, 12.5px) !important;
-  line-height:1.12 !important;
-}
+/* 1.2 (1.146) – Dashboard: kompaktnější horní směnový panel, bez meziverze fontů běžných karet. */
 #home.page.active #dashHero .dashboardHeroLine3{
   display:flex !important;
   justify-content:center !important;
@@ -1767,12 +1614,6 @@ html body:not(.lightweightMode):not(.lowEndDevice) .foodScheduleOverlay.isVisibl
   line-height:1.03 !important;
   font-weight:950 !important;
 }
-#home.page.active #dashHero .dashboardHeroLine3Sub{
-  font-size:clamp(12.5px, 3.25vw, 17px) !important;
-  line-height:1.04 !important;
-  font-weight:850 !important;
-  color:rgba(232,255,232,.86) !important;
-}
 #home.page.active #dashHero .dashboardHeroLine3Sub::before{
   content:'' !important;
 }
@@ -1789,9 +1630,6 @@ html body:not(.lightweightMode):not(.lowEndDevice) .foodScheduleOverlay.isVisibl
   }
   #home.page.active #dashHero .dashboardHeroLine3Main{
     font-size:14.2px !important;
-  }
-  #home.page.active #dashHero .dashboardHeroLine3Sub{
-    font-size:12px !important;
   }
 }
 
