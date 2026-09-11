@@ -1,16 +1,77 @@
 // RaK – běžné stránky menu oddělené od admin shellu.
 try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleReady('app-menu-pages.js', 'loaded', { source: 'dynamic-loader' }); } catch (err) {}
 
+function buildAppMenuAboutHistoryHtml() {
+  const sections = [
+    {
+      range: 'RaK 1.6',
+      title: 'Rychlejší, čistší a přesnější',
+      lines: [
+        'Start aplikace a aktualizace PWA jsou rychlejší a stabilnější; části aplikace se načítají až ve chvíli, kdy jsou potřeba.',
+        'Korekce Brusů pracují samostatně pro 2 brusy, 3 indexy, C1/C2 a levou/pravou stranu protokolu – celkem 24 citlivostí.',
+        'Dashboard a mobilní/iPhone rozložení prošly velkým úklidem starých překrývajících se stylů bez změny ověřeného vzhledu.',
+        'Aplikace se dál rozdělila do menších modulů, odstranily se Hry a řada starých oprav a duplicit, takže je snazší ji bezpečně udržovat.'
+      ]
+    },
+    {
+      range: 'RaK 1.5',
+      title: 'Účty, osobní směna a reporty',
+      lines: [
+        'Přihlášení si pamatuje uživatele a vzhled je uložený ke konkrétnímu účtu; Home ukazuje osobní směnu a pracovní informace.',
+        'Rotace zobrazí poslední uložená data hned a synchronizuje je na pozadí; generátor hlídá návaznost měsíců a pravidla rozpisu.',
+        'Přibyly reporty směny a dovolených, úkoly strojů, bezpečnější správa účtů a nový mobilní vzhled.'
+      ]
+    },
+    {
+      range: 'RaK 1.2',
+      title: 'Administrace a generátor',
+      lines: [
+        'Výrazně se rozšířila administrace, generátor rozpisů, práce s absencemi a přesčasy, zálohy a chráněné ukládání se revizemi.',
+        'Nastavení pracovníků, dovolených, provozních dnů, odkazů a dalších částí se přesunulo přímo do aplikace.'
+      ]
+    },
+    {
+      range: 'RaK 1.1',
+      title: 'Online funkce a PWA',
+      lines: [
+        'Přibyly větší PWA/offline funkce, online synchronizace, statistiky a bezpečnostní i provozní kontroly.',
+        'V této řadě vznikaly také Hry a online profily; později byly z RaK odstraněny, aby aplikace zůstala pracovně zaměřená.'
+      ]
+    },
+    {
+      range: 'RaK 1.0 a začátky',
+      title: 'Základ aplikace',
+      lines: [
+        'Vznikl základ Dashboardu, směnové logiky, Rotací, rozpisů a výrobních kalkulaček; postupně přibylo ukládání dat a první PWA základ.'
+      ]
+    }
+  ];
+
+  return [
+    '<div class="appMenuHistory">',
+    sections.map(section => [
+      '<div class="appMenuHistoryGroup">',
+      '  <div class="appMenuHistoryRange">' + escapeHtml(section.range) + '</div>',
+      '  <div class="appMenuHistoryTitle">' + escapeHtml(section.title) + '</div>',
+      '  <div class="appMenuHistoryList">' + (section.lines || []).map(line => '<div class="appMenuHistoryItem">' + escapeHtml(line) + '</div>').join('') + '</div>',
+      '</div>'
+    ].join('')).join(''),
+    '</div>'
+  ].join('');
+}
+
 function renderAppMenuAboutPage(body, versionText) {
+      const displayVersion = String(window.RAK_RELEASE_VERSION || versionText || '1.6').trim();
       const devBuildLine = window.RAK_DEV_BUILD
         ? '  <div class="appMenuText">Testovací build: ' + escapeHtml(String(window.RAK_DEV_BUILD)) + '</div>'
         : '';
       body.innerHTML = [
         '<div class="appMenuCard">',
         '  <div class="appMenuCardTitle">O aplikaci</div>',
-        '  <div class="appMenuVersion">' + escapeHtml(formatRakDisplayVersion(versionText)) + '</div>',
+        '  <div class="appMenuVersion">' + escapeHtml(formatRakDisplayVersion(displayVersion)) + '</div>',
         devBuildLine,
-        '  ' + buildAppHistoryHtml(versionText),
+        '  <div class="appMenuText">RaK (Rotace a Kalkulačky) je pracovní PWA pro směny, rotace a rozpisy, výrobní kalkulačky, korekce a reporty. Je navržená hlavně pro rychlé použití na telefonu a umí pracovat i s posledními uloženými daty bez okamžitého připojení.</div>',
+        '  ' + buildAppMenuAboutHistoryHtml(),
         '  <button type="button" class="appMenuAction appMenuBack" data-menu-back="1">Zpět</button>',
         '</div>'
       ].join('');

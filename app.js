@@ -1,9 +1,10 @@
-// RaK 1.5.99 – Boot v2 + PWA warm-start + indexed Brusy calibration + Dashboard fit dead-owner cleanup.
+// RaK 1.6.0 – Boot v2 + PWA warm-start + indexed Brusy calibration + concise About history.
 try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleReady('app.js', 'loaded', { source: 'index' }); } catch (err) {}
 
 (async () => {
-  const RAK_MODULE_CACHE_VERSION = "1.5.99";
-  const RAK_DEV_UPDATE_BUILD = "v1.5.99";
+  const RAK_MODULE_CACHE_VERSION = "1.6.0";
+  const RAK_DEV_UPDATE_BUILD = "v1.6.0";
+  window.RAK_RELEASE_VERSION = "1.6";
   const RAK_BOOT_V2_ENABLED = true;
   window.RAK_PWA_BUILD = RAK_DEV_UPDATE_BUILD;
   window.RAK_BOOT_V2_ENABLED = RAK_BOOT_V2_ENABLED;
