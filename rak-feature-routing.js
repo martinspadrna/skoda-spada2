@@ -1,4 +1,4 @@
-// RaK v1.5.87 hotfix – Boot v2 routing + background warmup for fast first navigation.
+// RaK v1.5.88 – Boot v2 routing, klidný warmup a stabilizační opravy před PWA warm-startem.
 (function installRakFeatureRouting() {
   'use strict';
   if (window.__rakFeatureRoutingInstalled) return;
@@ -57,6 +57,191 @@
     return ensureFeatureWithAuthOrder(target.feature);
   }
 
+  function clearVacationReportStateWhenLeaving(event) {
+    const source = event && event.target && typeof event.target.closest === 'function' ? event.target : null;
+    const nav = source && source.closest('nav.bottomNav button[data-action]');
+    if (!nav || String(nav.dataset.action || '') === 'menu') return;
+    const body = document.getElementById('appMenuBody');
+    if (body) body.dataset.rakVacationReportOpen = '0';
+  }
+
+  function openVacationReportFromAnyEntry(event) {
+    const source = event && event.target && typeof event.target.closest === 'function' ? event.target : null;
+    const button = source && source.closest('#appMenuBody [data-admin-action="vacation-report"]');
+    if (!button) return false;
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    const open = () => {
+      if (window.RakVacationReport && typeof window.RakVacationReport.open === 'function') {
+        window.RakVacationReport.open();
+        return true;
+      }
+      return false;
+    };
+    if (!open()) {
+      ensureFeatureWithAuthOrder('menu').then(open).catch((err) => {
+        if (typeof window.rakHandleFeatureLoadError === 'function') window.rakHandleFeatureLoadError(err, 'menu');
+      });
+    }
+    return true;
+  }
+
+  const SAFE_MANUAL_SYNC_STATE = window.__rakDashboardManualSyncStateV1588 || {
+    running: false,
+    lastAt: 0,
+    lastText: ''
+  };
+  window.__rakDashboardManualSyncStateV1588 = SAFE_MANUAL_SYNC_STATE;
+
+  function setSafeManualSyncUi(text, state) {
+    const safeText = String(text || '').trim();
+    try {
+      const badge = document.getElementById('dashboardSyncBadge');
+      if (badge && safeText) {
+        badge.textContent = safeText;
+        badge.dataset.syncState = String(state || '');
+      }
+    } catch (_) {}
+    try {
+      const status = document.getElementById('adminOnlineSaveStatus');
+      if (status && safeText) status.textContent = safeText;
+    } catch (_) {}
+  }
+
+  async function runSafeManualSync(source) {
+    if (SAFE_MANUAL_SYNC_STATE.running) return { ok: false, reason: 'already-running' };
+    SAFE_MANUAL_SYNC_STATE.running = true;
+    const started = Date.now();
+    const result = { ok: true, source: source || 'manual-sync', steps: [] };
+    const step = async (name, fn) => {
+      if (typeof fn !== 'function') return null;
+      try {
+        const value = await fn();
+        result.steps.push({ name, ok: true });
+        return value;
+      } catch (err) {
+        result.ok = false;
+        result.steps.push({ name, ok: false, error: String(err && err.message ? err.message : err || '') });
+        return null;
+      }
+    };
+
+    setSafeManualSyncUi('⟳ Synchronizuji…', 'pending');
+    try {
+      await step('sync-moduly', () => ensureFeatureWithAuthOrder('sync'));
+      await step('flush-fronty', () => window.RotationSupabaseBridge && typeof window.RotationSupabaseBridge.flushPendingWrites === 'function'
+        ? window.RotationSupabaseBridge.flushPendingWrites()
+        : null);
+      await step('rozpis', () => typeof window.syncRotationFromSupabase === 'function'
+        ? window.syncRotationFromSupabase(true)
+        : (typeof syncRotationFromSupabase === 'function' ? syncRotationFromSupabase(true) : null));
+      await step('nastaveni', async () => {
+        const bridge = window.RotationSupabaseBridge;
+        if (!bridge || typeof bridge.loadMachineSettings !== 'function') return null;
+        const rows = await bridge.loadMachineSettings();
+        if (typeof app !== 'undefined' && app && Array.isArray(rows)) app.machineSettingsRows = rows;
+        return rows;
+      });
+      await step('live-refresh', () => typeof window.__rotaceTriggerLiveRefresh === 'function'
+        ? window.__rotaceTriggerLiveRefresh('v1588-manual-sync', { force: true })
+        : null);
+      await step('kontrola-aktualizace', () => typeof window.__rotaceForcePwaUpdateCheck === 'function'
+        ? window.__rotaceForcePwaUpdateCheck('v1588-manual-sync')
+        : null);
+      await step('pwa-cache', () => typeof window.__rotaceRequestPwaCacheStatus === 'function'
+        ? window.__rotaceRequestPwaCacheStatus('v1588-manual-sync')
+        : null);
+      try { if (typeof window.forceHomeRefresh === 'function') window.forceHomeRefresh(); else if (typeof forceHomeRefresh === 'function') forceHomeRefresh(); } catch (_) {}
+      try { if (typeof window.updateDashboard === 'function') window.updateDashboard(); else if (typeof updateDashboard === 'function') updateDashboard(); } catch (_) {}
+      SAFE_MANUAL_SYNC_STATE.lastAt = Date.now();
+      SAFE_MANUAL_SYNC_STATE.lastText = result.ok ? 'Synchronizace hotová.' : 'Synchronizace doběhla s chybou.';
+      setSafeManualSyncUi(result.ok ? '🟢 Synchronizováno teď' : '🔴 Sync s chybou', result.ok ? 'online' : 'error');
+      return Object.assign(result, { elapsedMs: Date.now() - started });
+    } finally {
+      SAFE_MANUAL_SYNC_STATE.running = false;
+    }
+  }
+
+  window.runRakSafeManualSyncV1588 = runSafeManualSync;
+  // dashboard.js měl u ručního syncu TDZ závod přes lokální const stav. Po jeho plném
+  // načtení přesměrujeme veřejnou funkci na stav uložený na window, který TDZ nemá.
+  window.runDashboardManualSync = runSafeManualSync;
+
+  function handleManualSyncClick(event) {
+    const source = event && event.target && typeof event.target.closest === 'function' ? event.target : null;
+    if (!source) return false;
+    const button = source.closest('#dashboardSyncBadge, #appMenuBody [data-admin-action="service-sync-now"]');
+    if (!button) return false;
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    void runSafeManualSync(button.id === 'dashboardSyncBadge' ? 'dashboard-click' : 'admin-service-sync').then((result) => {
+      if (button.id !== 'dashboardSyncBadge') {
+        const status = document.getElementById('adminOnlineSaveStatus');
+        if (status) status.textContent = result && result.ok ? 'Synchronizace hotová.' : 'Synchronizace doběhla s chybou.';
+      }
+    });
+    return true;
+  }
+
+  function handleManualSyncKeyboard(event) {
+    if (!event || (event.key !== 'Enter' && event.key !== ' ')) return;
+    const source = event.target && typeof event.target.closest === 'function' ? event.target : null;
+    const badge = source && source.closest('#dashboardSyncBadge');
+    if (!badge) return;
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    void runSafeManualSync('dashboard-keyboard');
+  }
+
+  function makeCorrectionFold(label, detail, nodes) {
+    const liveNodes = (Array.isArray(nodes) ? nodes : []).filter((node) => node && node.parentNode);
+    if (!liveNodes.length) return null;
+    const details = document.createElement('details');
+    details.className = 'rakCorrectionMachineFold';
+    details.open = false;
+    const summary = document.createElement('summary');
+    summary.innerHTML = '<span>' + String(label || '') + '</span>' + (detail ? '<small>' + String(detail) + '</small>' : '');
+    const content = document.createElement('div');
+    content.className = 'rakCorrectionMachineFoldBody';
+    const parent = liveNodes[0].parentNode;
+    parent.insertBefore(details, liveNodes[0]);
+    details.appendChild(summary);
+    details.appendChild(content);
+    liveNodes.forEach((node) => content.appendChild(node));
+    return details;
+  }
+
+  function enhanceCorrectionSettings() {
+    const body = document.getElementById('appMenuBody');
+    if (!body || String(body.dataset.adminView || '') !== 'correction-settings') return false;
+    const root = body.querySelector('.adminFhbCalibration');
+    if (!root || root.dataset.rakV1588CorrectionFolded === '1') return false;
+
+    const form = root.querySelector(':scope > .adminFhbCalibrationForm');
+    const model = root.querySelector(':scope > .adminFhbCalibrationModel');
+    const history = root.querySelector(':scope > .adminFhbCalibrationHistory');
+    const soon = root.querySelector(':scope > .adminFhbCalibrationSoon');
+    makeCorrectionFold('Frézky FHB · MFKF06 + MFKF10', 'měření, nastavení výpočtu a záznamy', [form, model, history]);
+    makeCorrectionFold('Brusy FHB', 'připravujeme', [soon]);
+    root.dataset.rakV1588CorrectionFolded = '1';
+    return true;
+  }
+
+  function scheduleCorrectionSettingsEnhance() {
+    let attempt = 0;
+    const run = () => {
+      if (enhanceCorrectionSettings()) return;
+      attempt += 1;
+      if (attempt < 24) setTimeout(run, 125);
+    };
+    setTimeout(run, 0);
+  }
+
+  function scheduleIdle(fn, timeout, fallbackDelay) {
+    if (typeof requestIdleCallback === 'function') requestIdleCallback(fn, { timeout });
+    else setTimeout(fn, fallbackDelay);
+  }
+
   // Pointerdown získá náskok před clickem. Pointer-events ale nevypínáme,
   // protože Safari musí vždy doručit dokončovací click.
   document.addEventListener('pointerdown', (event) => {
@@ -66,7 +251,18 @@
     if (pending && typeof pending.catch === 'function') pending.catch(() => {});
   }, { capture: true, passive: true });
 
+  document.addEventListener('keydown', handleManualSyncKeyboard, true);
+
   document.addEventListener('click', (event) => {
+    clearVacationReportStateWhenLeaving(event);
+    if (openVacationReportFromAnyEntry(event)) return;
+    if (handleManualSyncClick(event)) return;
+
+    const source = event && event.target && typeof event.target.closest === 'function' ? event.target : null;
+    if (source && source.closest('#appMenuBody [data-admin-action="open-correction-settings"]')) {
+      scheduleCorrectionSettingsEnhance();
+    }
+
     const target = resolveTarget(event);
     if (!target || typeof window.rakEnsureFeature !== 'function') return;
     const el = target.element;
@@ -101,35 +297,41 @@
     });
   }, true);
 
-  // Boot v2 má Home zobrazit jako první, ale uživatel nemá platit několikasekundovou
-  // penalizaci při každém prvním klepnutí. Nejdřív ale připravíme sync/auth bridge,
-  // aby app-admin-unlock mohl tiše obnovit existující admin relaci bez startup promptu.
+  // Home má dostat první paint a krátké okno bez parsování těžkých sekcí. Potom
+  // zahříváme běžné obrazovky na idle; admin až nakonec. PWA v1.5.88 mezitím drží
+  // verziované JS v cache, takže warm-start i první otevření menu už nečeká na síť.
+  let warmupQueued = false;
   let warmupStarted = false;
   function startBackgroundWarmup() {
     if (warmupStarted || typeof window.rakEnsureFeature !== 'function') return;
+    warmupStarted = true;
+
+    Promise.allSettled(['rotation', 'calculators'].map((feature) => window.rakEnsureFeature(feature))).catch(() => {});
+
+    scheduleIdle(() => {
+      window.rakEnsureFeature('sync').then(() => window.rakEnsureFeature('menu')).catch((err) => {
+        console.warn('Boot v2 sync/menu warmup failed', err);
+      });
+    }, 1500, 650);
+
+    scheduleIdle(() => {
+      ensureFeatureWithAuthOrder('admin').catch((err) => console.warn('Boot v2 admin warmup failed', err));
+    }, 3600, 2400);
+  }
+
+  function queueBackgroundWarmup() {
+    if (warmupQueued) return;
     if (!window.__rakBootV2StartupReady) {
-      setTimeout(startBackgroundWarmup, 40);
+      setTimeout(queueBackgroundWarmup, 40);
       return;
     }
-    warmupStarted = true;
-    const common = ['menu', 'rotation', 'calculators'];
-    window.rakEnsureFeature('sync').then(() => {
-      return Promise.allSettled(common.map((feature) => window.rakEnsureFeature(feature)));
-    }).then(() => {
-      setTimeout(() => {
-        if (typeof window.rakEnsureFeature !== 'function') return;
-        window.rakEnsureFeature('admin').catch((err) => console.warn('Boot v2 admin warmup failed', err));
-      }, 80);
-    }).catch((err) => {
-      console.warn('Boot v2 sync-first warmup failed', err);
-      // Běžné Rotace/Kalkulačky necháme dostupné i při problému se sítí.
-      Promise.allSettled(['rotation', 'calculators'].map((feature) => window.rakEnsureFeature(feature))).catch(() => {});
-    });
+    warmupQueued = true;
+    scheduleIdle(startBackgroundWarmup, 900, 350);
   }
-  setTimeout(startBackgroundWarmup, 0);
+  setTimeout(queueBackgroundWarmup, 0);
 
-  // Po skutečném načtení Administrace znovu spusť zoom guard, protože první menu
-  // mohlo být navázané ještě nad dočasným stubem.
+  // Po skutečném načtení Administrace znovu spusť zoom guard a přidej přehledné
+  // skládání Nastavení korekcí.
   window.addEventListener('rak:feature-ready', (event) => {
     const feature = String(event && event.detail && event.detail.feature || '');
     if (feature !== 'admin') return;
@@ -140,18 +342,29 @@
     } catch (err) {
       console.warn('Admin zoom guard after lazy load failed', err);
     }
+    scheduleCorrectionSettingsEnhance();
   });
 
   try {
     const style = document.createElement('style');
     style.id = 'rakFeatureRoutingStyle';
-    style.textContent = '.rakFeatureLoading{opacity:.62!important;}';
+    style.textContent = [
+      '.rakFeatureLoading{opacity:.62!important;}',
+      '#appMenuBody[data-admin-view="correction-settings"] .rakCorrectionMachineFold{border:1px solid rgba(255,255,255,.1);border-radius:12px;background:rgba(0,0,0,.14);overflow:hidden;}',
+      '#appMenuBody[data-admin-view="correction-settings"] .rakCorrectionMachineFold+ .rakCorrectionMachineFold{margin-top:10px;}',
+      '#appMenuBody[data-admin-view="correction-settings"] .rakCorrectionMachineFold>summary{display:flex;flex-direction:column;gap:2px;padding:12px 13px;cursor:pointer;font-weight:800;list-style:none;}',
+      '#appMenuBody[data-admin-view="correction-settings"] .rakCorrectionMachineFold>summary::-webkit-details-marker{display:none;}',
+      '#appMenuBody[data-admin-view="correction-settings"] .rakCorrectionMachineFold>summary:after{content:"Rozbalit";align-self:flex-end;margin-top:-18px;font-size:11px;font-weight:700;opacity:.65;}',
+      '#appMenuBody[data-admin-view="correction-settings"] .rakCorrectionMachineFold[open]>summary:after{content:"Sbalit";}',
+      '#appMenuBody[data-admin-view="correction-settings"] .rakCorrectionMachineFold>summary small{font-size:11px;font-weight:600;opacity:.72;padding-right:54px;}',
+      '#appMenuBody[data-admin-view="correction-settings"] .rakCorrectionMachineFoldBody{display:grid;gap:12px;padding:0 10px 10px;}'
+    ].join('');
     document.head.appendChild(style);
   } catch (_) {}
 
   try {
     if (typeof window.rakMarkModuleReady === 'function') {
-      window.rakMarkModuleReady('rak-feature-routing.js', 'loaded', { source: 'boot-v2-loader', build: '1.5.87-hotfix2' });
+      window.rakMarkModuleReady('rak-feature-routing.js', 'loaded', { source: 'boot-v2-loader', build: '1.5.88' });
     }
   } catch (_) {}
 })();

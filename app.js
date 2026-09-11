@@ -1,9 +1,9 @@
-// RaK 1.5.87 – Boot v2: rychlý Home shell + funkce načítané až při prvním použití.
+// RaK 1.5.88 – Boot v2 + PWA warm-start: rychlý Home shell + funkce načítané až při prvním použití.
 try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleReady('app.js', 'loaded', { source: 'index' }); } catch (err) {}
 
 (async () => {
-  const RAK_MODULE_CACHE_VERSION = "1.5.87";
-  const RAK_DEV_UPDATE_BUILD = "v1.5.87";
+  const RAK_MODULE_CACHE_VERSION = "1.5.88";
+  const RAK_DEV_UPDATE_BUILD = "v1.5.88";
   const RAK_BOOT_V2_ENABLED = true;
   window.RAK_PWA_BUILD = RAK_DEV_UPDATE_BUILD;
   window.RAK_BOOT_V2_ENABLED = RAK_BOOT_V2_ENABLED;
@@ -438,8 +438,8 @@ try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleR
 
   // Online data se dotáhnou po prvním interaktivním Home, ale už neblokují jeho zobrazení.
   const startSync = () => ensureFeature('sync').catch((err) => console.warn('Boot v2 sync preload failed', err));
-  if (typeof requestIdleCallback === 'function') requestIdleCallback(startSync, { timeout: 700 });
-  else setTimeout(startSync, 120);
+  if (typeof requestIdleCallback === 'function') requestIdleCallback(startSync, { timeout: 1200 });
+  else setTimeout(startSync, 450);
 
   const runIdleAudits = () => {
     Promise.all(idleAuditFiles.map(loadScript)).then(() => {
