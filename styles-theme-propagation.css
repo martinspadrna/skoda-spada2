@@ -93,3 +93,30 @@ html[data-rak-theme] :is(
 ){
   color:var(--rakThemeAccentStrong, var(--green2)) !important;
 }
+
+/* RaK v1.5.95 – čisté sekční obálky: bez velkých vnějších glass rámů.
+   Vnitřní karty, tlačítka, osoby a volby zůstávají beze změny. */
+#home.page.active > .dashboardShell,
+#kalkulacky.page.active > .calcHomeSection,
+#menu.page.active > .appMenuPageCard,
+#menu .appMenuAdminQuickLinks,
+#rotace.page.active #personView.personCard,
+#rotace.page.active #rotaceNamesPanel.active #namesGrid,
+html.rakRotaceNamesDockActive body > #namesGrid[data-rak-dock-portal="body-fixed"],
+body.rakRotaceNamesDockActive > #namesGrid[data-rak-dock-portal="body-fixed"]{
+  border:0 !important;
+  border-color:transparent !important;
+  background:transparent !important;
+  background-color:transparent !important;
+  box-shadow:none !important;
+  -webkit-backdrop-filter:none !important;
+  backdrop-filter:none !important;
+}
+#home.page.active > .dashboardShell::before,
+#home.page.active > .dashboardShell::after{
+  content:none !important;
+  display:none !important;
+  background:none !important;
+  border:0 !important;
+  box-shadow:none !important;
+}

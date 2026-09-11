@@ -1,13 +1,14 @@
-// RaK 1.5.94 – Brusy/FHB: kalibrace po vřetenech C1/C2 a stranách protokolu + správný převod do programu.
+// RaK 1.5.94 working candidate – Brusy/FHB: citlivost po brusu + indexu + C1/C2 + straně protokolu.
 (function installBrusFhbV158() {
   'use strict';
 
-  const BUILD = '1.5.94';
+  const BUILD = '1.5.94-working-indexed';
   const SETTINGS_KEY = 'BRUS_FHB_CORRECTION_CALIBRATION_SETTINGS';
   const CATEGORY = 'brus_fhb_correction_calibration_settings';
   const MIN_SAMPLES = 3;
   const MAX_RECORDS = 80;
   const MACHINES = ['TBKR01', 'TBKR07'];
+  const INDEXES = ['AD', 'AE', 'AH'];
   const SPINDLES = ['C1', 'C2'];
   const SIDES = ['left', 'right'];
   const DEFAULT_MODEL = Object.freeze({ left: 2.0, right: 1.5 });
@@ -39,29 +40,12 @@
     return (n > 0 ? '+' : '') + Math.round(n).toLocaleString('cs-CZ');
   }
 
-  function protocolSideCs(side) {
-    return side === 'right' ? 'vpravo' : 'vlevo';
-  }
-
-  function protocolSideShort(side) {
-    return side === 'right' ? 'P' : 'L';
-  }
-
-  function programSide(side) {
-    return side === 'right' ? 'left' : 'right';
-  }
-
-  function programSideCs(side) {
-    return programSide(side) === 'right' ? 'VPRAVO' : 'VLEVO';
-  }
-
-  function programSideShort(side) {
-    return programSide(side) === 'right' ? 'P' : 'L';
-  }
-
-  function kpoTargets() {
-    return window.RAK_BRUS_FHB_KPO_TARGETS || FALLBACK_KPO;
-  }
+  function protocolSideCs(side) { return side === 'right' ? 'vpravo' : 'vlevo'; }
+  function protocolSideShort(side) { return side === 'right' ? 'P' : 'L'; }
+  function programSide(side) { return side === 'right' ? 'left' : 'right'; }
+  function programSideCs(side) { return programSide(side) === 'right' ? 'VPRAVO' : 'VLEVO'; }
+  function programSideShort(side) { return programSide(side) === 'right' ? 'P' : 'L'; }
+  function kpoTargets() { return window.RAK_BRUS_FHB_KPO_TARGETS || FALLBACK_KPO; }
 
   function rowJson(row) {
     if (row && row.settings_json && typeof row.settings_json === 'object') return row.settings_json;
@@ -80,23 +64,33 @@
     const models = {};
     MACHINES.forEach((machine) => {
       models[machine] = {};
-      SPINDLES.forEach((spindle) => {
-        models[machine][spindle] = { left: DEFAULT_MODEL.left, right: DEFAULT_MODEL.right };
+      INDEXES.forEach((index) => {
+        models[machine][index] = {};
+        SPINDLES.forEach((spindle) => {
+          models[machine][index][spindle] = { left: DEFAULT_MODEL.left, right: DEFAULT_MODEL.right };
+        });
       });
     });
     return models;
   }
 
+  // Migrace je záměrně zpětně kompatibilní:
+  // 1. nový tvar machine -> index -> C1/C2 -> L/P
+  // 2. v1.5.94 machine -> C1/C2 -> L/P (hodnota se použije jako start pro všechny indexy)
+  // 3. starší machine -> L/P (stejný start pro všechny indexy a obě vřetena)
   function cleanModels(source) {
     const raw = source && typeof source === 'object' ? source : {};
     const models = defaultModels();
     MACHINES.forEach((machine) => {
-      SPINDLES.forEach((spindle) => {
-        SIDES.forEach((side) => {
-          const direct = num(raw[machine] && raw[machine][spindle] && raw[machine][spindle][side]);
-          const legacy = num(raw[machine] && raw[machine][side]);
-          const candidate = Number.isFinite(direct) ? direct : legacy;
-          if (Number.isFinite(candidate) && candidate >= 0.25 && candidate <= 8) models[machine][spindle][side] = candidate;
+      INDEXES.forEach((index) => {
+        SPINDLES.forEach((spindle) => {
+          SIDES.forEach((side) => {
+            const indexed = num(raw[machine] && raw[machine][index] && raw[machine][index][spindle] && raw[machine][index][spindle][side]);
+            const v1594 = num(raw[machine] && raw[machine][spindle] && raw[machine][spindle][side]);
+            const legacy = num(raw[machine] && raw[machine][side]);
+            const candidate = Number.isFinite(indexed) ? indexed : (Number.isFinite(v1594) ? v1594 : legacy);
+            if (Number.isFinite(candidate) && candidate >= 0.25 && candidate <= 8) models[machine][index][spindle][side] = candidate;
+          });
         });
       });
     });
@@ -106,8 +100,8 @@
   function cleanRecord(source) {
     const row = source && typeof source === 'object' ? source : {};
     const machine = MACHINES.includes(String(row.machine || '').toUpperCase()) ? String(row.machine).toUpperCase() : '';
-    const index = Object.prototype.hasOwnProperty.call(kpoTargets(), String(row.index || '').toUpperCase()) ? String(row.index).toUpperCase() : '';
-    const spindle = /^(C1|C2)$/i.test(String(row.c || '').trim()) ? String(row.c).toUpperCase() : '';
+    const index = INDEXES.includes(String(row.index || '').toUpperCase()) ? String(row.index).toUpperCase() : '';
+    const spindle = SPINDLES.includes(String(row.c || '').toUpperCase()) ? String(row.c).toUpperCase() : '';
     const side = SIDES.includes(String(row.side || '').toLowerCase()) ? String(row.side).toLowerCase() : '';
     const before = num(row.before);
     const correction = num(row.correction);
@@ -132,8 +126,11 @@
 
   function normalizeSettings(source) {
     const raw = source && typeof source === 'object' ? source : {};
-    const records = (Array.isArray(raw.records) ? raw.records : []).map(cleanRecord).filter(Boolean).slice(0, MAX_RECORDS);
-    return { type: CATEGORY, activeModels: cleanModels(raw.activeModels), records };
+    return {
+      type: CATEGORY,
+      activeModels: cleanModels(raw.activeModels),
+      records: (Array.isArray(raw.records) ? raw.records : []).map(cleanRecord).filter(Boolean).slice(0, MAX_RECORDS)
+    };
   }
 
   function getSettings() {
@@ -191,45 +188,56 @@
     const ready = {};
     const proposed = cleanModels(safe.activeModels);
     const changes = [];
+
     MACHINES.forEach((machine) => {
       samples[machine] = {};
       medians[machine] = {};
       ready[machine] = {};
-      SPINDLES.forEach((spindle) => {
-        samples[machine][spindle] = { left: [], right: [] };
-        medians[machine][spindle] = {};
-        ready[machine][spindle] = { left: false, right: false };
+      INDEXES.forEach((index) => {
+        samples[machine][index] = {};
+        medians[machine][index] = {};
+        ready[machine][index] = {};
+        SPINDLES.forEach((spindle) => {
+          samples[machine][index][spindle] = { left: [], right: [] };
+          medians[machine][index][spindle] = {};
+          ready[machine][index][spindle] = { left: false, right: false };
+        });
       });
     });
 
     safe.records.forEach((row) => {
       const rate = (row.before - row.after) / row.correction;
-      if (Number.isFinite(rate) && rate >= 0.25 && rate <= 8) samples[row.machine][row.c][row.side].push(rate);
+      if (Number.isFinite(rate) && rate >= 0.25 && rate <= 8) samples[row.machine][row.index][row.c][row.side].push(rate);
     });
 
     MACHINES.forEach((machine) => {
-      SPINDLES.forEach((spindle) => {
-        SIDES.forEach((side) => {
-          const values = samples[machine][spindle][side];
-          const m = median(values);
-          medians[machine][spindle][side] = m;
-          ready[machine][spindle][side] = values.length >= MIN_SAMPLES;
-          if (ready[machine][spindle][side] && Number.isFinite(m)) {
-            proposed[machine][spindle][side] = m;
-            if (Math.abs(m - safe.activeModels[machine][spindle][side]) >= 0.10) changes.push(machine + ':' + spindle + ':' + side);
-          }
+      INDEXES.forEach((index) => {
+        SPINDLES.forEach((spindle) => {
+          SIDES.forEach((side) => {
+            const values = samples[machine][index][spindle][side];
+            const m = median(values);
+            medians[machine][index][spindle][side] = m;
+            ready[machine][index][spindle][side] = values.length >= MIN_SAMPLES;
+            if (ready[machine][index][spindle][side] && Number.isFinite(m)) {
+              proposed[machine][index][spindle][side] = m;
+              if (Math.abs(m - safe.activeModels[machine][index][spindle][side]) >= 0.10) {
+                changes.push(machine + ':' + index + ':' + spindle + ':' + side);
+              }
+            }
+          });
         });
       });
     });
     return { samples, medians, ready, proposed, changes };
   }
 
-  function sensitivity(machine, side, spindle) {
+  function sensitivity(machine, index, side, spindle) {
     const safeMachine = MACHINES.includes(String(machine || '').toUpperCase()) ? String(machine).toUpperCase() : 'TBKR01';
+    const safeIndex = INDEXES.includes(String(index || '').toUpperCase()) ? String(index).toUpperCase() : 'AD';
     const safeSpindle = SPINDLES.includes(String(spindle || '').toUpperCase()) ? String(spindle).toUpperCase() : 'C1';
     const safeSide = String(side || '').toLowerCase() === 'right' ? 'right' : 'left';
     const settings = getSettings();
-    const value = Number(settings.activeModels[safeMachine] && settings.activeModels[safeMachine][safeSpindle] && settings.activeModels[safeMachine][safeSpindle][safeSide]);
+    const value = Number(settings.activeModels[safeMachine] && settings.activeModels[safeMachine][safeIndex] && settings.activeModels[safeMachine][safeIndex][safeSpindle] && settings.activeModels[safeMachine][safeIndex][safeSpindle][safeSide]);
     return Number.isFinite(value) && value > 0 ? value : DEFAULT_MODEL[safeSide];
   }
 
@@ -244,9 +252,7 @@
       const candidate = { correction, predicted, centerDistance, inside, min, max };
       if (!best
         || candidate.centerDistance < best.centerDistance - 1e-9
-        || (Math.abs(candidate.centerDistance - best.centerDistance) < 1e-9 && Math.abs(candidate.correction) < Math.abs(best.correction))) {
-        best = candidate;
-      }
+        || (Math.abs(candidate.centerDistance - best.centerDistance) < 1e-9 && Math.abs(candidate.correction) < Math.abs(best.correction))) best = candidate;
     }
     return best || { correction: 0, predicted: measured, centerDistance: Math.abs(measured - target), inside: measured >= min && measured <= max, min, max };
   }
@@ -259,7 +265,7 @@
   function calculatorResultHtml(machine, index, spindle, side, measured) {
     const targets = kpoTargets();
     const spec = (targets[index] || targets.AD)[side];
-    const rate = sensitivity(machine, side, spindle);
+    const rate = sensitivity(machine, index, side, spindle);
     const choice = chooseCenterCorrection(measured, spec.target, spec.tolerance, rate);
     const correction = choice.correction;
     const protocol = protocolSideCs(side);
@@ -269,7 +275,7 @@
       '<div class="brus157ResultTop"><span>' + esc(spindle + ' · FHB ' + protocol) + '</span><b>' + esc(correction === 0 ? ('Program ' + program + ' · bez korekce') : ('Program ' + program + ' · ' + signed(correction) + ' µm')) + '</b></div>',
       '<div class="brus157ProgramCallout">ZADAT VE STROJI: <strong>' + esc(spindle + ' ' + program + ' ' + signed(correction) + ' µm') + '</strong></div>',
       '<div class="brus157Meta">Naměřeno <b>' + esc(fmt(measured, 0)) + '</b> · střed KPO <b>' + esc(String(spec.target)) + '</b> · pásmo ' + esc(String(choice.min)) + ' až ' + esc(String(choice.max)) + ' · odhad po korekci <b>' + esc(fmt(choice.predicted, 1)) + '</b></div>',
-      '<div class="brus157Meta">Aktuální citlivost ' + esc(spindle + ' · protokol ' + protocolSideShort(side)) + ': ' + esc(fmt(rate, 2)) + ' µm FHB / 1 µm korekce</div>',
+      '<div class="brus157Meta">Aktuální citlivost ' + esc(index + ' · ' + spindle + ' · protokol ' + protocolSideShort(side)) + ': ' + esc(fmt(rate, 2)) + ' µm FHB / 1 µm korekce</div>',
       '</div>'
     ].join('');
   }
@@ -296,13 +302,21 @@
     out.innerHTML = '<div class="brus157ResultTitle">' + esc(machine + ' · ' + index) + '</div>' + rows.join('') + '<div class="brus157Foot">Strany L/P jsou podle protokolu. Kalkulačka vždy převede protokol L → program P a protokol P → program L pro stejné vřeteno C1/C2.</div>';
   }
 
-  function modelMetricHtml(machine, spindle, side, settings, analysis) {
-    const current = settings.activeModels[machine][spindle][side];
-    const values = analysis.samples[machine][spindle][side];
-    const proposed = analysis.medians[machine][spindle][side];
-    const isReady = analysis.ready[machine][spindle][side];
+  function modelMetricHtml(machine, index, spindle, side, settings, analysis) {
+    const current = settings.activeModels[machine][index][spindle][side];
+    const values = analysis.samples[machine][index][spindle][side];
+    const proposed = analysis.medians[machine][index][spindle][side];
+    const isReady = analysis.ready[machine][index][spindle][side];
     const state = isReady ? (Math.abs(proposed - current) >= 0.10 ? 'doporučení ' + fmt(proposed, 2) : 'potvrzeno') : ('chybí ' + Math.max(0, MIN_SAMPLES - values.length) + ' vz.');
-    return '<div class="adminBrusFhbMetric"><span>' + esc(machine + ' · ' + spindle + ' · protokol ' + protocolSideShort(side)) + '</span><b>' + esc(fmt(current, 2)) + '</b><small>' + esc(values.length + '/' + MIN_SAMPLES + ' · ' + state) + '</small></div>';
+    return '<div class="adminBrusFhbMetric"><span>' + esc(machine + ' · ' + index + ' · ' + spindle + ' · protokol ' + protocolSideShort(side)) + '</span><b>' + esc(fmt(current, 2)) + '</b><small>' + esc(values.length + '/' + MIN_SAMPLES + ' · ' + state) + '</small></div>';
+  }
+
+  function metricsHtml(settings, analysis) {
+    return MACHINES.map((machine) => '<div class="adminBrusSensitivityMachine"><b>' + esc(machine) + '</b>' + INDEXES.map((index) =>
+      '<div class="adminBrusSensitivityIndex"><strong>' + esc(index) + '</strong><div class="adminBrusFhbMetrics">' +
+      SPINDLES.flatMap((spindle) => SIDES.map((side) => modelMetricHtml(machine, index, spindle, side, settings, analysis))).join('') +
+      '</div></div>'
+    ).join('') + '</div>').join('');
   }
 
   function adminPair(prefix, spindle, placeholder) {
@@ -313,8 +327,7 @@
   }
 
   function adminStage(title, prefix, placeholder) {
-    return '<div class="adminFhbCalibrationFieldset adminBrus1594Stage"><b>' + esc(title) + '</b>' +
-      SPINDLES.map((spindle) => adminPair(prefix, spindle, placeholder)).join('') + '</div>';
+    return '<div class="adminFhbCalibrationFieldset adminBrus1594Stage"><b>' + esc(title) + '</b>' + SPINDLES.map((spindle) => adminPair(prefix, spindle, placeholder)).join('') + '</div>';
   }
 
   function historyGroups(records) {
@@ -335,6 +348,11 @@
     return groups;
   }
 
+  function recordDate(value) {
+    const date = new Date(value);
+    return Number.isNaN(date.getTime()) ? '—' : date.toLocaleDateString('cs-CZ', { day: '2-digit', month: '2-digit', year: 'numeric' });
+  }
+
   function historyGroupHtml(group) {
     const rows = Array.isArray(group) ? group.filter(Boolean) : [];
     if (!rows.length) return '';
@@ -345,19 +363,10 @@
       return '<span><b>' + esc(row.c + ' · protokol ' + protocolSideShort(row.side) + ' → program ' + programSideShort(row.side)) + '</b>: ' +
         esc(String(row.before) + ' → ' + String(row.after) + ' · korekce ' + signed(row.correction) + ' µm · odezva ' + fmt(rate, 2)) + '</span>';
     }).join('');
-    const removeAttr = first.batchId
-      ? ' data-batch-id="' + esc(first.batchId) + '"'
-      : ' data-record-id="' + esc(first.id) + '"';
-    return '<div class="adminBrusFhbRecord adminBrus1594Record">' +
-      '<div><b>' + esc(recordDate(first.at) + ' · ' + first.machine + ' · ' + first.index) + '</b>' + lines + '</div>' +
+    const removeAttr = first.batchId ? ' data-batch-id="' + esc(first.batchId) + '"' : ' data-record-id="' + esc(first.id) + '"';
+    return '<div class="adminBrusFhbRecord adminBrus1594Record"><div><b>' + esc(recordDate(first.at) + ' · ' + first.machine + ' · ' + first.index) + '</b>' + lines + '</div>' +
       (first.note ? '<small>' + esc(first.note) + '</small>' : '') +
-      '<button type="button" class="appMenuInlineClearBtn" data-brus1594-action="remove"' + removeAttr + ' aria-label="Smazat záznam">×</button>' +
-      '</div>';
-  }
-
-  function recordDate(value) {
-    const date = new Date(value);
-    return Number.isNaN(date.getTime()) ? '—' : date.toLocaleDateString('cs-CZ', { day: '2-digit', month: '2-digit', year: 'numeric' });
+      '<button type="button" class="appMenuInlineClearBtn" data-brus1594-action="remove"' + removeAttr + ' aria-label="Smazat záznam">×</button></div>';
   }
 
   function buildAdminHtml() {
@@ -366,7 +375,7 @@
     const groups = historyGroups(settings.records).slice(0, 24);
     const recordsHtml = groups.length ? groups.map(historyGroupHtml).join('') : '<div class="smallText">Zatím nejsou žádná měření brusů.</div>';
     return [
-      '<div class="adminBrusFhbCalibration" data-rak-brusy-real-section="1" data-rak-brus1594="1" data-v157="1">',
+      '<div class="adminBrusFhbCalibration" data-rak-brusy-real-section="1" data-rak-brus1594="1" data-rak-brus-indexed="1" data-v157="1">',
       '<div class="appMenuSubTitle">Brusy · FHB</div>',
       '<div class="smallText">Vyber brus a index. Vyplň jen ty kombinace C1/C2 a L/P, na kterých skutečně proběhla korekce. L/P jsou vždy strany podle protokolu.</div>',
       '<div class="adminBrusFhbForm adminFhbCalibrationForm">',
@@ -380,11 +389,13 @@
       '<label class="adminFhbCalibrationNote">Poznámka<input class="appMenuInput" maxlength="160" data-brus1594-field="note" placeholder="volitelné"></label>',
       '<button type="button" class="appMenuAction isActive" data-brus1594-action="save">Uložit zadaná měření</button>',
       '</div>',
-      '<div class="adminBrusFhbModel"><div class="appMenuCardTitle">Aktivní citlivost kalkulačky</div>',
-      '<div class="smallText">Citlivost se učí zvlášť pro brus, vřeteno C1/C2 a stranu protokolu L/P. Pro doporučení potřebuje každá kombinace alespoň tři použitelné záznamy.</div>',
-      '<div class="adminBrusFhbMetrics">' + MACHINES.flatMap((machine) => SPINDLES.flatMap((spindle) => SIDES.map((side) => modelMetricHtml(machine, spindle, side, settings, analysis)))).join('') + '</div>',
+      '<details class="adminBrusFhbModel adminBrusSensitivityFold">',
+      '<summary><span>Aktivní citlivost kalkulačky</span><small>24 kombinací</small></summary>',
+      '<div class="adminBrusSensitivityBody">',
+      '<div class="smallText">Citlivost se učí zvlášť pro brus, index AD/AE/AH, vřeteno C1/C2 a stranu protokolu L/P. Každá kombinace potřebuje alespoň tři použitelné záznamy.</div>',
+      metricsHtml(settings, analysis),
       '<button type="button" class="appMenuAction" data-brus1594-action="apply"' + (analysis.changes.length ? '' : ' disabled') + '>Potvrdit doporučené nastavení brusů</button>',
-      '</div>',
+      '</div></details>',
       '<div class="adminBrusFhbHistory"><div class="appMenuCardTitle">Měření brusů</div>' + recordsHtml + '</div>',
       '</div>'
     ].join('');
@@ -395,7 +406,7 @@
   }
 
   function readAdminRecords() {
-    const root = document.querySelector('.adminBrusFhbCalibration[data-rak-brus1594="1"]');
+    const root = document.querySelector('.adminBrusFhbCalibration[data-rak-brus-indexed="1"]');
     if (!root) return null;
     const machine = String(adminField(root, 'machine') || '').toUpperCase();
     const index = String(adminField(root, 'index') || '').toUpperCase();
@@ -404,7 +415,6 @@
     const batchId = 'brus-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 7);
     const records = [];
     let partial = false;
-
     SPINDLES.forEach((spindle) => {
       SIDES.forEach((side) => {
         const suffix = spindle + (side === 'right' ? 'Right' : 'Left');
@@ -419,8 +429,7 @@
         records.push(row);
       });
     });
-    if (partial || !records.length) return null;
-    return { records, batchId };
+    return partial || !records.length ? null : { records, batchId };
   }
 
   async function handleAdminAction(button) {
@@ -467,7 +476,7 @@
 
   function upgradeAdminRoot() {
     const root = document.querySelector('.adminBrusFhbCalibration');
-    if (!root || root.dataset.rakBrus1594 === '1') return;
+    if (!root || root.dataset.rakBrusIndexed === '1') return;
     const holder = document.createElement('div');
     holder.innerHTML = buildAdminHtml();
     const replacement = holder.firstElementChild;
@@ -494,11 +503,22 @@ html body #korekce-brusy .brus157ChoiceGroup[data-brus157-select="index"] .brus1
 html body #korekce-brusy .brus157ChoiceGroup[data-brus157-select="index"] .brus157Choice.index-ae{background:linear-gradient(145deg,#00b966 0%,#00ee87 100%) !important;border-color:#b5ffe0 !important;color:#fff !important;text-shadow:0 1px 1px #00562f,0 0 20px #c7ffdd !important;box-shadow:0 10px 26px rgba(0,0,0,.30),0 0 30px rgba(0,237,135,.68),inset 0 1px 0 rgba(255,255,255,.54) !important;}
 html body #korekce-brusy .brus157ChoiceGroup[data-brus157-select="index"] .brus157Choice.index-ah{background:linear-gradient(145deg,#ffe12b 0%,#ffae00 52%,#f55c00 100%) !important;border-color:#fff0ad !important;color:#fff !important;text-shadow:0 1px 1px #943000,0 0 20px #fff0a5 !important;box-shadow:0 10px 26px rgba(0,0,0,.30),0 0 32px rgba(255,163,0,.76),inset 0 1px 0 rgba(255,255,255,.54) !important;}
 html body #korekce-brusy .brus157ChoiceGroup[data-brus157-select="index"] .brus157Choice.isActive{outline:3px solid rgba(255,255,255,.98) !important;outline-offset:3px !important;transform:translateY(-1px) !important;}
-.adminBrusFhbCalibration[data-rak-brus1594="1"] .adminBrus1594Stage{display:flex;flex-direction:column;gap:8px;}
-.adminBrusFhbCalibration[data-rak-brus1594="1"] .adminBrus1594Spindle{display:flex;flex-direction:column;gap:5px;padding:8px;border-radius:12px;background:rgba(4,18,39,.34);border:1px solid rgba(160,210,255,.12);}
-.adminBrusFhbCalibration[data-rak-brus1594="1"] .adminBrus1594Spindle>strong{font-size:12px;color:var(--green2,#a8ff61);}
-.adminBrusFhbCalibration[data-rak-brus1594="1"] .adminBrus1594Record>div{gap:4px;}
-.adminBrusFhbCalibration[data-rak-brus1594="1"] .adminBrus1594Record>div>span{display:block;}
+.adminBrusFhbCalibration[data-rak-brus-indexed="1"] .adminBrus1594Stage{display:flex;flex-direction:column;gap:8px;}
+.adminBrusFhbCalibration[data-rak-brus-indexed="1"] .adminBrus1594Spindle{display:flex;flex-direction:column;gap:5px;padding:8px;border-radius:12px;background:rgba(4,18,39,.34);border:1px solid rgba(160,210,255,.12);}
+.adminBrusFhbCalibration[data-rak-brus-indexed="1"] .adminBrus1594Spindle>strong{font-size:12px;color:var(--green2,#a8ff61);}
+.adminBrusFhbCalibration[data-rak-brus-indexed="1"] .adminBrus1594Record>div{gap:4px;}
+.adminBrusFhbCalibration[data-rak-brus-indexed="1"] .adminBrus1594Record>div>span{display:block;}
+.adminBrusSensitivityFold{padding:0 !important;overflow:hidden;}
+.adminBrusSensitivityFold>summary{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:11px;cursor:pointer;font-weight:900;list-style:none;}
+.adminBrusSensitivityFold>summary::-webkit-details-marker{display:none;}
+.adminBrusSensitivityFold>summary small{font-size:10px;color:rgba(232,245,255,.58);font-weight:700;}
+.adminBrusSensitivityFold>summary::after{content:'⌄';font-size:18px;line-height:1;transition:transform .15s ease;}
+.adminBrusSensitivityFold[open]>summary::after{transform:rotate(180deg);}
+.adminBrusSensitivityBody{display:flex;flex-direction:column;gap:10px;padding:0 11px 11px;}
+.adminBrusSensitivityMachine{display:flex;flex-direction:column;gap:7px;}
+.adminBrusSensitivityMachine>b{font-size:13px;color:var(--green2,#a8ff61);}
+.adminBrusSensitivityIndex{display:flex;flex-direction:column;gap:5px;padding:8px;border:1px solid rgba(160,210,255,.12);border-radius:12px;background:rgba(4,18,39,.26);}
+.adminBrusSensitivityIndex>strong{font-size:12px;}
 `;
     document.head.appendChild(style);
   }
@@ -542,9 +562,7 @@ html body #korekce-brusy .brus157ChoiceGroup[data-brus157-select="index"] .brus1
         try { await window.__rotaceForcePwaUpdateCheck('dev-probe:' + String(source || 'boot')); } catch (_) {}
       }
       return true;
-    } catch (_) {
-      return false;
-    }
+    } catch (_) { return false; }
   }
 
   window.addEventListener('click', (event) => {
@@ -560,7 +578,7 @@ html body #korekce-brusy .brus157ChoiceGroup[data-brus157-select="index"] .brus1
     event.preventDefault();
     event.stopImmediatePropagation();
     Promise.resolve(handleAdminAction(admin)).catch((err) => {
-      console.error('Brus FHB v1.5.94 admin action failed', err);
+      console.error('Brus FHB indexed admin action failed', err);
       const status = document.getElementById('adminOnlineSaveStatus');
       if (status) status.textContent = 'Uložení kalibrace brusů selhalo.';
       try { alert(err && err.message ? err.message : 'Uložení kalibrace brusů selhalo.'); } catch (_) {}
@@ -569,16 +587,20 @@ html body #korekce-brusy .brus157ChoiceGroup[data-brus157-select="index"] .brus1
 
   window.buildAdminBrusFhbCorrectionHtml = buildAdminHtml;
   window.getBrusFhbCorrectionCalibrationSettings = getSettings;
-  window.getBrusFhbCorrectionSensitivity = sensitivity;
-  window.calculateBrusFhbCorrection = function calculateBrusFhbCorrectionV1594(machine, index, side, measured, spindle) {
+  window.getBrusFhbCorrectionSensitivity = function getBrusFhbCorrectionSensitivityIndexed(machine, arg2, arg3, arg4) {
+    // nový tvar: (machine, index, side, spindle); starý tvar: (machine, side, spindle)
+    if (INDEXES.includes(String(arg2 || '').toUpperCase())) return sensitivity(machine, arg2, arg3, arg4);
+    return sensitivity(machine, 'AD', arg2, arg3);
+  };
+  window.calculateBrusFhbCorrection = function calculateBrusFhbCorrectionIndexed(machine, index, side, measured, spindle) {
     const targets = kpoTargets();
     const safeMachine = MACHINES.includes(String(machine || '').toUpperCase()) ? String(machine).toUpperCase() : 'TBKR01';
-    const safeIndex = targets[String(index || '').toUpperCase()] ? String(index).toUpperCase() : 'AD';
+    const safeIndex = INDEXES.includes(String(index || '').toUpperCase()) ? String(index).toUpperCase() : 'AD';
     const safeSide = String(side || '').toLowerCase() === 'right' ? 'right' : 'left';
     const safeSpindle = SPINDLES.includes(String(spindle || '').toUpperCase()) ? String(spindle).toUpperCase() : 'C1';
     const spec = targets[safeIndex][safeSide];
-    const result = chooseCenterCorrection(num(measured), spec.target, spec.tolerance, sensitivity(safeMachine, safeSide, safeSpindle));
-    return Object.assign({}, result, { measurementSide: safeSide, programSide: programSide(safeSide), spindle: safeSpindle, target: spec.target, tolerance: spec.tolerance, strategy: 'center-v1594' });
+    const result = chooseCenterCorrection(num(measured), spec.target, spec.tolerance, sensitivity(safeMachine, safeIndex, safeSide, safeSpindle));
+    return Object.assign({}, result, { measurementSide: safeSide, programSide: programSide(safeSide), spindle: safeSpindle, index: safeIndex, target: spec.target, tolerance: spec.tolerance, strategy: 'center-indexed' });
   };
 
   try { window.RAK_BRUS_FHB_CALIBRATION_BUILD = BUILD; } catch (_) {}
