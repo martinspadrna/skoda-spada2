@@ -94,14 +94,20 @@ html[data-rak-theme] :is(
   color:var(--rakThemeAccentStrong, var(--green2)) !important;
 }
 
-/* RaK v1.5.95 – čisté sekční obálky: bez velkých vnějších glass rámů.
-   Vnitřní karty, tlačítka, osoby a volby zůstávají beze změny. */
+/* RaK v1.5.96 – čisté velké obálky + oprava Home švu.
+   Vnitřní karty, tlačítka, osoby, tabulky a grafy zůstávají beze změny. */
 #home.page.active > .dashboardShell,
+body:not(.lightweightMode):not(.lowEndDevice):not(.ladaMode) #home.page.active > .dashboardShell,
+body.lightweightMode #home.page.active > .dashboardShell,
+body.lowEndDevice #home.page.active > .dashboardShell,
+body.ladaMode #home.page.active > .dashboardShell,
 #kalkulacky.page.active > .calcHomeSection,
 #menu.page.active > .appMenuPageCard,
-#menu .appMenuAdminQuickLinks,
 #rotace.page.active #personView.personCard,
 #rotace.page.active #rotaceNamesPanel.active #namesGrid,
+#rotace.page.active #rotaceStatsPanel.active > .card,
+#rotace.page.active #rotaceMonthsPanel.active > .rotaceMonthPicker.card,
+#rotace.page.active #rotaceMonthsPanel.active > #monthView.card,
 html.rakRotaceNamesDockActive body > #namesGrid[data-rak-dock-portal="body-fixed"],
 body.rakRotaceNamesDockActive > #namesGrid[data-rak-dock-portal="body-fixed"]{
   border:0 !important;
@@ -113,10 +119,40 @@ body.rakRotaceNamesDockActive > #namesGrid[data-rak-dock-portal="body-fixed"]{
   backdrop-filter:none !important;
 }
 #home.page.active > .dashboardShell::before,
-#home.page.active > .dashboardShell::after{
+#home.page.active > .dashboardShell::after,
+body:not(.lightweightMode):not(.lowEndDevice):not(.ladaMode) #home.page.active > .dashboardShell::before,
+body:not(.lightweightMode):not(.lowEndDevice):not(.ladaMode) #home.page.active > .dashboardShell::after,
+body.lightweightMode #home.page.active > .dashboardShell::before,
+body.lightweightMode #home.page.active > .dashboardShell::after,
+body.lowEndDevice #home.page.active > .dashboardShell::before,
+body.lowEndDevice #home.page.active > .dashboardShell::after,
+body.ladaMode #home.page.active > .dashboardShell::before,
+body.ladaMode #home.page.active > .dashboardShell::after{
   content:none !important;
   display:none !important;
   background:none !important;
   border:0 !important;
   box-shadow:none !important;
+}
+#home.page.active .homeDivider{
+  display:none !important;
+  height:0 !important;
+  margin:0 !important;
+  background:none !important;
+  opacity:0 !important;
+}
+
+/* Admin-only blok má být naopak zřetelně oddělený od běžné nabídky Více. */
+#menu .appMenuAdminQuickLinks{
+  border:2px solid color-mix(in srgb, #ffe55d 68%, rgba(255,255,255,.18)) !important;
+  border-radius:16px !important;
+  background:linear-gradient(180deg, rgba(255,229,93,.085), rgba(255,255,255,.018)) !important;
+  background-color:color-mix(in srgb, var(--panel2, rgba(8,14,12,.34)) 42%, transparent) !important;
+  box-shadow:0 14px 34px rgba(0,0,0,.18), inset 0 1px 0 rgba(255,255,255,.12), 0 0 22px rgba(255,229,93,.08) !important;
+  -webkit-backdrop-filter:blur(18px) saturate(145%) !important;
+  backdrop-filter:blur(18px) saturate(145%) !important;
+}
+#menu .appMenuAdminQuickLinksTitle{
+  color:#ffe55d !important;
+  font-weight:800 !important;
 }
