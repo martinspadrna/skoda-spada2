@@ -42,9 +42,6 @@ body{
   min-height:100dvh !important;
   background:#07111c !important;
 }
-html.rakViewportPrimed body{
-  min-height:var(--rak-start-viewport-h, 100dvh) !important;
-}
 body::after{
   content:"";
   position:fixed;
@@ -127,11 +124,12 @@ html.rakStableBootViewport{
   }
 }
 
-/* RaK v1.5.93 – Point 4 / bezpečný viewport cleanup.
-   K předchozímu odstranění mrtvého --rak-nav-ios-start-bottom a časné 100dvh hodnoty
-   přibyl jen duplicitní iOS @supports bottom:0 vlastník a identická deklarace background-color
-   na html/body. Kanonický pozdější iOS blok, Dashboard scroll owner, safe-area, Rotace dock
-   i fallbacky spodní navigace zůstávají funkčně stejné. */
+/* RaK v1.5.94 – Point 4 / bezpečný viewport cleanup.
+   K předchozímu odstranění mrtvého --rak-nav-ios-start-bottom, časné 100dvh hodnoty,
+   duplicitního iOS bottom:0 vlastníka a identického background-color přibyl jen časný
+   html.rakViewportPrimed min-height přes --rak-start-viewport-h. Tentýž stav už níže
+   kanonicky vlastní společný rakViewportPrimed/rakStableBootViewport blok s 100svh.
+   Dashboard scroll owner, safe-area, Rotace dock i fallbacky spodní navigace zůstávají stejné. */
 @media (max-width:700px){
   html body #home.page.active .dashboardShell{
     height:auto !important;

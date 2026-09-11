@@ -1,9 +1,9 @@
-// RaK 1.5.93 – Boot v2 + PWA warm-start + paired Brusy calibration + Point 4 Dashboard CSS cleanup.
+// RaK 1.5.94 – Boot v2 + PWA warm-start + per-spindle Brusy calibration + Point 4 viewport cleanup.
 try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleReady('app.js', 'loaded', { source: 'index' }); } catch (err) {}
 
 (async () => {
-  const RAK_MODULE_CACHE_VERSION = "1.5.93";
-  const RAK_DEV_UPDATE_BUILD = "v1.5.93";
+  const RAK_MODULE_CACHE_VERSION = "1.5.94";
+  const RAK_DEV_UPDATE_BUILD = "v1.5.94";
   const RAK_BOOT_V2_ENABLED = true;
   window.RAK_PWA_BUILD = RAK_DEV_UPDATE_BUILD;
   window.RAK_BOOT_V2_ENABLED = RAK_BOOT_V2_ENABLED;
@@ -82,6 +82,7 @@ try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleR
     "admin-machine-tasks.js",
     "admin-fhb-calibration.js",
     "brusy-fhb-correction.js",
+    "brusy-fhb-v158.js",
     "admin-food.js",
     "admin-reports.js",
     "admin-service-usage.js",
