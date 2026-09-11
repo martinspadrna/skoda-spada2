@@ -62,15 +62,10 @@ function buildAppMenuAboutHistoryHtml() {
 
 function renderAppMenuAboutPage(body, versionText) {
       const displayVersion = String(window.RAK_RELEASE_VERSION || versionText || '1.6').trim();
-      const devBuildLine = window.RAK_DEV_BUILD
-        ? '  <div class="appMenuText">Testovací build: ' + escapeHtml(String(window.RAK_DEV_BUILD)) + '</div>'
-        : '';
       body.innerHTML = [
         '<div class="appMenuCard">',
         '  <div class="appMenuCardTitle">O aplikaci</div>',
         '  <div class="appMenuVersion">' + escapeHtml(formatRakDisplayVersion(displayVersion)) + '</div>',
-        devBuildLine,
-        '  <div class="appMenuText">RaK (Rotace a Kalkulačky) je pracovní PWA pro směny, rotace a rozpisy, výrobní kalkulačky, korekce a reporty. Je navržená hlavně pro rychlé použití na telefonu a umí pracovat i s posledními uloženými daty bez okamžitého připojení.</div>',
         '  ' + buildAppMenuAboutHistoryHtml(),
         '  <button type="button" class="appMenuAction appMenuBack" data-menu-back="1">Zpět</button>',
         '</div>'

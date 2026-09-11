@@ -4,6 +4,7 @@ const SW_APP_VERSION = '1.6.0';
 const STATIC_CACHE = `rotace-static-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `rotace-runtime-${CACHE_VERSION}`;
 const PREWARM_CACHE = `rotace-prewarm-${CACHE_VERSION}`;
+const SAME_VERSION_HOTFIX_ASSETS = ['./app-menu-pages.js?v=1.6.0'];
 
 const CORE = [
   './',
@@ -126,6 +127,13 @@ async function fetchBuildAsset(url) {
   return fetch(new Request(fetchUrl.href, { cache: 'reload' }));
 }
 
+async function clearSameVersionHotfixAssets() {
+  try {
+    const cache = await caches.open(STATIC_CACHE);
+    await Promise.all(SAME_VERSION_HOTFIX_ASSETS.map(url => cache.delete(url, { ignoreSearch: false })));
+  } catch (_) {}
+}
+
 async function installCoreAndPrewarm() {
   const staticCache = await caches.open(STATIC_CACHE);
   const prewarmCache = await caches.open(PREWARM_CACHE);
@@ -169,7 +177,10 @@ async function staticResponse(request) {
 }
 
 self.addEventListener('install', event => {
-  event.waitUntil(installCoreAndPrewarm());
+  event.waitUntil((async () => {
+    await clearSameVersionHotfixAssets();
+    await installCoreAndPrewarm();
+  })());
 });
 
 self.addEventListener('activate', event => {

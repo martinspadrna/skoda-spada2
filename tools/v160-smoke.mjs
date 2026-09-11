@@ -10,14 +10,16 @@ const brus = read('brusy-fhb-v158.js');
 const viewport = read('styles-viewport-polish.css').replace(/\/\*[\s\S]*?\*\//g, '');
 const polish = read('styles-dashboard-polish.css');
 
-assert.equal(pkg.version, '1.6.0', 'package version must be 1.6.0');
-assert.match(app, /RAK_MODULE_CACHE_VERSION\s*=\s*["']1\.6\.0["']/, 'app cache version must be 1.6.0');
-assert.match(app, /RAK_DEV_UPDATE_BUILD\s*=\s*["']v1\.6\.0["']/, 'app update build must be v1.6.0');
+assert.equal(pkg.version, '1.6.0', 'package version must stay 1.6.0');
+assert.match(app, /RAK_MODULE_CACHE_VERSION\s*=\s*["']1\.6\.0["']/, 'app cache version must stay 1.6.0');
+assert.match(app, /RAK_DEV_UPDATE_BUILD\s*=\s*["']v1\.6\.0["']/, 'app update build must stay v1.6.0');
 assert(app.includes('window.RAK_RELEASE_VERSION = "1.6";'), 'public RaK 1.6 release version marker missing');
-assert.match(sw, /CACHE_VERSION\s*=\s*["']v1\.6\.0["']/, 'service worker cache must be v1.6.0');
-assert.match(sw, /SW_APP_VERSION\s*=\s*["']1\.6\.0["']/, 'service worker technical version must be 1.6.0');
+assert.match(sw, /CACHE_VERSION\s*=\s*["']v1\.6\.0["']/, 'service worker cache must stay v1.6.0');
+assert.match(sw, /SW_APP_VERSION\s*=\s*["']1\.6\.0["']/, 'service worker technical version must stay 1.6.0');
 assert(sw.includes("'./core.js?v=1.6.0'"), 'warm-start core must use current 1.6.0 build');
 assert(sw.includes("nextUrl.searchParams.set('_rak_update', CACHE_VERSION + '-' + Date.now().toString(36))"), 'confirmed update cache-busting navigation missing');
+assert(sw.includes("const SAME_VERSION_HOTFIX_ASSETS = ['./app-menu-pages.js?v=1.6.0'];"), 'same-version About cache invalidation missing');
+assert(sw.includes('await clearSameVersionHotfixAssets();'), 'same-version About cache invalidation must run during SW install');
 
 assert(menuPages.includes('function buildAppMenuAboutHistoryHtml()'), 'concise About history builder missing');
 assert(menuPages.includes("range: 'RaK 1.6'"), 'RaK 1.6 About section missing');
@@ -29,7 +31,8 @@ assert(menuPages.includes('celkem 24 citlivostí'), '1.6 About notes must mentio
 assert(menuPages.includes('aktualizace PWA jsou rychlejší a stabilnější'), '1.6 About notes must mention PWA/start improvements');
 assert(menuPages.includes('Dashboard a mobilní/iPhone rozložení'), '1.6 About notes must mention mobile Dashboard cleanup');
 assert(menuPages.includes('odstranily se Hry'), '1.6 About notes must mention Games removal');
-assert(menuPages.includes('RaK (Rotace a Kalkulačky) je pracovní PWA'), 'short application description missing');
+assert(!menuPages.includes('Testovací build:'), 'About must not show the test-build label');
+assert(!menuPages.includes('RaK (Rotace a Kalkulačky) je pracovní PWA'), 'About must not show the extra app-description paragraph');
 assert(menuPages.includes('window.RAK_RELEASE_VERSION || versionText'), 'About must prefer public release version over legacy core display version');
 assert(!menuPages.includes('buildAppHistoryHtml(versionText)'), 'About must not render the old long detailed history');
 for (const oldRange of ['1.297–1.338', '1.290–1.296', '951–1000', '901–950', '450–499']) {
@@ -55,4 +58,4 @@ for (const accidental of ['__never_use__', '__noop__', '__noop2__']) {
 assert(String(pkg.scripts.check || '').includes('tools/v160-smoke.mjs'), 'v1.6 smoke must run in npm check');
 assert(!String(pkg.scripts.check || '').includes('tools/v1599-smoke.mjs'), 'old v1.5.99 smoke must not remain in active check chain');
 
-console.log('[v1.6-smoke] OK concise About history + public 1.6 release + PWA/mobile/Brusy invariants preserved');
+console.log('[v1.6-smoke] OK concise About history without extra labels + same-version cache hotfix + PWA/mobile/Brusy invariants preserved');
