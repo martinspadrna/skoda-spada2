@@ -1,12 +1,10 @@
-// RaK 1.5 production PWA service worker – v1.5.88 warm-start cache.
-const CACHE_VERSION = 'v1.5.88';
+// RaK 1.5 production PWA service worker – v1.5.89 warm-start cache.
+const CACHE_VERSION = 'v1.5.89';
 const SW_APP_VERSION = '1.5';
 const STATIC_CACHE = `rotace-static-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `rotace-runtime-${CACHE_VERSION}`;
 const PREWARM_CACHE = `rotace-prewarm-${CACHE_VERSION}`;
 
-// Core zůstává malý kvůli bezpečné instalaci. Login step/tap animace se dál
-// neprecacheují; základní maskot zůstává dostupný offline.
 const CORE = [
   './',
   './index.html',
@@ -18,9 +16,6 @@ const CORE = [
   './assets/rak-login-crab.png'
 ];
 
-// Point 3: nový worker si už během čekání připraví shell do izolované prewarm cache.
-// Starý aktivní worker ji nemůže omylem použít jako fallback, protože klíče mají
-// syntetickou cestu. Při aktivaci je teprve překlopíme na skutečné request URL.
 const WARM_START = [
   './app.js?v=1.5.1',
   './data.js',
@@ -69,29 +64,29 @@ const WARM_START = [
   './assets/nav-icons/rotace-green.png',
   './assets/nav-icons/kalkulacky-gray.png',
   './assets/nav-icons/kalkulacky-green.png',
-  './supabase-config.js?v=1.5.88',
-  './rak-user-profile.js?v=1.5.88',
-  './rak-auth-gate.js?v=1.5.88',
-  './rak-account-access.js?v=1.5.88',
-  './rak-login-splash.js?v=1.5.88',
-  './rak-login-fix.js?v=1.5.88',
-  './rak-login-life.js?v=1.5.88',
-  './core.js?v=1.5.88',
-  './lifecycle.js?v=1.5.88',
-  './app-runtime-guards.js?v=1.5.88',
-  './qr.js?v=1.5.88',
-  './payroll.js?v=1.5.88',
-  './dashboard.js?v=1.5.88',
-  './appearance-theme.js?v=1.5.88',
-  './ui.js?v=1.5.88',
-  './app-navigation.js?v=1.5.88',
-  './app-bottom-nav.js?v=1.5.88',
-  './app-actions.js?v=1.5.88',
-  './app-pwa-connectivity.js?v=1.5.88',
-  './app-home-boot.js?v=1.5.88',
-  './rak-runtime-stability.js?v=1.5.88',
-  './rak-mobile-layout-guard.js?v=1.5.88',
-  './rak-feature-routing.js?v=1.5.88'
+  './supabase-config.js?v=1.5.89',
+  './rak-user-profile.js?v=1.5.89',
+  './rak-auth-gate.js?v=1.5.89',
+  './rak-account-access.js?v=1.5.89',
+  './rak-login-splash.js?v=1.5.89',
+  './rak-login-fix.js?v=1.5.89',
+  './rak-login-life.js?v=1.5.89',
+  './core.js?v=1.5.89',
+  './lifecycle.js?v=1.5.89',
+  './app-runtime-guards.js?v=1.5.89',
+  './qr.js?v=1.5.89',
+  './payroll.js?v=1.5.89',
+  './dashboard.js?v=1.5.89',
+  './appearance-theme.js?v=1.5.89',
+  './ui.js?v=1.5.89',
+  './app-navigation.js?v=1.5.89',
+  './app-bottom-nav.js?v=1.5.89',
+  './app-actions.js?v=1.5.89',
+  './app-pwa-connectivity.js?v=1.5.89',
+  './app-home-boot.js?v=1.5.89',
+  './rak-runtime-stability.js?v=1.5.89',
+  './rak-mobile-layout-guard.js?v=1.5.89',
+  './rak-feature-routing.js?v=1.5.89'
 ];
 
 const STATIC_EXT = /\.(?:js|css|png|jpg|jpeg|webp|svg|ico|json|webmanifest)$/i;

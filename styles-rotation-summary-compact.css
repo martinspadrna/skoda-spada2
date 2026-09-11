@@ -1,4 +1,4 @@
-/* RaK v1.5.88 – kompaktní přehled jména × skupiny strojů + větší update logo. */
+/* RaK v1.5.89 – kompaktní přehled jména × skupiny strojů + finální větší update logo. */
 
 html body .adminRotationGeneratorMachineSummary .adminRotationGeneratorMachineSummaryTable.appMenuTable.appMenuAdminTable {
   width:452px !important;
@@ -62,17 +62,17 @@ html body #appMenuBody[data-admin-view="rotation"] #rakRuntimeAdminMachineSummar
   table-layout:fixed !important;
 }
 
-/* Logo nabídky aktualizace: ještě o kousek větší, stále celé díky contain. */
+/* Logo nabídky aktualizace: finální drobné zvětšení, pořád celé díky contain. */
 html body .rakUpdateToast .rakUpdateToastBadge {
   padding:2px !important;
 }
 html body .rakUpdateToast .rakUpdateToastBadge .rakRuntimeUpdateLogo {
-  width:38px !important;
-  height:38px !important;
-  min-width:38px !important;
-  min-height:38px !important;
-  max-width:38px !important;
-  max-height:38px !important;
+  width:41px !important;
+  height:41px !important;
+  min-width:41px !important;
+  min-height:41px !important;
+  max-width:41px !important;
+  max-height:41px !important;
   object-fit:contain !important;
   object-position:center !important;
 }

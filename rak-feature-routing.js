@@ -1,12 +1,9 @@
-// RaK v1.5.88 – Boot v2 routing, klidný warmup a stabilizační opravy před PWA warm-startem.
+// RaK v1.5.89 – Boot v2 routing + stabilní korekční folds po Point 3.
 (function installRakFeatureRouting() {
   'use strict';
   if (window.__rakFeatureRoutingInstalled) return;
   window.__rakFeatureRoutingInstalled = true;
 
-  // app-menu.js historicky volá admin zoom guard už při navázání běžného menu.
-  // V Boot v2 ale admin modul ještě nemusí být načtený, proto dočasný bezpečný stub.
-  // Jakmile se načte admin feature, skutečná implementace globální funkci přepíše.
   if (typeof window.adminBindRotationZoomGuard !== 'function') {
     const adminZoomStub = function adminBindRotationZoomGuardBootV2Stub() {};
     adminZoomStub.__rakBootV2Stub = true;
@@ -24,13 +21,11 @@
   function resolveTarget(event) {
     const source = event && event.target && typeof event.target.closest === 'function' ? event.target : null;
     if (!source) return null;
-
     const nav = source.closest('nav.bottomNav button[data-action]');
     if (nav && document.documentElement.contains(nav)) {
       const feature = String(ACTION_FEATURE[String(nav.dataset.action || '').trim()] || '');
       return feature ? { element: nav, feature } : null;
     }
-
     const admin = source.closest('#appMenuBody [data-menu-action="admin"]');
     if (admin && document.documentElement.contains(admin)) return { element: admin, feature: 'admin' };
     return null;
@@ -39,8 +34,6 @@
   function ensureFeatureWithAuthOrder(feature) {
     if (typeof window.rakEnsureFeature !== 'function') return Promise.resolve(feature || '');
     const key = String(feature || '').trim();
-    // app-admin-unlock.js se nesmí spustit před Supabase bridge: jinak owner účet
-    // nedokáže obnovit uloženou relaci a při startu zbytečně vyžádá heslo.
     if (key === 'menu' || key === 'admin') {
       return window.rakEnsureFeature('sync').then(() => window.rakEnsureFeature(key));
     }
@@ -143,13 +136,13 @@
         return rows;
       });
       await step('live-refresh', () => typeof window.__rotaceTriggerLiveRefresh === 'function'
-        ? window.__rotaceTriggerLiveRefresh('v1588-manual-sync', { force: true })
+        ? window.__rotaceTriggerLiveRefresh('v1589-manual-sync', { force: true })
         : null);
       await step('kontrola-aktualizace', () => typeof window.__rotaceForcePwaUpdateCheck === 'function'
-        ? window.__rotaceForcePwaUpdateCheck('v1588-manual-sync')
+        ? window.__rotaceForcePwaUpdateCheck('v1589-manual-sync')
         : null);
       await step('pwa-cache', () => typeof window.__rotaceRequestPwaCacheStatus === 'function'
-        ? window.__rotaceRequestPwaCacheStatus('v1588-manual-sync')
+        ? window.__rotaceRequestPwaCacheStatus('v1589-manual-sync')
         : null);
       try { if (typeof window.forceHomeRefresh === 'function') window.forceHomeRefresh(); else if (typeof forceHomeRefresh === 'function') forceHomeRefresh(); } catch (_) {}
       try { if (typeof window.updateDashboard === 'function') window.updateDashboard(); else if (typeof updateDashboard === 'function') updateDashboard(); } catch (_) {}
@@ -163,8 +156,6 @@
   }
 
   window.runRakSafeManualSyncV1588 = runSafeManualSync;
-  // dashboard.js měl u ručního syncu TDZ závod přes lokální const stav. Po jeho plném
-  // načtení přesměrujeme veřejnou funkci na stav uložený na window, který TDZ nemá.
   window.runDashboardManualSync = runSafeManualSync;
 
   function handleManualSyncClick(event) {
@@ -193,17 +184,20 @@
     void runSafeManualSync('dashboard-keyboard');
   }
 
-  function makeCorrectionFold(label, detail, nodes) {
+  function makeCorrectionFold(group, label, detail, nodes) {
     const liveNodes = (Array.isArray(nodes) ? nodes : []).filter((node) => node && node.parentNode);
     if (!liveNodes.length) return null;
+    const parent = liveNodes[0].parentNode;
+    const existing = parent.querySelector(':scope > details.rakCorrectionMachineFold[data-rak-correction-group="' + group + '"]');
+    if (existing) return existing;
     const details = document.createElement('details');
     details.className = 'rakCorrectionMachineFold';
+    details.dataset.rakCorrectionGroup = group;
     details.open = false;
     const summary = document.createElement('summary');
     summary.innerHTML = '<span>' + String(label || '') + '</span>' + (detail ? '<small>' + String(detail) + '</small>' : '');
     const content = document.createElement('div');
     content.className = 'rakCorrectionMachineFoldBody';
-    const parent = liveNodes[0].parentNode;
     parent.insertBefore(details, liveNodes[0]);
     details.appendChild(summary);
     details.appendChild(content);
@@ -215,16 +209,25 @@
     const body = document.getElementById('appMenuBody');
     if (!body || String(body.dataset.adminView || '') !== 'correction-settings') return false;
     const root = body.querySelector('.adminFhbCalibration');
-    if (!root || root.dataset.rakV1588CorrectionFolded === '1') return false;
+    if (!root) return false;
 
-    const form = root.querySelector(':scope > .adminFhbCalibrationForm');
-    const model = root.querySelector(':scope > .adminFhbCalibrationModel');
-    const history = root.querySelector(':scope > .adminFhbCalibrationHistory');
-    const soon = root.querySelector(':scope > .adminFhbCalibrationSoon');
-    makeCorrectionFold('Frézky FHB · MFKF06 + MFKF10', 'měření, nastavení výpočtu a záznamy', [form, model, history]);
-    makeCorrectionFold('Brusy FHB', 'připravujeme', [soon]);
-    root.dataset.rakV1588CorrectionFolded = '1';
-    return true;
+    let frezkyFold = root.querySelector(':scope > details.rakCorrectionMachineFold[data-rak-correction-group="frezky"]');
+    if (!frezkyFold) {
+      const form = root.querySelector(':scope > .adminFhbCalibrationForm');
+      const model = root.querySelector(':scope > .adminFhbCalibrationModel');
+      const history = root.querySelector(':scope > .adminFhbCalibrationHistory');
+      frezkyFold = makeCorrectionFold('frezky', 'Frézky FHB · MFKF06 + MFKF10', 'měření, nastavení výpočtu a záznamy', [form, model, history]);
+    }
+
+    let brusyFold = root.querySelector(':scope > details.rakCorrectionMachineFold[data-rak-correction-group="brusy"]');
+    if (!brusyFold) {
+      const soon = root.querySelector(':scope > .adminFhbCalibrationSoon');
+      brusyFold = makeCorrectionFold('brusy', 'Brusy FHB · TBKR01 + TBKR07', 'připravujeme', [soon]);
+    }
+
+    const complete = !!(frezkyFold && brusyFold);
+    root.dataset.rakV1589CorrectionFolded = complete ? '1' : '0';
+    return complete;
   }
 
   function scheduleCorrectionSettingsEnhance() {
@@ -232,7 +235,7 @@
     const run = () => {
       if (enhanceCorrectionSettings()) return;
       attempt += 1;
-      if (attempt < 24) setTimeout(run, 125);
+      if (attempt < 32) setTimeout(run, 125);
     };
     setTimeout(run, 0);
   }
@@ -242,8 +245,6 @@
     else setTimeout(fn, fallbackDelay);
   }
 
-  // Pointerdown získá náskok před clickem. Pointer-events ale nevypínáme,
-  // protože Safari musí vždy doručit dokončovací click.
   document.addEventListener('pointerdown', (event) => {
     const target = resolveTarget(event);
     if (!target) return;
@@ -259,7 +260,12 @@
     if (handleManualSyncClick(event)) return;
 
     const source = event && event.target && typeof event.target.closest === 'function' ? event.target : null;
+    const menuBody = source && source.closest('#appMenuBody');
     if (source && source.closest('#appMenuBody [data-admin-action="open-correction-settings"]')) {
+      scheduleCorrectionSettingsEnhance();
+    } else if (menuBody && String(menuBody.dataset.adminView || '') === 'correction-settings') {
+      // Uložení/smazání měření renderuje celý obsah znovu. Po každé akci proto
+      // obnovíme oba foldy; stará verze hlídala jen první render a Brusy mohly zůstat venku.
       scheduleCorrectionSettingsEnhance();
     }
 
@@ -297,23 +303,17 @@
     });
   }, true);
 
-  // Home má dostat první paint a krátké okno bez parsování těžkých sekcí. Potom
-  // zahříváme běžné obrazovky na idle; admin až nakonec. PWA v1.5.88 mezitím drží
-  // verziované JS v cache, takže warm-start i první otevření menu už nečeká na síť.
   let warmupQueued = false;
   let warmupStarted = false;
   function startBackgroundWarmup() {
     if (warmupStarted || typeof window.rakEnsureFeature !== 'function') return;
     warmupStarted = true;
-
     Promise.allSettled(['rotation', 'calculators'].map((feature) => window.rakEnsureFeature(feature))).catch(() => {});
-
     scheduleIdle(() => {
       window.rakEnsureFeature('sync').then(() => window.rakEnsureFeature('menu')).catch((err) => {
         console.warn('Boot v2 sync/menu warmup failed', err);
       });
     }, 1500, 650);
-
     scheduleIdle(() => {
       ensureFeatureWithAuthOrder('admin').catch((err) => console.warn('Boot v2 admin warmup failed', err));
     }, 3600, 2400);
@@ -330,8 +330,6 @@
   }
   setTimeout(queueBackgroundWarmup, 0);
 
-  // Po skutečném načtení Administrace znovu spusť zoom guard a přidej přehledné
-  // skládání Nastavení korekcí.
   window.addEventListener('rak:feature-ready', (event) => {
     const feature = String(event && event.detail && event.detail.feature || '');
     if (feature !== 'admin') return;
@@ -364,7 +362,7 @@
 
   try {
     if (typeof window.rakMarkModuleReady === 'function') {
-      window.rakMarkModuleReady('rak-feature-routing.js', 'loaded', { source: 'boot-v2-loader', build: '1.5.88' });
+      window.rakMarkModuleReady('rak-feature-routing.js', 'loaded', { source: 'boot-v2-loader', build: '1.5.89' });
     }
   } catch (_) {}
 })();

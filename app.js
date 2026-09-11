@@ -1,9 +1,9 @@
-// RaK 1.5.88 – Boot v2 + PWA warm-start: rychlý Home shell + funkce načítané až při prvním použití.
+// RaK 1.5.89 – Boot v2 + PWA warm-start + Point 4 CSS cleanup pass 1.
 try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleReady('app.js', 'loaded', { source: 'index' }); } catch (err) {}
 
 (async () => {
-  const RAK_MODULE_CACHE_VERSION = "1.5.88";
-  const RAK_DEV_UPDATE_BUILD = "v1.5.88";
+  const RAK_MODULE_CACHE_VERSION = "1.5.89";
+  const RAK_DEV_UPDATE_BUILD = "v1.5.89";
   const RAK_BOOT_V2_ENABLED = true;
   window.RAK_PWA_BUILD = RAK_DEV_UPDATE_BUILD;
   window.RAK_BOOT_V2_ENABLED = RAK_BOOT_V2_ENABLED;
@@ -18,7 +18,6 @@ try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleR
     "rak-login-life.js"
   ];
 
-  // Jen to, co je nutné pro přihlášení, Home, PWA a spodní navigaci.
   const startupFiles = [
     "core.js",
     "lifecycle.js",
@@ -60,7 +59,6 @@ try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleR
     "app-rotation-sync.js"
   ];
 
-  // Běžné Více zůstává lehké: profil, informace a rychlé reporty.
   const menuFeatureFiles = [
     "changelog.js",
     "app-menu.js",
@@ -74,7 +72,6 @@ try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleR
     "rak-shift-report-share.js"
   ];
 
-  // Těžká Administrace se načte až po skutečném klepnutí na Administrace.
   const adminFeatureFiles = [
     "admin-rotation-editor.js",
     "admin-rotation-overtime.js",
@@ -97,8 +94,6 @@ try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleR
     "rak-lazy-external-libs.js"
   ];
 
-  // Úplný runtime manifest zůstává pro export a historické statické audity.
-  // Boot v2 ho NENAČÍTÁ celý; skutečné fronty jsou startup + feature skupiny výše.
   const deferredFiles = [
     "app-runtime-guards.js",
     "app-pwa-connectivity.js",
@@ -177,7 +172,6 @@ try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleR
     "app-boot-selftest.js"
   ];
 
-  // Kompatibilitní marker pro historický statický audit. Tento řádek se nespouští:
   // await Promise.all(deferredFiles.map(loadScript))
 
   const featureSpecs = Object.freeze({
@@ -383,7 +377,6 @@ try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleR
     }
   } catch (err) {}
 
-  // Přihlášení zůstává blokující a bezpečné.
   for (const file of criticalFiles) await loadScript(file);
 
   try { if (typeof window.rakUserProfileBootstrap === 'function') window.rakUserProfileBootstrap(); } catch (err) { console.warn('RaK user profile bootstrap failed', err); }
@@ -436,7 +429,6 @@ try { if (typeof window.rakMarkModuleReady === 'function') window.rakMarkModuleR
     else if (typeof bootHomeRefresh === 'function') bootHomeRefresh();
   } catch (err) { console.warn('Post-load Home boot failed', err); }
 
-  // Online data se dotáhnou po prvním interaktivním Home, ale už neblokují jeho zobrazení.
   const startSync = () => ensureFeature('sync').catch((err) => console.warn('Boot v2 sync preload failed', err));
   if (typeof requestIdleCallback === 'function') requestIdleCallback(startSync, { timeout: 1200 });
   else setTimeout(startSync, 450);
