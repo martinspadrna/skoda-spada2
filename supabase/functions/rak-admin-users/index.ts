@@ -1,10 +1,11 @@
 import { withSupabase } from "npm:@supabase/server@1.4.1";
 
 const ALLOWED_ORIGIN = "https://skoda-spada.vercel.app";
+const RAK_PRODUCTION_ORIGINS = new Set([ALLOWED_ORIGIN, "https://rak.vercel.app"]);
 
 function originAllowed(req: Request) {
   const origin = String(req.headers.get("origin") || "").trim();
-  return !origin || origin === ALLOWED_ORIGIN;
+  return !origin || RAK_PRODUCTION_ORIGINS.has(origin);
 }
 
 function responseHeaders(req: Request) {
@@ -14,8 +15,11 @@ function responseHeaders(req: Request) {
     "vary": "Origin",
     "x-content-type-options": "nosniff",
   };
-  if (String(req.headers.get("origin") || "").trim() === ALLOWED_ORIGIN) {
+  const origin = String(req.headers.get("origin") || "").trim();
+  if (origin === ALLOWED_ORIGIN) {
     headers["access-control-allow-origin"] = ALLOWED_ORIGIN;
+  } else if (RAK_PRODUCTION_ORIGINS.has(origin)) {
+    headers["access-control-allow-origin"] = origin;
   }
   return headers;
 }

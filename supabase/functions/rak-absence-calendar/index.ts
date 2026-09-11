@@ -2,13 +2,14 @@ import { withSupabase } from "npm:@supabase/server@1.4.1";
 
 const CALENDAR_HOST = "calendar.google.com";
 const ALLOWED_ORIGIN = "https://skoda-spada.vercel.app";
+const RAK_PRODUCTION_ORIGINS = new Set([ALLOWED_ORIGIN, "https://rak.vercel.app"]);
 const MAX_ICS_BYTES = 2 * 1024 * 1024;
 
 function isRaKPreviewOrigin(origin: string) {
   try {
     const parsed = new URL(origin);
     return parsed.protocol === "https:" &&
-      /^skoda-spada-[a-z0-9-]+-martinspadrnas-projects\.vercel\.app$/i.test(parsed.hostname);
+      /^(?:skoda-spada|rak)-[a-z0-9-]+-martinspadrnas-projects\.vercel\.app$/i.test(parsed.hostname);
   } catch {
     return false;
   }
@@ -16,7 +17,7 @@ function isRaKPreviewOrigin(origin: string) {
 
 function originAllowed(req: Request) {
   const origin = String(req.headers.get("origin") || "").trim();
-  return !origin || origin === ALLOWED_ORIGIN || isRaKPreviewOrigin(origin);
+  return !origin || RAK_PRODUCTION_ORIGINS.has(origin) || isRaKPreviewOrigin(origin);
 }
 
 function responseHeaders(req: Request, contentType = "application/json; charset=utf-8") {
@@ -29,7 +30,7 @@ function responseHeaders(req: Request, contentType = "application/json; charset=
   const origin = String(req.headers.get("origin") || "").trim();
   if (origin === ALLOWED_ORIGIN) {
     headers["access-control-allow-origin"] = ALLOWED_ORIGIN;
-  } else if (isRaKPreviewOrigin(origin)) {
+  } else if (RAK_PRODUCTION_ORIGINS.has(origin) || isRaKPreviewOrigin(origin)) {
     headers["access-control-allow-origin"] = origin;
   }
   return headers;
