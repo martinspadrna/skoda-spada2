@@ -1,8 +1,17 @@
-// RaK v1.5.87 – Boot v2 lazy routing guard for main sections and Administrace.
+// RaK v1.5.87 hotfix – Boot v2 routing + background warmup for fast first navigation.
 (function installRakFeatureRouting() {
   'use strict';
   if (window.__rakFeatureRoutingInstalled) return;
   window.__rakFeatureRoutingInstalled = true;
+
+  // app-menu.js historicky volá admin zoom guard už při navázání běžného menu.
+  // V Boot v2 ale admin modul ještě nemusí být načtený, proto dočasný bezpečný stub.
+  // Jakmile se načte admin feature, skutečná implementace globální funkci přepíše.
+  if (typeof window.adminBindRotationZoomGuard !== 'function') {
+    const adminZoomStub = function adminBindRotationZoomGuardBootV2Stub() {};
+    adminZoomStub.__rakBootV2Stub = true;
+    window.adminBindRotationZoomGuard = adminZoomStub;
+  }
 
   const ACTION_FEATURE = Object.freeze({
     rotace: 'rotation',
@@ -81,6 +90,41 @@
     });
   }, true);
 
+  // Boot v2 má Home zobrazit jako první, ale uživatel nemá platit několikasekundovou
+  // penalizaci při každém prvním klepnutí. Jakmile je Home interaktivní, běžné sekce
+  // se okamžitě zahřejí na pozadí. Administrace se zahřeje až po nich a po sync závislosti.
+  let warmupStarted = false;
+  function startBackgroundWarmup() {
+    if (warmupStarted || typeof window.rakEnsureFeature !== 'function') return;
+    if (!window.__rakBootV2StartupReady) {
+      setTimeout(startBackgroundWarmup, 40);
+      return;
+    }
+    warmupStarted = true;
+    const common = ['menu', 'rotation', 'calculators'];
+    Promise.allSettled(common.map((feature) => window.rakEnsureFeature(feature))).then(() => {
+      setTimeout(() => {
+        if (typeof window.rakEnsureFeature !== 'function') return;
+        window.rakEnsureFeature('admin').catch((err) => console.warn('Boot v2 admin warmup failed', err));
+      }, 80);
+    }).catch(() => {});
+  }
+  setTimeout(startBackgroundWarmup, 0);
+
+  // Po skutečném načtení Administrace znovu spusť zoom guard, protože první menu
+  // mohlo být navázané ještě nad dočasným stubem.
+  window.addEventListener('rak:feature-ready', (event) => {
+    const feature = String(event && event.detail && event.detail.feature || '');
+    if (feature !== 'admin') return;
+    try {
+      if (typeof window.adminBindRotationZoomGuard === 'function' && !window.adminBindRotationZoomGuard.__rakBootV2Stub) {
+        window.adminBindRotationZoomGuard();
+      }
+    } catch (err) {
+      console.warn('Admin zoom guard after lazy load failed', err);
+    }
+  });
+
   try {
     const style = document.createElement('style');
     style.id = 'rakFeatureRoutingStyle';
@@ -90,7 +134,7 @@
 
   try {
     if (typeof window.rakMarkModuleReady === 'function') {
-      window.rakMarkModuleReady('rak-feature-routing.js', 'loaded', { source: 'boot-v2-loader', build: '1.5.87' });
+      window.rakMarkModuleReady('rak-feature-routing.js', 'loaded', { source: 'boot-v2-loader', build: '1.5.87-hotfix1' });
     }
   } catch (_) {}
 })();
