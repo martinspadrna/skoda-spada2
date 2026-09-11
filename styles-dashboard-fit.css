@@ -2,44 +2,11 @@
    Načítá se hned po styles-overrides.css, aby zůstalo zachované původní pořadí vůči admin/stats/theme/release polish vrstvám.
    1.75: stabilizační vlastník mobilních breakpointů; starší bloky v overrides necháváme být, vítězí tato pozdější vrstva + styles-dashboard-polish.css.
    1.76: legacy override inventory guard; historické viewport/hero korekce se nemažou naslepo, ale drží je test a pozdější vlastníci.
-   1.97: kanonický compact owner slučuje historické revize 939/944/945 a centrování 953–958 bez změny výsledného vzhledu. */
+   1.97: kanonický compact owner slučuje historické revize 939/944/945 a centrování 953–958 bez změny výsledného vzhledu.
+   RaK v1.5.99 – odstraněný mrtvý obecný owner 939 a přepsané compact deklarace; aktivní geometrie/safe-area/device ownery zůstávají. */
 
-/* v.1.5 (939) – Dashboard: obecný základ mimo kompaktní mobilní breakpointy. */
-#home .dashboardGrid{
-  gap:11px !important;
-}
-#home .dashboardCard,
-#home .tile.dashboardCard{
-  min-height:91px !important;
-  padding:11px 12px !important;
-}
-#home .dashboardValue{
-  line-height:1.08 !important;
-}
-#home .dashboardMeta{
-  line-height:1.15 !important;
-}
-@media (max-width:700px){
-  #home .dashboardGrid{gap:10px !important;}
-  #home .dashboardCard,
-  #home .tile.dashboardCard{
-    min-height:93px !important;
-    padding:12px !important;
-  }
-}
-body.lightweightMode #home .dashboardCard,
-body.lightweightMode #home .tile.dashboardCard,
-body.lowEndDevice #home .dashboardCard,
-body.lowEndDevice #home .tile.dashboardCard,
-body.ladaMode #home .dashboardCard,
-body.ladaMode #home .tile.dashboardCard{
-  min-height:70px !important;
-  padding:7px 9px !important;
-}
-
-
-/* RaK v1.5.97 – kanonický compact Dashboard owner.
-   Výsledné hodnoty odpovídají původní kaskádě 939 → 944 → 945, jen bez mrtvých mezikroků. */
+/* RaK v1.5.97/v1.5.99 – kanonický compact Dashboard owner.
+   Rozměry, které pozdější dashboard-polish na aktivním Home vždy přebírá, tu už neduplikujeme. */
 @media (max-width:390px) and (max-height:820px){
   body{
     --rak-dashboard-fit-card-min:82px;
@@ -90,69 +57,28 @@ body.ladaMode #home .tile.dashboardCard{
   }
   #home .dashboardHeroCard,
   #dashHero.dashboardHeroCard{
-    min-height:82px !important;
-    padding:11px 12px !important;
+    padding-left:12px !important;
+    padding-right:12px !important;
     border-radius:19px !important;
     margin-bottom:0 !important;
-  }
-  #home .dashboardHeroLine1,
-  #home .dashboardHeroLine1Text,
-  #dashHero .dashboardHeroLine1,
-  #dashHero .dashboardHeroLine1Text{
-    font-size:14px !important;
-    line-height:1.18 !important;
-  }
-  #home .dashboardHeroLine2,
-  #dashHero .dashboardHeroLine2{
-    margin-top:4px !important;
-    font-size:12px !important;
-    line-height:1.18 !important;
-  }
-  #home .dashboardHeroLine3,
-  #dashHero .dashboardHeroLine3{
-    display:flex !important;
-    margin-top:4px !important;
-    font-size:11px !important;
-    line-height:1.16 !important;
-    max-height:28px !important;
-    overflow:hidden !important;
-  }
-  #home .dashboardHeroLine3Pill,
-  #dashHero .dashboardHeroLine3Pill{
-    font-size:10px !important;
-    line-height:1.12 !important;
-    padding:3px 6px !important;
   }
   #home .dashboardHeroBar,
   #dashHero .dashboardHeroBar{
     display:block !important;
-    height:5px !important;
     margin-top:6px !important;
   }
   #home .dashboardGrid{
-    gap:var(--rak-dashboard-fit-gap) !important;
     margin-top:9px !important;
   }
   #home .dashboardCard,
   #home .tile.dashboardCard{
-    min-height:var(--rak-dashboard-fit-card-min) !important;
-    padding:9px 10px !important;
     border-radius:16px !important;
-    gap:3px 7px !important;
   }
   #home .dashboardLabel{
-    font-size:9px !important;
-    line-height:1.05 !important;
     letter-spacing:.075em !important;
-  }
-  #home .dashboardValue{
-    font-size:clamp(13px, 4.5vw, 16px) !important;
-    line-height:1.03 !important;
   }
   #home .dashboardMeta{
     display:block !important;
-    font-size:9.5px !important;
-    line-height:1.05 !important;
     max-height:24px !important;
     overflow:hidden !important;
   }
@@ -166,40 +92,19 @@ body.ladaMode #home .tile.dashboardCard{
     min-width:14px !important;
   }
   #home .dashboardIcon.dashboardIconInline{
-    width:32px !important;
-    height:32px !important;
-    min-width:32px !important;
-    flex-basis:32px !important;
     border-radius:10px !important;
   }
 }
 @media (max-width:390px) and (max-height:740px){
   #home .dashboardHeroCard,
   #dashHero.dashboardHeroCard{
-    min-height:74px !important;
-    padding:9px 10px !important;
-  }
-  #home .dashboardHeroLine3,
-  #dashHero .dashboardHeroLine3{
-    display:flex !important;
-    max-height:18px !important;
+    padding-left:10px !important;
+    padding-right:10px !important;
   }
   #home .dashboardHeroBar,
   #dashHero .dashboardHeroBar{
     display:block !important;
-    height:4px !important;
     margin-top:4px !important;
-  }
-  #home .dashboardCard,
-  #home .tile.dashboardCard{
-    min-height:74px !important;
-    padding:8px 9px !important;
-  }
-}
-@media (max-width:370px) and (max-height:820px){
-  #home .dashboardCard,
-  #home .tile.dashboardCard{
-    min-height:78px !important;
   }
 }
 
@@ -224,31 +129,15 @@ body.ladaMode #home .tile.dashboardCard{
   }
   #home .dashboardHeroCard,
   #dashHero.dashboardHeroCard{
-    min-height:84px !important;
-    padding:11px 12px !important;
+    padding-left:12px !important;
+    padding-right:12px !important;
   }
   #home .dashboardGrid{
     gap:var(--rak-dashboard-fit-gap) !important;
     margin-top:8px !important;
   }
-  #home .dashboardCard,
-  #home .tile.dashboardCard{
-    min-height:var(--rak-dashboard-fit-card-min) !important;
-    padding:8px 10px !important;
-  }
-  #home .dashboardIcon.dashboardIconInline{
-    width:31px !important;
-    height:31px !important;
-    min-width:31px !important;
-    flex-basis:31px !important;
-  }
-  #home .dashboardValue{
-    font-size:clamp(13.5px, 4.3vw, 16px) !important;
-    line-height:1.08 !important;
-  }
   #home .dashboardMeta{
     max-height:22px !important;
-    line-height:1.14 !important;
   }
 }
 
@@ -263,41 +152,12 @@ body.ladaMode #home .tile.dashboardCard{
     padding:8px !important;
     max-height:calc(100dvh - 76px - env(safe-area-inset-bottom)) !important;
   }
-  #home .dashboardAppTitleRow{
-    margin-bottom:6px !important;
-  }
   #home .dashboardAnnouncementBar{
     min-height:26px !important;
     padding:5px 9px !important;
-    margin-bottom:6px !important;
-  }
-  #home .dashboardHeroCard,
-  #dashHero.dashboardHeroCard{
-    min-height:83px !important;
-    padding:11px 12px !important;
-  }
-  #home .dashboardGrid{
-    gap:var(--rak-dashboard-fit-gap) !important;
-    margin-top:8px !important;
-  }
-  #home .dashboardCard,
-  #home .tile.dashboardCard{
-    min-height:var(--rak-dashboard-fit-card-min) !important;
-    padding:8px 10px !important;
-  }
-  #home .dashboardIcon.dashboardIconInline{
-    width:31px !important;
-    height:31px !important;
-    min-width:31px !important;
-    flex-basis:31px !important;
-  }
-  #home .dashboardValue{
-    font-size:clamp(13.5px, 4.2vw, 16px) !important;
-    line-height:1.08 !important;
   }
   #home .dashboardMeta{
     max-height:22px !important;
-    line-height:1.14 !important;
   }
 }
 
