@@ -1,5 +1,5 @@
 // Ověřené doladění citlivosti výpočtu korekcí pro frézky / FHB.
-// RaK 1.5.90: Frézky i Brusy mají nativní samostatný skládací blok už při renderu.
+// RaK 1.5.90 hotfix: Frézky i Brusy jsou samostatné foldy a vše pod blokem Brusů se při renderu přesune dovnitř Brusů.
 (function installAdminFhbCalibration() {
   'use strict';
 
@@ -152,6 +152,46 @@
     const status = ready ? (Math.abs(value - active) >= 0.05 ? 'doporučení připraveno' : 'potvrzeno') : ('chybí ' + String(Math.max(0, MIN_SAMPLES - count)) + ' záznam' + (MIN_SAMPLES - count === 1 ? '' : 'y'));
     return '<div class="adminFhbCalibrationMetric"><span>' + esc(label) + '</span><b>' + esc(sensitivityLabel(ready ? value : active)) + '</b><small>' + esc(String(count) + '/' + MIN_SAMPLES + ' · ' + status) + '</small></div>';
   }
+
+  function foldBrusyTailIntoSection() {
+    try {
+      const body = document.getElementById('appMenuBody');
+      if (!body || String(body.dataset.adminView || '') !== 'correction-settings') return false;
+      const root = body.querySelector('.adminFhbCalibration');
+      const fold = root && root.querySelector('details.rakCorrectionMachineFold[data-rak-correction-group="brusy"]');
+      const foldBody = fold && fold.querySelector('.rakCorrectionMachineFoldBody');
+      if (!root || !fold || !foldBody) return false;
+
+      let moved = 0;
+      let node = root.nextElementSibling;
+      while (node && !(node.matches && node.matches('.appMenuBack, [data-admin-action="back-admin"]'))) {
+        const next = node.nextElementSibling;
+        foldBody.appendChild(node);
+        moved += 1;
+        node = next;
+      }
+      if (moved) {
+        const placeholder = foldBody.querySelector('.adminFhbCalibrationSoon');
+        if (placeholder) placeholder.remove();
+      }
+      root.dataset.rakBrusyTailFolded = '1';
+      return true;
+    } catch (err) {
+      console.warn('Brusy correction fold finalize failed', err);
+      return false;
+    }
+  }
+
+  function scheduleBrusyTailFold() {
+    let attempt = 0;
+    const run = () => {
+      if (foldBrusyTailIntoSection()) return;
+      attempt += 1;
+      if (attempt < 20) setTimeout(run, 80);
+    };
+    setTimeout(run, 0);
+  }
+
   function buildHtml() {
     const settings = getSettings();
     const analysis = derive(settings);
@@ -163,6 +203,7 @@
         '</div>').join('')
       : '<div class="smallText">Zatím nejsou žádná měření. Pro spolehlivý návrh potřebuje každý směr alespoň tři čisté záznamy — vždy měň jen konicitu, nebo jen fhβ.</div>';
     const applyDisabled = analysis.changes.length ? '' : ' disabled';
+    scheduleBrusyTailFold();
     return [
       '<div class="appMenuSettingsList adminFhbCalibration">',
       '<div class="smallText">Zapiš hodnoty z protokolu před korekcí, o kolik ses ve stroji pohnul, a výsledek po korekci. Korekce může být zapsaná jako <b>35</b> nebo <b>0,035</b>. Aplikace sama nic nemění: doporučení se promítne až tlačítkem níže.</div>',
@@ -185,9 +226,9 @@
       '</div>',
       '</details>',
       '<details class="rakCorrectionMachineFold" data-rak-correction-group="brusy">',
-      '<summary><span>Brusy FHB · TBKR01 + TBKR07</span><small>připravujeme</small></summary>',
+      '<summary><span>Brusy FHB · TBKR01 + TBKR07</span><small>nastavení brusů</small></summary>',
       '<div class="rakCorrectionMachineFoldBody">',
-      '<div class="appMenuCard adminFhbCalibrationSoon"><b>Brusy FHB</b><span>Korekce pro brusy doplníme až s hotovou kalkulačkou FHB a profilem brusek.</span></div>',
+      '<div class="appMenuCard adminFhbCalibrationSoon"><b>Brusy FHB</b><span>Nastavení TBKR01 a TBKR07 je součástí tohoto bloku.</span></div>',
       '</div>',
       '</details>',
       '</div>'
@@ -207,5 +248,6 @@
   window.removeAdminFhbCorrectionCalibrationRecord = removeRecord;
   window.applyAdminFhbCorrectionCalibration = applyRecommendation;
   window.mergeAdminFhbCorrectionCalibrationRows = mergeRows;
+  window.foldAdminFhbBrusyTailIntoSection = foldBrusyTailIntoSection;
   window.getFhbCorrectionModel = function getFhbCorrectionModel() { return cloneModel(getSettings().activeModel); };
 })();

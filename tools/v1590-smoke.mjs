@@ -11,7 +11,7 @@ const compactCss = read('styles-rotation-summary-compact.css');
 const bottomNavCss = read('styles-bottom-nav-runtime.css');
 const viewportCss = read('styles-viewport-polish.css');
 
-assert.equal(pkg.version, '1.5.90', 'package version must be 1.5.90');
+assert.equal(pkg.version, '1.5.90', 'package version must stay 1.5.90 for this hotfix');
 assert.match(app, /RAK_MODULE_CACHE_VERSION\s*=\s*["']1\.5\.90["']/, 'app cache version must be 1.5.90');
 assert.match(app, /RAK_DEV_UPDATE_BUILD\s*=\s*["']v1\.5\.90["']/, 'app update build must be v1.5.90');
 assert.match(sw, /CACHE_VERSION\s*=\s*["']v1\.5\.90["']/, 'service worker cache must be v1.5.90');
@@ -30,37 +30,34 @@ assert(routing.includes('clearVacationReportStateWhenLeaving'), 'vacation report
 assert(routing.includes('runSafeManualSync'), 'safe manual sync missing');
 assert(routing.includes("ensureFeatureWithAuthOrder('sync')"), 'manual sync must ensure sync feature first');
 
-// Correction settings are now native <details> at render time, not dependent on a later wrapper race.
+// Correction settings: native folds + Brusy own everything that follows them before Back.
 assert(fhb.includes('<details class="rakCorrectionMachineFold" data-rak-correction-group="frezky">'), 'native frezky fold missing');
 assert(fhb.includes('<details class="rakCorrectionMachineFold" data-rak-correction-group="brusy">'), 'native brusy fold missing');
 assert(fhb.includes('<summary><span>Frézky FHB · MFKF06 + MFKF10</span>'), 'frezky fold summary missing');
-assert(fhb.includes('<summary><span>Brusy FHB · TBKR01 + TBKR07</span>'), 'brusy fold summary missing');
-assert(!fhb.includes('<details class="rakCorrectionMachineFold" data-rak-correction-group="brusy" open'), 'brusy fold must start collapsed');
+assert(fhb.includes('<summary><span>Brusy FHB · TBKR01 + TBKR07</span><small>nastavení brusů</small>'), 'brusy fold summary must no longer say preparing');
+assert(!fhb.includes('<small>připravujeme</small>'), 'Brusy must not say preparing');
+assert(fhb.includes('function foldBrusyTailIntoSection()'), 'Brusy tail ownership helper missing');
+assert(fhb.includes("node.matches('.appMenuBack, [data-admin-action=\"back-admin\"]')"), 'Back button must stay outside Brusy fold');
+assert(fhb.includes('foldBody.appendChild(node);'), 'content below Brusy must move into Brusy body');
+assert(fhb.includes('scheduleBrusyTailFold();'), 'Brusy tail folding must run after every render');
 assert(routing.includes('rakCorrectionMachineFold>summary:after{content:"Rozbalit"'), 'fold control label missing');
 
-// Requested update-logo polish.
+// Requested update-logo polish remains.
 for (const prop of ['width:46px !important', 'height:46px !important', 'min-width:46px !important', 'max-width:46px !important']) {
   assert(compactCss.includes(prop), `update logo missing ${prop}`);
 }
 assert(compactCss.includes('width:48px !important') && compactCss.includes('flex:0 0 48px !important'), 'update badge must grow with logo');
 assert(compactCss.includes('object-fit:contain !important'), 'update logo must remain fully visible');
 
-// Point 4 pass 1 remains and pass 2 removes only a proven superseded mobile Home block.
+// Point 4 passes: one canonical nav height, no superseded Home block, and viewport fallbacks aligned to 56px.
 assert(bottomNavCss.includes('Point 4 / průchod 1'), 'Point 4 bottom-nav cleanup marker missing');
 assert(bottomNavCss.includes('--bottom-nav-h:56px;'), 'canonical bottom-nav height missing');
 assert(!bottomNavCss.includes('--bottom-nav-h:64px;'), 'superseded 64px bottom-nav root returned');
-assert(viewportCss.includes('RaK v1.5.90 – Point 4 / průchod 2'), 'viewport/dashboard cleanup marker missing');
+assert(viewportCss.includes('Point 4 / průchod 3'), 'viewport cleanup pass 3 marker missing');
 assert(viewportCss.includes('height:100dvh !important;') && viewportCss.includes('overflow-y:auto !important;'), 'canonical mobile Home scroll owner missing');
 assert(viewportCss.includes('grid-template-rows:repeat(4, auto) !important;'), 'Dashboard row sizing guard missing');
-const supersededHomeBlock = [
-  'html body #home.page.active{',
-  '    height:auto !important;',
-  '    min-height:100dvh !important;',
-  '    overflow-x:hidden !important;',
-  '    overflow-y:visible !important;',
-  '    padding-bottom:calc(var(--bottom-nav-h, 64px) + env(safe-area-inset-bottom) + 24px) !important;',
-  '  }'
-].join('\n');
-assert(!viewportCss.includes(supersededHomeBlock), 'superseded mobile Home block returned');
+assert(!viewportCss.includes('--rak-nav-ios-start-bottom: max('), 'superseded initial iOS nav-bottom value returned');
+assert(!viewportCss.includes('var(--bottom-nav-h, 64px)'), 'old 64px viewport fallback returned');
+assert(viewportCss.includes('var(--bottom-nav-h, 56px)'), 'canonical 56px viewport fallback missing');
 
-console.log('[v1.5.90-smoke] OK logo 46px + native Frezky/Brusy folds + Point 4 viewport/Dashboard cleanup + Point 3 retained');
+console.log('[v1.5.90-smoke] OK Brusy tail ownership + Point 4 viewport cleanup pass 3 + Point 3 retained');

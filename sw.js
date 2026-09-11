@@ -1,4 +1,4 @@
-// RaK 1.5 production PWA service worker – v1.5.90 warm-start cache.
+// RaK 1.5 production PWA service worker – v1.5.90 warm-start cache, correction-fold/cache refresh hotfix.
 const CACHE_VERSION = 'v1.5.90';
 const SW_APP_VERSION = '1.5';
 const STATIC_CACHE = `rotace-static-${CACHE_VERSION}`;
