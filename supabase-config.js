@@ -88,3 +88,17 @@ window.SUPABASE_CONFIG = {
     library.__rakTestOwnerBootstrapInstalled = true;
   }
 })();
+
+// Development-only rychlá vrstva pro denní výjimku „kalírna“.
+// Je v samostatném souboru, aby produkční main zůstal beze změny.
+(function loadRakKalirnaDayModOverride() {
+  const src = "kalirna-daymod-override.js?v=20260912-1";
+  try {
+    if (document.querySelector('script[data-rak-kalirna-daymod-override="1"]')) return;
+    const script = document.createElement("script");
+    script.src = src;
+    script.async = false;
+    script.dataset.rakKalirnaDaymodOverride = "1";
+    (document.head || document.documentElement).appendChild(script);
+  } catch (err) {}
+})();

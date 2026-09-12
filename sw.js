@@ -11,7 +11,8 @@ const DEVELOPMENT_ADMIN_HOTFIX_ASSETS = [
   './supabase-config.js?v=1.6.0',
   './supabase-bridge.js?v=1.6.0',
   './app-admin-unlock.js?v=1.6.0',
-  './app-menu.js?v=1.6.0'
+  './app-menu.js?v=1.6.0',
+  './kalirna-daymod-override.js?v=20260912-1'
 ];
 
 const CORE = [
