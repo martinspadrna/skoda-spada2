@@ -1,6 +1,7 @@
 // RaK 1.6 production PWA service worker – v1.6.0 warm-start cache + confirmed-update navigation.
 const CACHE_VERSION = 'v1.6.0';
 const SW_APP_VERSION = '1.6.0';
+const DEVELOPMENT_TEST_DISPLAY_VERSION = '1.6.01';
 const STATIC_CACHE = `rotace-static-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `rotace-runtime-${CACHE_VERSION}`;
 const PREWARM_CACHE = `rotace-prewarm-${CACHE_VERSION}`;
@@ -214,7 +215,7 @@ self.addEventListener('activate', event => {
     const clients = await self.clients.matchAll({ includeUncontrolled: true, type: 'window' });
     const navigations = [];
     clients.forEach(client => {
-      try { client.postMessage({ type: 'sw-activated', version: CACHE_VERSION, appVersion: SW_APP_VERSION }); } catch (_) {}
+      try { client.postMessage({ type: 'sw-activated', version: CACHE_VERSION, appVersion: SW_APP_VERSION, testDisplayVersion: DEVELOPMENT_TEST_DISPLAY_VERSION }); } catch (_) {}
       if (approvedUpdateClientId && client.id === approvedUpdateClientId && typeof client.navigate === 'function') {
         try {
           const nextUrl = new URL(client.url);
@@ -238,7 +239,7 @@ self.addEventListener('message', event => {
     return;
   }
   if (data.type === 'GET_VERSION' && event.source) {
-    event.source.postMessage({ type: 'sw-version', version: CACHE_VERSION, appVersion: SW_APP_VERSION });
+    event.source.postMessage({ type: 'sw-version', version: CACHE_VERSION, appVersion: SW_APP_VERSION, testDisplayVersion: DEVELOPMENT_TEST_DISPLAY_VERSION });
     return;
   }
   if (data.type === 'GET_CACHE_STATUS' && event.source) {
@@ -246,6 +247,7 @@ self.addEventListener('message', event => {
       type: 'sw-cache-status',
       cacheVersion: CACHE_VERSION,
       appVersion: SW_APP_VERSION,
+      testDisplayVersion: DEVELOPMENT_TEST_DISPLAY_VERSION,
       strategy: 'navigation-network-first;build-static-cache-first;isolated-prewarm',
       warmStartCount: WARM_START.length,
       checkedAt: Date.now()
