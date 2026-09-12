@@ -35,6 +35,9 @@
     ]),
     MFKF10: Object.freeze([
       Object.freeze({ label: 'TPM', place: 'KP511' })
+    ]),
+    'Kalírna': Object.freeze([
+      Object.freeze({ label: 'Tak tam hlavně nedělej ostudu.' })
     ])
   });
 
@@ -58,6 +61,7 @@
 
   function assignmentMachine(value) {
     const text = String(value || '').toUpperCase();
+    if (/KAL[IÍ]RNA/.test(text)) return 'Kalírna';
     // Při společné obsluze frézek už rozpis uvádí „MFKF10 (+ MFKF06)“.
     // V takovém případě má přednost společný rozsah úkolu z MFKF06.
     if (/\bMFKF06\b/.test(text)) return 'MFKF06';
@@ -73,6 +77,14 @@
   function getTasksForAssignment(value, shift) {
     const machine = assignmentMachine(value);
     const normalizedShift = assignmentShift(shift);
+    // Kalírna je zvláštní denní výjimka, ne konfigurovatelný výrobní stroj.
+    // Proto nepoužívá admin mapu strojů a má pevný krátký úkol.
+    if (machine === 'Kalírna') {
+      return {
+        machine,
+        tasks: (MACHINE_TASKS[machine] || []).map((task) => ({ label: task.label, place: task.place || '' }))
+      };
+    }
     const configuredTasks = typeof window.getRotationMachineTasksForMachine === 'function'
       ? window.getRotationMachineTasksForMachine(machine, normalizedShift)
       : null;

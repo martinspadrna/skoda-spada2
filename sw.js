@@ -5,6 +5,11 @@ const STATIC_CACHE = `rotace-static-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `rotace-runtime-${CACHE_VERSION}`;
 const PREWARM_CACHE = `rotace-prewarm-${CACHE_VERSION}`;
 const SAME_VERSION_HOTFIX_ASSETS = ['./app-menu-pages.js?v=1.6.0'];
+const KALIRNA_HOTFIX_ASSETS = [
+  './supabase-config.js?v=1.6.0',
+  './kalirna-daymod-override.js?v=20260912-main1',
+  './rotation-tasks.js?v=1.6.0'
+];
 
 const CORE = [
   './',
@@ -130,7 +135,8 @@ async function fetchBuildAsset(url) {
 async function clearSameVersionHotfixAssets() {
   try {
     const cache = await caches.open(STATIC_CACHE);
-    await Promise.all(SAME_VERSION_HOTFIX_ASSETS.map(url => cache.delete(url, { ignoreSearch: false })));
+    const hotfixAssets = SAME_VERSION_HOTFIX_ASSETS.concat(KALIRNA_HOTFIX_ASSETS);
+    await Promise.all(hotfixAssets.map(url => cache.delete(url, { ignoreSearch: false })));
   } catch (_) {}
 }
 
