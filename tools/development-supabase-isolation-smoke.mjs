@@ -35,8 +35,8 @@ assert(!config.includes(PROD_REF), 'production Supabase ref leaked into developm
 assert(adminAuth.includes("VERCEL_GIT_COMMIT_REF") && adminAuth.includes("=== 'development'"), 'server admin auth must branch-isolate development');
 assert(adminAuth.includes(TEST_REF), 'development server API must contain the RaK-test Supabase override');
 assert(!adminAuth.includes(PROD_REF), 'production Supabase ref must not be hardcoded in development server auth');
-assert(adminUsersApi.includes("require('./_admin-auth") || adminUsersApi.includes('require("./_admin-auth'), 'admin users API must use the shared isolated admin auth helper');
-assert(absenceApi.includes("require('./_admin-auth") || absenceApi.includes('require("./_admin-auth'), 'absence calendar API must use the shared isolated admin auth helper');
+assert(adminUsersApi.includes('admin_users_endpoint_moved') && adminUsersApi.includes('status(410)'), 'retired admin users Vercel endpoint must stay disabled');
+assert(absenceApi.includes('calendar_endpoint_moved') && absenceApi.includes('status(410)'), 'retired absence Vercel endpoint must stay disabled');
 assert(bridge.includes('window.SUPABASE_CONFIG'), 'Supabase bridge must derive its client from the active public config');
 assert(userProfile.includes('window.SUPABASE_CONFIG'), 'user profile lookup must derive its client from the active public config');
 assert(generatorWizard.includes('window.SUPABASE_CONFIG'), 'generator absence calendar URL must derive from the active public config');
