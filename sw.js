@@ -4,7 +4,16 @@ const SW_APP_VERSION = '1.6.0';
 const STATIC_CACHE = `rotace-static-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `rotace-runtime-${CACHE_VERSION}`;
 const PREWARM_CACHE = `rotace-prewarm-${CACHE_VERSION}`;
-const SAME_VERSION_HOTFIX_ASSETS = ['./app-menu-pages.js?v=1.6.0'];
+// Development hotfix: tyto stejnoverzové soubory musí být po oddělení Supabase
+// znovu stažené, jinak iOS PWA může dál používat staré admin odemčení z cache.
+const SAME_VERSION_HOTFIX_ASSETS = [
+  './app-menu-pages.js?v=1.6.0',
+  './app.js?v=1.5.1',
+  './supabase-config.js?v=1.6.0',
+  './supabase-bridge.js?v=1.6.0',
+  './app-admin-unlock.js?v=1.6.0',
+  './app-menu.js?v=1.6.0'
+];
 
 const CORE = [
   './',
@@ -180,6 +189,8 @@ self.addEventListener('install', event => {
   event.waitUntil((async () => {
     await clearSameVersionHotfixAssets();
     await installCoreAndPrewarm();
+    // Jen development hotfix: nechceme, aby nová verze čekala za starým iOS klientem.
+    await self.skipWaiting();
   })());
 });
 
