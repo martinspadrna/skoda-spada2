@@ -4,6 +4,12 @@ window.SUPABASE_CONFIG = {
   publishableKey: "sb_publishable_v7jeuZC-MNUEO5nfE5xcUQ_Pu9pT-X_"
 };
 
+// Development-only viditelná testovací verze. Produkční main dál zobrazuje
+// veřejnou verzi RaK 1.6; každý další testovací balík budeme číslovat
+// 1.6.01, 1.6.02, 1.6.03… aby bylo v O aplikaci hned vidět, co běží.
+window.RAK_RELEASE_VERSION = "1.6.01";
+window.RAK_TEST_DISPLAY_VERSION = "1.6.01";
+
 // Development-only ochrana proti přenesení starého admin odemčení v běžícím
 // PWA runtime při přepnutí z produkční Supabase na testovací. Maže pouze
 // autorizační příznaky administrace; běžné přihlášení uživatele zůstává.
