@@ -114,7 +114,7 @@ const authenticatedFetch = withSupabase({ auth: "user" }, async (req, ctx) => {
   if (!accountId || !displayName) {
     return jsonResponse(req, 400, { ok: false, error: "invalid_admin_profile" });
   }
-  if (password && (password.length < 8 || password.length > 128)) {
+  if (password && (password.length < 6 || password.length > 128)) {
     return jsonResponse(req, 400, { ok: false, error: "invalid_password_length" });
   }
 
