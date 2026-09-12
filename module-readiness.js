@@ -125,3 +125,42 @@
     if (typeof initialRotationData !== 'undefined') markModule('data.js', 'loaded', { source: 'index-preload' });
   } catch (err) {}
 })();
+
+// RaK 1.6 – srozumitelna validace hesla pri pridani noveho spravce.
+(function setupRakAdminPasswordGuard() {
+  const MIN_PASSWORD_LENGTH = 8;
+
+  function patchSaveHandler() {
+    const original = window.rakAdminSaveSecureAccounts;
+    if (typeof original !== 'function' || original.__rakPasswordGuardWrapped) return false;
+    const wrapped = async function rakAdminSaveSecureAccountsWithPasswordGuard(root) {
+      const reader = window.readAdminAccountsSecureDraftRowsFromDom;
+      const rows = typeof reader === 'function' ? reader(root) : [];
+      const invalid = rows.find((entry) => entry && entry.password && String(entry.password).length < MIN_PASSWORD_LENGTH);
+      if (invalid) {
+        return { ok: false, error: new Error('Heslo nového správce musí mít alespoň 8 znaků.') };
+      }
+      return original(root);
+    };
+    wrapped.__rakPasswordGuardWrapped = true;
+    window.rakAdminSaveSecureAccounts = wrapped;
+    return true;
+  }
+
+  function hintPasswordInput(target) {
+    if (!target || !target.matches || !target.matches('[data-admin-account-password]')) return;
+    target.minLength = MIN_PASSWORD_LENGTH;
+    target.title = 'Heslo nového správce musí mít alespoň 8 znaků.';
+    if (!target.value && String(target.placeholder || '').toLowerCase() === 'heslo') {
+      target.placeholder = 'heslo min. 8 znaků';
+    }
+  }
+
+  document.addEventListener('focusin', (event) => {
+    hintPasswordInput(event.target);
+    patchSaveHandler();
+  }, true);
+  document.addEventListener('click', () => { patchSaveHandler(); }, true);
+  if (document.readyState !== 'loading') patchSaveHandler();
+  else document.addEventListener('DOMContentLoaded', () => { patchSaveHandler(); }, { once: true });
+})();
