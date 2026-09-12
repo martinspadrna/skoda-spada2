@@ -4,10 +4,9 @@ const SW_APP_VERSION = '1.6.0';
 const STATIC_CACHE = `rotace-static-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `rotace-runtime-${CACHE_VERSION}`;
 const PREWARM_CACHE = `rotace-prewarm-${CACHE_VERSION}`;
-// Development hotfix: tyto stejnoverzové soubory musí být po oddělení Supabase
-// znovu stažené, jinak iOS PWA může dál používat staré admin odemčení z cache.
-const SAME_VERSION_HOTFIX_ASSETS = [
-  './app-menu-pages.js?v=1.6.0',
+const SAME_VERSION_HOTFIX_ASSETS = ['./app-menu-pages.js?v=1.6.0'];
+// Development-only invalidace starých admin/Supabase assetů po oddělení test DB.
+const DEVELOPMENT_ADMIN_HOTFIX_ASSETS = [
   './app.js?v=1.5.1',
   './supabase-config.js?v=1.6.0',
   './supabase-bridge.js?v=1.6.0',
@@ -139,7 +138,8 @@ async function fetchBuildAsset(url) {
 async function clearSameVersionHotfixAssets() {
   try {
     const cache = await caches.open(STATIC_CACHE);
-    await Promise.all(SAME_VERSION_HOTFIX_ASSETS.map(url => cache.delete(url, { ignoreSearch: false })));
+    const hotfixAssets = SAME_VERSION_HOTFIX_ASSETS.concat(DEVELOPMENT_ADMIN_HOTFIX_ASSETS);
+    await Promise.all(hotfixAssets.map(url => cache.delete(url, { ignoreSearch: false })));
   } catch (_) {}
 }
 
@@ -189,7 +189,7 @@ self.addEventListener('install', event => {
   event.waitUntil((async () => {
     await clearSameVersionHotfixAssets();
     await installCoreAndPrewarm();
-    // Jen development hotfix: nechceme, aby nová verze čekala za starým iOS klientem.
+    // Development hotfix: nenechá novou opravu čekat za starým iOS PWA klientem.
     await self.skipWaiting();
   })());
 });
