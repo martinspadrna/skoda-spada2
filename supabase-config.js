@@ -4,6 +4,43 @@ window.SUPABASE_CONFIG = {
   publishableKey: "sb_publishable_v7jeuZC-MNUEO5nfE5xcUQ_Pu9pT-X_"
 };
 
+// Development-only ochrana proti přenesení starého admin odemčení v běžícím
+// PWA runtime při přepnutí z produkční Supabase na testovací. Maže pouze
+// autorizační příznaky administrace; běžné přihlášení uživatele zůstává.
+(function rakTestResetStaleAdminRuntime() {
+  const staleSessionKeys = [
+    "adminUnlockedSession",
+    "adminPinSession",
+    "adminAuthPinSession",
+    "adminAccountIdSession",
+    "adminOwnerSession",
+    "adminPromptedAccountSession"
+  ];
+
+  try {
+    staleSessionKeys.forEach((key) => sessionStorage.removeItem(key));
+    localStorage.removeItem("adminUnlocked");
+  } catch (err) {}
+
+  let attempts = 0;
+  const resetRuntimeOnce = function () {
+    attempts += 1;
+    try {
+      if (typeof app !== "undefined" && app) {
+        app.adminUnlocked = false;
+        app.adminPin = "";
+        app.adminAccountId = "";
+        app.adminIsOwner = false;
+        app.adminAuthVersion = 0;
+        window.__rakTestAdminRuntimeReset = true;
+        return;
+      }
+    } catch (err) {}
+    if (attempts < 120) setTimeout(resetRuntimeOnce, 25);
+  };
+  resetRuntimeOnce();
+})();
+
 // Test-only owner bootstrap: testovací Auth začíná bez uživatele 9811.
 // První úspěšné zadání hesla vytvoří účet přímo v test Supabase; databázový
 // trigger ho potvrdí a přiřadí owner profil. Produkční RaK tento soubor na
